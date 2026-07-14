@@ -20,6 +20,7 @@ export function CombatView() {
   const manualDamage = manualClickDamage(stats, clicker);
   const autoDamage = autoAttackDamage(stats, clicker);
   const autoInterval = autoAttackInterval(clicker);
+  const lastRewards = state.combat.lastRewards;
   const upgrades = [
     { key: "manualPowerLevel" as const, label: "Force du clic", value: `+ degats clic`, level: clicker.manualPowerLevel },
     { key: "autoDamageLevel" as const, label: "Lame spectrale", value: autoDamage > 0 ? `${autoDamage} degats auto` : "debloque auto", level: clicker.autoDamageLevel },
@@ -56,6 +57,25 @@ export function CombatView() {
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/90 to-transparent" />
             <div className="absolute left-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Niveau {state.player.level}</div>
             <div className="absolute right-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Boss {bossReady ? "disponible" : "verrouille"}</div>
+            {lastRewards ? (
+              <div className="absolute right-6 top-28 z-20 w-72 rounded-lg border border-amber-400/40 bg-slate-950/88 p-3 shadow-ember backdrop-blur">
+                <div className="text-xs font-semibold uppercase tracking-wide text-amber-200">Recompenses</div>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-200">
+                  <span className="rounded-full bg-slate-900 px-2 py-1">+{lastRewards.experience} XP</span>
+                  <span className="rounded-full bg-slate-900 px-2 py-1">+{lastRewards.gold} or</span>
+                  {lastRewards.essences > 0 ? <span className="rounded-full bg-sky-950/80 px-2 py-1 text-sky-200">+{lastRewards.essences} essence(s)</span> : null}
+                </div>
+                {lastRewards.items.length > 0 ? (
+                  <div className="mt-2 space-y-1">
+                    {lastRewards.items.map((item) => (
+                      <div key={item.instanceId ?? item.id} className="rounded-md border border-amber-400/30 bg-amber-950/30 px-2 py-1 text-xs font-semibold text-amber-100">
+                        Objet obtenu : {item.name}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <div className="absolute inset-x-0 top-16 z-10 mx-auto max-w-2xl px-6">
               <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-100">
                 <span>{enemy?.name ?? "Recherche d'un ennemi..."}</span>
@@ -124,15 +144,6 @@ export function CombatView() {
               );
             })}
           </div>
-        </Panel>
-        <Panel title="Rewards">
-          {state.combat.lastRewards ? (
-            <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-md border border-slate-800 bg-slate-950/50 p-3 text-sm font-semibold">XP<br />{state.combat.lastRewards.experience}</div>
-              <div className="rounded-md border border-slate-800 bg-slate-950/50 p-3 text-sm font-semibold">Or<br />{state.combat.lastRewards.gold}</div>
-              <div className="rounded-md border border-slate-800 bg-slate-950/50 p-3 text-sm font-semibold">Ess.<br />{state.combat.lastRewards.essences}</div>
-            </div>
-          ) : <div className="text-sm text-slate-400">Aucune recompense</div>}
         </Panel>
       </div>
     </div>
