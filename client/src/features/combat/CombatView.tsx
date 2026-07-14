@@ -125,10 +125,10 @@ export function CombatView() {
             <div
               className="enemy-click-target"
             >
-              <div className="mb-2 text-center text-sm font-semibold text-slate-200">Cliquez sur l'ennemi pour frapper</div>
               <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} />
-              <div className="mt-2 rounded-full border border-arcane/30 bg-slate-950/80 px-4 py-2 text-sm font-semibold text-arcane">
-                Dégâts par clic : {manualDamage}
+              <div className="click-hint">
+                <span className="click-hint-label">Frapper la zone</span>
+                <span className="click-hint-value">{manualDamage} dégâts</span>
               </div>
             </div>
           </div>

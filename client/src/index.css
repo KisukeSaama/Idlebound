@@ -331,9 +331,9 @@ button:not(:disabled):active {
 .enemy-click-target {
   position: absolute;
   left: 50%;
-  bottom: 0.75rem;
+  bottom: 1.1rem;
   display: flex;
-  width: min(36rem, calc(100% - 2rem));
+  width: min(34rem, calc(100% - 2rem));
   transform: translateX(-50%);
   cursor: pointer;
   flex-direction: column;
@@ -341,19 +341,43 @@ button:not(:disabled):active {
   border: 1px solid transparent;
   border-radius: 0.75rem;
   background: transparent;
-  padding: 1rem;
+  padding: 0.35rem 1rem 0;
   color: inherit;
   pointer-events: none;
 }
 
-.enemy-click-target:hover {
-  border-color: rgba(56, 189, 248, 0.3);
-  background: rgba(2, 6, 23, 0.2);
+.click-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.3rem;
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.92)),
+    rgba(2, 6, 23, 0.9);
+  padding: 0.38rem 0.48rem 0.38rem 0.85rem;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.42),
+    0 0 22px rgba(56, 189, 248, 0.12);
+  backdrop-filter: blur(10px);
 }
 
-.enemy-click-target:focus {
-  outline: 2px solid rgba(56, 189, 248, 0.8);
-  outline-offset: 2px;
+.click-hint-label {
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.click-hint-value {
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.16);
+  padding: 0.24rem 0.58rem;
+  color: #7dd3fc;
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .reward-toast {
