@@ -50,8 +50,23 @@ export function CombatView() {
             <div>
               <span className="text-slate-500">Zone active</span> <span className="font-semibold text-slate-100">{zone.name}</span>
             </div>
-            <div className="combat-zone-progress">
-              {shownKills}/{zone.enemiesToBoss} avant boss
+            <div className="combat-zone-controls">
+              <div className="combat-zone-progress">
+                {shownKills}/{zone.enemiesToBoss} avant boss
+              </div>
+              <button
+                className="rounded-md bg-ember px-3 py-1.5 text-sm font-semibold text-slate-950 shadow-ember disabled:cursor-not-allowed disabled:opacity-40"
+                disabled={!bossReady}
+                onClick={() => dispatch({ type: "fightBoss" })}
+              >
+                Boss
+              </button>
+              <button
+                className="rounded-md border border-slate-700 bg-slate-950/50 px-3 py-1.5 text-sm text-slate-200 hover:border-arcane/60"
+                onClick={() => dispatch({ type: "toggleSetting", key: "autoContinue" })}
+              >
+                Auto {state.settings.autoContinue ? "on" : "off"}
+              </button>
             </div>
           </div>
           <div className="combat-scene scene-backdrop relative overflow-hidden rounded-lg border border-slate-700/70">
@@ -107,21 +122,6 @@ export function CombatView() {
             <div>Rythme {Number.isFinite(autoInterval) ? `${autoInterval.toFixed(2)}s` : "-"}</div>
             <div>Crit {Math.round(clicker.critLevel * 2.5)}%</div>
           </div>
-        </div>
-        <div className="combat-actions">
-          <button
-            className="rounded-md bg-ember px-4 py-2 font-semibold text-slate-950 shadow-ember disabled:cursor-not-allowed disabled:opacity-40"
-            disabled={!bossReady}
-            onClick={() => dispatch({ type: "fightBoss" })}
-          >
-            Tenter le boss
-          </button>
-          <button
-            className="rounded-md border border-slate-700 bg-slate-950/50 px-4 py-2 text-slate-200 hover:border-arcane/60"
-            onClick={() => dispatch({ type: "toggleSetting", key: "autoContinue" })}
-          >
-            Auto {state.settings.autoContinue ? "actif" : "pause"}
-          </button>
         </div>
       </section>
       <aside className="skills-panel idle-card">

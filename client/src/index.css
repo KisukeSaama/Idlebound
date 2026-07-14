@@ -226,6 +226,14 @@ button:not(:disabled):active {
   font-size: 0.9rem;
 }
 
+.combat-zone-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .combat-zone-progress {
   border: 1px solid #334155;
   border-radius: 999px;
@@ -324,13 +332,6 @@ button:not(:disabled):active {
 .combat-scene {
   flex: 1;
   min-height: 0;
-}
-
-.combat-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.65rem 1rem 1rem;
 }
 
 .combat-metrics {
