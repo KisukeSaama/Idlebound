@@ -133,7 +133,7 @@ export function tickCombat(inputState: GameState, deltaSeconds = COMBAT_TICK_MS 
   if (Number.isFinite(interval) && playerAttackTimer >= interval) {
     playerAttackTimer = 0;
     const damage = calculateDamage(autoAttackDamage(stats, state.clicker), state.combat.enemy.defense * 0.25);
-    messages.push(log(`Auto-attaque : ${damage} degats.`, "good"));
+    messages.push(log(`Auto-attaque : ${damage} dégâts.`, "good"));
     return damageEnemy(state, damage, messages);
   }
 
@@ -194,6 +194,6 @@ export function manualAttack(state: GameState): GameState {
   const stats = calculateStats(fightingState.player, fightingState.equipment, fightingState.essenceUpgrades);
   const rolled = rollOutgoingDamage(manualClickDamage(stats, fightingState.clicker), fightingState);
   return damageEnemy(fightingState, rolled.damage, [
-    log(`${rolled.critical ? "Coup critique ! " : ""}Clic : ${rolled.damage} degats.`, "good")
+    log(`${rolled.critical ? "Coup critique ! " : ""}Clic : ${rolled.damage} dégâts.`, "good")
   ]);
 }

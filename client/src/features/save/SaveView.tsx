@@ -16,7 +16,7 @@ export function SaveView() {
     link.download = `idlebound-save-${Date.now()}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    setMessage("Sauvegarde exportee.");
+    setMessage("Sauvegarde exportée.");
   }
 
   async function importFile(file?: File) {
@@ -24,7 +24,7 @@ export function SaveView() {
     try {
       const imported = importSave(await file.text());
       dispatch({ type: "loadState", state: imported });
-      setMessage("Sauvegarde importee.");
+      setMessage("Sauvegarde importée.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Import impossible.");
     }
@@ -39,7 +39,7 @@ export function SaveView() {
         </div>
       ) : null}
       <div className="flex flex-wrap gap-2">
-        <button className="rounded-md bg-arcane px-4 py-2 font-semibold text-slate-950" onClick={() => { saveGameState(state); setMessage("Sauvegarde manuelle effectuee."); }}>
+        <button className="rounded-md bg-arcane px-4 py-2 font-semibold text-slate-950" onClick={() => { saveGameState(state); setMessage("Sauvegarde manuelle effectuée."); }}>
           Sauvegarder
         </button>
         <button className="rounded-md border border-slate-700 px-4 py-2" onClick={downloadSave}>
@@ -48,12 +48,12 @@ export function SaveView() {
         <button className="rounded-md border border-slate-700 px-4 py-2" onClick={() => inputRef.current?.click()}>
           Importer
         </button>
-        <button className="rounded-md border border-red-800 px-4 py-2 text-red-200" onClick={() => { resetSave(); dispatch({ type: "reset" }); setMessage("Partie reinitialisee."); }}>
+        <button className="rounded-md border border-red-800 px-4 py-2 text-red-200" onClick={() => { resetSave(); dispatch({ type: "reset" }); setMessage("Partie réinitialisée."); }}>
           Reinitialiser
         </button>
       </div>
       <input ref={inputRef} className="hidden" type="file" accept="application/json,.json,.txt" onChange={(event) => importFile(event.target.files?.[0])} />
-      <div className="mt-4 text-sm text-slate-400">Derniere sauvegarde : {state.lastSavedAt ?? "pas encore"}</div>
+      <div className="mt-4 text-sm text-slate-400">Dernière sauvegarde : {state.lastSavedAt ?? "pas encore"}</div>
       {message ? <div className="mt-3 text-sm text-arcane">{message}</div> : null}
     </Panel>
   );

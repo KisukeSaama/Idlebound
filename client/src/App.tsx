@@ -12,12 +12,12 @@ import { GameProvider, useGame } from "./store/GameContext";
 
 const tabs = [
   "Zones",
-  "Equipement",
+  "Équipement",
   "Inventaire",
   "Boutique",
   "Essences",
   "Sauvegarde",
-  "Parametres"
+  "Paramètres"
 ] as const;
 
 type Tab = (typeof tabs)[number];
@@ -27,8 +27,8 @@ const windowConfig: Record<Tab, { label: string; sidebarIcon: string }> = {
     label: "Zones",
     sidebarIcon: "/assets/icons/sidebar-zones-map-transparent.png"
   },
-  Equipement: {
-    label: "Equipement",
+  Équipement: {
+    label: "Équipement",
     sidebarIcon: "/assets/icons/sidebar-equipment-helmet-transparent.png"
   },
   Inventaire: {
@@ -47,8 +47,8 @@ const windowConfig: Record<Tab, { label: string; sidebarIcon: string }> = {
     label: "Sauvegarde",
     sidebarIcon: "/assets/icons/sidebar-save-disk-transparent.png"
   },
-  Parametres: {
-    label: "Parametres",
+  Paramètres: {
+    label: "Paramètres",
     sidebarIcon: "/assets/icons/sidebar-settings-gear-transparent.png"
   }
 };
@@ -63,12 +63,12 @@ function GameShell() {
     <main className="app-shell h-screen overflow-hidden text-slate-100">
       <header className="app-header border-b border-slate-800/80 bg-slate-950/80 px-3 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3">
-          <div className="flex items-center gap-4">
-            <div className="grid h-9 w-9 place-items-center rounded-md border border-arcane/40 bg-arcane/10 text-sm font-black text-arcane">IB</div>
-            <div>
-              <div className="text-base font-black leading-tight">Idlebound</div>
-              <div className="text-[0.68rem] uppercase tracking-wide text-slate-500">Expedition solo</div>
-            </div>
+          <div className="flex items-center">
+            <img
+              className="brand-logo"
+              src="/assets/brand/idlebound-logo.png"
+              alt="Idlebound"
+            />
           </div>
           <div className="hidden items-center gap-2 text-sm md:flex">
             <span className="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-slate-300">Puissance {power}</span>
@@ -114,7 +114,7 @@ function GameShell() {
             <div className="overlay-titlebar">
               <div>
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-100">{windowConfig[activeWindow].label}</div>
-                <div className="text-xs text-slate-500">Fenetre superposee</div>
+                <div className="text-xs text-slate-500">Fenêtre superposée</div>
               </div>
               <button
                 type="button"
@@ -126,12 +126,12 @@ function GameShell() {
             </div>
             <div className="overlay-content">
               {activeWindow === "Zones" && <ZonesView />}
-              {activeWindow === "Equipement" && <EquipmentView />}
+              {activeWindow === "Équipement" && <EquipmentView />}
               {activeWindow === "Inventaire" && <InventoryView />}
               {activeWindow === "Boutique" && <ShopView />}
               {activeWindow === "Essences" && <EssencesView />}
               {activeWindow === "Sauvegarde" && <SaveView />}
-              {activeWindow === "Parametres" && <SettingsView />}
+              {activeWindow === "Paramètres" && <SettingsView />}
             </div>
           </div>
         </div>

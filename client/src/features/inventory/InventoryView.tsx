@@ -28,7 +28,7 @@ export function InventoryView() {
             </ItemCard>
           );
         })}
-        {state.inventory.length === 0 ? <p className="text-slate-400">Aucun objet en reserve pour le moment.</p> : null}
+        {state.inventory.length === 0 ? <p className="text-slate-400">Aucun objet en réserve pour le moment.</p> : null}
       </div>
     </Panel>
   );

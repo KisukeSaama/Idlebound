@@ -68,6 +68,15 @@ button:not(:disabled):active {
   align-items: center;
 }
 
+.brand-logo {
+  display: block;
+  width: auto;
+  height: 42px;
+  max-width: min(260px, 48vw);
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+
 .scene-backdrop {
   background:
     linear-gradient(180deg, rgba(10, 15, 24, 0.15), rgba(10, 15, 24, 0.82)),

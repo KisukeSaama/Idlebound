@@ -9,7 +9,7 @@ export function EquipmentView() {
   const stats = calculateStats(state.player, state.equipment, state.essenceUpgrades);
   const slots = ["weapon", "armor", "accessory"] as const;
   return (
-    <Panel title="Equipement">
+    <Panel title="Équipement">
       <div className="mb-4 grid gap-3 sm:grid-cols-4">
         <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2">ATQ {stats.attack}</div>
         <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2">DEF {stats.defense}</div>
@@ -30,11 +30,11 @@ export function EquipmentView() {
                     disabled={state.player.gold < cost || !Number.isFinite(cost)}
                     onClick={() => dispatch({ type: "upgradeEquipped", slot })}
                   >
-                    Ameliorer ({Number.isFinite(cost) ? `${cost} or` : "max"})
+                    Améliorer ({Number.isFinite(cost) ? `${cost} or` : "max"})
                   </button>
                 </ItemCard>
               ) : (
-                <p className="rounded-lg border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-400">Aucun objet equipe.</p>
+                <p className="rounded-lg border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-400">Aucun objet équipé.</p>
               )}
             </div>
           );

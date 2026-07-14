@@ -21,8 +21,8 @@ export function CombatView() {
   const autoInterval = autoAttackInterval(clicker);
   const lastRewards = state.combat.lastRewards;
   const upgrades = [
-    { key: "manualPowerLevel" as const, label: "Force du clic", value: `+ degats clic`, level: clicker.manualPowerLevel },
-    { key: "autoDamageLevel" as const, label: "Lame spectrale", value: autoDamage > 0 ? `${autoDamage} degats auto` : "debloque auto", level: clicker.autoDamageLevel },
+    { key: "manualPowerLevel" as const, label: "Force du clic", value: `+ dégâts clic`, level: clicker.manualPowerLevel },
+    { key: "autoDamageLevel" as const, label: "Lame spectrale", value: autoDamage > 0 ? `${autoDamage} dégâts auto` : "débloque auto", level: clicker.autoDamageLevel },
     { key: "autoSpeedLevel" as const, label: "Rythme spectral", value: Number.isFinite(autoInterval) ? `1 frappe / ${autoInterval.toFixed(2)}s` : "requiert auto", level: clicker.autoSpeedLevel },
     { key: "critLevel" as const, label: "Frappe critique", value: "+ chance critique", level: clicker.critLevel }
   ];
@@ -75,10 +75,10 @@ export function CombatView() {
           >
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/90 to-transparent" />
             <div className="scene-badge scene-badge-left">Niveau {state.player.level}</div>
-            <div className="scene-badge scene-badge-right">Boss {bossReady ? "disponible" : "verrouille"}</div>
+            <div className="scene-badge scene-badge-right">Boss {bossReady ? "disponible" : "verrouillé"}</div>
             {lastRewards ? (
               <div className="reward-toast">
-                <div className="text-xs font-semibold uppercase tracking-wide text-amber-200">Recompenses</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-amber-200">Récompenses</div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-200">
                   <span className="rounded-full bg-slate-900 px-2 py-1">+{lastRewards.experience} XP</span>
                   <span className="rounded-full bg-slate-900 px-2 py-1">+{lastRewards.gold} or</span>
@@ -115,7 +115,7 @@ export function CombatView() {
               <div className="mb-2 text-center text-sm font-semibold text-slate-200">Cliquez sur l'ennemi pour frapper</div>
               <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} />
               <div className="mt-2 rounded-full border border-arcane/30 bg-slate-950/80 px-4 py-2 text-sm font-semibold text-arcane">
-                Degats par clic : {manualDamage}
+                Dégâts par clic : {manualDamage}
               </div>
             </button>
           </div>
@@ -129,7 +129,7 @@ export function CombatView() {
       </section>
       <aside className="skills-panel idle-card">
         <div className="skills-titlebar">
-          <h2>Ameliorations d'attaque</h2>
+          <h2>Améliorations d'attaque</h2>
         </div>
         <div className="skills-list">
             {upgrades.map((upgrade) => {
