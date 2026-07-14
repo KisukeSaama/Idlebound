@@ -23,27 +23,33 @@ const tabs = [
 type Tab = (typeof tabs)[number];
 
 const windowConfig: Record<Tab, { label: string; sidebarIcon: string }> = {
-  Zones: { label: "Zones", sidebarIcon: "/assets/icons/sidebar-zones-map.png" },
+  Zones: {
+    label: "Zones",
+    sidebarIcon: "/assets/icons/sidebar-zones-map-transparent.png"
+  },
   Equipement: {
     label: "Equipement",
-    sidebarIcon: "/assets/icons/sidebar-equipment-helmet.png"
+    sidebarIcon: "/assets/icons/sidebar-equipment-helmet-transparent.png"
   },
   Inventaire: {
     label: "Inventaire",
-    sidebarIcon: "/assets/icons/sidebar-inventory-backpack.png"
+    sidebarIcon: "/assets/icons/sidebar-inventory-backpack-transparent.png"
   },
-  Boutique: { label: "Boutique", sidebarIcon: "/assets/icons/sidebar-shop-stall.png" },
+  Boutique: {
+    label: "Boutique",
+    sidebarIcon: "/assets/icons/sidebar-shop-stall-transparent.png"
+  },
   Essences: {
     label: "Essences",
-    sidebarIcon: "/assets/icons/sidebar-essences-crystals.png"
+    sidebarIcon: "/assets/icons/sidebar-essences-crystals-transparent.png"
   },
   Sauvegarde: {
     label: "Sauvegarde",
-    sidebarIcon: "/assets/icons/sidebar-save-disk.png"
+    sidebarIcon: "/assets/icons/sidebar-save-disk-transparent.png"
   },
   Parametres: {
     label: "Parametres",
-    sidebarIcon: "/assets/icons/sidebar-settings-gear.png"
+    sidebarIcon: "/assets/icons/sidebar-settings-gear-transparent.png"
   }
 };
 
