@@ -375,6 +375,11 @@ button:not(:disabled):active {
   flex: 1;
   min-height: 0;
   cursor: pointer;
+  user-select: none;
+}
+
+.combat-scene > * {
+  pointer-events: none;
 }
 
 .combat-scene:focus {

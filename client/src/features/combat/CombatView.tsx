@@ -26,6 +26,7 @@ export function CombatView() {
     { key: "autoSpeedLevel" as const, label: "Rythme spectral", value: Number.isFinite(autoInterval) ? `1 frappe / ${autoInterval.toFixed(2)}s` : "requiert auto", level: clicker.autoSpeedLevel },
     { key: "critLevel" as const, label: "Frappe critique", value: "+ chance critique", level: clicker.critLevel }
   ];
+  const strike = () => dispatch({ type: "manualAttack" });
 
   return (
     <div className="combat-layout">
@@ -75,11 +76,15 @@ export function CombatView() {
             role="button"
             tabIndex={0}
             aria-label="Frapper dans la zone de combat"
-            onClick={() => dispatch({ type: "manualAttack" })}
+            onPointerDown={(event) => {
+              if (event.button !== 0) return;
+              event.currentTarget.focus();
+              strike();
+            }}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
-                dispatch({ type: "manualAttack" });
+                strike();
               }
             }}
           >
