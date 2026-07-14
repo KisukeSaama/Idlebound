@@ -343,6 +343,7 @@ button:not(:disabled):active {
   background: transparent;
   padding: 1rem;
   color: inherit;
+  pointer-events: none;
 }
 
 .enemy-click-target:hover {
@@ -373,6 +374,12 @@ button:not(:disabled):active {
 .combat-scene {
   flex: 1;
   min-height: 0;
+  cursor: pointer;
+}
+
+.combat-scene:focus {
+  outline: 2px solid rgba(56, 189, 248, 0.8);
+  outline-offset: 2px;
 }
 
 .combat-metrics {

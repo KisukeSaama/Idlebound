@@ -72,6 +72,16 @@ export function CombatView() {
           <div
             className="combat-scene scene-backdrop relative overflow-hidden rounded-lg border border-slate-700/70"
             style={{ backgroundImage: `linear-gradient(180deg, rgba(8, 11, 18, 0.08), rgba(8, 11, 18, 0.72)), url(${zone.backgroundImage})` }}
+            role="button"
+            tabIndex={0}
+            aria-label="Frapper dans la zone de combat"
+            onClick={() => dispatch({ type: "manualAttack" })}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                dispatch({ type: "manualAttack" });
+              }
+            }}
           >
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/90 to-transparent" />
             <div className="scene-badge scene-badge-left">Niveau {state.player.level}</div>
@@ -107,17 +117,15 @@ export function CombatView() {
                 />
               </div>
             </div>
-            <button
+            <div
               className="enemy-click-target"
-              onClick={() => dispatch({ type: "manualAttack" })}
-              aria-label="Frapper l'ennemi"
             >
               <div className="mb-2 text-center text-sm font-semibold text-slate-200">Cliquez sur l'ennemi pour frapper</div>
               <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} />
               <div className="mt-2 rounded-full border border-arcane/30 bg-slate-950/80 px-4 py-2 text-sm font-semibold text-arcane">
                 Dégâts par clic : {manualDamage}
               </div>
-            </button>
+            </div>
           </div>
           <div className="combat-metrics">
             <div>Clic {manualDamage}</div>
