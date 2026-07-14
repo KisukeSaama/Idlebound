@@ -29,7 +29,7 @@ export function CombatView() {
   ];
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
+    <div className="combat-layout">
       <Panel title="Combat automatique">
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <StatPill label="Niveau" value={state.player.level} />
@@ -37,15 +37,15 @@ export function CombatView() {
           <StatPill label="Or" value={state.player.gold} />
           <StatPill label="Essences" value={state.player.essences} />
         </div>
-        <div className="mt-3">
+        <div className="mt-2">
           <ProgressBar
             value={state.player.experience}
             max={state.player.experienceToNext}
             label={`${state.player.experience} / ${state.player.experienceToNext} XP`}
           />
         </div>
-        <div className="mt-4 rounded-lg border border-slate-800/80 bg-slate-950/40 p-3">
-          <div className="mb-3 flex flex-col gap-2 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="combat-scene-shell mt-3 rounded-lg border border-slate-800/80 bg-slate-950/40 p-3">
+          <div className="mb-2 flex flex-col gap-2 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <span className="text-slate-500">Zone active</span> <span className="font-semibold text-slate-100">{zone.name}</span>
             </div>
@@ -53,7 +53,7 @@ export function CombatView() {
               {kills}/{zone.enemiesToBoss} avant boss
             </div>
           </div>
-          <div className="scene-backdrop relative min-h-[520px] overflow-hidden rounded-lg border border-slate-700/70">
+          <div className="combat-scene scene-backdrop relative overflow-hidden rounded-lg border border-slate-700/70">
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/90 to-transparent" />
             <div className="absolute left-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Niveau {state.player.level}</div>
             <div className="absolute right-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Boss {bossReady ? "disponible" : "verrouille"}</div>
@@ -89,13 +89,13 @@ export function CombatView() {
               </div>
             </div>
             <button
-              className="absolute inset-x-0 bottom-8 mx-auto flex max-w-xl cursor-pointer flex-col items-center rounded-xl border border-transparent p-8 transition hover:border-arcane/30 hover:bg-slate-950/20 focus:outline-none focus:ring-2 focus:ring-arcane"
+              className="absolute inset-x-0 bottom-3 mx-auto flex max-w-xl cursor-pointer flex-col items-center rounded-xl border border-transparent p-4 transition hover:border-arcane/30 hover:bg-slate-950/20 focus:outline-none focus:ring-2 focus:ring-arcane"
               onClick={() => dispatch({ type: "manualAttack" })}
               aria-label="Frapper l'ennemi"
             >
               <div className="mb-2 text-center text-sm font-semibold text-slate-200">Cliquez sur l'ennemi pour frapper</div>
               <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} />
-              <div className="mt-4 rounded-full border border-arcane/30 bg-slate-950/80 px-4 py-2 text-sm font-semibold text-arcane">
+              <div className="mt-2 rounded-full border border-arcane/30 bg-slate-950/80 px-4 py-2 text-sm font-semibold text-arcane">
                 Degats par clic : {manualDamage}
               </div>
             </button>
@@ -107,7 +107,7 @@ export function CombatView() {
             <div className="rounded-md bg-slate-900 px-2 py-1">Crit {Math.round(clicker.critLevel * 2.5)}%</div>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           <button
             className="rounded-md bg-ember px-4 py-2 font-semibold text-slate-950 shadow-ember disabled:cursor-not-allowed disabled:opacity-40"
             disabled={!bossReady}

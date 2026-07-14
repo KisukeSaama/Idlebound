@@ -22,6 +22,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 button,
@@ -55,6 +56,12 @@ button:not(:disabled):active {
     #080b12;
 }
 
+.app-header {
+  height: 58px;
+  display: flex;
+  align-items: center;
+}
+
 .scene-backdrop {
   background:
     linear-gradient(180deg, rgba(10, 15, 24, 0.15), rgba(10, 15, 24, 0.82)),
@@ -77,13 +84,15 @@ button:not(:disabled):active {
   grid-template-columns: 64px minmax(0, 1fr);
   gap: 1rem;
   width: min(1440px, calc(100vw - 2rem));
+  height: calc(100vh - 58px);
   margin: 0 auto;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
+  overflow: hidden;
 }
 
 .icon-sidebar {
   position: sticky;
-  top: 5rem;
+  top: 0.75rem;
   z-index: 10;
   width: 64px;
   height: fit-content;
@@ -129,13 +138,68 @@ button:not(:disabled):active {
 
 .combat-main {
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.combat-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 1rem;
+  height: 100%;
+  min-height: 0;
+}
+
+.combat-layout > .idle-card {
+  min-height: 0;
+}
+
+.combat-layout > .idle-card:first-child > div:last-child {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: calc(100vh - 58px - 1.5rem - 2px);
+}
+
+.combat-scene-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.combat-scene {
+  flex: 1;
+  min-height: 260px;
+}
+
+.combat-layout > div:last-child {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.combat-layout > div:last-child .idle-card > div:last-child {
+  max-height: calc(100vh - 58px - 1.5rem - 52px);
+  overflow: hidden;
 }
 
 @media (max-width: 720px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
   .game-layout {
     grid-template-columns: 1fr;
     width: min(100vw - 1rem, 1440px);
+    height: auto;
     padding: 0.5rem 0;
+    overflow: visible;
   }
 
   .icon-sidebar {
@@ -150,6 +214,23 @@ button:not(:disabled):active {
 
   .icon-button {
     flex: 0 0 48px;
+  }
+
+  .combat-main {
+    overflow: visible;
+  }
+
+  .combat-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .combat-layout > .idle-card:first-child > div:last-child {
+    height: auto;
+  }
+
+  .combat-scene {
+    min-height: 420px;
   }
 }
 

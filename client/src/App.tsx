@@ -39,20 +39,20 @@ function GameShell() {
   const power = calculatePower(stats, state.player.level);
 
   return (
-    <main className="app-shell min-h-screen text-slate-100">
-      <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 px-3 py-3 backdrop-blur-xl">
+    <main className="app-shell h-screen overflow-hidden text-slate-100">
+      <header className="app-header border-b border-slate-800/80 bg-slate-950/80 px-3 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <div className="grid h-9 w-9 place-items-center rounded-md border border-arcane/40 bg-arcane/10 text-sm font-black text-arcane">IB</div>
             <div>
-              <div className="text-lg font-black">Idlebound</div>
-              <div className="text-xs uppercase tracking-wide text-slate-500">Expedition solo</div>
+              <div className="text-base font-black leading-tight">Idlebound</div>
+              <div className="text-[0.68rem] uppercase tracking-wide text-slate-500">Expedition solo</div>
             </div>
           </div>
           <div className="hidden items-center gap-2 text-sm md:flex">
-            <span className="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-2 text-slate-300">Puissance {power}</span>
-            <span className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-amber-200">{state.player.gold} or</span>
-            <span className="rounded-md border border-sky-400/25 bg-sky-400/10 px-3 py-2 text-sky-200">{state.player.essences} essences</span>
+            <span className="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-slate-300">Puissance {power}</span>
+            <span className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-1.5 text-amber-200">{state.player.gold} or</span>
+            <span className="rounded-md border border-sky-400/25 bg-sky-400/10 px-3 py-1.5 text-sky-200">{state.player.essences} essences</span>
           </div>
         </div>
       </header>
@@ -84,9 +84,9 @@ function GameShell() {
       </div>
 
       {activeWindow ? (
-        <div className="fixed inset-0 z-30 bg-slate-950/72 p-4 backdrop-blur-sm" onMouseDown={() => setActiveWindow(null)}>
+        <div className="fixed inset-0 z-30 overflow-hidden bg-slate-950/72 p-4 backdrop-blur-sm" onMouseDown={() => setActiveWindow(null)}>
           <div
-            className="mx-auto mt-12 max-h-[82vh] max-w-6xl overflow-auto rounded-lg border border-slate-700 bg-slate-950 shadow-2xl"
+            className="mx-auto mt-6 flex max-h-[calc(100vh-3rem)] max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-700 bg-slate-950 shadow-2xl"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-950/95 px-4 py-3 backdrop-blur">
@@ -101,7 +101,7 @@ function GameShell() {
                 Fermer
               </button>
             </div>
-            <div className="p-4">
+            <div className="min-h-0 overflow-auto p-4">
               {activeWindow === "Zones" && <ZonesView />}
               {activeWindow === "Equipement" && <EquipmentView />}
               {activeWindow === "Inventaire" && <InventoryView />}
