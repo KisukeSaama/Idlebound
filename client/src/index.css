@@ -81,19 +81,19 @@ button:not(:disabled):active {
 
 .game-layout {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
   width: min(1440px, calc(100vw - 2rem));
   height: calc(100vh - 58px);
   margin: 0 auto;
-  padding: 0.75rem 0;
+  padding: 0.75rem 0 0.75rem 5.25rem;
   overflow: hidden;
 }
 
 .icon-sidebar {
-  position: sticky;
-  top: 0.75rem;
-  z-index: 10;
+  position: fixed;
+  left: 1rem;
+  top: calc(58px + 0.75rem);
+  z-index: 25;
   width: 64px;
   height: fit-content;
   overflow: hidden;

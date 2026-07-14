@@ -62,6 +62,7 @@ function GameShell() {
           <nav className="icon-sidebar-nav">
             {tabs.map((tab) => (
               <button
+                type="button"
                 key={tab}
                 title={windowConfig[tab].label}
                 aria-label={windowConfig[tab].label}
@@ -95,6 +96,7 @@ function GameShell() {
                 <div className="text-xs text-slate-500">Fenetre superposee</div>
               </div>
               <button
+                type="button"
                 className="rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:border-arcane/60 hover:text-slate-100"
                 onClick={() => setActiveWindow(null)}
               >
