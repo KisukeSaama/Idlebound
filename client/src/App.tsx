@@ -48,6 +48,24 @@ function GameShell() {
         </div>
       </header>
 
+      <div className="mx-auto max-w-[1440px] px-4 pt-4">
+        <nav className="idle-card flex gap-2 overflow-x-auto rounded-lg p-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`shrink-0 rounded-md border px-4 py-2 text-sm font-semibold ${
+                activeTab === tab
+                  ? "border-arcane/60 bg-arcane/15 text-arcane shadow-glow"
+                  : "border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900/70 hover:text-slate-100"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </nav>
+      </div>
+
       <div className="mx-auto grid max-w-[1440px] gap-4 px-4 py-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="idle-card h-fit overflow-hidden rounded-lg">
           <div className="window-title px-4 py-3 text-sm font-semibold uppercase tracking-wide">Aventurier</div>
@@ -76,21 +94,6 @@ function GameShell() {
               <div className="rounded-md border border-slate-800 bg-slate-950/50 p-2">Niv. {state.player.level}</div>
             </div>
           </div>
-          <nav className="grid gap-1 border-t border-slate-800/80 p-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`rounded-md border px-3 py-2 text-left text-sm font-semibold ${
-                  activeTab === tab
-                    ? "border-arcane/60 bg-arcane/15 text-arcane"
-                    : "border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900/70 hover:text-slate-100"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </nav>
         </aside>
 
         <section>
