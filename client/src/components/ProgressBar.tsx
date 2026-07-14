@@ -10,12 +10,17 @@ export function ProgressBar({
   label?: string;
 }) {
   const percent = max <= 0 ? 0 : Math.max(0, Math.min(100, (value / max) * 100));
-  const color = tone === "ember" ? "bg-ember" : tone === "red" ? "bg-red-500" : "bg-arcane";
+  const color =
+    tone === "ember"
+      ? "from-amber-300 to-ember"
+      : tone === "red"
+        ? "from-red-400 to-rose-700"
+        : "from-aether to-arcane";
   return (
     <div>
       {label ? <div className="mb-1 flex justify-between text-xs text-slate-300">{label}</div> : null}
-      <div className="h-3 overflow-hidden rounded-sm bg-slate-800">
-        <div className={`h-full ${color} transition-all`} style={{ width: `${percent}%` }} />
+      <div className="h-3 overflow-hidden rounded-full border border-slate-700/70 bg-slate-950/80">
+        <div className={`h-full bg-gradient-to-r ${color} shadow-glow transition-all`} style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
