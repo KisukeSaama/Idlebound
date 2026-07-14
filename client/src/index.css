@@ -18,6 +18,12 @@
   --color-iron: #1f2937;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   min-width: 320px;
