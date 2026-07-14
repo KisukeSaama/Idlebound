@@ -134,26 +134,6 @@ export function CombatView() {
             </div>
           ) : <div className="text-sm text-slate-400">Aucune recompense</div>}
         </Panel>
-        <Panel title="Journal">
-          <div className="max-h-[500px] space-y-2 overflow-auto pr-1 text-sm">
-            {state.combat.log.map((entry) => (
-              <div
-                key={entry.id}
-                className={`rounded-md border px-3 py-2 ${
-                  entry.tone === "good"
-                    ? "border-emerald-800 bg-emerald-950/30 text-emerald-100"
-                    : entry.tone === "bad"
-                      ? "border-red-500/60 bg-red-950 text-red-100"
-                      : entry.tone === "loot"
-                        ? "border-amber-400/50 bg-amber-950 text-amber-100"
-                        : "border-slate-800 bg-slate-950/50 text-slate-300"
-                }`}
-              >
-                {entry.message}
-              </div>
-            ))}
-          </div>
-        </Panel>
       </div>
     </div>
   );
