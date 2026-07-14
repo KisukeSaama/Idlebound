@@ -22,7 +22,10 @@ export function ZonesView() {
                 selected ? "border-arcane bg-arcane/10 shadow-glow" : "border-slate-800 bg-slate-950/45 hover:border-slate-600"
               } disabled:cursor-not-allowed disabled:opacity-45`}
             >
-              <div className="scene-backdrop h-20 border-b border-slate-800/80" />
+              <div
+                className="scene-backdrop h-20 border-b border-slate-800/80"
+                style={{ backgroundImage: `linear-gradient(180deg, rgba(8, 11, 18, 0.1), rgba(8, 11, 18, 0.76)), url(${zone.backgroundImage})` }}
+              />
               <div className="p-4">
                 <div className="flex items-start justify-between gap-3">
                 <div>

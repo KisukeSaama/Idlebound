@@ -74,6 +74,8 @@ button:not(:disabled):active {
     radial-gradient(circle at 48% 18%, rgba(125, 211, 252, 0.24), transparent 15rem),
     linear-gradient(135deg, rgba(14, 45, 52, 0.42), rgba(31, 20, 52, 0.42) 54%, rgba(52, 29, 14, 0.34)),
     repeating-linear-gradient(112deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 20px);
+  background-position: center;
+  background-size: cover;
 }
 
 .idle-card {

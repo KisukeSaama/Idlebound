@@ -69,7 +69,10 @@ export function CombatView() {
               </button>
             </div>
           </div>
-          <div className="combat-scene scene-backdrop relative overflow-hidden rounded-lg border border-slate-700/70">
+          <div
+            className="combat-scene scene-backdrop relative overflow-hidden rounded-lg border border-slate-700/70"
+            style={{ backgroundImage: `linear-gradient(180deg, rgba(8, 11, 18, 0.08), rgba(8, 11, 18, 0.72)), url(${zone.backgroundImage})` }}
+          >
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/90 to-transparent" />
             <div className="scene-badge scene-badge-left">Niveau {state.player.level}</div>
             <div className="scene-badge scene-badge-right">Boss {bossReady ? "disponible" : "verrouille"}</div>

@@ -39,6 +39,7 @@ export interface Zone {
   id: string;
   name: string;
   description: string;
+  backgroundImage: string;
   recommendedLevel: number;
   enemiesToBoss: number;
   enemyIds: string[];
