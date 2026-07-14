@@ -15,20 +15,20 @@ export function InventoryView() {
             <ItemCard
               key={item.instanceId}
               item={item}
-              meta={<span className="text-sm font-semibold text-arcane">{itemPower(item) - (equipped ? itemPower(equipped) : 0) >= 0 ? "+" : ""}{itemPower(item) - (equipped ? itemPower(equipped) : 0)}</span>}
+              meta={<span className="text-xs font-black text-white">{itemPower(item) - (equipped ? itemPower(equipped) : 0) >= 0 ? "+" : ""}{itemPower(item) - (equipped ? itemPower(equipped) : 0)}</span>}
             >
               <div className="mt-4 flex gap-2">
-                <button className="rounded-md bg-arcane px-3 py-2 text-sm font-semibold text-slate-950 shadow-glow" onClick={() => dispatch({ type: "equipItem", instanceId: item.instanceId! })}>
+                <button className="border border-white bg-white px-3 py-2 text-xs font-black uppercase text-black" onClick={() => dispatch({ type: "equipItem", instanceId: item.instanceId! })}>
                   Equiper
                 </button>
-                <button className="rounded-md border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm" onClick={() => dispatch({ type: "sellItem", instanceId: item.instanceId! })}>
+                <button className="border border-white/25 bg-black px-3 py-2 text-xs font-black uppercase" onClick={() => dispatch({ type: "sellItem", instanceId: item.instanceId! })}>
                   Vendre {sellValue(item)}
                 </button>
               </div>
             </ItemCard>
           );
         })}
-        {state.inventory.length === 0 ? <p className="text-slate-400">Aucun objet en reserve pour le moment.</p> : null}
+        {state.inventory.length === 0 ? <p className="text-xs font-black uppercase text-white/45">Aucun objet en reserve pour le moment.</p> : null}
       </div>
     </Panel>
   );

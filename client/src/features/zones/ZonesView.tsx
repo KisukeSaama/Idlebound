@@ -18,26 +18,26 @@ export function ZonesView() {
               key={zone.id}
               disabled={!unlocked}
               onClick={() => dispatch({ type: "selectZone", zoneId: zone.id })}
-              className={`overflow-hidden rounded-lg border text-left transition ${
-                selected ? "border-arcane bg-arcane/10 shadow-glow" : "border-slate-800 bg-slate-950/45 hover:border-slate-600"
+              className={`overflow-hidden border text-left transition ${
+                selected ? "border-white bg-white text-black" : "border-white/20 bg-[#202020] text-white hover:border-white/50"
               } disabled:cursor-not-allowed disabled:opacity-45`}
             >
-              <div className="scene-backdrop h-20 border-b border-slate-800/80" />
+              <div className="halftone h-20 border-b border-white/20" />
               <div className="p-4">
                 <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-semibold">{zone.name}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{zone.description}</p>
+                  <h3 className="text-sm font-black uppercase">{zone.name}</h3>
+                  <p className={`mt-1 text-xs font-bold uppercase ${selected ? "text-black/60" : "text-white/45"}`}>{zone.description}</p>
                 </div>
-                <span className="rounded-full border border-slate-700 bg-slate-950/70 px-2 py-1 text-xs">Niv. {zone.recommendedLevel}</span>
+                <span className={`border px-2 py-1 text-xs font-black ${selected ? "border-black bg-black text-white" : "border-white/20 bg-black"}`}>Niv. {zone.recommendedLevel}</span>
               </div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full bg-gradient-to-r from-aether to-arcane" style={{ width: `${Math.min(100, (kills / zone.enemiesToBoss) * 100)}%` }} />
+                <div className={`mt-4 h-3 overflow-hidden border ${selected ? "border-black bg-white" : "border-white/20 bg-black"}`}>
+                  <div className="h-full bg-arcane" style={{ width: `${Math.min(100, (kills / zone.enemiesToBoss) * 100)}%` }} />
                 </div>
-              <div className="mt-3 text-sm text-slate-300">
+              <div className={`mt-3 text-xs font-black uppercase ${selected ? "text-black" : "text-white/80"}`}>
                 Progression : {Math.min(kills, zone.enemiesToBoss)}/{zone.enemiesToBoss}
               </div>
-              <div className="mt-1 text-sm text-slate-400">Boss : {boss?.name}</div>
+              <div className={`mt-1 text-xs font-bold uppercase ${selected ? "text-black/60" : "text-white/45"}`}>Boss : {boss?.name}</div>
               </div>
             </button>
           );
