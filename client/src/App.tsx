@@ -11,7 +11,6 @@ import { ZonesView } from "./features/zones/ZonesView";
 import { GameProvider, useGame } from "./store/GameContext";
 
 const tabs = [
-  "Combat",
   "Zones",
   "Equipement",
   "Inventaire",
@@ -23,8 +22,18 @@ const tabs = [
 
 type Tab = (typeof tabs)[number];
 
+const windowConfig: Record<Tab, { label: string; icon: string }> = {
+  Zones: { label: "Zones", icon: "Z" },
+  Equipement: { label: "Equipement", icon: "E" },
+  Inventaire: { label: "Inventaire", icon: "I" },
+  Boutique: { label: "Boutique", icon: "B" },
+  Essences: { label: "Essences", icon: "S" },
+  Sauvegarde: { label: "Sauvegarde", icon: "V" },
+  Parametres: { label: "Parametres", icon: "P" }
+};
+
 function GameShell() {
-  const [activeTab, setActiveTab] = useState<Tab>("Combat");
+  const [activeWindow, setActiveWindow] = useState<Tab | null>(null);
   const { state } = useGame();
   const stats = calculateStats(state.player, state.equipment, state.essenceUpgrades);
   const power = calculatePower(stats, state.player.level);
@@ -48,65 +57,62 @@ function GameShell() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1440px] px-4 pt-4">
-        <nav className="idle-card flex gap-2 overflow-x-auto rounded-lg p-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`shrink-0 rounded-md border px-4 py-2 text-sm font-semibold ${
-                activeTab === tab
-                  ? "border-arcane/60 bg-arcane/15 text-arcane shadow-glow"
-                  : "border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900/70 hover:text-slate-100"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      <div className="mx-auto grid max-w-[1440px] gap-4 px-4 py-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="idle-card h-fit overflow-hidden rounded-lg">
-          <div className="window-title px-4 py-3 text-sm font-semibold uppercase tracking-wide">Aventurier</div>
-          <div className="p-4">
-            <div className="scene-backdrop relative grid h-36 place-items-center overflow-hidden rounded-md border border-slate-700/70">
-              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950/80 to-transparent" />
-              <div className="relative h-20 w-16 rounded-t-full border border-arcane/60 bg-slate-900/80 shadow-glow">
-                <div className="absolute left-1/2 top-3 h-7 w-7 -translate-x-1/2 rounded-full border border-arcane/70 bg-slate-950" />
-                <div className="absolute left-1/2 top-11 h-12 w-20 -translate-x-1/2 rounded-t-3xl border border-slate-600 bg-slate-800" />
-                <div className="absolute -right-8 top-2 h-24 w-2 rotate-45 rounded-full bg-gradient-to-b from-aether to-slate-200" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="text-base font-bold">{state.player.name}</div>
-              <div className="text-sm text-slate-400">Niveau {state.player.level} · Aventurier solo</div>
-              <div className="mt-3 grid gap-2 text-sm">
-                <div className="rounded-md border border-slate-800 bg-slate-950/50 px-3 py-2 text-arcane">{state.player.experience} XP</div>
-                <div className="rounded-md border border-slate-800 bg-slate-950/50 px-3 py-2 text-amber-200">{state.player.gold} or</div>
-                <div className="rounded-md border border-slate-800 bg-slate-950/50 px-3 py-2 text-sky-200">{state.player.essences} essences</div>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-              <div className="rounded-md border border-slate-800 bg-slate-950/50 p-2">ATQ {stats.attack}</div>
-              <div className="rounded-md border border-slate-800 bg-slate-950/50 p-2">DEF {stats.defense}</div>
-              <div className="rounded-md border border-slate-800 bg-slate-950/50 p-2">PV {stats.maxHp}</div>
-              <div className="rounded-md border border-slate-800 bg-slate-950/50 p-2">Niv. {state.player.level}</div>
-            </div>
-          </div>
+      <div className="mx-auto grid max-w-[1440px] gap-4 px-4 py-4 lg:grid-cols-[72px_minmax(0,1fr)]">
+        <aside className="idle-card sticky top-20 z-10 h-fit overflow-hidden rounded-lg p-2">
+          <nav className="grid gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                title={windowConfig[tab].label}
+                aria-label={windowConfig[tab].label}
+                onClick={() => setActiveWindow(tab)}
+                className={`grid h-12 w-12 place-items-center rounded-md border text-sm font-black ${
+                  activeWindow === tab
+                    ? "border-arcane/70 bg-arcane/20 text-arcane shadow-glow"
+                    : "border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-600 hover:text-slate-100"
+                }`}
+              >
+                {windowConfig[tab].icon}
+              </button>
+            ))}
+          </nav>
         </aside>
 
         <section>
-        {activeTab === "Combat" && <CombatView />}
-        {activeTab === "Zones" && <ZonesView />}
-        {activeTab === "Equipement" && <EquipmentView />}
-        {activeTab === "Inventaire" && <InventoryView />}
-        {activeTab === "Boutique" && <ShopView />}
-        {activeTab === "Essences" && <EssencesView />}
-        {activeTab === "Sauvegarde" && <SaveView />}
-        {activeTab === "Parametres" && <SettingsView />}
+          <CombatView />
         </section>
       </div>
+
+      {activeWindow ? (
+        <div className="fixed inset-0 z-30 bg-slate-950/72 p-4 backdrop-blur-sm" onMouseDown={() => setActiveWindow(null)}>
+          <div
+            className="mx-auto mt-12 max-h-[82vh] max-w-6xl overflow-auto rounded-lg border border-slate-700 bg-slate-950 shadow-2xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-950/95 px-4 py-3 backdrop-blur">
+              <div>
+                <div className="text-sm font-semibold uppercase tracking-wide text-slate-100">{windowConfig[activeWindow].label}</div>
+                <div className="text-xs text-slate-500">Fenetre superposee</div>
+              </div>
+              <button
+                className="rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:border-arcane/60 hover:text-slate-100"
+                onClick={() => setActiveWindow(null)}
+              >
+                Fermer
+              </button>
+            </div>
+            <div className="p-4">
+              {activeWindow === "Zones" && <ZonesView />}
+              {activeWindow === "Equipement" && <EquipmentView />}
+              {activeWindow === "Inventaire" && <InventoryView />}
+              {activeWindow === "Boutique" && <ShopView />}
+              {activeWindow === "Essences" && <EssencesView />}
+              {activeWindow === "Sauvegarde" && <SaveView />}
+              {activeWindow === "Parametres" && <SettingsView />}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
