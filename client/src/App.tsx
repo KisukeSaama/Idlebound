@@ -57,19 +57,19 @@ function GameShell() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1440px] gap-4 px-4 py-4 lg:grid-cols-[72px_minmax(0,1fr)]">
-        <aside className="idle-card sticky top-20 z-10 h-fit overflow-hidden rounded-lg p-2">
-          <nav className="grid gap-2">
+      <div className="game-layout">
+        <aside className="icon-sidebar idle-card">
+          <nav className="icon-sidebar-nav">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 title={windowConfig[tab].label}
                 aria-label={windowConfig[tab].label}
                 onClick={() => setActiveWindow(tab)}
-                className={`grid h-12 w-12 place-items-center rounded-md border text-sm font-black ${
+                className={`icon-button ${
                   activeWindow === tab
-                    ? "border-arcane/70 bg-arcane/20 text-arcane shadow-glow"
-                    : "border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-600 hover:text-slate-100"
+                    ? "icon-button-active"
+                    : "icon-button-idle"
                 }`}
               >
                 {windowConfig[tab].icon}
@@ -78,7 +78,7 @@ function GameShell() {
           </nav>
         </aside>
 
-        <section>
+        <section className="combat-main">
           <CombatView />
         </section>
       </div>
