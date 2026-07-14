@@ -85,12 +85,12 @@ function GameShell() {
       </div>
 
       {activeWindow ? (
-        <div className="fixed inset-0 z-30 overflow-hidden bg-slate-950/72 p-4 backdrop-blur-sm" onMouseDown={() => setActiveWindow(null)}>
+        <div className="window-backdrop" onMouseDown={() => setActiveWindow(null)}>
           <div
-            className="mx-auto mt-6 flex max-h-[calc(100vh-3rem)] max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-700 bg-slate-950 shadow-2xl"
+            className="overlay-window"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-950/95 px-4 py-3 backdrop-blur">
+            <div className="overlay-titlebar">
               <div>
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-100">{windowConfig[activeWindow].label}</div>
                 <div className="text-xs text-slate-500">Fenetre superposee</div>
@@ -103,7 +103,7 @@ function GameShell() {
                 Fermer
               </button>
             </div>
-            <div className="min-h-0 overflow-auto p-4">
+            <div className="overlay-content">
               {activeWindow === "Zones" && <ZonesView />}
               {activeWindow === "Equipement" && <EquipmentView />}
               {activeWindow === "Inventaire" && <InventoryView />}

@@ -11,6 +11,7 @@ export function CombatView() {
   const power = calculatePower(stats, state.player.level);
   const zone = getSelectedZone(state);
   const kills = state.zoneProgress.killsByZone[zone.id] ?? 0;
+  const shownKills = Math.min(kills, zone.enemiesToBoss);
   const bossReady = state.zoneProgress.bossReady[zone.id];
   const enemy = state.combat.enemy;
   const clicker = normalizeClicker(state.clicker);
@@ -50,15 +51,15 @@ export function CombatView() {
               <span className="text-slate-500">Zone active</span> <span className="font-semibold text-slate-100">{zone.name}</span>
             </div>
             <div className="combat-zone-progress">
-              {kills}/{zone.enemiesToBoss} avant boss
+              {shownKills}/{zone.enemiesToBoss} avant boss
             </div>
           </div>
           <div className="combat-scene scene-backdrop relative overflow-hidden rounded-lg border border-slate-700/70">
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/90 to-transparent" />
-            <div className="absolute left-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Niveau {state.player.level}</div>
-            <div className="absolute right-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Boss {bossReady ? "disponible" : "verrouille"}</div>
+            <div className="scene-badge scene-badge-left">Niveau {state.player.level}</div>
+            <div className="scene-badge scene-badge-right">Boss {bossReady ? "disponible" : "verrouille"}</div>
             {lastRewards ? (
-              <div className="absolute bottom-5 right-5 z-20 w-64 rounded-lg border border-amber-400/40 bg-slate-950/88 p-3 shadow-ember backdrop-blur">
+              <div className="reward-toast">
                 <div className="text-xs font-semibold uppercase tracking-wide text-amber-200">Recompenses</div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-200">
                   <span className="rounded-full bg-slate-900 px-2 py-1">+{lastRewards.experience} XP</span>
@@ -76,20 +77,20 @@ export function CombatView() {
                 ) : null}
               </div>
             ) : null}
-            <div className="absolute inset-x-0 top-16 z-10 mx-auto max-w-2xl px-6">
+            <div className="enemy-health-panel">
               <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-100">
                 <span>{enemy?.name ?? "Recherche d'un ennemi..."}</span>
                 <span>{Math.max(0, Math.ceil(enemy?.currentHp ?? 0))} / {enemy?.maxHp ?? 0} PV</span>
               </div>
-              <div className="h-6 overflow-hidden rounded-full border border-red-300/30 bg-slate-950/80 shadow-inner">
+              <div className="enemy-health-bar">
                 <div
-                  className="h-full bg-gradient-to-r from-red-700 via-red-500 to-amber-300 transition-all"
+                  className="enemy-health-fill"
                   style={{ width: `${enemyHpPercent}%` }}
                 />
               </div>
             </div>
             <button
-              className="absolute inset-x-0 bottom-3 mx-auto flex max-w-xl cursor-pointer flex-col items-center rounded-xl border border-transparent p-4 transition hover:border-arcane/30 hover:bg-slate-950/20 focus:outline-none focus:ring-2 focus:ring-arcane"
+              className="enemy-click-target"
               onClick={() => dispatch({ type: "manualAttack" })}
               aria-label="Frapper l'ennemi"
             >
@@ -100,11 +101,11 @@ export function CombatView() {
               </div>
             </button>
           </div>
-          <div className="mt-2 grid gap-2 text-sm text-slate-300 sm:grid-cols-4">
-            <div className="rounded-md bg-slate-900 px-2 py-1">Clic {manualDamage}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">Auto {autoDamage > 0 ? autoDamage : "inactif"}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">Rythme {Number.isFinite(autoInterval) ? `${autoInterval.toFixed(2)}s` : "-"}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">Crit {Math.round(clicker.critLevel * 2.5)}%</div>
+          <div className="combat-metrics">
+            <div>Clic {manualDamage}</div>
+            <div>Auto {autoDamage > 0 ? autoDamage : "inactif"}</div>
+            <div>Rythme {Number.isFinite(autoInterval) ? `${autoInterval.toFixed(2)}s` : "-"}</div>
+            <div>Crit {Math.round(clicker.critLevel * 2.5)}%</div>
           </div>
         </div>
         <div className="combat-actions">
