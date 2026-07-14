@@ -27,7 +27,7 @@ export function EssencesView() {
                 disabled={rank >= upgrade.maxRank || state.player.essences < cost}
                 onClick={() => dispatch({ type: "buyEssenceUpgrade", upgradeId: upgrade.id })}
               >
-                Ameliorer ({cost})
+                Améliorer ({cost})
               </button>
             </div>
           );

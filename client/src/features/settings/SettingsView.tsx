@@ -11,7 +11,7 @@ export function SettingsView() {
       </label>
       <label className="mt-3 flex items-center gap-3 rounded-md border border-slate-800 bg-slate-950/50 p-3">
         <input type="checkbox" checked={state.settings.reducedMotion} onChange={() => dispatch({ type: "toggleSetting", key: "reducedMotion" })} />
-        Reduire les animations
+        Réduire les animations
       </label>
     </Panel>
   );

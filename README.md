@@ -98,6 +98,18 @@ npm run build
 
 Le build front est généré dans `dist/client`.
 
+Build avec base GitHub Pages :
+
+```bash
+GITHUB_PAGES=true npm run build
+```
+
+Le workflow `.github/workflows/deploy-pages.yml` publie `dist/client` sur GitHub Pages après les tests. Une fois GitHub Pages activé en mode GitHub Actions dans les paramètres du dépôt, l'application sera accessible sur :
+
+```text
+https://kisukesaama.github.io/Idlebound/
+```
+
 ## Structure
 
 ```text

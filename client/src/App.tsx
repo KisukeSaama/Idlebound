@@ -25,31 +25,31 @@ type Tab = (typeof tabs)[number];
 const windowConfig: Record<Tab, { label: string; sidebarIcon: string }> = {
   Zones: {
     label: "Zones",
-    sidebarIcon: "/assets/icons/sidebar-zones-map-transparent.png"
+    sidebarIcon: "assets/icons/sidebar-zones-map-transparent.png"
   },
   Équipement: {
     label: "Équipement",
-    sidebarIcon: "/assets/icons/sidebar-equipment-helmet-transparent.png"
+    sidebarIcon: "assets/icons/sidebar-equipment-helmet-transparent.png"
   },
   Inventaire: {
     label: "Inventaire",
-    sidebarIcon: "/assets/icons/sidebar-inventory-backpack-transparent.png"
+    sidebarIcon: "assets/icons/sidebar-inventory-backpack-transparent.png"
   },
   Boutique: {
     label: "Boutique",
-    sidebarIcon: "/assets/icons/sidebar-shop-stall-transparent.png"
+    sidebarIcon: "assets/icons/sidebar-shop-stall-transparent.png"
   },
   Essences: {
     label: "Essences",
-    sidebarIcon: "/assets/icons/sidebar-essences-crystals-transparent.png"
+    sidebarIcon: "assets/icons/sidebar-essences-crystals-transparent.png"
   },
   Sauvegarde: {
     label: "Sauvegarde",
-    sidebarIcon: "/assets/icons/sidebar-save-disk-transparent.png"
+    sidebarIcon: "assets/icons/sidebar-save-disk-transparent.png"
   },
   Paramètres: {
     label: "Paramètres",
-    sidebarIcon: "/assets/icons/sidebar-settings-gear-transparent.png"
+    sidebarIcon: "assets/icons/sidebar-settings-gear-transparent.png"
   }
 };
 
@@ -66,7 +66,7 @@ function GameShell() {
           <div className="flex items-center">
             <img
               className="brand-logo"
-              src="/assets/brand/idlebound-logo.png"
+              src="assets/brand/idlebound-logo.png"
               alt="Idlebound"
             />
           </div>

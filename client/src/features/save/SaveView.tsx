@@ -49,7 +49,7 @@ export function SaveView() {
           Importer
         </button>
         <button className="rounded-md border border-red-800 px-4 py-2 text-red-200" onClick={() => { resetSave(); dispatch({ type: "reset" }); setMessage("Partie réinitialisée."); }}>
-          Reinitialiser
+          Réinitialiser
         </button>
       </div>
       <input ref={inputRef} className="hidden" type="file" accept="application/json,.json,.txt" onChange={(event) => importFile(event.target.files?.[0])} />

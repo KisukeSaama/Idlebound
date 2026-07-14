@@ -19,7 +19,7 @@ export function InventoryView() {
             >
               <div className="mt-4 flex gap-2">
                 <button className="rounded-md bg-arcane px-3 py-2 text-sm font-semibold text-slate-950 shadow-glow" onClick={() => dispatch({ type: "equipItem", instanceId: item.instanceId! })}>
-                  Equiper
+                  Équiper
                 </button>
                 <button className="rounded-md border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm" onClick={() => dispatch({ type: "sellItem", instanceId: item.instanceId! })}>
                   Vendre {sellValue(item)}
