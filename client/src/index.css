@@ -126,11 +126,30 @@ button:not(:disabled):active {
   font-weight: 900;
 }
 
+.icon-button img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 9px rgba(0, 0, 0, 0.55));
+  transition:
+    transform 140ms ease,
+    filter 140ms ease,
+    opacity 140ms ease;
+}
+
 .icon-button-active {
   border-color: rgba(56, 189, 248, 0.7);
   background: rgba(56, 189, 248, 0.2);
   color: #38bdf8;
   box-shadow: 0 0 28px rgba(56, 189, 248, 0.22);
+}
+
+.icon-button-active img {
+  transform: scale(1.08);
+  filter:
+    drop-shadow(0 0 10px rgba(56, 189, 248, 0.36))
+    drop-shadow(0 5px 10px rgba(0, 0, 0, 0.55));
 }
 
 .icon-button-idle {
@@ -142,6 +161,11 @@ button:not(:disabled):active {
 .icon-button-idle:hover {
   border-color: #475569;
   color: #f8fafc;
+}
+
+.icon-button-idle:hover img {
+  transform: scale(1.04);
+  opacity: 0.95;
 }
 
 .combat-main {

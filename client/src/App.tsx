@@ -22,14 +22,29 @@ const tabs = [
 
 type Tab = (typeof tabs)[number];
 
-const windowConfig: Record<Tab, { label: string; icon: string }> = {
-  Zones: { label: "Zones", icon: "Z" },
-  Equipement: { label: "Equipement", icon: "E" },
-  Inventaire: { label: "Inventaire", icon: "I" },
-  Boutique: { label: "Boutique", icon: "B" },
-  Essences: { label: "Essences", icon: "S" },
-  Sauvegarde: { label: "Sauvegarde", icon: "V" },
-  Parametres: { label: "Parametres", icon: "P" }
+const windowConfig: Record<Tab, { label: string; sidebarIcon: string }> = {
+  Zones: { label: "Zones", sidebarIcon: "/assets/icons/sidebar-zones-map.png" },
+  Equipement: {
+    label: "Equipement",
+    sidebarIcon: "/assets/icons/sidebar-equipment-helmet.png"
+  },
+  Inventaire: {
+    label: "Inventaire",
+    sidebarIcon: "/assets/icons/sidebar-inventory-backpack.png"
+  },
+  Boutique: { label: "Boutique", sidebarIcon: "/assets/icons/sidebar-shop-stall.png" },
+  Essences: {
+    label: "Essences",
+    sidebarIcon: "/assets/icons/sidebar-essences-crystals.png"
+  },
+  Sauvegarde: {
+    label: "Sauvegarde",
+    sidebarIcon: "/assets/icons/sidebar-save-disk.png"
+  },
+  Parametres: {
+    label: "Parametres",
+    sidebarIcon: "/assets/icons/sidebar-settings-gear.png"
+  }
 };
 
 function GameShell() {
@@ -73,7 +88,7 @@ function GameShell() {
                     : "icon-button-idle"
                 }`}
               >
-                {windowConfig[tab].icon}
+                <img src={windowConfig[tab].sidebarIcon} alt="" aria-hidden="true" />
               </button>
             ))}
           </nav>
