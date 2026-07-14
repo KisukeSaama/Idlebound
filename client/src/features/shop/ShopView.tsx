@@ -9,13 +9,13 @@ export function ShopView() {
   return (
     <Panel
       title="Boutique"
-      action={<button className="border border-white/25 bg-[#202020] px-3 py-1 text-xs font-black uppercase hover:border-white" onClick={() => dispatch({ type: "refreshShop" })}>Renouveler</button>}
+      action={<button className="rounded-md border border-slate-700 bg-slate-950/50 px-3 py-2 text-sm hover:border-arcane/60" onClick={() => dispatch({ type: "refreshShop" })}>Renouveler</button>}
     >
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {offers.map((item) => (
-          <ItemCard key={item!.id} item={item!} meta={<span className="text-xs font-black text-amber-200">{item!.price} or</span>}>
+          <ItemCard key={item!.id} item={item!} meta={<span className="text-sm font-semibold text-amber-200">{item!.price} or</span>}>
             <button
-              className="mt-4 w-full border border-white bg-white px-3 py-2 text-xs font-black uppercase text-black disabled:opacity-40"
+              className="mt-4 w-full rounded-md bg-ember px-3 py-2 font-semibold text-slate-950 shadow-ember disabled:opacity-40"
               disabled={state.player.gold < item!.price}
               onClick={() => dispatch({ type: "buyShopItem", itemId: item!.id })}
             >

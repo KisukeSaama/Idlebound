@@ -18,9 +18,9 @@ export function ProgressBar({
         : "from-aether to-arcane";
   return (
     <div>
-      {label ? <div className="mb-1 flex justify-between text-[0.68rem] font-black uppercase text-black/80">{label}</div> : null}
-      <div className="h-4 overflow-hidden border border-black bg-white">
-        <div className={`h-full bg-gradient-to-r ${color} transition-all`} style={{ width: `${percent}%` }} />
+      {label ? <div className="mb-1 flex justify-between text-xs text-slate-300">{label}</div> : null}
+      <div className="h-3 overflow-hidden rounded-full border border-slate-700/70 bg-slate-950/80">
+        <div className={`h-full bg-gradient-to-r ${color} shadow-glow transition-all`} style={{ width: `${percent}%` }} />
       </div>
     </div>
   );

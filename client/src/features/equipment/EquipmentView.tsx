@@ -11,10 +11,10 @@ export function EquipmentView() {
   return (
     <Panel title="Equipement">
       <div className="mb-4 grid gap-3 sm:grid-cols-4">
-        <div className="border border-white/20 bg-[#242424] px-3 py-2 text-xs font-black uppercase">ATQ {stats.attack}</div>
-        <div className="border border-white/20 bg-[#242424] px-3 py-2 text-xs font-black uppercase">DEF {stats.defense}</div>
-        <div className="border border-white/20 bg-[#242424] px-3 py-2 text-xs font-black uppercase">PV {stats.maxHp}</div>
-        <div className="border border-white/20 bg-[#242424] px-3 py-2 text-xs font-black uppercase">VIT {stats.attackSpeed.toFixed(1)}s</div>
+        <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2">ATQ {stats.attack}</div>
+        <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2">DEF {stats.defense}</div>
+        <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2">PV {stats.maxHp}</div>
+        <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2">VIT {stats.attackSpeed.toFixed(1)}s</div>
       </div>
       <div className="grid gap-3 md:grid-cols-3">
         {slots.map((slot) => {
@@ -22,11 +22,11 @@ export function EquipmentView() {
           const cost = item ? upgradeCost(item) : 0;
           return (
             <div key={slot}>
-              <div className="mb-2 text-xs font-black uppercase text-white/45">{slot}</div>
+              <div className="mb-2 text-xs uppercase text-slate-400">{slot}</div>
               {item ? (
                 <ItemCard item={item} meta={<span className="text-sm text-arcane">+{item.upgradeLevel}</span>}>
                   <button
-                    className="mt-4 w-full border border-white bg-white px-3 py-2 text-xs font-black uppercase text-black disabled:opacity-40"
+                    className="mt-4 w-full rounded-md bg-arcane px-3 py-2 font-semibold text-slate-950 shadow-glow disabled:opacity-40"
                     disabled={state.player.gold < cost || !Number.isFinite(cost)}
                     onClick={() => dispatch({ type: "upgradeEquipped", slot })}
                   >
@@ -34,7 +34,7 @@ export function EquipmentView() {
                   </button>
                 </ItemCard>
               ) : (
-                <p className="border border-white/20 bg-[#202020] p-4 text-xs font-black uppercase text-white/45">Aucun objet equipe.</p>
+                <p className="rounded-lg border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-400">Aucun objet equipe.</p>
               )}
             </div>
           );
