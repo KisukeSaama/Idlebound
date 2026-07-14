@@ -6,11 +6,14 @@ import { createItemInstance, sellValue, upgradeCost, upgradeItem } from "../../.
 import { findItemTemplate, getShopOffers } from "../../../shared/game/shop";
 import type { GameState, OfflineSummary } from "../../../shared/types/game";
 import { createInitialState } from "./initialState";
-import { tickCombat } from "./gameEngine";
+import { manualAttack, tickCombat } from "./gameEngine";
 import { applyExperience } from "../../../shared/game/progression";
+import { clickerUpgradeCost, normalizeClicker, type ClickerUpgrade } from "../../../shared/game/clicker";
 
 export type GameAction =
   | { type: "tick"; deltaSeconds?: number }
+  | { type: "manualAttack" }
+  | { type: "buyClickerUpgrade"; upgrade: ClickerUpgrade }
   | { type: "selectZone"; zoneId: string }
   | { type: "fightBoss" }
   | { type: "equipItem"; instanceId: string }
@@ -40,6 +43,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       if (!state.settings.autoContinue && state.combat.status !== "fighting") return state;
       return tickCombat(state, action.deltaSeconds);
+    }
+    case "manualAttack":
+      return manualAttack(state);
+    case "buyClickerUpgrade": {
+      const clicker = normalizeClicker(state.clicker);
+      const currentLevel = clicker[action.upgrade];
+      const cost = clickerUpgradeCost(action.upgrade, currentLevel);
+      if (state.player.gold < cost) return state;
+      return {
+        ...state,
+        player: { ...state.player, gold: state.player.gold - cost },
+        clicker: { ...clicker, [action.upgrade]: currentLevel + 1 }
+      };
     }
     case "selectZone": {
       if (!state.zoneProgress.unlockedZoneIds.includes(action.zoneId)) return state;

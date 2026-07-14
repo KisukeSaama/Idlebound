@@ -130,6 +130,13 @@ export interface CombatState {
   floatingTexts: FloatingText[];
 }
 
+export interface ClickerState {
+  manualPowerLevel: number;
+  autoDamageLevel: number;
+  autoSpeedLevel: number;
+  critLevel: number;
+}
+
 export interface CombatLogEntry {
   id: string;
   message: string;
@@ -160,6 +167,7 @@ export interface OfflineSummary {
 
 export interface GameState {
   player: Player;
+  clicker: ClickerState;
   inventory: EquipmentItem[];
   equipment: EquipmentState;
   essenceUpgrades: EssenceUpgradeState;

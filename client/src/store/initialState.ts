@@ -20,6 +20,12 @@ export function createInitialState(now = new Date()): GameState {
       gold: 25,
       essences: 0
     },
+    clicker: {
+      manualPowerLevel: 1,
+      autoDamageLevel: 0,
+      autoSpeedLevel: 0,
+      critLevel: 0
+    },
     inventory: [],
     equipment: {
       weapon: starterWeapon,

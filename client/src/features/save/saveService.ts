@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SAVE_VERSION } from "../../../../shared/constants/balance";
 import type { GameState } from "../../../../shared/types/game";
+import { normalizeClicker } from "../../../../shared/game/clicker";
 
 const STORAGE_KEY = "idlebound.save.v1";
 const BACKUP_KEY = "idlebound.save.backup.v1";
@@ -42,6 +43,12 @@ const saveSchema = z.object({
       gold: z.number().int().nonnegative(),
       essences: z.number().int().nonnegative()
     }),
+    clicker: z.object({
+      manualPowerLevel: z.number().int().nonnegative(),
+      autoDamageLevel: z.number().int().nonnegative(),
+      autoSpeedLevel: z.number().int().nonnegative(),
+      critLevel: z.number().int().nonnegative()
+    }).optional(),
     inventory: z.array(itemSchema).max(80),
     equipment: z.object({
       weapon: itemSchema.optional(),
@@ -103,7 +110,10 @@ export function loadGameState(): GameState | undefined {
   if (!raw) return undefined;
   try {
     const parsed = saveSchema.parse(JSON.parse(raw));
-    return parsed.state as GameState;
+    return {
+      ...parsed.state,
+      clicker: normalizeClicker(parsed.state.clicker)
+    } as GameState;
   } catch {
     return undefined;
   }
@@ -121,7 +131,10 @@ export function importSave(raw: string): GameState {
   const current = localStorage.getItem(STORAGE_KEY);
   if (current) localStorage.setItem(BACKUP_KEY, current);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed.data));
-  return parsed.data.state as GameState;
+  return {
+    ...parsed.data.state,
+    clicker: normalizeClicker(parsed.data.state.clicker)
+  } as GameState;
 }
 
 export function resetSave(): void {

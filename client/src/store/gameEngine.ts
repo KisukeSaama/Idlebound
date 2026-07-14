@@ -5,6 +5,7 @@ import type { CombatLogEntry, CombatantState, Enemy, GameState, RewardBundle } f
 import { calculateDamage, calculateStats } from "../../../shared/game/formulas";
 import { applyExperience } from "../../../shared/game/progression";
 import { generateRewards } from "../../../shared/game/rewards";
+import { autoAttackDamage, autoAttackInterval, critChance, manualClickDamage } from "../../../shared/game/clicker";
 
 function id(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -54,6 +55,14 @@ export function ensureCombat(state: GameState): GameState {
       floatingTexts: [],
       log: [log(`${enemy.name} approche.`, enemy.isBoss ? "bad" : "neutral"), ...state.combat.log].slice(0, 24)
     }
+  };
+}
+
+function rollOutgoingDamage(baseDamage: number, state: GameState, random = Math.random): { damage: number; critical: boolean } {
+  const critical = random() < critChance(state.clicker);
+  return {
+    damage: critical ? Math.floor(baseDamage * 2) : baseDamage,
+    critical
   };
 }
 
@@ -116,75 +125,75 @@ function applyRewards(state: GameState, rewards: RewardBundle, enemy: Enemy): Ga
 export function tickCombat(inputState: GameState, deltaSeconds = COMBAT_TICK_MS / 1000): GameState {
   let state = ensureCombat(inputState);
   if (!state.combat.enemy) return state;
-  const enemyDefinition = ENEMIES.find((enemy) => enemy.id === state.combat.enemy?.id)!;
   const stats = calculateStats(state.player, state.equipment, state.essenceUpgrades);
-  let playerHp = Math.min(state.player.currentHp, stats.maxHp);
-  let enemyHp = state.combat.enemy.currentHp;
+  const interval = autoAttackInterval(state.clicker);
   let playerAttackTimer = state.combat.playerAttackTimer + deltaSeconds;
-  let enemyAttackTimer = state.combat.enemyAttackTimer + deltaSeconds;
   const messages: CombatLogEntry[] = [];
 
-  if (playerAttackTimer >= stats.attackSpeed) {
+  if (Number.isFinite(interval) && playerAttackTimer >= interval) {
     playerAttackTimer = 0;
-    const damage = calculateDamage(stats.attack, state.combat.enemy.defense);
-    enemyHp -= damage;
-    messages.push(log(`Vous infligez ${damage} degats.`, "good"));
+    const damage = calculateDamage(autoAttackDamage(stats, state.clicker), state.combat.enemy.defense * 0.25);
+    messages.push(log(`Auto-attaque : ${damage} degats.`, "good"));
+    return damageEnemy(state, damage, messages);
   }
 
+  return {
+    ...state,
+    combat: {
+      ...state.combat,
+      status: "fighting",
+      playerAttackTimer,
+      log: [...messages, ...state.combat.log].slice(0, 24)
+    }
+  };
+}
+
+export function damageEnemy(state: GameState, damage: number, messages: CombatLogEntry[] = []): GameState {
+  const fightingState = ensureCombat(state);
+  if (!fightingState.combat.enemy) return fightingState;
+  const enemyDefinition = ENEMIES.find((enemy) => enemy.id === fightingState.combat.enemy?.id)!;
+  const enemyHp = fightingState.combat.enemy.currentHp - damage;
+  const floatingTexts = [{
+    id: id("float"),
+    target: "enemy" as const,
+    label: `${damage}`,
+    tone: "damage" as const
+  }];
+
   if (enemyHp <= 0) {
-    const rewards = generateRewards(enemyDefinition, state.essenceUpgrades);
+    const rewards = generateRewards(enemyDefinition, fightingState.essenceUpgrades);
     return applyRewards(
       {
-        ...state,
-        player: { ...state.player, currentHp: playerHp },
-        combat: { ...state.combat, enemy: { ...state.combat.enemy, currentHp: 0 } }
+        ...fightingState,
+        combat: {
+          ...fightingState.combat,
+          enemy: { ...fightingState.combat.enemy, currentHp: 0 },
+          floatingTexts
+        }
       },
       rewards,
       enemyDefinition
     );
   }
 
-  if (enemyAttackTimer >= state.combat.enemy.attackSpeed) {
-    enemyAttackTimer = 0;
-    const damage = calculateDamage(state.combat.enemy.attack, stats.defense);
-    playerHp -= damage;
-    messages.push(log(`${state.combat.enemy.name} inflige ${damage} degats.`, "bad"));
-  }
-
-  if (playerHp <= 0) {
-    return {
-      ...state,
-      player: { ...state.player, currentHp: 0 },
-      zoneProgress: { ...state.zoneProgress, fightingBoss: false },
-      combat: {
-        ...state.combat,
-        status: "recovering",
-        enemy: undefined,
-        playerAttackTimer: -RECOVERY_SECONDS,
-        enemyAttackTimer: 0,
-        floatingTexts: [],
-        log: [log("Defaite. Recuperation en cours.", "bad"), ...messages, ...state.combat.log].slice(0, 24)
-      },
-      notifications: ["Defaite. Retournez farmer une zone plus sure si necessaire.", ...state.notifications].slice(0, 8)
-    };
-  }
-
   return {
-    ...state,
-    player: { ...state.player, currentHp: playerHp },
+    ...fightingState,
     combat: {
-      ...state.combat,
-      enemy: { ...state.combat.enemy, currentHp: enemyHp },
+      ...fightingState.combat,
+      enemy: { ...fightingState.combat.enemy, currentHp: enemyHp },
       status: "fighting",
-      playerAttackTimer,
-      enemyAttackTimer,
-      floatingTexts: messages.map((entry) => ({
-        id: id("float"),
-        target: entry.tone === "bad" ? "player" : "enemy",
-        label: entry.message.match(/\d+/)?.[0] ?? "",
-        tone: "damage"
-      })),
-      log: [...messages, ...state.combat.log].slice(0, 24)
+      floatingTexts,
+      log: [...messages, ...fightingState.combat.log].slice(0, 24)
     }
   };
+}
+
+export function manualAttack(state: GameState): GameState {
+  const fightingState = ensureCombat(state);
+  if (!fightingState.combat.enemy) return fightingState;
+  const stats = calculateStats(fightingState.player, fightingState.equipment, fightingState.essenceUpgrades);
+  const rolled = rollOutgoingDamage(manualClickDamage(stats, fightingState.clicker), fightingState);
+  return damageEnemy(fightingState, rolled.damage, [
+    log(`${rolled.critical ? "Coup critique ! " : ""}Clic : ${rolled.damage} degats.`, "good")
+  ]);
 }

@@ -5,6 +5,7 @@ import { Panel } from "../../components/Panel";
 import { ProgressBar } from "../../components/ProgressBar";
 import { StatPill } from "../../components/StatPill";
 import { CombatPortrait } from "./CombatPortrait";
+import { autoAttackDamage, autoAttackInterval, clickerUpgradeCost, manualClickDamage, normalizeClicker } from "../../../../shared/game/clicker";
 
 export function CombatView() {
   const { state, dispatch } = useGame();
@@ -14,6 +15,17 @@ export function CombatView() {
   const kills = state.zoneProgress.killsByZone[zone.id] ?? 0;
   const bossReady = state.zoneProgress.bossReady[zone.id];
   const enemy = state.combat.enemy;
+  const clicker = normalizeClicker(state.clicker);
+  const enemyHpPercent = enemy ? Math.max(0, Math.min(100, (enemy.currentHp / enemy.maxHp) * 100)) : 0;
+  const manualDamage = manualClickDamage(stats, clicker);
+  const autoDamage = autoAttackDamage(stats, clicker);
+  const autoInterval = autoAttackInterval(clicker);
+  const upgrades = [
+    { key: "manualPowerLevel" as const, label: "Force du clic", value: `+ degats clic`, level: clicker.manualPowerLevel },
+    { key: "autoDamageLevel" as const, label: "Lame spectrale", value: autoDamage > 0 ? `${autoDamage} degats auto` : "debloque auto", level: clicker.autoDamageLevel },
+    { key: "autoSpeedLevel" as const, label: "Rythme spectral", value: Number.isFinite(autoInterval) ? `1 frappe / ${autoInterval.toFixed(2)}s` : "requiert auto", level: clicker.autoSpeedLevel },
+    { key: "critLevel" as const, label: "Frappe critique", value: "+ chance critique", level: clicker.critLevel }
+  ];
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
@@ -44,36 +56,35 @@ export function CombatView() {
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/90 to-transparent" />
             <div className="absolute left-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Niveau {state.player.level}</div>
             <div className="absolute right-6 top-4 z-10 rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold uppercase text-slate-200">Boss {bossReady ? "disponible" : "verrouille"}</div>
-            <div className="absolute inset-x-0 bottom-0 grid grid-cols-[1fr_120px_1fr] items-end gap-2 p-6">
-              <div>
-                <div className="mb-1 text-center text-sm font-semibold text-slate-100">{state.player.name}</div>
-                <CombatPortrait side="hero" name="Aventurier" />
-                <ProgressBar value={state.player.currentHp} max={stats.maxHp} tone="red" label={`${Math.ceil(state.player.currentHp)} / ${stats.maxHp} PV`} />
+            <div className="absolute inset-x-0 top-16 z-10 mx-auto max-w-2xl px-6">
+              <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-100">
+                <span>{enemy?.name ?? "Recherche d'un ennemi..."}</span>
+                <span>{Math.max(0, Math.ceil(enemy?.currentHp ?? 0))} / {enemy?.maxHp ?? 0} PV</span>
               </div>
-              <div className="mb-12 text-center">
-                <div className="mb-2 text-sm font-black text-ember">VS</div>
-                <button
-                  className="rounded-md bg-ember px-4 py-2 text-sm font-semibold text-slate-950 shadow-ember disabled:opacity-40"
-                  disabled={!bossReady}
-                  onClick={() => dispatch({ type: "fightBoss" })}
-                >
-                  Attaquer
-                </button>
-              </div>
-              <div>
-                <div className="mb-1 text-center text-sm font-semibold text-slate-100">{enemy?.name ?? "Ennemi"}</div>
-                <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} />
-                <ProgressBar value={enemy?.currentHp ?? 0} max={enemy?.maxHp ?? 1} tone="red" label={`${Math.max(0, Math.ceil(enemy?.currentHp ?? 0))} / ${enemy?.maxHp ?? 0} PV`} />
+              <div className="h-6 overflow-hidden rounded-full border border-red-300/30 bg-slate-950/80 shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-red-700 via-red-500 to-amber-300 transition-all"
+                  style={{ width: `${enemyHpPercent}%` }}
+                />
               </div>
             </div>
+            <button
+              className="absolute inset-x-0 bottom-8 mx-auto flex max-w-xl cursor-pointer flex-col items-center rounded-xl border border-transparent p-8 transition hover:border-arcane/30 hover:bg-slate-950/20 focus:outline-none focus:ring-2 focus:ring-arcane"
+              onClick={() => dispatch({ type: "manualAttack" })}
+              aria-label="Frapper l'ennemi"
+            >
+              <div className="mb-2 text-center text-sm font-semibold text-slate-200">Cliquez sur l'ennemi pour frapper</div>
+              <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} />
+              <div className="mt-4 rounded-full border border-arcane/30 bg-slate-950/80 px-4 py-2 text-sm font-semibold text-arcane">
+                Degats par clic : {manualDamage}
+              </div>
+            </button>
           </div>
-          <div className="mt-2 grid gap-2 text-sm text-slate-300 sm:grid-cols-6">
-            <div className="rounded-md bg-slate-900 px-2 py-1">ATQ {stats.attack}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">DEF {stats.defense}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">PV {stats.maxHp}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">ATQ ennemi {enemy?.attack ?? "-"}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">DEF ennemi {enemy?.defense ?? "-"}</div>
-            <div className="rounded-md bg-slate-900 px-2 py-1">Auto {state.settings.autoContinue ? "on" : "off"}</div>
+          <div className="mt-2 grid gap-2 text-sm text-slate-300 sm:grid-cols-4">
+            <div className="rounded-md bg-slate-900 px-2 py-1">Clic {manualDamage}</div>
+            <div className="rounded-md bg-slate-900 px-2 py-1">Auto {autoDamage > 0 ? autoDamage : "inactif"}</div>
+            <div className="rounded-md bg-slate-900 px-2 py-1">Rythme {Number.isFinite(autoInterval) ? `${autoInterval.toFixed(2)}s` : "-"}</div>
+            <div className="rounded-md bg-slate-900 px-2 py-1">Crit {Math.round(clicker.critLevel * 2.5)}%</div>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -93,6 +104,27 @@ export function CombatView() {
         </div>
       </Panel>
       <div className="grid gap-4">
+        <Panel title="Ameliorations d'attaque">
+          <div className="grid gap-2">
+            {upgrades.map((upgrade) => {
+              const cost = clickerUpgradeCost(upgrade.key, upgrade.level);
+              return (
+                <button
+                  key={upgrade.key}
+                  className="rounded-lg border border-slate-800 bg-slate-950/50 p-3 text-left hover:border-arcane/50 disabled:cursor-not-allowed disabled:opacity-45"
+                  disabled={state.player.gold < cost}
+                  onClick={() => dispatch({ type: "buyClickerUpgrade", upgrade: upgrade.key })}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold text-slate-100">{upgrade.label}</span>
+                    <span className="text-sm text-amber-200">{cost} or</span>
+                  </div>
+                  <div className="mt-1 text-sm text-slate-400">Niveau {upgrade.level} · {upgrade.value}</div>
+                </button>
+              );
+            })}
+          </div>
+        </Panel>
         <Panel title="Rewards">
           {state.combat.lastRewards ? (
             <div className="grid grid-cols-3 gap-2">

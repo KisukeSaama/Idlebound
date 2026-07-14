@@ -3,7 +3,7 @@ import { ENEMIES } from "../data/enemies";
 import { ITEM_CATALOG } from "../data/items";
 import { createInitialState } from "../../client/src/store/initialState";
 import { gameReducer } from "../../client/src/store/gameReducer";
-import { tickCombat } from "../../client/src/store/gameEngine";
+import { manualAttack, tickCombat } from "../../client/src/store/gameEngine";
 import { calculateDamage, calculatePower, calculateStats, experienceToNextLevel } from "./formulas";
 import { upgradeCost, upgradeItem } from "./equipment";
 import { applyExperience } from "./progression";
@@ -93,6 +93,12 @@ describe("progression hors ligne", () => {
 });
 
 describe("boucle principale", () => {
+  it("ne fait pas de degats automatiques au depart", () => {
+    let state = createInitialState();
+    state = tickCombat(state, 10);
+    expect(state.combat.enemy?.currentHp).toBe(state.combat.enemy?.maxHp);
+  });
+
   it("vainc un boss et debloque la zone suivante", () => {
     let state = createInitialState();
     state = {
@@ -110,7 +116,7 @@ describe("boucle principale", () => {
       }
     };
     for (let index = 0; index < 20; index += 1) {
-      state = tickCombat(state, 0.5);
+      state = manualAttack(state);
     }
     expect(state.zoneProgress.bossDefeated["green-plains"]).toBe(true);
     expect(state.zoneProgress.unlockedZoneIds).toContain("dark-forest");
