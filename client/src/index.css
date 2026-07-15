@@ -331,7 +331,7 @@ button:not(:disabled):active {
 .enemy-click-target {
   position: absolute;
   left: 50%;
-  bottom: 0.95rem;
+  bottom: 2.15rem;
   display: flex;
   width: min(46rem, calc(100% - 2rem));
   transform: translateX(-50%);
@@ -382,10 +382,10 @@ button:not(:disabled):active {
 
 .enemy-portrait-frame {
   --enemy-width: min(23rem, 48vw);
-  --enemy-height: min(15.5rem, 31vh);
+  --enemy-height: min(14.5rem, 29vh);
   --enemy-scale: 1;
   --enemy-x: 0rem;
-  --enemy-y: 0rem;
+  --enemy-y: -0.35rem;
   position: relative;
   display: grid;
   width: var(--enemy-width);
@@ -394,8 +394,10 @@ button:not(:disabled):active {
 }
 
 .enemy-portrait-boss {
-  --enemy-width: min(30rem, 58vw);
-  --enemy-height: min(18.5rem, 36vh);
+  --enemy-width: min(27rem, 52vw);
+  --enemy-height: min(16rem, 31vh);
+  --enemy-scale: 0.9;
+  --enemy-y: -0.65rem;
 }
 
 .enemy-portrait-field-rat {
@@ -426,16 +428,19 @@ button:not(:disabled):active {
 
 .enemy-portrait-moss-alpha,
 .enemy-portrait-stone-devourer {
-  --enemy-width: min(31rem, 60vw);
-  --enemy-height: min(17.5rem, 35vh);
+  --enemy-width: min(28rem, 54vw);
+  --enemy-height: min(15rem, 30vh);
+  --enemy-scale: 0.88;
+  --enemy-y: -1rem;
 }
 
 .enemy-portrait-old-grove,
 .enemy-portrait-rot-baron,
 .enemy-portrait-ruined-king {
-  --enemy-width: min(29rem, 56vw);
-  --enemy-height: min(20rem, 39vh);
-  --enemy-scale: 0.94;
+  --enemy-width: min(27rem, 52vw);
+  --enemy-height: min(17rem, 33vh);
+  --enemy-scale: 0.84;
+  --enemy-y: -0.8rem;
 }
 
 .enemy-portrait-image {
