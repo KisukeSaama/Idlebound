@@ -125,7 +125,7 @@ export function CombatView() {
             <div
               className="enemy-click-target"
             >
-              <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} imagePath={enemy?.imagePath} />
+              <CombatPortrait side="enemy" name={enemy?.name ?? "Ennemi"} isBoss={enemy?.isBoss} imagePath={enemy?.imagePath} enemyId={enemy?.id} />
               <div className="click-hint">
                 <span className="click-hint-label">Frapper la zone</span>
                 <span className="click-hint-value">{manualDamage} dégâts</span>

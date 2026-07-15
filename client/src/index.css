@@ -331,9 +331,9 @@ button:not(:disabled):active {
 .enemy-click-target {
   position: absolute;
   left: 50%;
-  bottom: 1.1rem;
+  bottom: 0.95rem;
   display: flex;
-  width: min(34rem, calc(100% - 2rem));
+  width: min(46rem, calc(100% - 2rem));
   transform: translateX(-50%);
   cursor: pointer;
   flex-direction: column;
@@ -381,29 +381,75 @@ button:not(:disabled):active {
 }
 
 .enemy-portrait-frame {
+  --enemy-width: min(23rem, 48vw);
+  --enemy-height: min(15.5rem, 31vh);
+  --enemy-scale: 1;
+  --enemy-x: 0rem;
+  --enemy-y: 0rem;
   position: relative;
   display: grid;
-  width: min(24rem, 56vw);
-  height: min(19rem, 42vh);
+  width: var(--enemy-width);
+  height: var(--enemy-height);
   place-items: end center;
 }
 
 .enemy-portrait-boss {
-  width: min(30rem, 64vw);
-  height: min(23rem, 48vh);
+  --enemy-width: min(30rem, 58vw);
+  --enemy-height: min(18.5rem, 36vh);
+}
+
+.enemy-portrait-field-rat {
+  --enemy-width: min(21rem, 45vw);
+  --enemy-height: min(13rem, 27vh);
+  --enemy-scale: 0.95;
+}
+
+.enemy-portrait-wild-boar,
+.enemy-portrait-shade-wolf,
+.enemy-portrait-blind-crawler {
+  --enemy-width: min(24rem, 50vw);
+  --enemy-height: min(14rem, 29vh);
+}
+
+.enemy-portrait-echo-bat {
+  --enemy-width: min(23rem, 48vw);
+  --enemy-height: min(15rem, 31vh);
+  --enemy-y: 0.35rem;
+}
+
+.enemy-portrait-briar-witch,
+.enemy-portrait-bog-remnant {
+  --enemy-width: min(22rem, 46vw);
+  --enemy-height: min(17.5rem, 36vh);
+  --enemy-scale: 0.94;
+}
+
+.enemy-portrait-moss-alpha,
+.enemy-portrait-stone-devourer {
+  --enemy-width: min(31rem, 60vw);
+  --enemy-height: min(17.5rem, 35vh);
+}
+
+.enemy-portrait-old-grove,
+.enemy-portrait-rot-baron,
+.enemy-portrait-ruined-king {
+  --enemy-width: min(29rem, 56vw);
+  --enemy-height: min(20rem, 39vh);
+  --enemy-scale: 0.94;
 }
 
 .enemy-portrait-image {
   position: relative;
   z-index: 2;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   object-position: center bottom;
   filter:
     drop-shadow(0 16px 24px rgba(0, 0, 0, 0.56))
     drop-shadow(0 0 18px rgba(168, 85, 247, 0.16));
-  transform: scaleX(-1);
+  transform: translate(var(--enemy-x), var(--enemy-y)) scale(var(--enemy-scale)) scaleX(-1);
+  transform-origin: center bottom;
   user-select: none;
 }
 
