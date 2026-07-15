@@ -14,7 +14,7 @@ export function CombatPortrait({
   const hero = side === "hero";
 
   return (
-    <div className="relative flex h-full min-h-56 items-end justify-center overflow-hidden bg-transparent">
+    <div className="enemy-portrait-stage">
       <div className={`enemy-portrait-frame ${isBoss ? "enemy-portrait-boss" : ""} ${enemyId ? `enemy-portrait-${enemyId}` : ""}`} aria-label={name}>
         <div className={`absolute h-full w-full rounded-full blur-2xl ${hero ? "bg-arcane/25" : "bg-ember/25"}`} />
         {imagePath ? (

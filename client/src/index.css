@@ -330,7 +330,7 @@ button:not(:disabled):active {
 
 .enemy-click-target {
   position: absolute;
-  inset: 7.15rem 1rem 4.15rem;
+  inset: 6.7rem 1rem 4.3rem;
   display: flex;
   justify-content: center;
   width: auto;
@@ -384,8 +384,8 @@ button:not(:disabled):active {
 }
 
 .enemy-portrait-frame {
-  --enemy-width: min(24rem, 48vw);
-  --enemy-height: min(17rem, 34vh);
+  --enemy-width: min(18rem, 36vw);
+  --enemy-height: min(14rem, 28vh);
   --enemy-scale: 1;
   --enemy-x: 0rem;
   --enemy-y: 0rem;
@@ -393,57 +393,70 @@ button:not(:disabled):active {
   display: grid;
   width: var(--enemy-width);
   height: var(--enemy-height);
-  place-items: end center;
+  place-items: center;
 }
 
 .enemy-portrait-boss {
-  --enemy-width: min(29rem, 54vw);
-  --enemy-height: min(19rem, 38vh);
-  --enemy-scale: 0.92;
-  --enemy-y: 0rem;
+  --enemy-width: min(20rem, 40vw);
+  --enemy-height: min(15rem, 30vh);
+  --enemy-scale: 0.68;
+  --enemy-y: -0.4rem;
 }
 
 .enemy-portrait-field-rat {
-  --enemy-width: min(21rem, 45vw);
-  --enemy-height: min(15rem, 30vh);
-  --enemy-scale: 0.95;
+  --enemy-width: min(16rem, 32vw);
+  --enemy-height: min(12rem, 24vh);
+  --enemy-scale: 0.78;
 }
 
 .enemy-portrait-wild-boar,
 .enemy-portrait-shade-wolf,
 .enemy-portrait-blind-crawler {
-  --enemy-width: min(24rem, 50vw);
-  --enemy-height: min(16rem, 32vh);
+  --enemy-width: min(18rem, 36vw);
+  --enemy-height: min(13rem, 26vh);
+  --enemy-scale: 0.76;
 }
 
 .enemy-portrait-echo-bat {
-  --enemy-width: min(23rem, 48vw);
-  --enemy-height: min(17rem, 34vh);
-  --enemy-y: 0rem;
+  --enemy-width: min(17rem, 34vw);
+  --enemy-height: min(13rem, 26vh);
+  --enemy-scale: 0.78;
+  --enemy-y: -0.35rem;
 }
 
 .enemy-portrait-briar-witch,
 .enemy-portrait-bog-remnant {
-  --enemy-width: min(22rem, 46vw);
-  --enemy-height: min(18.5rem, 37vh);
-  --enemy-scale: 0.94;
+  --enemy-width: min(18rem, 36vw);
+  --enemy-height: min(14rem, 28vh);
+  --enemy-scale: 0.72;
+  --enemy-y: -0.3rem;
 }
 
 .enemy-portrait-moss-alpha,
 .enemy-portrait-stone-devourer {
-  --enemy-width: min(28rem, 54vw);
-  --enemy-height: min(18rem, 36vh);
-  --enemy-scale: 0.86;
-  --enemy-y: 0rem;
+  --enemy-width: min(20rem, 40vw);
+  --enemy-height: min(15rem, 30vh);
+  --enemy-scale: 0.58;
+  --enemy-y: -0.75rem;
 }
 
 .enemy-portrait-old-grove,
 .enemy-portrait-rot-baron,
 .enemy-portrait-ruined-king {
-  --enemy-width: min(27rem, 52vw);
-  --enemy-height: min(19rem, 38vh);
-  --enemy-scale: 0.82;
-  --enemy-y: 0rem;
+  --enemy-width: min(20rem, 40vw);
+  --enemy-height: min(15rem, 30vh);
+  --enemy-scale: 0.56;
+  --enemy-y: -0.75rem;
+}
+
+.enemy-portrait-stage {
+  display: grid;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  place-items: center;
+  overflow: visible;
+  transform: translateY(-4%);
 }
 
 .enemy-portrait-image {
@@ -452,12 +465,12 @@ button:not(:disabled):active {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: center bottom;
+  object-position: center center;
   filter:
     drop-shadow(0 16px 24px rgba(0, 0, 0, 0.56))
     drop-shadow(0 0 18px rgba(168, 85, 247, 0.16));
   transform: translate(var(--enemy-x), var(--enemy-y)) scale(var(--enemy-scale)) scaleX(-1);
-  transform-origin: center bottom;
+  transform-origin: center center;
   user-select: none;
 }
 
