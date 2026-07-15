@@ -32,6 +32,7 @@ export function createEnemyCombatant(enemy: Enemy): CombatantState {
   return {
     id: enemy.id,
     name: enemy.name,
+    imagePath: enemy.imagePath,
     maxHp: enemy.maxHp,
     currentHp: enemy.maxHp,
     attack: enemy.attack,

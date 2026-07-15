@@ -24,6 +24,7 @@ export interface Player {
 export interface Enemy {
   id: string;
   name: string;
+  imagePath?: string;
   level: number;
   maxHp: number;
   attack: number;
@@ -113,6 +114,7 @@ export interface SettingsState {
 export interface CombatantState {
   id: string;
   name: string;
+  imagePath?: string;
   maxHp: number;
   currentHp: number;
   attack: number;

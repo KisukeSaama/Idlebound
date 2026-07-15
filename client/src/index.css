@@ -380,6 +380,33 @@ button:not(:disabled):active {
   font-weight: 900;
 }
 
+.enemy-portrait-frame {
+  position: relative;
+  display: grid;
+  width: min(24rem, 56vw);
+  height: min(19rem, 42vh);
+  place-items: end center;
+}
+
+.enemy-portrait-boss {
+  width: min(30rem, 64vw);
+  height: min(23rem, 48vh);
+}
+
+.enemy-portrait-image {
+  position: relative;
+  z-index: 2;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter:
+    drop-shadow(0 16px 24px rgba(0, 0, 0, 0.56))
+    drop-shadow(0 0 18px rgba(168, 85, 247, 0.16));
+  transform: scaleX(-1);
+  user-select: none;
+}
+
 .reward-toast {
   position: absolute;
   right: 1rem;
