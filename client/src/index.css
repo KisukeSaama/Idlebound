@@ -330,27 +330,30 @@ button:not(:disabled):active {
 
 .enemy-click-target {
   position: absolute;
-  left: 50%;
-  bottom: 2.15rem;
+  inset: 7.15rem 1rem 4.15rem;
   display: flex;
-  width: min(46rem, calc(100% - 2rem));
-  transform: translateX(-50%);
+  justify-content: center;
+  width: auto;
   cursor: pointer;
   flex-direction: column;
   align-items: center;
   border: 1px solid transparent;
   border-radius: 0.75rem;
   background: transparent;
-  padding: 0.35rem 1rem 0;
+  padding: 0;
   color: inherit;
   pointer-events: none;
 }
 
 .click-hint {
+  position: absolute;
+  left: 50%;
+  bottom: -3.05rem;
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  margin-top: 0.3rem;
+  margin-top: 0;
+  transform: translateX(-50%);
   border: 1px solid rgba(56, 189, 248, 0.32);
   border-radius: 999px;
   background:
@@ -381,11 +384,11 @@ button:not(:disabled):active {
 }
 
 .enemy-portrait-frame {
-  --enemy-width: min(23rem, 48vw);
-  --enemy-height: min(14.5rem, 29vh);
+  --enemy-width: min(24rem, 48vw);
+  --enemy-height: min(17rem, 34vh);
   --enemy-scale: 1;
   --enemy-x: 0rem;
-  --enemy-y: -0.35rem;
+  --enemy-y: 0rem;
   position: relative;
   display: grid;
   width: var(--enemy-width);
@@ -394,15 +397,15 @@ button:not(:disabled):active {
 }
 
 .enemy-portrait-boss {
-  --enemy-width: min(27rem, 52vw);
-  --enemy-height: min(16rem, 31vh);
-  --enemy-scale: 0.9;
-  --enemy-y: -0.65rem;
+  --enemy-width: min(29rem, 54vw);
+  --enemy-height: min(19rem, 38vh);
+  --enemy-scale: 0.92;
+  --enemy-y: 0rem;
 }
 
 .enemy-portrait-field-rat {
   --enemy-width: min(21rem, 45vw);
-  --enemy-height: min(13rem, 27vh);
+  --enemy-height: min(15rem, 30vh);
   --enemy-scale: 0.95;
 }
 
@@ -410,37 +413,37 @@ button:not(:disabled):active {
 .enemy-portrait-shade-wolf,
 .enemy-portrait-blind-crawler {
   --enemy-width: min(24rem, 50vw);
-  --enemy-height: min(14rem, 29vh);
+  --enemy-height: min(16rem, 32vh);
 }
 
 .enemy-portrait-echo-bat {
   --enemy-width: min(23rem, 48vw);
-  --enemy-height: min(15rem, 31vh);
-  --enemy-y: 0.35rem;
+  --enemy-height: min(17rem, 34vh);
+  --enemy-y: 0rem;
 }
 
 .enemy-portrait-briar-witch,
 .enemy-portrait-bog-remnant {
   --enemy-width: min(22rem, 46vw);
-  --enemy-height: min(17.5rem, 36vh);
+  --enemy-height: min(18.5rem, 37vh);
   --enemy-scale: 0.94;
 }
 
 .enemy-portrait-moss-alpha,
 .enemy-portrait-stone-devourer {
   --enemy-width: min(28rem, 54vw);
-  --enemy-height: min(15rem, 30vh);
-  --enemy-scale: 0.88;
-  --enemy-y: -1rem;
+  --enemy-height: min(18rem, 36vh);
+  --enemy-scale: 0.86;
+  --enemy-y: 0rem;
 }
 
 .enemy-portrait-old-grove,
 .enemy-portrait-rot-baron,
 .enemy-portrait-ruined-king {
   --enemy-width: min(27rem, 52vw);
-  --enemy-height: min(17rem, 33vh);
-  --enemy-scale: 0.84;
-  --enemy-y: -0.8rem;
+  --enemy-height: min(19rem, 38vh);
+  --enemy-scale: 0.82;
+  --enemy-y: 0rem;
 }
 
 .enemy-portrait-image {
