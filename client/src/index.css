@@ -384,8 +384,8 @@ button:not(:disabled):active {
 }
 
 .enemy-portrait-frame {
-  --enemy-width: min(18rem, 36vw);
-  --enemy-height: min(14rem, 28vh);
+  --enemy-width: min(22rem, 44vw);
+  --enemy-height: min(16rem, 32vh);
   --enemy-scale: 1;
   --enemy-x: 0rem;
   --enemy-y: 0rem;
@@ -397,56 +397,56 @@ button:not(:disabled):active {
 }
 
 .enemy-portrait-boss {
-  --enemy-width: min(20rem, 40vw);
-  --enemy-height: min(15rem, 30vh);
-  --enemy-scale: 0.68;
-  --enemy-y: -0.4rem;
+  --enemy-width: min(25rem, 48vw);
+  --enemy-height: min(18rem, 36vh);
+  --enemy-scale: 0.82;
+  --enemy-y: -0.35rem;
 }
 
 .enemy-portrait-field-rat {
-  --enemy-width: min(16rem, 32vw);
-  --enemy-height: min(12rem, 24vh);
-  --enemy-scale: 0.78;
+  --enemy-width: min(19rem, 38vw);
+  --enemy-height: min(14rem, 28vh);
+  --enemy-scale: 0.9;
 }
 
 .enemy-portrait-wild-boar,
 .enemy-portrait-shade-wolf,
 .enemy-portrait-blind-crawler {
-  --enemy-width: min(18rem, 36vw);
-  --enemy-height: min(13rem, 26vh);
-  --enemy-scale: 0.76;
+  --enemy-width: min(22rem, 44vw);
+  --enemy-height: min(15rem, 30vh);
+  --enemy-scale: 0.88;
 }
 
 .enemy-portrait-echo-bat {
-  --enemy-width: min(17rem, 34vw);
-  --enemy-height: min(13rem, 26vh);
-  --enemy-scale: 0.78;
+  --enemy-width: min(20rem, 40vw);
+  --enemy-height: min(15rem, 30vh);
+  --enemy-scale: 0.9;
   --enemy-y: -0.35rem;
 }
 
 .enemy-portrait-briar-witch,
 .enemy-portrait-bog-remnant {
-  --enemy-width: min(18rem, 36vw);
-  --enemy-height: min(14rem, 28vh);
-  --enemy-scale: 0.72;
+  --enemy-width: min(21rem, 42vw);
+  --enemy-height: min(16rem, 32vh);
+  --enemy-scale: 0.84;
   --enemy-y: -0.3rem;
 }
 
 .enemy-portrait-moss-alpha,
 .enemy-portrait-stone-devourer {
-  --enemy-width: min(20rem, 40vw);
-  --enemy-height: min(15rem, 30vh);
-  --enemy-scale: 0.58;
-  --enemy-y: -0.75rem;
+  --enemy-width: min(28rem, 52vw);
+  --enemy-height: min(20rem, 40vh);
+  --enemy-scale: 0.74;
+  --enemy-y: -0.55rem;
 }
 
 .enemy-portrait-old-grove,
 .enemy-portrait-rot-baron,
 .enemy-portrait-ruined-king {
-  --enemy-width: min(20rem, 40vw);
-  --enemy-height: min(15rem, 30vh);
-  --enemy-scale: 0.56;
-  --enemy-y: -0.75rem;
+  --enemy-width: min(27rem, 50vw);
+  --enemy-height: min(20rem, 40vh);
+  --enemy-scale: 0.72;
+  --enemy-y: -0.55rem;
 }
 
 .enemy-portrait-stage {
