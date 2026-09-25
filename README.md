@@ -1,184 +1,153 @@
 # Idlebound
 
-Idlebound est un idle game fantasy jouable dans un navigateur. Ce dépôt contient le MVP Solo : un aventurier unique progresse automatiquement contre des monstres, débloque des zones, obtient de l'équipement, dépense des essences et conserve sa progression localement.
+A free fantasy idle clicker that runs in the browser, in French and English. Click to
+strike, hire companions who fight for you, beat timed bosses, collect relics and ascend to
+come back stronger. Progress is saved **on the server only** (e-mail + username + password
+account) and every save is checked by an anti-cheat that replays the game rules.
 
-## Périmètre du MVP Solo
+- Production: `https://idlebound.kisukesaama.com` (deployed on `v*` tags)
+- Development: `https://idlebound-d.kisukesaama.com` (manual deploy from `develop`)
 
-Inclus :
+| Document | Content |
+|---|---|
+| [PRODUCT.md](PRODUCT.md) | Vision, game rules and numbers, accounts, saves, anti-cheat |
+| [DESIGN.md](DESIGN.md) | Visual identity, tokens, layout, components, motion, copy voice |
+| [AGENTS.md](AGENTS.md) | How to work in this repo: rules, architecture, i18n, recipes, checks |
 
-- combat automatique solo ;
-- personnage niveau 1 avec statistiques, expérience et niveaux ;
-- cinq zones avec monstres et boss ;
-- déblocage de zones après victoire contre un boss ;
-- or, essences, drops simples et équipements ;
-- boutique, inventaire, équipement et améliorations ;
-- sauvegarde locale automatique ;
-- import/export JSON ;
-- progression hors ligne estimée.
+## Stack
 
-Exclu du MVP :
+| Layer | Technology |
+|---|---|
+| Front | Next.js 16 (App Router, `standalone` output), React 19, hand-written CSS |
+| API | Hono on Node 24, bundled into a single file with esbuild |
+| Database | PostgreSQL 17 through Drizzle ORM (versioned SQL migrations) |
+| Engine | `@idlebound/game`: pure TypeScript shared by the front and the API |
+| i18n | French and English: game content in `packages/game/src/content`, UI in `apps/web/src/i18n` |
+| Tests | Vitest (engine, balance, anti-cheat, i18n, API against a real Postgres) |
+| Infra | Docker Compose (dev and prod), GitLab CI, Traefik (platform `devops/docs`) |
 
-- authentification, comptes et base de données ;
-- multijoueur, groupe, recrutement, classes, donjons de groupe ;
-- gathering, craft avancé, guilde, raids ;
-- économie compétitive ou serveur autoritaire complet.
+```text
+apps/
+  web/            Next.js: /[locale] landing, /[locale]/play, /[locale]/leaderboard, /api/* proxy
+  api/            Hono + Drizzle: accounts, sessions, verified saves, leaderboard
+packages/
+  game/           game engine: data, content (fr/en), formulas, simulation, anti-cheat
+    scripts/      bot player + balance simulation (npm run balance)
+assets-src/       original art (PNG) + script that generates the WebP served by the front
+deploy/           platform compose.yml, paths.env, app.env (deployed by the CI)
+compose.dev.yml   full development environment (hot reload, Postgres, Mailpit)
+compose.prod.yml  production images run locally, to check a release
+```
 
-## Technologies
+## URLs and languages
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- Node.js
-- Express
-- Vitest
-- Zod
+| Page | French | English |
+|---|---|---|
+| Landing | `/fr` | `/en` |
+| Game | `/fr/play` | `/en/play` |
+| Leaderboard | `/fr/leaderboard` | `/en/leaderboard` |
+| Privacy | `/fr/privacy` | `/en/privacy` |
+| Password reset | `/fr/reset-password` | `/en/reset-password` |
 
-## Prérequis
+`/` and any unprefixed path redirect to the visitor's language: the `ib_lang` cookie (set
+from the in-game Settings window) wins, otherwise `Accept-Language` decides (French when the
+browser sends nothing, English for unsupported languages). The former French URLs
+(`/jouer`, `/classement`, `/confidentialite`, `/reinitialiser`) redirect permanently to their
+`/fr/...` equivalent. Pages declare `hreflang` alternates and the sitemap lists both
+languages.
 
-- Node.js récent compatible avec Vite 8
-- npm
+## Getting started
 
-## Installation
+### With Docker (recommended)
+
+```bash
+docker compose -f compose.dev.yml up
+```
+
+| Service | Address |
+|---|---|
+| Game | http://localhost:3000 |
+| API | http://localhost:3000/api/… (proxied by the web app, as in production) |
+| Dev e-mails (Mailpit) | http://localhost:8025 (password-reset links land here) |
+| Postgres | `localhost:5432`, user/password/database `idlebound` |
+
+In development the game store is exposed in the console:
+`window.__idlebound.act((engine, now) => …)`.
+
+### Without Docker
 
 ```bash
 npm install
+cp .env.example .env        # DATABASE_URL pointing to a local Postgres
+npm run dev                 # API (8080) + web (3000)
 ```
 
-Aucune installation globale n'est requise.
-
-## Variables d'environnement
-
-Optionnelles :
+### Check the production images
 
 ```bash
-PORT=3001
+docker compose -f compose.prod.yml up --build     # → http://localhost:3000
 ```
 
-Le client Vite proxifie `/api` vers `http://localhost:3001`.
+Containers run as in production: non-root user, read-only file system, `cap_drop: ALL`,
+no published API port.
 
-## Lancement
+## Commands
 
-Front seul :
+| Command | Purpose |
+|---|---|
+| `npm test` | All tests (API tests run when `TEST_DATABASE_URL` is set) |
+| `npm run lint` | Type-checks the monorepo |
+| `npm run build` | API bundle + Next.js build |
+| `npm run balance -- 24 5` | Simulates 24 h of play at 5 clicks/s and prints the progression curve |
+| `npm run db:generate` | Generates a migration after editing `apps/api/src/db/schema.ts` |
+| `npm run assets` | Regenerates the WebP files and the OpenGraph image from `assets-src/original` |
+
+API tests locally:
 
 ```bash
-npm run dev:client
+TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test
 ```
 
-Back seul :
+## Security at a glance
+
+- Passwords hashed with scrypt, common passwords refused, no account enumeration (same
+  answers and timing whether an account exists or not).
+- Sessions: 256-bit random token in an `httpOnly`, `Secure`, `SameSite=Lax` cookie, only its
+  SHA-256 stored, 30 days sliding, all revoked on password change.
+- CSRF: `X-Idlebound` header required on every write, origin checked in production.
+- Rate limits per IP and per account, plus a Traefik limit on `/api/auth/`.
+- Nonce-based Content Security Policy on every page, strict security headers.
+- The API and Postgres sit on an internal network; only the web container is exposed.
+
+Details on accounts, saves and the anti-cheat are in [PRODUCT.md](PRODUCT.md).
+
+## Deployment
+
+Deployment follows `devops/docs` (`webapp` templates):
+
+| Stage | Trigger |
+|---|---|
+| `test`: `npm ci`, `npm audit`, types, tests (Postgres as a service) | `develop`, `v*` tags, merge requests |
+| `build`: `api` and `web` images pushed to the GitLab registry | `develop`, `v*` tags |
+| `deploy_dev` → `idlebound-d.kisukesaama.com` | manual, from `develop` |
+| `deploy_prod` → `idlebound.kisukesaama.com` | automatic on `v*` tags |
+
+CI/CD variables (scoped per environment, "Protected" in production):
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `IDLEBOUND_POSTGRES_PASSWORD` | yes | Postgres password (no `@ : / ? # %` or spaces) |
+| `IDLEBOUND_SMTP_URL` | no | `smtps://user:pass@host:465` for e-mails. Without it, e-mails are written to the API logs, and inactive accounts are never warned nor deleted |
+| `IDLEBOUND_MAIL_FROM` | no | E-mail sender |
+
+Only the `web` container is on the `traefik` network; the API and Postgres are on an internal
+network, and the API also has an `egress` network to reach the SMTP server. Migrations run
+when the API starts. Only production is indexable by search engines (`SITE_INDEXABLE`); the
+dev environment answers `noindex`.
+
+Release a version:
 
 ```bash
-npm run dev:server
+git switch main && git merge --ff-only develop && git push
+git tag v1.0.0 && git push origin v1.0.0
 ```
-
-Développement complet :
-
-```bash
-npm run dev
-```
-
-Par défaut :
-
-- client : `http://localhost:5173`
-- serveur : `http://localhost:3001`
-
-## Tests
-
-```bash
-npm test
-```
-
-Les tests couvrent les formules de combat, la puissance, l'expérience, les récompenses, l'équipement, la boutique, la sauvegarde, la progression hors ligne et le déblocage d'une zone après boss.
-
-## Build Production
-
-```bash
-npm run build
-```
-
-Le build front est généré dans `dist/client`.
-
-Build avec base GitHub Pages :
-
-```bash
-GITHUB_PAGES=true npm run build
-```
-
-Le workflow `.github/workflows/deploy-pages.yml` publie `dist/client` sur GitHub Pages après les tests. Une fois GitHub Pages activé en mode GitHub Actions dans les paramètres du dépôt, l'application sera accessible sur :
-
-```text
-https://kisukesaama.github.io/Idlebound/
-```
-
-## Structure
-
-```text
-client/
-  src/
-    components/       composants UI génériques
-    features/         écrans fonctionnels du jeu
-    store/            état global, reducer et moteur de tick
-server/
-  src/
-    index.ts          API Express
-shared/
-  constants/          constantes d'équilibrage
-  data/               zones, ennemis, objets, essences
-  game/               formules et services purs
-  types/              types partagés
-docs/
-  balancing.md        notes d'équilibrage du MVP
-```
-
-## API Express
-
-Endpoints disponibles :
-
-- `GET /api/health`
-- `GET /api/game/config`
-- `GET /api/zones`
-- `GET /api/items`
-
-Le combat est calculé côté client pour ce MVP Solo. Cette décision garde le projet simple tant qu'il n'y a ni multijoueur, ni comptes, ni économie compétitive. Une future version avec serveur autoritaire devra déplacer les calculs critiques côté serveur.
-
-## Sauvegarde
-
-La sauvegarde principale utilise `localStorage` avec un schéma versionné :
-
-- version courante : `1`
-- sauvegarde automatique toutes les 5 secondes ;
-- sauvegarde au masquage ou à la fermeture de la page ;
-- export JSON ;
-- import JSON avec validation Zod ;
-- sauvegarde de secours avant remplacement ;
-- réinitialisation de partie.
-
-Le contenu importé est parsé comme JSON et validé comme données. Aucun contenu importé n'est exécuté.
-
-## Progression Hors Ligne
-
-Au retour du joueur, le client compare la date de dernière activité avec l'heure courante. Les gains sont estimés selon :
-
-- la zone sélectionnée ;
-- les statistiques du joueur ;
-- un temps moyen de victoire ;
-- un taux de taux de réussite estimé ;
-- une limite maximale de 8 heures.
-
-La simulation ne rejoue pas chaque combat individuellement afin d'éviter les coûts inutiles et les abus simples.
-
-## Limites Connues
-
-- Équilibrage initial volontairement simple.
-- Sauvegarde locale modifiable par l'utilisateur.
-- Pas d'anti-triche avancé.
-- Combat client non adapté à un futur mode compétitif sans refonte serveur.
-- Assets visuels temporaires en CSS, sans images protégées.
-
-## Prochaines Étapes Possibles
-
-- Ajuster l'équilibrage après test utilisateur.
-- Ajouter des animations plus riches.
-- Ajouter une base de données et des comptes.
-- Migrer les calculs critiques vers un serveur autoritaire.
-- Ajouter plus de zones, objets et effets d'équipement.

@@ -1,0 +1,47 @@
+"use client";
+
+import { formatDuration, intlLocale } from "@idlebound/game";
+import { useI18n } from "@/i18n/client";
+import { summarize } from "../cloud";
+import { useCloud, useGame } from "../context";
+import { Modal } from "./Modal";
+
+/** Two different games (this device and the server): the player picks which one to keep. */
+export function CloudChoiceModal() {
+  const cloud = useCloud();
+  const { state } = useGame();
+  const { t, locale } = useI18n();
+  const m = t.hud.cloudChoice;
+  const choice = cloud.pendingChoice;
+  if (!choice) return null;
+  const local = summarize(state);
+  const remote = summarize(choice.state);
+
+  const card = (label: string, summary: ReturnType<typeof summarize>, recommended: boolean) => (
+    <div className={`save-card ${recommended ? "recommended" : ""}`}>
+      <h3>{label}{recommended ? <span className="save-best">{m.best}</span> : null}</h3>
+      <dl>
+        <div><dt>{m.bestStage}</dt><dd>{summary.maxStage}</dd></div>
+        <div><dt>{m.ascensions}</dt><dd>{summary.ascensions}</dd></div>
+        <div><dt>{m.playTime}</dt><dd>{formatDuration(summary.playTime, locale)}</dd></div>
+        <div><dt>{m.lastActivity}</dt><dd>{new Date(summary.savedAt).toLocaleString(intlLocale(locale), { dateStyle: "short", timeStyle: "short" })}</dd></div>
+      </dl>
+    </div>
+  );
+
+  const localBetter = local.maxStage > remote.maxStage || (local.maxStage === remote.maxStage && local.playTime >= remote.playTime);
+
+  return (
+    <Modal title={m.title} icon="⚔️" size="md">
+      <p className="modal-text">{m.text}</p>
+      <div className="save-compare">
+        {card(m.current, local, localBetter)}
+        {card(m.account, remote, !localBetter)}
+      </div>
+      <div className="save-choice-actions">
+        <button type="button" className="btn btn-ghost" onClick={() => void cloud.resolveChoice("local")}>{m.keepCurrent}</button>
+        <button type="button" className="btn btn-gold" onClick={() => void cloud.resolveChoice("cloud")}>{m.takeAccount}</button>
+      </div>
+    </Modal>
+  );
+}

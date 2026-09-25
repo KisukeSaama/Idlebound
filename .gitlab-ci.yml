@@ -1,0 +1,286 @@
+# Idlebound pipeline, derived from devops/docs templates/webapp/.gitlab-ci.yml.
+#
+# Model:
+#   test  -> on develop, on tags v*, and on merge requests
+#   build -> on develop and on tags v*, pushes to the GitLab registry
+#   deploy_dev  -> manual, from develop  -> https://idlebound-d.kisukesaama.com
+#   deploy_prod -> automatic, on tag v*  -> https://idlebound.kisukesaama.com
+#
+# Required GitLab CI/CD variables (scope per environment, protect the production ones):
+#   IDLEBOUND_POSTGRES_PASSWORD   required
+#   IDLEBOUND_SMTP_URL            optional — smtp(s)://user:pass@host:port for password-reset
+#                                 e-mails; without it, reset links are written to the API log
+#   IDLEBOUND_MAIL_FROM           optional — sender of those e-mails
+
+image: docker:29
+
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  APP_SUBDOMAIN: idlebound
+  DOCKER_BUILDKIT: "1"
+  DOCKER_HOST: unix:///var/run/docker.sock
+  DOCKER_TLS_CERTDIR: ""
+
+# ---------------------------------------------------------------------------
+# Shared setup. Do not edit below this line without reading https://gitlab.kisukesaama.com/devops/docs -> pipeline.md.
+# ---------------------------------------------------------------------------
+
+.docker_defaults: &docker_defaults
+  image: docker:29
+  tags:
+    - devops
+  before_script:
+    - set -euo pipefail
+    - docker info
+    - |
+      if [[ -z "${CI_REGISTRY:-}" ]]; then
+        echo "CI_REGISTRY is not set." >&2
+        exit 1
+      fi
+    - export CI_REGISTRY_IMAGE="${CI_REGISTRY_IMAGE:-${CI_REGISTRY}/${CI_PROJECT_PATH}}"
+    - export IMAGE_TAG="${CI_COMMIT_TAG:-${CI_COMMIT_REF_SLUG}}"
+    - echo "${CI_REGISTRY_PASSWORD:-${CI_JOB_TOKEN}}" | docker login --username "${CI_REGISTRY_USER:-gitlab-ci-token}" --password-stdin "${CI_REGISTRY}"
+
+.deploy_defaults: &deploy_defaults
+  image: docker:29
+  tags:
+    - devops
+  before_script:
+    - set -euo pipefail
+    - docker info
+    - |
+      if [[ -z "${CI_REGISTRY:-}" ]]; then
+        echo "CI_REGISTRY is not set." >&2
+        exit 1
+      fi
+    - export CI_REGISTRY_IMAGE="${CI_REGISTRY_IMAGE:-${CI_REGISTRY}/${CI_PROJECT_PATH}}"
+    - export IMAGE_TAG="${CI_COMMIT_TAG:-${CI_COMMIT_REF_SLUG}}"
+    - set -a; source deploy/paths.env; set +a
+    # A tag means production; anything else that reaches a deploy job is develop.
+    - |
+      if [[ -n "${CI_COMMIT_TAG:-}" ]]; then
+        export DEPLOY_ENV=prod
+        export APP_HOST="${APP_SUBDOMAIN}.kisukesaama.com"
+      else
+        export DEPLOY_ENV=dev
+        export APP_HOST="${APP_SUBDOMAIN}-d.kisukesaama.com"
+      fi
+    - export TARGET_DIR="${DEPLOY_DIR}/${DEPLOY_ENV}"
+    - export ENV_DATA_DIR="${DATA_DIR}/${DEPLOY_ENV}"
+    - |
+      validate_paths() {
+        case "${DEPLOY_DIR:-}" in
+          /home/kisuke/*) ;;
+          *) echo "DEPLOY_DIR must stay under /home/kisuke/." >&2; exit 1 ;;
+        esac
+        case "${DATA_DIR:-}" in
+          /home/kisuke/*) ;;
+          *) echo "DATA_DIR must stay under /home/kisuke/." >&2; exit 1 ;;
+        esac
+        case "${DEPLOY_DIR}${DATA_DIR}" in
+          *..*) echo "Deployment paths cannot contain '..'." >&2; exit 1 ;;
+        esac
+      }
+
+      # One `: "${VAR:?...}"` line per required secret, and one line per key written into
+      # app.env. A missing variable must fail here, not inside a container.
+      write_runtime_files() {
+        local target="$1"
+        local env_name="${CI_ENVIRONMENT_NAME:-this environment}"
+        : "${IDLEBOUND_POSTGRES_PASSWORD:?Set IDLEBOUND_POSTGRES_PASSWORD for ${env_name}}"
+        # The password ends up inside a postgres:// URL: reject characters that would break it
+        # here, rather than as an API restart loop behind an "unhealthy" healthcheck.
+        case "${IDLEBOUND_POSTGRES_PASSWORD}" in
+          *[@:/?#%\ ]*) echo "IDLEBOUND_POSTGRES_PASSWORD must not contain @ : / ? # % or spaces." >&2; exit 1 ;;
+        esac
+        # Only production is indexed by search engines; dev answers noindex.
+        local indexable=false
+        if [[ "${DEPLOY_ENV}" == "prod" ]]; then indexable=true; fi
+
+        mkdir -p "${target}"
+        cp deploy/compose.yml "${target}/compose.yml"
+        cp deploy/paths.env "${target}/paths.env"
+        # app.env carries credentials, so it is written with a restrictive umask and
+        # tightened again on the host below.
+        (umask 077; printf '%s\n' \
+          "DEPLOY_ENV=${DEPLOY_ENV}" \
+          "APP_HOST=${APP_HOST}" \
+          "CI_REGISTRY_IMAGE=${CI_REGISTRY_IMAGE}" \
+          "IMAGE_TAG=${IMAGE_TAG}" \
+          "POSTGRES_DB=${IDLEBOUND_POSTGRES_DB:-idlebound}" \
+          "POSTGRES_USER=${IDLEBOUND_POSTGRES_USER:-idlebound}" \
+          "POSTGRES_PASSWORD=${IDLEBOUND_POSTGRES_PASSWORD}" \
+          "SITE_INDEXABLE=${indexable}" \
+          "SMTP_URL=${IDLEBOUND_SMTP_URL:-}" \
+          "MAIL_FROM=${IDLEBOUND_MAIL_FROM:-Idlebound <no-reply@kisukesaama.com>}" \
+          > "${target}/app.env")
+      }
+
+      # The runner mounts the host Docker socket but NOT /home/kisuke: files written in this
+      # job live in a container that is about to be deleted. Push them onto the host through
+      # a throwaway container that does have the mount, or every Compose bind mount below
+      # points at a directory that does not exist.
+      stage_on_host() {
+        local source_dir="$1"
+        local target_rel="${TARGET_DIR#/home/kisuke/}"
+        local data_rel="${DATA_DIR#/home/kisuke/}"
+
+        tar -C "${source_dir}" -cf - . | docker run --rm -i \
+          -e TARGET_REL="${target_rel}" \
+          -e DATA_REL="${data_rel}" \
+          -e DEPLOY_ENV="${DEPLOY_ENV}" \
+          -v /home/kisuke:/host-home \
+          alpine:3.24 sh -euc '
+            case "$TARGET_REL" in ""|/*|*..*) exit 1 ;; esac
+            case "$DATA_REL" in ""|/*|*..*) exit 1 ;; esac
+            host_target="/host-home/$TARGET_REL"
+            host_data="/host-home/$DATA_REL/$DEPLOY_ENV"
+            # One mkdir per bind-mounted data directory in compose.yml (only postgres).
+            mkdir -p "$host_target" "$host_data/postgres"
+            tar -C "$host_target" -xf -
+            chmod 750 "$host_target" "$host_data" "$host_data/postgres"
+            chmod 640 "$host_target/compose.yml" "$host_target/paths.env"
+            chmod 600 "$host_target/app.env"
+            # web and api are read_only and write only to tmpfs: no chown needed.
+          '
+      }
+
+      validate_paths
+      mkdir -p "${TARGET_DIR}" "${ENV_DATA_DIR}/postgres"
+      write_runtime_files "${TARGET_DIR}"
+      stage_on_host "${TARGET_DIR}"
+    - echo "${CI_REGISTRY_PASSWORD:-${CI_JOB_TOKEN}}" | docker login --username "${CI_REGISTRY_USER:-gitlab-ci-token}" --password-stdin "${CI_REGISTRY}"
+    - |
+      compose() {
+        docker compose -p "${APP_SUBDOMAIN}-${DEPLOY_ENV}" \
+          --env-file paths.env --env-file app.env -f compose.yml "$@"
+      }
+
+      # A rollout that fails a health condition reports only "dependency failed to start".
+      # The reason is in the container's own log, on a host the runner cannot shell into.
+      # Print it here or every failure costs a trip to the server.
+      deploy() {
+        compose pull
+        compose up -d --remove-orphans && return 0
+        echo "Deployment failed. Container state and recent logs follow." >&2
+        compose ps -a >&2 || true
+        compose logs --no-color --tail 200 >&2 || true
+        return 1
+      }
+
+# ---- test -----------------------------------------------------------------
+# Game engine tests (balance, anti-cheat, usernames), API integration tests against a real
+# Postgres (job service), and a type check of the whole monorepo.
+
+test:
+  stage: test
+  tags: [devops]
+  image: node:24-alpine
+  services:
+    - name: postgres:17-alpine
+      alias: postgres
+  variables:
+    POSTGRES_DB: idlebound_test
+    POSTGRES_USER: idlebound
+    POSTGRES_PASSWORD: idlebound
+    TEST_DATABASE_URL: postgres://idlebound:idlebound@postgres:5432/idlebound_test
+  cache:
+    key: idlebound-npm
+    paths:
+      - .npm
+  before_script:
+    - npm config set cache "$CI_PROJECT_DIR/.npm"
+  script:
+    - npm ci --no-audit --no-fund
+    - npm audit --audit-level=high
+    - npm run lint
+    - npm test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# ---- build ----------------------------------------------------------------
+
+build:
+  stage: build
+  <<: *docker_defaults
+  needs:
+    - job: test
+      artifacts: false
+  script:
+    # Monorepo: the build context is the repository root (npm workspaces + shared engine).
+    - docker build --pull -t "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}" -f apps/api/Dockerfile .
+    - docker build --pull -t "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}" -f apps/web/Dockerfile .
+    - docker push "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}"
+    - docker push "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+
+# ---- deploy DEV (manual, from develop) ------------------------------------
+
+deploy_dev:
+  stage: deploy
+  <<: *deploy_defaults
+  needs: ["build"]
+  resource_group: idlebound-dev
+  environment:
+    name: dev
+    url: https://idlebound-d.kisukesaama.com
+    on_stop: stop_dev
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: manual
+  script:
+    - cd "${TARGET_DIR}"
+    - deploy
+
+stop_dev:
+  stage: deploy
+  <<: *deploy_defaults
+  resource_group: idlebound-dev
+  environment:
+    name: dev
+    action: stop
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: manual
+  script:
+    - cd "${TARGET_DIR}"
+    - compose down
+
+# ---- deploy PROD (automatic, on v* tags) ----------------------------------
+
+deploy_prod:
+  stage: deploy
+  <<: *deploy_defaults
+  needs: ["build"]
+  resource_group: idlebound-prod
+  environment:
+    name: production
+    url: https://idlebound.kisukesaama.com
+    on_stop: stop_prod
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+  script:
+    - cd "${TARGET_DIR}"
+    - deploy
+
+stop_prod:
+  stage: deploy
+  <<: *deploy_defaults
+  resource_group: idlebound-prod
+  environment:
+    name: production
+    action: stop
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+      when: manual
+  script:
+    - cd "${TARGET_DIR}"
+    - compose down

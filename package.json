@@ -1,42 +1,32 @@
 {
   "name": "idlebound",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:client": "vite --config client/vite.config.ts --host 0.0.0.0",
-    "dev:server": "tsx watch server/src/index.ts",
-    "build": "tsc -p tsconfig.json && vite build --config client/vite.config.ts",
+    "dev": "concurrently -n api,web -c magenta,cyan \"npm run dev -w @idlebound/api\" \"npm run dev -w @idlebound/web\"",
+    "build": "npm run build -w @idlebound/api && npm run build -w @idlebound/web",
     "test": "vitest run",
     "test:watch": "vitest",
-    "preview": "vite preview --config client/vite.config.ts --host 0.0.0.0",
-    "start": "node dist/server/index.js"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "cors": "latest",
-    "express": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "zod": "latest"
+    "lint": "npm run typecheck",
+    "typecheck": "tsc -p packages/game && tsc -p apps/api && tsc -p apps/web",
+    "db:generate": "npm run db:generate -w @idlebound/api",
+    "db:migrate": "npm run db:migrate -w @idlebound/api",
+    "balance": "tsx packages/game/scripts/simulate.ts",
+    "assets": "python assets-src/optimize.py"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.2",
-    "@types/cors": "latest",
-    "@types/express": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "autoprefixer": "latest",
-    "concurrently": "latest",
-    "eslint": "latest",
-    "jsdom": "^29.1.1",
-    "postcss": "latest",
-    "tailwindcss": "latest",
-    "tsx": "latest",
-    "typescript": "latest",
-    "vite": "latest",
-    "vitest": "latest"
+    "@types/node": "^24.13.6",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.1"
   }
 }

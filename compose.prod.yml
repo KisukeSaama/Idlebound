@@ -1,0 +1,90 @@
+# The production images, built and run locally (without Traefik).
+# Used to check a release before pushing a tag.
+#
+#   docker compose -f compose.prod.yml up --build
+#   → http://localhost:3000
+#
+# The real deployment on the server uses deploy/compose.yml through GitLab CI.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    logging: *logging
+    environment:
+      NODE_ENV: production
+      PUBLIC_SITE_URL: http://localhost:3000
+      INTERNAL_API_BASE_URL: http://api:8080
+      SITE_INDEXABLE: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/robots.txt >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/apps/web/.next/cache:uid=1000,gid=1000
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    logging: *logging
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://idlebound:idlebound@postgres:5432/idlebound
+      PUBLIC_SITE_URL: http://localhost:3000
+      # Locally we serve plain HTTP: a Secure cookie would never be sent back.
+      COOKIE_SECURE: "false"
+      TRUSTED_PROXY_COUNT: "1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  postgres:
+    image: postgres:17-alpine
+    logging: *logging
+    environment:
+      POSTGRES_DB: idlebound
+      POSTGRES_USER: idlebound
+      POSTGRES_PASSWORD: idlebound
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U idlebound -d idlebound"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres_prod_data:

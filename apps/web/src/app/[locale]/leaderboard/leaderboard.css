@@ -1,0 +1,74 @@
+.board-page {
+  max-width: 900px;
+}
+
+.board-intro {
+  color: var(--muted) !important;
+}
+
+.board-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.board-tabs a {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.board-tabs a:hover {
+  text-decoration: none;
+  color: var(--text);
+}
+
+.board-tabs a.active {
+  background: var(--gold);
+  border-color: var(--gold-2);
+  color: #241603;
+}
+
+.board-table-wrap {
+  overflow-x: auto;
+}
+
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.board-table th {
+  text-align: left;
+  padding: 0.8rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  border-bottom: 1px solid var(--border);
+}
+
+.board-table td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.board-name {
+  font-weight: 650;
+}
+
+.board-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--gold-2);
+}
+
+@media (max-width: 560px) {
+  .hide-sm {
+    display: none;
+  }
+}

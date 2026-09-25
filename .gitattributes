@@ -1,0 +1,6 @@
+# Line endings are decided here rather than by core.autocrlf: a CRLF reaching the runner
+# breaks paths.env and shell scripts (see the platform docs, deploy-a-service.md).
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.png binary
+*.webp binary
