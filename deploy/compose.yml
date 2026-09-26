@@ -1,0 +1,144 @@
+# Deployed Idlebound stack: public web (Next.js), private API (Hono), private Postgres.
+# Variables come from paths.env + app.env, passed as --env-file by the CI compose()
+# function:
+#   ${APP_SLUG} ${APP_SUBDOMAIN} ${DEPLOY_DIR} ${DATA_DIR} ${TRAEFIK_NETWORK}   (paths.env)
+#   ${DEPLOY_ENV} ${APP_HOST} ${CI_REGISTRY_IMAGE} ${IMAGE_TAG} + keys below (app.env)
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # Only service on the traefik network. The browser reaches the API only through it (/api/*).
+  web:
+    image: ${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}
+    logging: *logging
+    environment:
+      NODE_ENV: production
+      PUBLIC_SITE_URL: https://${APP_HOST}
+      INTERNAL_API_BASE_URL: http://api:8080
+      SITE_INDEXABLE: ${SITE_INDEXABLE:-false}
+      TZ: Europe/Paris
+    networks:
+      - application
+      - traefik
+    depends_on:
+      api:
+        condition: service_healthy
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/robots.txt >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/apps/web/.next/cache:uid=1000,gid=1000
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK}
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}.rule=Host(`${APP_HOST}`)
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}.entrypoints=websecure
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}.tls=true
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}.service=${APP_SUBDOMAIN}-${DEPLOY_ENV}
+      - traefik.http.services.${APP_SUBDOMAIN}-${DEPLOY_ENV}.loadbalancer.server.port=3000
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}.middlewares=${APP_SUBDOMAIN}-${DEPLOY_ENV}-headers
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-headers.headers.frameDeny=true
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-headers.headers.referrerPolicy=strict-origin-when-cross-origin
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-headers.headers.stsSeconds=31536000
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-headers.headers.stsIncludeSubdomains=true
+      # Authentication: higher-priority router with a per-IP rate limit, on top of the
+      # API's own (defence in depth against credential stuffing).
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth.rule=Host(`${APP_HOST}`) && PathPrefix(`/api/auth/`)
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth.priority=100
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth.entrypoints=websecure
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth.tls=true
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth.service=${APP_SUBDOMAIN}-${DEPLOY_ENV}
+      - traefik.http.routers.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth.middlewares=${APP_SUBDOMAIN}-${DEPLOY_ENV}-headers,${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth-rate
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth-rate.ratelimit.average=30
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth-rate.ratelimit.period=1m
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth-rate.ratelimit.burst=10
+      # Per real player IP: the TCP address Traefik sees is the Cloudflare node's, shared by
+      # thousands of players. A client bypassing Cloudflare can forge this header, but the
+      # API then does not trust it (see apps/api/src/lib/rate-limit.ts).
+      - traefik.http.middlewares.${APP_SUBDOMAIN}-${DEPLOY_ENV}-auth-rate.ratelimit.sourcecriterion.requestheadername=Cf-Connecting-Ip
+
+  api:
+    image: ${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}
+    logging: *logging
+    environment:
+      NODE_ENV: production
+      API_PORT: "8080"
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      PUBLIC_SITE_URL: https://${APP_HOST}
+      COOKIE_SECURE: "true"
+      # Cloudflare sets the real client IP; Traefik is the only proxy in front of the web. The
+      # header is only trusted when the peer (last X-Forwarded-For entry) is a Cloudflare IP.
+      CLIENT_IP_HEADER: cf-connecting-ip
+      TRUSTED_PROXY_COUNT: "1"
+      SMTP_URL: ${SMTP_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-Idlebound <no-reply@kisukesaama.com>}
+      TZ: Europe/Paris
+    networks:
+      - application
+      # Only service allowed out: sending password-reset e-mails (SMTP).
+      - egress
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  postgres:
+    image: postgres:17-alpine
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Europe/Paris
+    volumes:
+      # Bind mount per environment: state visible on the host for backups, dev and prod kept
+      # apart. The CI creates the folder before Compose.
+      - ${DATA_DIR}/${DEPLOY_ENV}/postgres:/var/lib/postgresql/data
+    networks:
+      - application
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  application:
+    internal: true
+  egress: {}
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK}

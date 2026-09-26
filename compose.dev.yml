@@ -1,0 +1,99 @@
+# Full development environment, with hot reload.
+#
+#   docker compose -f compose.dev.yml up
+#
+#   Game      http://localhost:3000
+#   API       http://localhost:3000/api/…  (proxied by the web app, as in production)
+#   E-mails   http://localhost:8025   (Mailpit: every e-mail lands here, nothing goes out)
+#             SMTP on localhost:1025, for an API started outside Docker:
+#             docker compose -f compose.dev.yml up mailpit
+#   Postgres  localhost:5432          (idlebound / idlebound)
+#
+# The code is mounted from the host; node_modules lives in Linux volumes so host
+# (Windows/macOS) and container native binaries never mix.
+
+x-node: &node
+  image: node:24-alpine
+  working_dir: /app
+  volumes:
+    - .:/app
+    - node_modules:/app/node_modules
+    - web_node_modules:/app/apps/web/node_modules
+    - api_node_modules:/app/apps/api/node_modules
+    - game_node_modules:/app/packages/game/node_modules
+    - next_cache:/app/apps/web/.next
+  environment: &node-env
+    NODE_ENV: development
+    # File events do not always cross the mount from Windows/macOS.
+    CHOKIDAR_USEPOLLING: "true"
+    WATCHPACK_POLLING: "true"
+    NEXT_TELEMETRY_DISABLED: "1"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: idlebound
+      POSTGRES_USER: idlebound
+      POSTGRES_PASSWORD: idlebound
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U idlebound -d idlebound"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
+  # Installs dependencies once (and after every package-lock.json change).
+  install:
+    <<: *node
+    command: sh -c "npm ci --no-audit --no-fund"
+
+  api:
+    <<: *node
+    command: npm run dev -w @idlebound/api
+    environment:
+      <<: *node-env
+      API_PORT: "8080"
+      DATABASE_URL: postgres://idlebound:idlebound@postgres:5432/idlebound
+      PUBLIC_SITE_URL: http://localhost:3000
+      COOKIE_SECURE: "false"
+      SMTP_URL: smtp://mailpit:1025
+      MAIL_FROM: Idlebound <no-reply@idlebound.local>
+    depends_on:
+      install:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+
+  web:
+    <<: *node
+    command: npm run dev -w @idlebound/web
+    environment:
+      <<: *node-env
+      INTERNAL_API_BASE_URL: http://api:8080
+      PUBLIC_SITE_URL: http://localhost:3000
+      SITE_INDEXABLE: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      install:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  node_modules:
+  web_node_modules:
+  api_node_modules:
+  game_node_modules:
+  next_cache:

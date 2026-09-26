@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/dist
+.git
+.npm
+assets-src
+coverage
+**/*.test.ts
+.env
+.env.*
