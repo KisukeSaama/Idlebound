@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { useFormat, useGame, useUi } from "../context";
-import { ShardIcon, SlotIcon, WINDOW_META } from "../icons";
+import { Picto, ShardIcon, SlotIcon, WINDOW_META } from "../icons";
 import { Modal } from "../components/Modal";
 import { formatAffix } from "../text";
 
@@ -64,7 +64,7 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
           <h3 className="item-name">{itemName(item, locale)}{item.forge > 0 ? <span className="item-forge"> +{item.forge}</span> : null}</h3>
           <p className="item-meta">{g.rarities[item.rarity]} · {g.slots[item.slot]} · {t.common.level(item.level)}</p>
         </div>
-        {item.locked ? <span className="item-lock" title={t.windows.gear.lockedTitle}>🔒</span> : null}
+        {item.locked ? <span className="item-lock" title={t.windows.gear.lockedTitle}><Picto name="lock" size={18} /></span> : null}
       </header>
       <ul className="item-affixes">
         {item.affixes.map((affix, index) => (
@@ -154,7 +154,7 @@ function Bag() {
     const ok = await ui.confirm({ title: text.bulkTitle, text: text.bulkText(count, label(count)), confirmLabel: text.bulkConfirm, danger: true });
     if (!ok) return;
     const shards = store.act((engine) => engine.salvageUpTo(rarity));
-    ui.toast({ tone: "info", icon: "♻️", title: text.bulkDoneTitle(fmt(shards)), text: text.bulkDoneText(count) });
+    ui.toast({ tone: "info", icon: "shard", title: text.bulkDoneTitle(fmt(shards)), text: text.bulkDoneText(count) });
   };
 
   if (items.length === 0) {

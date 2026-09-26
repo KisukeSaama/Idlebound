@@ -4,6 +4,7 @@ import { formatNumber } from "@idlebound/game";
 import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
 import { currentMessages } from "@/i18n/client";
 import type { CloudSync } from "./cloud";
+import type { PictoName } from "./icons";
 import type { GameStore } from "./store";
 
 export type WindowId = "map" | "gear" | "inventory" | "market" | "ascension" | "hall" | "account" | "settings";
@@ -12,7 +13,7 @@ export interface ToastInput {
   tone: "gold" | "violet" | "loot" | "danger" | "info" | "success";
   title: string;
   text?: string;
-  icon?: string;
+  icon?: PictoName;
   color?: string;
 }
 

@@ -41,7 +41,6 @@ export interface SkillDef {
   duration: number;
   cooldown: number;
   unlock: { heroId: string; level: number };
-  icon: string;
 }
 
 export type AltarId =

@@ -5,6 +5,7 @@ import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
 import { audio } from "../audio";
 import { useGame } from "../context";
+import { Picto, SKILL_PICTO } from "../icons";
 
 export function SkillBar() {
   const { state, store } = useGame();
@@ -40,7 +41,7 @@ export function SkillBar() {
               if (!used) audio.play("error");
             }}
           >
-            <span className="skill-icon" aria-hidden="true">{unlocked ? skill.icon : "🔒"}</span>
+            <Picto name={unlocked ? SKILL_PICTO[skill.id] : "lock"} className="skill-icon" />
             <span className="skill-key" aria-hidden="true">{skill.hotkey}</span>
             {cooling && !active ? (
               <>

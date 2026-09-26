@@ -8,48 +8,42 @@ export const SKILLS: SkillDef[] = [
     hotkey: "1",
     duration: 30,
     cooldown: 600,
-    unlock: { heroId: "aldric", level: 10 },
-    icon: "⚡"
+    unlock: { heroId: "aldric", level: 10 }
   },
   {
     id: "rally",
     hotkey: "2",
     duration: 30,
     cooldown: 600,
-    unlock: { heroId: "maelle", level: 25 },
-    icon: "📯"
+    unlock: { heroId: "maelle", level: 25 }
   },
   {
     id: "hawkeye",
     hotkey: "3",
     duration: 30,
     cooldown: 1_200,
-    unlock: { heroId: "ysolde", level: 25 },
-    icon: "🎯"
+    unlock: { heroId: "ysolde", level: 25 }
   },
   {
     id: "goldrain",
     hotkey: "4",
     duration: 30,
     cooldown: 1_800,
-    unlock: { heroId: "cendre", level: 25 },
-    icon: "💰"
+    unlock: { heroId: "cendre", level: 25 }
   },
   {
     id: "ritual",
     hotkey: "5",
     duration: 0,
     cooldown: 3_600,
-    unlock: { heroId: "nyx", level: 25 },
-    icon: "🔮"
+    unlock: { heroId: "nyx", level: 25 }
   },
   {
     id: "echo",
     hotkey: "6",
     duration: 0,
     cooldown: 3_600,
-    unlock: { heroId: "garrick", level: 25 },
-    icon: "⏳"
+    unlock: { heroId: "garrick", level: 25 }
   }
 ];
 

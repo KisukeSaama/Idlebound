@@ -4,6 +4,7 @@ import { formatDuration, intlLocale } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { summarize } from "../cloud";
 import { useCloud, useGame } from "../context";
+import { Picto } from "../icons";
 import { Modal } from "./Modal";
 
 /** Two different games (this device and the server): the player picks which one to keep. */
@@ -32,7 +33,7 @@ export function CloudChoiceModal() {
   const localBetter = local.maxStage > remote.maxStage || (local.maxStage === remote.maxStage && local.playTime >= remote.playTime);
 
   return (
-    <Modal title={m.title} icon="⚔️" size="md">
+    <Modal title={m.title} icon={<Picto name="swords" size={30} />} size="md">
       <p className="modal-text">{m.text}</p>
       <div className="save-compare">
         {card(m.current, local, localBetter)}

@@ -44,7 +44,6 @@ function Profile() {
           {cloud.lastSyncAt ? <span className="modal-hint"> · {new Date(cloud.lastSyncAt).toLocaleTimeString(intlLocale(locale))}</span> : null}
           {cloud.message ? <p className="cloud-message">{cloud.message}</p> : null}
         </div>
-        <button type="button" className="btn btn-ghost btn-sm" disabled={cloud.status === "syncing"} onClick={() => void cloud.sync({ force: true })}>{text.sync}</button>
       </div>
       {cloud.status === "rejected" ? (
         <p className="form-error">{text.rejected}</p>
@@ -167,7 +166,7 @@ function RegisterForm() {
         setPending(false);
         if (!result.ok) return setError({ text: result.error, field: result.field });
         await cloud.connect(result.data.user);
-        ui.toast({ tone: "success", icon: "☁️", title: text.welcome(result.data.user.username), text: text.welcomeText });
+        ui.toast({ tone: "success", icon: "cloud", title: text.welcome(result.data.user.username), text: text.welcomeText });
       }}
     >
       <div className="field">
@@ -212,7 +211,7 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
         setPending(false);
         if (!result.ok) return setError(result.error);
         await cloud.connect(result.data.user);
-        ui.toast({ tone: "success", icon: "☁️", title: text.welcomeBack(result.data.user.username) });
+        ui.toast({ tone: "success", icon: "cloud", title: text.welcomeBack(result.data.user.username) });
       }}
     >
       <div className="field">

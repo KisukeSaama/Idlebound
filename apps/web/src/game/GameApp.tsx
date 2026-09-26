@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio";
 import { CloudSync } from "./cloud";
 import { GameContext, type GameUi, type ToastInput, type WindowId } from "./context";
+import { SKILL_PICTO } from "./icons";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
@@ -115,28 +116,28 @@ export default function GameApp() {
           break;
         case "bossFailed":
           audio.play("fail");
-          toast({ tone: "danger", icon: "⏳", title: m.bossFailedTitle, text: m.bossFailedText });
+          toast({ tone: "danger", icon: "hourglass", title: m.bossFailedTitle, text: m.bossFailedText });
           break;
         case "stage":
           if (event.biomeChanged) {
-            toast({ tone: "violet", icon: "🗺️", title: biomeName(event.stage, locale), text: m.biome(eraLabel(event.stage, locale), event.stage) });
+            toast({ tone: "violet", icon: "map", title: biomeName(event.stage, locale), text: m.biome(eraLabel(event.stage, locale), event.stage) });
           }
           break;
         case "achievement": {
           const achievement = ACHIEVEMENT_BY_ID[event.id];
           const text = achievementText(event.id, locale);
           audio.play("achievement");
-          toast({ tone: "gold", icon: "🏆", title: m.achievement(text.name), text: m.achievementText(text.description, Math.round((achievement?.bonus ?? 0) * 100)) });
+          toast({ tone: "gold", icon: "trophy", title: m.achievement(text.name), text: m.achievementText(text.description, Math.round((achievement?.bonus ?? 0) * 100)) });
           break;
         }
         case "loot":
           audio.play("loot");
-          toast({ tone: "loot", icon: "🎁", title: itemName(event.item, locale), text: m.loot(g.rarities[event.item.rarity], event.item.level), color: RARITY_INFO[event.item.rarity].color });
+          toast({ tone: "loot", icon: "chest", title: itemName(event.item, locale), text: m.loot(g.rarities[event.item.rarity], event.item.level), color: RARITY_INFO[event.item.rarity].color });
           break;
         case "skillUnlocked": {
           const skill = SKILL_BY_ID[event.skillId];
           const text = g.skills[event.skillId];
-          toast({ tone: "violet", icon: skill.icon, title: m.skillUnlocked(text.name), text: m.skillUnlockedText(skill.hotkey, text.description) });
+          toast({ tone: "violet", icon: SKILL_PICTO[skill.id], title: m.skillUnlocked(text.name), text: m.skillUnlockedText(skill.hotkey, text.description) });
           break;
         }
         case "skill":
@@ -150,11 +151,11 @@ export default function GameApp() {
           break;
         case "crystal":
           audio.play("crystal");
-          toast({ tone: "violet", icon: "💎", title: m.crystalTitle, text: event.reward === "gold" ? m.crystal.gold(fmt(event.amount)) : m.crystal[event.reward](event.amount) });
+          toast({ tone: "violet", icon: "gem", title: m.crystalTitle, text: event.reward === "gold" ? m.crystal.gold(fmt(event.amount)) : m.crystal[event.reward](event.amount) });
           break;
         case "ascended":
           audio.play("ascend");
-          toast({ tone: "gold", icon: "✨", title: m.ascendedTitle, text: m.ascendedText(fmt(event.essences)) });
+          toast({ tone: "gold", icon: "sparkle", title: m.ascendedTitle, text: m.ascendedText(fmt(event.essences)) });
           break;
         case "inventoryFull":
           toast({ tone: "info", title: m.inventoryFull(itemName(event.item, locale), event.shards) });

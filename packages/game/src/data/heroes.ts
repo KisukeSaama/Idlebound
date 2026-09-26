@@ -30,7 +30,7 @@ const SEEDS: HeroSeed[] = [
   { id: "lysandre", glyph: "✧", color: "#b98cff", baseCost: 50_000_000_000, baseDps: 69_480_000, special: { kind: "critDamage", add: 5 } },
   { id: "ashka", glyph: "♨", color: "#ff6b3d", baseCost: 450_000_000_000, baseDps: 460_000_000, special: { kind: "gold", pct: 0.25 } },
   { id: "nameless", glyph: "♜", color: "#a0a8b8", baseCost: 4_000_000_000_000, baseDps: 3_017_000_000, special: { kind: "bossTimer", seconds: 5 } },
-  { id: "eldra", glyph: "⌛", color: "#ffd479", baseCost: 36_000_000_000_000, baseDps: 20_009_000_000, special: { kind: "globalDps", pct: 0.25 } },
+  { id: "eldra", glyph: "⧗", color: "#ffd479", baseCost: 36_000_000_000_000, baseDps: 20_009_000_000, special: { kind: "globalDps", pct: 0.25 } },
   { id: "morgrath", glyph: "☠", color: "#8fffcf", baseCost: 320_000_000_000_000, baseDps: 131_000_000_000, special: { kind: "clickDps", pct: 0.02 } },
   { id: "celestine", glyph: "◆", color: "#c77dff", baseCost: 2.7e15, baseDps: 814_000_000_000, special: { kind: "globalDps", pct: 0.3 } },
   { id: "aurelion", glyph: "♛", color: "#ffb347", baseCost: 2.4e16, baseDps: 5_335_000_000_000, special: { kind: "gold", pct: 0.5 } },
