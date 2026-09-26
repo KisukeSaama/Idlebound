@@ -4,7 +4,7 @@ import { INVENTORY_LIMIT, MARKET_OFFERS, offlineGains } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { audio } from "../audio";
 import { useFormat, useGame, useUi } from "../context";
-import { GoldIcon, ShardIcon, WINDOW_META } from "../icons";
+import { GoldIcon, OFFER_PICTO, Picto, ShardIcon, WINDOW_META } from "../icons";
 import { Modal } from "../components/Modal";
 
 export function MarketWindow({ onClose }: { onClose: () => void }) {
@@ -30,7 +30,7 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
           const copy = g.market[offer.id];
           return (
             <article key={offer.id} className="market-offer card">
-              <span className="market-icon" aria-hidden="true">{offer.icon}</span>
+              <Picto name={OFFER_PICTO[offer.id]} size={36} className="market-icon" />
               <h3>{copy.name}</h3>
               <p>{copy.description}</p>
               {offer.id === "hourglass" ? <p className="market-preview"><GoldIcon size={14} /> {hourglass > 0 ? fmt(hourglass) : text.hireFirst}</p> : null}
@@ -42,7 +42,7 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
                 onClick={() => {
                   const ok = store.act((engine, time) => engine.buyOffer(offer.id, time));
                   if (!ok) audio.play("error");
-                  else if (!chest && offer.id !== "hourglass") ui.toast({ tone: "success", icon: offer.icon, title: copy.name, text: text.effectActive });
+                  else if (!chest && offer.id !== "hourglass") ui.toast({ tone: "success", icon: OFFER_PICTO[offer.id], title: copy.name, text: text.effectActive });
                 }}
               >
                 <ShardIcon size={14} /> {offer.cost}

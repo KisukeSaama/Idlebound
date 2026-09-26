@@ -4,6 +4,10 @@ import { GameEngine, createInitialState, type GameEvent, type GameState, type Of
 
 type Listener = () => void;
 export type FxListener = (event: GameEvent) => void;
+export interface ActOptions {
+  /** False for routine, high-frequency actions (attack clicks) that need no early save. */
+  save?: boolean;
+}
 
 const TICK_MS = 50;
 const RENDER_MS = 100;
@@ -19,6 +23,7 @@ export class GameStore {
   offlineSummary: OfflineSummary | null = null;
   private listeners = new Set<Listener>();
   private fxListeners = new Set<FxListener>();
+  private actionListeners = new Set<Listener>();
   private version = 0;
   private frameRequested = false;
   private lastRender = 0;
@@ -50,6 +55,14 @@ export class GameStore {
     this.fxListeners.add(listener);
     return () => {
       this.fxListeners.delete(listener);
+    };
+  }
+
+  /** Called after each player action that changed something worth saving. */
+  onAction(listener: Listener): () => void {
+    this.actionListeners.add(listener);
+    return () => {
+      this.actionListeners.delete(listener);
     };
   }
 
@@ -96,10 +109,11 @@ export class GameStore {
   }
 
   /** Runs a player action on the engine. */
-  act<T>(action: (engine: GameEngine, now: number) => T): T {
+  act<T>(action: (engine: GameEngine, now: number) => T, options: ActOptions = {}): T {
     const result = action(this.engine, Date.now());
     this.flushEvents();
     this.notify(true);
+    if (options.save !== false) for (const listener of this.actionListeners) listener();
     return result;
   }
 

@@ -3,7 +3,7 @@
 import { formatDuration } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { useFormat, useGame } from "../context";
-import { GoldIcon } from "../icons";
+import { GoldIcon, Picto } from "../icons";
 import { Modal } from "./Modal";
 
 export function OfflineModal() {
@@ -17,7 +17,7 @@ export function OfflineModal() {
   return (
     <Modal
       title={m.title}
-      icon="🌙"
+      icon={<Picto name="moon" size={30} />}
       size="sm"
       onClose={close}
       footer={<button type="button" className="btn btn-gold" onClick={close}>{m.resume}</button>}

@@ -59,7 +59,7 @@ const BANNED_WORDS = [
 
 const RESERVED = [
   "admin", "administrateur", "administrator", "moderateur", "moderator", "modo", "support", "staff",
-  "idlebound", "system", "systeme", "root", "null", "undefined", "anonymous", "anonyme", "kisuke", "official", "officiel"
+  "idlebound", "system", "systeme", "root", "null", "undefined", "anonymous", "anonyme", "official", "officiel"
 ];
 
 /** Why a username was refused; the UI and the API turn it into a sentence. */

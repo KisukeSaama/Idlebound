@@ -21,7 +21,8 @@ documents, update the document in the same change.
    and docs are in English.
 4. **Bilingual product.** Every user-facing string exists in French and English. Never
    hardcode a visible string in a component, the engine or the API.
-5. **No em dash (—) in user-facing strings**, in either language.
+5. **No em dash (—) in user-facing strings**, in either language, and **no emoji** anywhere
+   in the UI: use the SVG icons of `apps/web/src/game/icons.tsx`.
 6. **English, locale-prefixed URLs**: `/fr/...` and `/en/...`. The language is changed in
    the in-game Settings window, never with a header switcher.
 7. **Use the design tokens** from `globals.css`; do not hardcode colors that have a token.
@@ -75,7 +76,8 @@ deploy/                   production compose, paths.env, app.env template
   `biomeName`, `eraLabel`. Items store the index of their base noun (`base`) so their name
   follows the language; legacy items keep their stored French `name`.
 - **Saves.** `CloudSync` (`apps/web/src/game/cloud.ts`) sends the whole state every 30 s,
-  when the tab is hidden and on logout, with the revision it builds on. The API
+  a few seconds after a player action (`store.act`, except attack clicks), when the tab is
+  hidden and on logout, with the revision it builds on. The API
   (`routes/save.ts`) parses it with the shared zod schema, runs `verifyState` and, for the
   same lineage (`createdAt`), `verifyTransition` against the previous save and the elapsed
   server time. 409 = another device or run (the player chooses), 422 = anti-cheat rejection
@@ -152,7 +154,7 @@ In development the game store is exposed as `window.__idlebound` (e.g.
    `TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test`).
 3. `npm run build` passes when you touched `apps/web` or `apps/api`.
 4. For UI changes, check the page in both languages and at mobile width (≤ 900px).
-5. No new French in code, no hardcoded visible string, no em dash in copy.
+5. No new French in code, no hardcoded visible string, no em dash or emoji in copy.
 6. PRODUCT.md, DESIGN.md or README.md updated if behaviour, visuals or setup changed.
 
 ## Environment notes

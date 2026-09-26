@@ -129,7 +129,8 @@ button.resource:hover {
   color: var(--shard);
 }
 
-.res-icon {
+.res-icon,
+.picto {
   flex: none;
   vertical-align: -3px;
 }
@@ -412,6 +413,7 @@ button.resource:hover {
 }
 
 .pip-crown {
+  font-variant-emoji: text;
   position: absolute;
   top: -9px;
   font-size: 0.75rem;
@@ -932,8 +934,8 @@ button.resource:hover {
 }
 
 .skill-icon {
-  font-size: 1.55rem;
-  line-height: 1;
+  width: 26px;
+  height: 26px;
 }
 
 .skill-key {
@@ -966,7 +968,8 @@ button.resource:hover {
 }
 
 .skill.locked .skill-icon {
-  font-size: 1.1rem;
+  width: 18px;
+  height: 18px;
   filter: grayscale(1);
 }
 
@@ -1159,6 +1162,7 @@ button.resource:hover {
 }
 
 .hero-glyph {
+  font-variant-emoji: text;
   text-shadow: 0 0 10px color-mix(in srgb, var(--hero) 80%, transparent);
 }
 
@@ -1725,6 +1729,7 @@ button.resource:hover {
 
 .item-lock {
   margin-left: auto;
+  display: inline-flex;
 }
 
 .item-affixes {
@@ -1831,7 +1836,7 @@ button.resource:hover {
 }
 
 .market-icon {
-  font-size: 2rem;
+  display: block;
 }
 
 .market-offer h3 {
@@ -2003,8 +2008,7 @@ button.resource:hover {
 }
 
 .achievement-badge {
-  font-size: 1.4rem;
-  text-align: center;
+  justify-self: center;
 }
 
 .achievement h4 {
@@ -2534,7 +2538,7 @@ kbd {
 .toast-info { --toast-color: #7f8cff; }
 
 .toast-icon {
-  font-size: 1.5rem;
+  flex: none;
 }
 
 .toast-title {
@@ -2715,7 +2719,8 @@ kbd {
     border-radius: 10px;
   }
   .skill-icon {
-    font-size: 1.25rem;
+    width: 21px;
+    height: 21px;
   }
   .skill-bar {
     gap: 5px;

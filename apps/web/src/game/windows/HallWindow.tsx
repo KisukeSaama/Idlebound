@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { api, type LeaderboardData } from "@/lib/api";
 import { useCloud, useFormat, useGame, useUi } from "../context";
-import { TrophyIcon } from "../icons";
+import { Picto, TrophyIcon } from "../icons";
 import { Modal } from "../components/Modal";
 
 const CATEGORIES: AchievementCategory[] = ["progression", "combat", "wealth", "companions", "ascension", "secrets"];
@@ -53,7 +53,7 @@ function Achievements() {
               const copy = achievementText(achievement.id, locale);
               return (
                 <article key={achievement.id} className={`achievement ${done ? "done" : ""}`}>
-                  <span className="achievement-badge" aria-hidden="true">{done ? "🏆" : "🔒"}</span>
+                  <Picto name={done ? "trophy" : "lock"} size={26} className="achievement-badge" />
                   <div>
                     <h4>{copy.name}</h4>
                     <p>{copy.description}</p>

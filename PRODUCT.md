@@ -132,7 +132,10 @@ rejects real play.
   browser warns before leaving after 2 min of play).
 - On sign-up or login, a fresh guest run adopts the account's save; a guest run that differs
   from the account's save triggers an explicit choice, never a silent overwrite.
-- The client syncs every 30 s, when the tab is hidden and when the player logs out. Each save
+- The client syncs every 30 s, when the tab is hidden and when the player logs out. A player
+  action (purchase, gear, ascension, settings…; not attack clicks), an achievement, a loot
+  drop or a new biome also triggers a save 3 s later, with at least 15 s between uploads to
+  stay under the API limit of 6 saves per minute. Each save
   carries the revision it builds on; a newer save from another device triggers the choice.
 
 ## Anti-cheat

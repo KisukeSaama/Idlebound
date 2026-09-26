@@ -124,9 +124,11 @@ in the game's Settings window; the footer link is the only switch on public page
   `npm run assets`. Never commit unoptimized PNGs to `public/`.
 - Monster variants (elites, eras, golden rat) reuse portraits with CSS `filter` tints and a
   `scale`, defined in `packages/game/src/data/biomes.ts`.
-- Hand-drawn SVG icons (trophy, gold, essence, shard) follow the same gold and amethyst
-  style, with dark outlines.
-- Hero glyphs are Unicode symbols tinted with the hero's color; power icons are emoji.
+- Hand-drawn SVG icons (`apps/web/src/game/icons.tsx`: trophy, gold, essence, shard and
+  the `Picto` set for powers, market offers, buffs, toasts and modals) follow the same gold
+  and amethyst style, with dark outlines. **No emoji anywhere in the app.**
+- Hero glyphs are Unicode symbols tinted with the hero's color, forced to text
+  presentation (`TEXT_PRESENTATION`, `font-variant-emoji: text`) so they never turn into emoji.
 
 ## Motion
 

@@ -30,7 +30,7 @@ export function Scene() {
 
   const strike = (clientX: number, clientY: number, rect: DOMRect) => {
     pointer.current = { x: clientX - rect.left, y: clientY - rect.top, at: performance.now() };
-    store.act((engine, now) => engine.click(now));
+    store.act((engine, now) => engine.click(now), { save: false });
   };
 
   return (

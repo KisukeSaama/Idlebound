@@ -3,6 +3,7 @@
 import { isBiomeBossStage, isBossStage } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
+import { Picto, TEXT_PRESENTATION } from "../icons";
 
 export function StageBar() {
   const { state, store } = useGame();
@@ -24,7 +25,7 @@ export function StageBar() {
           return (
             <li key={stage}>
               <button type="button" className={classes} disabled={locked} onClick={() => travel(stage)} aria-label={m.stage(stage, isBossStage(stage))} aria-current={stage === current ? "step" : undefined}>
-                {isBossStage(stage) ? <span className="pip-crown" aria-hidden="true">{isBiomeBossStage(stage) ? "♛" : "☠"}</span> : null}
+                {isBossStage(stage) ? <span className="pip-crown" aria-hidden="true">{isBiomeBossStage(stage) ? "♛" : "☠"}{TEXT_PRESENTATION}</span> : null}
                 <span>{stage}</span>
               </button>
             </li>
@@ -39,7 +40,7 @@ export function StageBar() {
         title={state.autoAdvance ? m.autoOn : m.autoOff}
         aria-pressed={state.autoAdvance}
       >
-        <span aria-hidden="true">{state.autoAdvance ? "⏩" : "⏸"}</span>
+        <Picto name={state.autoAdvance ? "fastForward" : "pause"} size={14} />
         <span className="auto-label">{state.autoAdvance ? m.auto : m.farm}</span>
       </button>
     </div>

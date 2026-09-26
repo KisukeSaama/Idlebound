@@ -12,9 +12,8 @@ export const account = defineMessages({
       error: "Serveur injoignable",
       rejected: "Sauvegarde refusée"
     },
-    sync: "Synchroniser",
     rejected: "Le serveur a détecté une progression impossible dans cette partie (sauvegarde modifiée ?). Elle ne sera ni sauvegardée ni classée. Commence une nouvelle partie pour repartir sur de bonnes bases.",
-    saveInfo: "Ta partie est sauvegardée sur le serveur toutes les 30 secondes et quand tu quittes la page. Chaque sauvegarde est vérifiée par le serveur avant d'entrer au classement.",
+    saveInfo: "Ta partie est sauvegardée sur le serveur quelques secondes après chacune de tes actions, au moins toutes les 30 secondes et quand tu quittes la page. Chaque sauvegarde est vérifiée par le serveur avant d'entrer au classement.",
     changePassword: "Changer de mot de passe",
     logout: "Se déconnecter",
     loggedOutTitle: "Déconnecté",
@@ -81,9 +80,8 @@ export const account = defineMessages({
       error: "Server unreachable",
       rejected: "Save rejected"
     },
-    sync: "Sync now",
     rejected: "The server detected impossible progress in this game (edited save?). It will be neither saved nor ranked. Start a new game to get back on a clean footing.",
-    saveInfo: "Your game is saved to the server every 30 seconds and when you leave the page. Every save is verified by the server before it reaches the leaderboard.",
+    saveInfo: "Your game is saved to the server a few seconds after each of your actions, at least every 30 seconds, and when you leave the page. Every save is verified by the server before it reaches the leaderboard.",
     changePassword: "Change password",
     logout: "Log out",
     loggedOutTitle: "Logged out",

@@ -17,7 +17,7 @@ import { memo } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
 import { useFormat, useGame } from "../context";
-import { GoldIcon } from "../icons";
+import { GoldIcon, TEXT_PRESENTATION } from "../icons";
 import { describeEffect } from "../text";
 
 const MODES: BuyMode[] = [1, 10, 25, 100, "max"];
@@ -159,7 +159,7 @@ const HeroRow = memo(function HeroRow({ hero, level, count, cost, affordable, go
   return (
     <li className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}`} style={{ ["--hero" as string]: hero.color }}>
       <div className="hero-medallion" aria-hidden="true">
-        <span className="hero-glyph">{hero.glyph}</span>
+        <span className="hero-glyph">{hero.glyph}{TEXT_PRESENTATION}</span>
         {hired ? <span className="hero-level">{level}</span> : null}
       </div>
       <div className="hero-info">

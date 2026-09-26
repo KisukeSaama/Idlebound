@@ -25,6 +25,11 @@ export function summarize(state: GameState): SaveSummary {
 
 /** The save only lives on the server: sync often so nothing is lost. */
 const SYNC_INTERVAL_MS = 30_000;
+const SYNC_CHECK_MS = 5_000;
+/** A player action or a milestone saves soon after, grouping bursts of actions. */
+const SAVE_DEBOUNCE_MS = 3_000;
+/** Keeps uploads under the API limit (6 per minute), with room for page-hide saves. */
+const MIN_UPLOAD_GAP_MS = 15_000;
 const RETRY_AFTER_REJECT_MS = 10 * 60_000;
 
 /**
@@ -42,8 +47,11 @@ export class CloudSync {
   private listeners = new Set<() => void>();
   private version = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private inFlight = false;
   private rejectedAt = 0;
+  private lastUploadAt = 0;
+  private unsubscribes: (() => void)[] = [];
 
   constructor(private store: GameStore) {}
 
@@ -68,10 +76,20 @@ export class CloudSync {
 
   /** On start: existing session → load the server game. */
   async init() {
+    if (this.unsubscribes.length === 0) {
+      this.unsubscribes = [
+        this.store.onAction(() => this.requestSave()),
+        this.store.onFx((event) => {
+          if (event.type === "achievement" || event.type === "loot" || (event.type === "stage" && event.biomeChanged)) this.requestSave();
+        })
+      ];
+    }
+    this.timer ??= setInterval(() => {
+      if (Date.now() - this.lastUploadAt >= SYNC_INTERVAL_MS) void this.sync();
+    }, SYNC_CHECK_MS);
     const result = await api.me();
     if (result.ok && result.data.user) await this.connect(result.data.user);
     else this.set({ status: result.ok ? "offline" : "error", message: result.ok ? null : result.error });
-    this.timer ??= setInterval(() => void this.sync(), SYNC_INTERVAL_MS);
   }
 
   /** After login, sign-up, or on start. */
@@ -100,6 +118,7 @@ export class CloudSync {
 
   adopt(cloud: CloudSave) {
     this.store.replaceState(cloud.state);
+    this.lastUploadAt = Date.now();
     this.set({ pendingChoice: null, status: "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
   }
 
@@ -117,6 +136,7 @@ export class CloudSync {
   private async upload(baseRevision: number | null, replace: boolean, keepalive = false) {
     if (!this.user || this.inFlight) return;
     this.inFlight = true;
+    this.lastUploadAt = Date.now();
     if (!keepalive) this.set({ status: "syncing" });
     const result = await api.putSave(structuredClone(this.store.state), baseRevision, replace, keepalive);
     this.inFlight = false;
@@ -149,7 +169,18 @@ export class CloudSync {
     }
   }
 
-  /** Periodic sync, on page hide, or manual. */
+  /** Schedules an early save after a player action or a milestone. */
+  requestSave() {
+    if (!this.user || this.pendingChoice || this.status === "rejected" || this.saveTimer) return;
+    const delay = Math.max(SAVE_DEBOUNCE_MS, this.lastUploadAt + MIN_UPLOAD_GAP_MS - Date.now());
+    this.saveTimer = setTimeout(() => {
+      this.saveTimer = null;
+      if (this.inFlight) this.requestSave();
+      else void this.sync();
+    }, delay);
+  }
+
+  /** Periodic sync, after a player action, on page hide, or on logout. */
   async sync(options: { force?: boolean; keepalive?: boolean } = {}) {
     if (!this.user || this.pendingChoice) return;
     if (this.status === "rejected" && !options.force && Date.now() - this.rejectedAt < RETRY_AFTER_REJECT_MS) return;
@@ -178,5 +209,10 @@ export class CloudSync {
 
   dispose() {
     if (this.timer) clearInterval(this.timer);
+    if (this.saveTimer) clearTimeout(this.saveTimer);
+    this.timer = null;
+    this.saveTimer = null;
+    for (const unsubscribe of this.unsubscribes) unsubscribe();
+    this.unsubscribes = [];
   }
 }
