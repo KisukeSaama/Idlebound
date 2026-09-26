@@ -8,6 +8,8 @@ export const users = pgTable("users", {
   /** Normalized username (case, accents): guarantees visual uniqueness. */
   usernameKey: text("username_key").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  /** When the player proved they own the address; null until then (see lib/verification.ts). */
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
   /** Last authenticated request (day precision), used to purge inactive accounts. */
@@ -32,6 +34,15 @@ export const passwordResets = pgTable("password_resets", {
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   usedAt: timestamp("used_at", { withTimezone: true })
 }, (table) => [index("password_resets_user_idx").on(table.userId)]);
+
+/** E-mail confirmation links. A link only confirms the address it was sent to. */
+export const emailVerifications = pgTable("email_verifications", {
+  /** SHA-256 of the token. */
+  id: text("id").primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull()
+}, (table) => [index("email_verifications_user_idx").on(table.userId)]);
 
 export const saves = pgTable("saves", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),

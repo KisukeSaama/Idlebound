@@ -2,7 +2,7 @@
 
 import { ACHIEVEMENTS, altarCost, ALTARS, INVENTORY_LIMIT } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
-import { useGame, useUi, type WindowId } from "../context";
+import { useCloud, useGame, useUi, type WindowId } from "../context";
 import { TrophyIcon, WINDOW_META } from "../icons";
 
 const ORDER: WindowId[] = ["map", "gear", "inventory", "market", "ascension", "hall", "account", "settings"];
@@ -10,6 +10,7 @@ const ORDER: WindowId[] = ["map", "gear", "inventory", "market", "ascension", "h
 export function NavRail({ active }: { active: WindowId | null }) {
   const { state, store } = useGame();
   const ui = useUi();
+  const cloud = useCloud();
   const { t } = useI18n();
 
   const badges: Partial<Record<WindowId, string>> = {};
@@ -18,6 +19,7 @@ export function NavRail({ active }: { active: WindowId | null }) {
   if (state.inventory.length >= INVENTORY_LIMIT - 4) badges.inventory = "!";
   else if (state.inventory.length > 0) badges.inventory = String(state.inventory.length);
   if (state.shards >= 30) badges.market = "+";
+  if (cloud.user && !cloud.user.emailVerified) badges.account = "!";
   const unlockedRatio = `${state.achievements.length}/${ACHIEVEMENTS.length}`;
 
   return (

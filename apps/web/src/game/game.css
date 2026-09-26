@@ -181,6 +181,7 @@ button.resource:hover {
 .sync-error,
 .sync-rejected { background: var(--danger); }
 .sync-idle { background: var(--gold); }
+.sync-unverified { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 
 @keyframes blink {
   50% { opacity: 0.3; }
@@ -752,6 +753,7 @@ button.resource:hover {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: max-content;
   max-width: min(420px, 88%);
   padding: 10px 10px 10px 14px;
   border-radius: 12px;
@@ -1343,6 +1345,13 @@ button.resource:hover {
   animation: modal-in 180ms cubic-bezier(0.2, 1.2, 0.4, 1);
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* Only the body scrolls: the head, tabs and footer never shrink on short screens. */
+.modal-head,
+.modal-tabs,
+.modal-foot {
+  flex: none;
 }
 
 .modal-sm { max-width: 460px; }
@@ -2268,6 +2277,35 @@ button.resource:hover {
   color: var(--muted);
 }
 
+.verify-notice {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
+  font-size: 0.88rem;
+}
+
+.verify-notice strong {
+  color: var(--gold);
+  font-family: var(--font-display);
+}
+
+.verify-notice p {
+  margin: 0;
+}
+
+.verify-notice .account-actions {
+  margin: 4px 0 0;
+}
+
+.verify-notice.is-overdue {
+  border-color: rgba(255, 92, 122, 0.55);
+  background: rgba(255, 92, 122, 0.08);
+}
+
 .account-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2561,6 +2599,15 @@ kbd {
 
 /* ====================================================================== responsive */
 
+/*
+ * Four layouts share this file:
+ * - desktop (default), with a compact rail when the window is not tall;
+ * - portrait mobile (≤ 900px wide, or any phone narrower than 600px): one column,
+ *   scene on top, companions below, rail as a bottom bar, a pill to go full-screen;
+ * - short landscape (≤ 560px tall): the desktop three columns, tightened;
+ * - both small layouts share a compact combat HUD.
+ */
+
 @media (max-width: 1280px) {
   .game-root {
     --panel-width: 360px;
@@ -2589,11 +2636,214 @@ kbd {
   }
 }
 
+/* ------------------------------------------------ desktop that is not tall */
+
+@media (min-width: 901px) and (max-height: 820px) {
+  .nav-rail {
+    gap: 3px;
+    padding: 5px;
+  }
+  .nav-button {
+    padding: 4px 2px 3px;
+  }
+  .nav-button img,
+  .nav-button svg {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ------------------------------------------------ windows on narrow screens */
+
 @media (max-width: 900px) {
+  .account-cta {
+    display: none;
+  }
+  .gear-layout,
+  .stats-layout,
+  .ascension-hero {
+    grid-template-columns: 1fr;
+  }
+  .map-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .map-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .setting-row {
+    flex-wrap: wrap;
+  }
+  /* A long description wraps inside its column; the switch stays on the right. */
+  .setting-row > span:first-child {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
+  .setting-row input[type="range"] {
+    width: min(180px, 40vw);
+  }
+}
+
+/* Touch screens have no hover: tooltips would stick after a tap. */
+@media (hover: none) {
+  .skill-tip {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------ compact combat HUD (mobile and short screens) */
+
+@media (max-width: 900px), (max-height: 560px) {
+  .scene-top {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 5px;
+    padding: 6px 8px 0;
+  }
+  .scene-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    max-width: 100%;
+  }
+  .scene-era {
+    flex: none;
+    font-size: 0.62rem;
+  }
+  .scene-biome {
+    margin-top: 0;
+    font-size: 0.95rem;
+  }
+  .buff-chips {
+    justify-content: center;
+  }
+  .buff-chip {
+    height: 24px;
+    padding: 0 7px;
+    font-size: 0.7rem;
+  }
+  .stage-bar {
+    gap: 4px;
+    padding: 3px;
+  }
+  .stage-pips {
+    gap: 4px;
+  }
+  .stage-pip {
+    width: 31px;
+    height: 31px;
+    font-size: 0.74rem;
+  }
+  .stage-pip.current {
+    transform: scale(1.08);
+  }
+  .pip-crown {
+    top: -8px;
+    font-size: 0.66rem;
+  }
+  .stage-arrow {
+    width: 26px;
+    height: 26px;
+  }
+  .auto-toggle {
+    height: 26px;
+    padding: 0 8px;
+  }
+  .auto-label {
+    display: none;
+  }
+  .monster-slot {
+    width: min(80%, 380px);
+  }
+  .tutorial-hint {
+    gap: 8px;
+    max-width: calc(100% - 16px);
+    padding: 7px 7px 7px 11px;
+    font-size: 0.8rem;
+  }
+  .hint-center,
+  .hint-right,
+  .hint-bottom {
+    top: 6px;
+  }
+  .monster-panel {
+    width: min(560px, calc(100% - 16px));
+    padding-bottom: 4px;
+  }
+  .monster-meta {
+    margin-bottom: 3px;
+  }
+  .monster-name {
+    font-size: 0.92rem;
+  }
+  .monster-hp {
+    font-size: 0.78rem;
+  }
+  .hp-bar {
+    height: 14px;
+  }
+  .boss-timer,
+  .kill-progress {
+    height: 17px;
+    margin-top: 4px;
+  }
+  .boss-timer span,
+  .kill-progress span {
+    font-size: 0.68rem;
+  }
+  .skill-bar {
+    gap: 6px;
+    padding: 4px 6px 7px;
+  }
+  .skill {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+  .skill-icon {
+    width: 21px;
+    height: 21px;
+  }
+  .skill-key {
+    font-size: 0.56rem;
+  }
+  .fx-damage {
+    font-size: 1.35rem;
+  }
+  .fx-damage.crit {
+    font-size: 1.9rem;
+  }
+  .crystal {
+    width: 56px;
+    height: 62px;
+  }
+  .hero-panel-head {
+    padding: 8px 10px;
+  }
+  .hero-panel-head h2 {
+    font-size: 1rem;
+  }
+  .hero-list {
+    gap: 5px;
+    padding: 6px;
+  }
+  .hero-row {
+    gap: 8px;
+    padding: 6px 7px;
+  }
+  .hero-buy {
+    min-width: 84px;
+    height: 48px;
+  }
+}
+
+/* ------------------------------------------------ portrait mobile */
+
+@media (max-width: 900px) and (min-height: 561px), (max-width: 599px) {
   .game-root {
     --header-height: 54px;
-    --nav-height: 64px;
-    grid-template-rows: var(--header-height) minmax(0, 1fr) auto;
+    --nav-height: 62px;
+    --tabs-space: 50px;
     padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
   }
   .game-header {
@@ -2615,22 +2865,24 @@ kbd {
     padding: 0 10px;
   }
   .account-name {
-    max-width: 80px;
-  }
-  .account-cta {
-    display: none;
+    max-width: 90px;
   }
   .game-body {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(300px, 52%) minmax(0, 1fr);
+    grid-template-rows: minmax(290px, 58%) minmax(0, 1fr);
     gap: 8px;
     padding: 8px;
   }
+  /* Full-screen combat: the scene stops above the floating pill. */
   .game-body[data-mobile-tab="scene"] {
     grid-template-rows: minmax(0, 1fr);
+    padding-bottom: var(--tabs-space);
   }
   .game-body[data-mobile-tab="scene"] .hero-panel {
     display: none;
+  }
+  .hero-list {
+    padding-bottom: var(--tabs-space);
   }
   .nav-rail {
     position: fixed;
@@ -2639,25 +2891,37 @@ kbd {
     bottom: 0;
     z-index: 30;
     flex-direction: row;
-    gap: 2px;
+    gap: 0;
     height: calc(var(--nav-height) + env(safe-area-inset-bottom));
-    padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
+    padding: 4px max(4px, env(safe-area-inset-left)) calc(4px + env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-right));
     border-radius: 0;
     border-width: 1px 0 0;
-    overflow-x: auto;
     background: rgba(14, 12, 26, 0.97);
   }
   .nav-button {
-    flex: 1 0 58px;
-    padding: 3px 2px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 3px 1px;
   }
   .nav-button img,
   .nav-button svg {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
+  }
+  .nav-button:hover img,
+  .nav-button:hover svg {
+    transform: none;
   }
   .nav-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 0.6rem;
+  }
+  .nav-badge {
+    top: 1px;
+    right: 1px;
   }
   .toasts {
     top: calc(var(--header-height) + 8px);
@@ -2671,77 +2935,28 @@ kbd {
     bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 8px);
     z-index: 25;
     display: flex;
+    width: max-content;
+    max-width: calc(100vw - 24px);
     transform: translateX(-50%);
     padding: 3px;
     border-radius: 999px;
-    background: rgba(14, 12, 26, 0.92);
+    background: rgba(14, 12, 26, 0.94);
     border: 1px solid var(--border-strong);
     box-shadow: var(--shadow);
   }
   .mobile-tabs button {
-    padding: 6px 12px;
+    padding: 7px 14px;
     border: 0;
     border-radius: 999px;
     background: transparent;
     color: var(--muted);
     font-weight: 700;
-    font-size: 0.76rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
   }
   .mobile-tabs button.active {
     background: var(--gold);
     color: #241603;
-  }
-  .hero-list {
-    padding-bottom: 56px;
-  }
-  .scene-top {
-    padding: 8px 8px 0;
-    gap: 6px;
-  }
-  .scene-biome {
-    font-size: 0.95rem;
-  }
-  .stage-pip {
-    width: 32px;
-    height: 32px;
-    font-size: 0.72rem;
-  }
-  .stage-arrow {
-    width: 26px;
-    height: 26px;
-  }
-  .auto-label {
-    display: none;
-  }
-  .skill {
-    width: 46px;
-    height: 46px;
-    border-radius: 10px;
-  }
-  .skill-icon {
-    width: 21px;
-    height: 21px;
-  }
-  .skill-bar {
-    gap: 5px;
-    padding: 4px 6px 8px;
-  }
-  .monster-slot {
-    width: min(72%, 360px);
-  }
-  .hero-buy {
-    min-width: 84px;
-  }
-  .gear-layout,
-  .stats-layout,
-  .ascension-hero {
-    grid-template-columns: 1fr;
-  }
-  .map-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .map-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .modal-backdrop {
     padding: 8px;
@@ -2750,10 +2965,70 @@ kbd {
   .modal {
     max-height: calc(100dvh - 16px);
   }
-  .skill-tip {
+}
+
+/* ------------------------------------------------ short landscape (phones held sideways) */
+
+@media (max-height: 560px) and (min-width: 600px) {
+  .game-root {
+    --header-height: 46px;
+    --rail-width: 56px;
+    --panel-width: min(340px, 42vw);
+  }
+  .game-header {
+    gap: 8px;
+    padding: 0 max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  }
+  .game-logo img {
+    height: 26px;
+  }
+  .resource,
+  .account-chip {
+    height: 32px;
+  }
+  .game-body {
+    gap: 6px;
+    padding: 6px max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  }
+  .nav-rail {
+    gap: 2px;
+    padding: 4px;
+  }
+  .nav-button {
+    padding: 3px 0;
+  }
+  .nav-button img,
+  .nav-button svg {
+    width: 26px;
+    height: 26px;
+  }
+  .nav-label {
     display: none;
   }
+  /* The panel is narrow: the buy modes need the whole row, the title stays for screen readers. */
+  .hero-panel-head {
+    justify-content: center;
+  }
+  .hero-panel-head h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .toasts {
+    top: calc(var(--header-height) + 8px);
+  }
+  .modal-backdrop {
+    padding: 8px;
+  }
+  .modal {
+    max-height: calc(100dvh - 16px);
+  }
 }
+
+/* ------------------------------------------------ small phones */
 
 @media (max-width: 520px) {
   .gear-slots,
@@ -2761,28 +3036,86 @@ kbd {
   .offline-rewards {
     grid-template-columns: 1fr;
   }
+  .map-summary > div {
+    padding: 8px 10px;
+  }
+  .map-summary strong {
+    font-size: 1.1rem;
+  }
+  .market-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+  }
+  .market-offer {
+    padding: 11px;
+  }
   .resource-gold .resource-value {
     font-size: 1.05rem;
   }
   .hero-row {
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    gap: 8px;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+  }
+  .hero-row.mystery {
+    grid-template-columns: 42px minmax(0, 1fr);
   }
   .hero-medallion {
-    width: 44px;
-    height: 44px;
-    font-size: 1.2rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1.15rem;
+  }
+  .hero-buy {
+    min-width: 76px;
+    padding: 4px 8px;
   }
   .buy-modes button {
     min-width: 32px;
     padding: 0 5px;
   }
-  .stage-pips li:first-child,
-  .stage-pips li:last-child {
+  .modal-head {
+    padding: 12px;
+  }
+  .modal-tabs {
+    padding: 8px 12px 0;
+  }
+  .modal-body {
+    padding: 12px;
+  }
+  .modal-foot {
+    padding: 10px 12px;
+  }
+}
+
+/* Eight labelled buttons do not fit on a phone: icons only (each keeps its aria-label). */
+@media (max-width: 480px) {
+  .game-root {
+    --nav-height: 52px;
+  }
+  .nav-label {
     display: none;
   }
-  .setting-row {
-    flex-wrap: wrap;
+  .resource {
+    padding: 0 8px;
+  }
+  .resource-bar {
+    gap: 5px;
+  }
+}
+
+@media (max-width: 360px) {
+  .stage-pip {
+    width: 27px;
+    height: 27px;
+    font-size: 0.68rem;
+  }
+  .stage-arrow {
+    width: 22px;
+  }
+  .skill {
+    width: 40px;
+    height: 40px;
+  }
+  .skill-bar {
+    gap: 4px;
   }
 }
 

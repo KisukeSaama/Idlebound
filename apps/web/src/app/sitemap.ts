@@ -5,7 +5,7 @@ import { languageAlternates, siteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-/** Indexable pages; reset-password is deliberately left out (noindex). */
+/** Indexable pages; reset-password and verify-email are deliberately left out (noindex). */
 const PAGES: { route: RouteId; changeFrequency: "hourly" | "weekly" | "yearly"; priority: number }[] = [
   { route: "home", changeFrequency: "weekly", priority: 1 },
   { route: "play", changeFrequency: "weekly", priority: 0.9 },

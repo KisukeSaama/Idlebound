@@ -137,7 +137,7 @@ CI/CD variables (scoped per environment, "Protected" in production):
 | Variable | Required | Purpose |
 |---|---|---|
 | `IDLEBOUND_POSTGRES_PASSWORD` | yes | Postgres password (no `@ : / ? # %` or spaces) |
-| `IDLEBOUND_SMTP_URL` | no | `smtps://user:pass@host:465` for e-mails. Without it, e-mails are written to the API logs, and inactive accounts are never warned nor deleted |
+| `IDLEBOUND_SMTP_URL` | no | `smtps://user:pass@host:465` for e-mails. With it, new accounts must confirm their address (checked at API start-up, see the logs). Without it, e-mails are written to the API logs, sign-ups are not confirmed, and inactive accounts are never warned nor deleted |
 | `IDLEBOUND_MAIL_FROM` | no | E-mail sender |
 
 Only the `web` container is on the `traefik` network; the API and Postgres are on an internal

@@ -3,8 +3,8 @@ import { and, eq, isNull, lt } from "drizzle-orm";
 import { db } from "../db/client";
 import { users } from "../db/schema";
 import { env } from "../env";
-import { messagesFor } from "./i18n";
-import { sendMail } from "./mail";
+import { inactivityMail, sendMail } from "./mail";
+import { UNVERIFIED_ACCOUNT_DAYS } from "./verification";
 
 const DAY = 86_400_000;
 /** An account with no activity for 3 years is deleted along with all its data. */
@@ -43,7 +43,7 @@ export async function purgeInactiveAccounts(now = new Date()) {
     const deletesAt = new Date(Math.max(user.lastSeenAt.getTime() + INACTIVE_ACCOUNT_DAYS * DAY, now.getTime() + INACTIVITY_NOTICE_DAYS * DAY));
     const mail = inactivityMail(user.username, `${env.PUBLIC_SITE_URL}/${locale}/play`, deletesAt, locale);
     try {
-      await sendMail(user.email, mail.subject, mail.text, mail.html);
+      await sendMail(user.email, mail);
     } catch (error) {
       // Not marked as warned: the next run retries, and the account cannot be deleted meanwhile.
       console.error("[mail] inactivity notice failed", error);
@@ -55,22 +55,16 @@ export async function purgeInactiveAccounts(now = new Date()) {
   }
 }
 
-export function inactivityMail(username: string, link: string, deletesAt: Date, locale: Locale) {
-  const m = messagesFor(locale).inactivityMail;
-  const date = new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", { dateStyle: "long", timeZone: "UTC" }).format(deletesAt);
-  const text = [m.greeting(username), "", m.notice(date), "", `${m.keep} ${link}`, "", m.ignore].join("\n");
-  const html = `<!doctype html><html lang="${locale}"><body style="font-family:system-ui,sans-serif;background:#0b0b14;color:#e9e4ff;padding:32px">
-<div style="max-width:480px;margin:auto;background:#161426;border:1px solid #3b2f63;border-radius:12px;padding:28px">
-<h1 style="font-size:20px;color:#f5c85b;margin:0 0 16px">Idlebound</h1>
-<p>${escapeHtml(m.greeting(username))}</p>
-<p>${escapeHtml(m.notice(date))}</p>
-<p>${escapeHtml(m.keep)}</p>
-<p style="text-align:center;margin:28px 0"><a href="${escapeHtml(link)}" style="background:#f5c85b;color:#1a1204;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:700">${escapeHtml(m.button)}</a></p>
-<p style="color:#a79fcc;font-size:13px">${escapeHtml(m.ignore)}</p>
-</div></body></html>`;
-  return { subject: m.subject, text, html };
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
+/**
+ * Deletes accounts whose address was never confirmed, well after the grace period: the
+ * address and the username become free again (typo, or someone else's address).
+ */
+export async function purgeUnverifiedAccounts(now = new Date()) {
+  // Without SMTP nobody can confirm anything: nothing is deleted.
+  if (!env.SMTP_URL) return;
+  const createdBefore = new Date(now.getTime() - UNVERIFIED_ACCOUNT_DAYS * DAY);
+  const removed = await db.delete(users)
+    .where(and(isNull(users.emailVerifiedAt), lt(users.createdAt, createdBefore)))
+    .returning({ id: users.id });
+  if (removed.length > 0) console.log(`[api] ${removed.length} never-confirmed account(s) deleted`);
 }

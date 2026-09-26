@@ -6,6 +6,9 @@ export interface AccountUser {
   username: string;
   email: string;
   createdAt: string;
+  emailVerified: boolean;
+  /** Until when saves are accepted without a confirmed address (null once confirmed). */
+  verifyBy: string | null;
 }
 
 export type ApiResult<T> =
@@ -67,6 +70,9 @@ export const api = {
   logout: () => request<{ ok: true }>("POST", "/auth/logout"),
   forgot: (email: string) => request<{ ok: true; message: string }>("POST", "/auth/forgot", { email }),
   resetPassword: (token: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/reset", { token, password }),
+  verifyEmail: (token: string) => request<{ ok: true; username: string }>("POST", "/auth/verify", { token }),
+  resendVerification: () => request<{ ok: true }>("POST", "/auth/verify/resend"),
+  changeEmail: (email: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/email", { email, password }),
   changePassword: (currentPassword: string, newPassword: string) => request<{ ok: true }>("POST", "/auth/password", { currentPassword, newPassword }),
   deleteAccount: (password: string) => request<{ ok: true }>("DELETE", "/auth/account", { password }),
   getSave: () => request<{ save: CloudSave | null }>("GET", "/save"),

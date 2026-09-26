@@ -114,7 +114,15 @@ rejects real play.
 
 ## Accounts
 
-- Sign-up asks for **e-mail, username and password, nothing else**.
+- Sign-up asks for **e-mail, username and password (typed twice), nothing else**.
+- **E-mail confirmation**, only when an SMTP server is configured (otherwise the address is
+  accepted as is). The player plays and saves right away; the account window shows the
+  deadline, a "resend" button and a way to fix a mistyped address (password required).
+  After **3 days** without confirmation, saves are refused until the link is clicked (the
+  game stays playable, the account icon shows `!`). Links are valid 7 days, a new one
+  voids the previous one. A password reset through the e-mail link also confirms the
+  address. An account never confirmed is deleted 30 days after sign-up. Accounts created
+  before this rule are considered confirmed.
 - Usernames: 3 to 16 characters (letters, digits, `-`, `_`), at least one letter, unique
   regardless of case and accents, reserved names blocked, strict FR/EN profanity filter that
   sees through leet-speak, accents, repeated letters and separators (usernames are public).
@@ -122,6 +130,8 @@ rejects real play.
 - Sessions: 30 days sliding, httpOnly cookie; changing the password revokes every session.
 - Forgotten password: single-use link valid 1 h, same answer whether the account exists.
 - Self-service account deletion (GDPR) and a privacy page.
+- E-mails (confirmation, password reset, inactivity warning) share one template in
+  `apps/api/src/lib/mail.ts`: see DESIGN.md.
 - Accounts inactive for 3 years are deleted, after a warning e-mail sent 30 days before
   (in the player's language). Without a configured SMTP server, nobody is warned, so
   nobody is deleted.

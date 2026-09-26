@@ -3,10 +3,10 @@ import { and, eq, gt, lt } from "drizzle-orm";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { db } from "../db/client";
-import { passwordResets, saveRejections, sessions, users } from "../db/schema";
+import { emailVerifications, passwordResets, saveRejections, sessions, users } from "../db/schema";
 import { env } from "../env";
 import { localeOf } from "./i18n";
-import { purgeInactiveAccounts } from "./inactivity";
+import { purgeInactiveAccounts, purgeUnverifiedAccounts } from "./inactivity";
 
 export const SESSION_COOKIE = "ib_session";
 const SESSION_DAYS = 30;
@@ -46,6 +46,7 @@ export interface SessionUser {
   id: string;
   email: string;
   username: string;
+  emailVerifiedAt: Date | null;
   createdAt: Date;
 }
 
@@ -55,7 +56,7 @@ export async function currentUser(c: Context): Promise<SessionUser | null> {
   if (!token || token.length > 100) return null;
   const id = hashToken(token);
   const [row] = await db
-    .select({ id: users.id, email: users.email, username: users.username, createdAt: users.createdAt, lastSeenAt: users.lastSeenAt, expiresAt: sessions.expiresAt })
+    .select({ id: users.id, email: users.email, username: users.username, emailVerifiedAt: users.emailVerifiedAt, createdAt: users.createdAt, lastSeenAt: users.lastSeenAt, expiresAt: sessions.expiresAt })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(and(eq(sessions.id, id), gt(sessions.expiresAt, new Date())))
@@ -71,7 +72,7 @@ export async function currentUser(c: Context): Promise<SessionUser | null> {
     await db.update(sessions).set({ expiresAt }).where(eq(sessions.id, id));
     writeCookie(c, token, expiresAt);
   }
-  return { id: row.id, email: row.email, username: row.username, createdAt: row.createdAt };
+  return { id: row.id, email: row.email, username: row.username, emailVerifiedAt: row.emailVerifiedAt, createdAt: row.createdAt };
 }
 
 export async function destroySession(c: Context) {
@@ -84,12 +85,14 @@ export async function destroyAllSessions(userId: string) {
   await db.delete(sessions).where(eq(sessions.userId, userId));
 }
 
-/** Periodic cleanup: expired sessions and reset links, old anti-cheat logs, inactive accounts. */
+/** Periodic cleanup: expired sessions and links, old anti-cheat logs, inactive and never-confirmed accounts. */
 export async function purgeExpired() {
   const now = new Date();
   // Warn-then-delete, never delete without a warning e-mail.
   await purgeInactiveAccounts(now);
+  await purgeUnverifiedAccounts(now);
   await db.delete(sessions).where(lt(sessions.expiresAt, now));
   await db.delete(passwordResets).where(lt(passwordResets.expiresAt, now));
+  await db.delete(emailVerifications).where(lt(emailVerifications.expiresAt, now));
   await db.delete(saveRejections).where(lt(saveRejections.createdAt, new Date(now.getTime() - REJECTION_RETENTION_DAYS * DAY)));
 }

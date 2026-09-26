@@ -37,6 +37,7 @@ function Profile() {
           <p className="modal-hint">{user.email}</p>
         </div>
       </div>
+      {!user.emailVerified ? <VerifyNotice /> : null}
       <div className={`cloud-status status-${cloud.status}`}>
         <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />
         <div>
@@ -60,11 +61,93 @@ function Profile() {
   );
 }
 
+/** Address to confirm: deadline, resend, and a way to fix a mistyped address. */
+function VerifyNotice() {
+  const cloud = useCloud();
+  const { t, locale } = useI18n();
+  const text = t.account;
+  const user = cloud.user!;
+  const [info, setInfo] = useState<{ ok: boolean; text: string } | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [pending, setPending] = useState(false);
+  const deadline = user.verifyBy ? new Date(user.verifyBy) : null;
+  const overdue = cloud.status === "unverified" || (deadline !== null && deadline.getTime() <= Date.now());
+  const deadlineText = deadline ? deadline.toLocaleString(intlLocale(locale), { dateStyle: "long", timeStyle: "short" }) : "";
+  return (
+    <div className={`verify-notice ${overdue ? "is-overdue" : ""}`} role={overdue ? "alert" : undefined}>
+      <strong>{text.verifyTitle}</strong>
+      <p>{overdue ? text.verifyOverdue(user.email) : text.verifyText(user.email, deadlineText)}</p>
+      {info ? <p className={info.ok ? "form-success" : "form-error"} role="status">{info.text}</p> : null}
+      <div className="account-actions">
+        <button
+          type="button"
+          className="btn btn-gold btn-sm"
+          disabled={pending}
+          onClick={async () => {
+            setPending(true);
+            const result = await api.resendVerification();
+            setPending(false);
+            if (!result.ok && result.status === 400) await cloud.refreshUser();
+            setInfo(result.ok ? { ok: true, text: text.resent } : { ok: false, text: result.error });
+          }}
+        >
+          {text.resend}
+        </button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(!editing)}>{text.wrongEmail}</button>
+      </div>
+      {editing ? (
+        <ChangeEmail
+          onDone={() => {
+            setEditing(false);
+            setInfo({ ok: true, text: text.emailChanged });
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function ChangeEmail({ onDone }: { onDone: () => void }) {
+  const cloud = useCloud();
+  const text = useI18n().t.account;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<{ text: string; field?: string } | null>(null);
+  const [pending, setPending] = useState(false);
+  return (
+    <form
+      className="account-form"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        setPending(true);
+        setError(null);
+        const result = await api.changeEmail(email, password);
+        setPending(false);
+        if (!result.ok) return setError({ text: result.error, field: result.field });
+        cloud.setUser(result.data.user);
+        onDone();
+      }}
+    >
+      <div className="field">
+        <label htmlFor="change-email">{text.newEmail}</label>
+        <input id="change-email" className="input" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} aria-invalid={error?.field === "email"} />
+      </div>
+      <div className="field">
+        <label htmlFor="change-email-password">{text.password}</label>
+        <input id="change-email-password" className="input" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} aria-invalid={error?.field === "password"} />
+      </div>
+      {error ? <p className="form-error" role="alert">{error.text}</p> : null}
+      <button className="btn btn-sm" disabled={pending}>{text.saveEmail}</button>
+    </form>
+  );
+}
+
 function ChangePassword({ onDone }: { onDone: () => void }) {
   const ui = useUi();
   const text = useI18n().t.account;
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   return (
@@ -72,6 +155,7 @@ function ChangePassword({ onDone }: { onDone: () => void }) {
       className="account-form"
       onSubmit={async (event) => {
         event.preventDefault();
+        if (next !== confirm) return setError(text.passwordMismatch);
         setPending(true);
         const result = await api.changePassword(current, next);
         setPending(false);
@@ -87,6 +171,10 @@ function ChangePassword({ onDone }: { onDone: () => void }) {
       <div className="field">
         <label htmlFor="next-password">{text.newPassword}</label>
         <input id="next-password" className="input" type="password" autoComplete="new-password" minLength={8} required value={next} onChange={(event) => setNext(event.target.value)} />
+      </div>
+      <div className="field">
+        <label htmlFor="next-password-confirm">{text.confirmPassword}</label>
+        <input id="next-password-confirm" className="input" type="password" autoComplete="new-password" required value={confirm} onChange={(event) => setConfirm(event.target.value)} aria-invalid={Boolean(confirm) && confirm !== next} />
       </div>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
       <button className="btn btn-gold" disabled={pending}>{text.save}</button>
@@ -148,8 +236,10 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<{ text: string; field?: string } | null>(null);
   const [pending, setPending] = useState(false);
+  const mismatch = confirm.length > 0 && confirm !== password;
   const nameCheck = username ? validateUsername(username) : null;
   const { t, locale } = useI18n();
   const text = t.account;
@@ -160,13 +250,16 @@ function RegisterForm() {
       onSubmit={async (event) => {
         event.preventDefault();
         if (nameCheck && !nameCheck.ok) return setError({ text: text.usernameIssues[nameCheck.reason], field: "username" });
+        // The mismatch is already shown under the field.
+        if (mismatch) return;
         setPending(true);
         setError(null);
         const result = await api.register(email, username, password);
         setPending(false);
         if (!result.ok) return setError({ text: result.error, field: result.field });
-        await cloud.connect(result.data.user);
-        ui.toast({ tone: "success", icon: "cloud", title: text.welcome(result.data.user.username), text: text.welcomeText });
+        const user = result.data.user;
+        await cloud.connect(user);
+        ui.toast({ tone: "success", icon: "cloud", title: text.welcome(user.username), text: user.emailVerified ? text.welcomeText : text.checkInbox(user.email) });
       }}
     >
       <div className="field">
@@ -184,6 +277,11 @@ function RegisterForm() {
         <label htmlFor="reg-password">{text.password}</label>
         <input id="reg-password" className="input" type="password" autoComplete="new-password" required minLength={8} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} aria-invalid={error?.field === "password"} />
         <span className="field-hint">{text.passwordHint}</span>
+      </div>
+      <div className="field">
+        <label htmlFor="reg-password-confirm">{text.confirmPassword}</label>
+        <input id="reg-password-confirm" className="input" type="password" autoComplete="new-password" required maxLength={128} value={confirm} onChange={(event) => setConfirm(event.target.value)} aria-invalid={mismatch} aria-describedby={mismatch ? "reg-password-confirm-error" : undefined} />
+        {mismatch ? <span id="reg-password-confirm-error" className="field-error">{text.passwordMismatch}</span> : null}
       </div>
       {error ? <p className="form-error" role="alert">{error.text}</p> : null}
       <button className="btn btn-gold" disabled={pending}>{pending ? text.creating : text.register}</button>

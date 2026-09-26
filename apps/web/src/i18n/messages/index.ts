@@ -7,9 +7,10 @@ import { leaderboard } from "./leaderboard";
 import { privacy } from "./privacy";
 import { reset } from "./reset";
 import { site } from "./site";
+import { verify } from "./verify";
 import { windows } from "./windows";
 
-const NAMESPACES = { common, site, landing, leaderboard, privacy, reset, hud, windows, account };
+const NAMESPACES = { common, site, landing, leaderboard, privacy, reset, verify, hud, windows, account };
 
 type Namespaces = typeof NAMESPACES;
 export type Messages = { [K in keyof Namespaces]: Namespaces[K]["fr"] };

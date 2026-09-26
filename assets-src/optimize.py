@@ -39,6 +39,13 @@ for s in (32, 180, 512):
     copy = icon.copy(); copy.thumbnail((s, s), Image.LANCZOS)
     copy.save(OUT.parent / ("favicon.png" if s == 32 else f"icon-{s}.png"))
 
+# E-mail logo: PNG, since several mail clients do not display WebP. Shown at 220px, 2x.
+mail_logo = trim(Image.open(SRC / "brand" / "idlebound-logo.png").convert("RGBA"))
+mail_logo.thumbnail((440, 440), Image.LANCZOS)
+# 256-color palette: a quarter of the size, no visible difference at this scale.
+mail_logo.quantize(256, method=Image.FASTOCTREE, dither=Image.FLOYDSTEINBERG).save(OUT / "brand" / "idlebound-logo-mail.png", optimize=True)
+print("brand/idlebound-logo-mail.png generated")
+
 # Share image (OpenGraph): ruins backdrop + logo + three signature monsters.
 og = Image.open(SRC / "zones" / "fallen-king-ruins.png").convert("RGB").resize((1200, 675), Image.LANCZOS).crop((0, 20, 1200, 650)).convert("RGBA")
 shade = Image.new("RGBA", og.size, (11, 10, 20, 0))

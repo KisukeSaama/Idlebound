@@ -6,7 +6,8 @@ export const ROUTES = {
   play: "/play",
   leaderboard: "/leaderboard",
   privacy: "/privacy",
-  resetPassword: "/reset-password"
+  resetPassword: "/reset-password",
+  verifyEmail: "/verify-email"
 } as const;
 
 export type RouteId = keyof typeof ROUTES;

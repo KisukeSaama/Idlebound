@@ -1,5 +1,6 @@
 import { LOCALE_COOKIE, USERNAME_MAX, USERNAME_MIN, resolveLocale, type Locale, type UsernameIssue } from "@idlebound/game";
 import type { Context } from "hono";
+import { VERIFY_LINK_DAYS } from "./verification";
 import { getCookie } from "hono/cookie";
 
 /**
@@ -36,6 +37,10 @@ const MESSAGES = define({
     tooManyReplacements: "Trop de remplacements de sauvegarde. Réessaie plus tard.",
     saveRejected: "Sauvegarde refusée par la vérification anti-triche.",
     lineageTooOld: "Cette partie est trop ancienne par rapport au compte.",
+    emailUnverified: "Confirme ton adresse e-mail pour continuer à sauvegarder ta partie.",
+    verifyLinkInvalid: "Ce lien de confirmation a expiré ou n'est plus valable. Demande un nouvel e-mail depuis le jeu.",
+    alreadyVerified: "Ton adresse e-mail est déjà confirmée.",
+    emailLocked: "Ton adresse e-mail est confirmée : elle ne peut plus être modifiée ici.",
     username: {
       "too-short": `Le pseudo doit contenir au moins ${USERNAME_MIN} caractères.`,
       "too-long": `Le pseudo doit contenir au plus ${USERNAME_MAX} caractères.`,
@@ -51,23 +56,34 @@ const MESSAGES = define({
       tooSimple: "Ce mot de passe est trop simple.",
       containsIdentity: "Le mot de passe ne doit pas contenir ton pseudo ou ton e-mail."
     },
+    mail: {
+      fallback: "Le bouton ne s'ouvre pas ? Copie ce lien dans ton navigateur :",
+      footer: "Tu reçois cet e-mail car un compte Idlebound utilise cette adresse."
+    },
+    verifyMail: {
+      subject: "Confirme ton adresse e-mail",
+      preheader: "Un clic pour garder ta partie sauvegardée.",
+      title: "Confirme ton e-mail",
+      body: (username: string) => `Bienvenue, ${username} ! Confirme ton adresse pour garder ta partie sauvegardée et pouvoir récupérer ton compte.`,
+      button: "Confirmer mon e-mail",
+      note: `Lien valable ${VERIFY_LINK_DAYS} jours. Tu n'as pas créé de compte ? Ignore ce message.`
+    },
     resetMail: {
-      subject: "Réinitialisation de ton mot de passe Idlebound",
-      greeting: (username: string) => `Bonjour ${username},`,
-      intro: "Tu as demandé à réinitialiser ton mot de passe Idlebound.",
-      linkText: (link: string) => `Ouvre ce lien dans l'heure pour en choisir un nouveau : ${link}`,
-      htmlIntro: "Tu as demandé à réinitialiser ton mot de passe. Ce lien est valable une heure :",
-      button: "Choisir un nouveau mot de passe",
-      ignore: "Si ce n'était pas toi, ignore simplement ce message : ton mot de passe reste inchangé."
+      subject: "Ton lien pour changer de mot de passe",
+      preheader: "Valable une heure.",
+      title: "Nouveau mot de passe",
+      body: (username: string) => `${username}, voici ton lien pour choisir un nouveau mot de passe.`,
+      button: "Changer mon mot de passe",
+      note: "Lien valable une heure. Ce n'était pas toi ? Ignore ce message, rien ne change."
     },
     inactivityMail: {
-      subject: "Ton compte Idlebound sera bientôt supprimé",
-      greeting: (username: string) => `Bonjour ${username},`,
-      notice: (date: string) =>
-        `Tu n'as pas joué à Idlebound depuis près de 3 ans. Sans connexion de ta part d'ici le ${date}, ton compte sera supprimé avec ta sauvegarde et ta place au classement.`,
-      keep: "Pour le garder, il suffit de te connecter :",
+      subject: "Ton compte Idlebound va être supprimé",
+      preheader: (date: string) => `Connecte-toi avant le ${date} pour le garder.`,
+      title: "Ton aventure t'attend",
+      body: (username: string, date: string) =>
+        `${username}, tu n'as pas joué depuis près de 3 ans. Sans connexion avant le ${date}, ton compte, ta sauvegarde et ta place au classement seront supprimés.`,
       button: "Me connecter",
-      ignore: "Si tu ne souhaites plus jouer, tu n'as rien à faire : tes données seront effacées automatiquement."
+      note: "Tu ne veux plus jouer ? Tu n'as rien à faire, tout sera effacé automatiquement."
     }
   },
   en: {
@@ -95,6 +111,10 @@ const MESSAGES = define({
     tooManyReplacements: "Too many save replacements. Try again later.",
     saveRejected: "Save rejected by the anti-cheat check.",
     lineageTooOld: "This game is too old compared to the account.",
+    emailUnverified: "Confirm your e-mail address to keep saving your game.",
+    verifyLinkInvalid: "This confirmation link has expired or is no longer valid. Request a new e-mail from the game.",
+    alreadyVerified: "Your e-mail address is already confirmed.",
+    emailLocked: "Your e-mail address is confirmed: it can no longer be changed here.",
     username: {
       "too-short": `Your username must be at least ${USERNAME_MIN} characters long.`,
       "too-long": `Your username must be at most ${USERNAME_MAX} characters long.`,
@@ -110,23 +130,34 @@ const MESSAGES = define({
       tooSimple: "This password is too simple.",
       containsIdentity: "Your password must not contain your username or e-mail."
     },
+    mail: {
+      fallback: "Button not working? Paste this link into your browser:",
+      footer: "You are receiving this e-mail because an Idlebound account uses this address."
+    },
+    verifyMail: {
+      subject: "Confirm your e-mail address",
+      preheader: "One click to keep your game saved.",
+      title: "Confirm your e-mail",
+      body: (username: string) => `Welcome, ${username}! Confirm your address to keep your game saved and be able to recover your account.`,
+      button: "Confirm my e-mail",
+      note: `This link is valid for ${VERIFY_LINK_DAYS} days. Didn't create an account? Just ignore this message.`
+    },
     resetMail: {
-      subject: "Reset your Idlebound password",
-      greeting: (username: string) => `Hi ${username},`,
-      intro: "You asked to reset your Idlebound password.",
-      linkText: (link: string) => `Open this link within the hour to choose a new one: ${link}`,
-      htmlIntro: "You asked to reset your password. This link is valid for one hour:",
-      button: "Choose a new password",
-      ignore: "If this wasn't you, just ignore this message: your password stays unchanged."
+      subject: "Your link to change your password",
+      preheader: "Valid for one hour.",
+      title: "New password",
+      body: (username: string) => `${username}, here is your link to choose a new password.`,
+      button: "Change my password",
+      note: "This link is valid for one hour. Wasn't you? Ignore this message, nothing changes."
     },
     inactivityMail: {
-      subject: "Your Idlebound account will soon be deleted",
-      greeting: (username: string) => `Hi ${username},`,
-      notice: (date: string) =>
-        `You haven't played Idlebound in almost 3 years. Unless you sign in by ${date}, your account will be deleted along with your save and your leaderboard entry.`,
-      keep: "To keep it, just sign in:",
+      subject: "Your Idlebound account is about to be deleted",
+      preheader: (date: string) => `Sign in before ${date} to keep it.`,
+      title: "Your adventure awaits",
+      body: (username: string, date: string) =>
+        `${username}, you haven't played in almost 3 years. Unless you sign in before ${date}, your account, your save and your leaderboard entry will be deleted.`,
       button: "Sign in",
-      ignore: "If you don't want to play anymore, there is nothing to do: your data will be erased automatically."
+      note: "Don't want to play anymore? Nothing to do, everything will be erased automatically."
     }
   }
 });
