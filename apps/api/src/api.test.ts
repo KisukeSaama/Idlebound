@@ -167,14 +167,15 @@ suite("API (real Postgres)", () => {
     expect((await client.call("GET", "/auth/me")).json.user).toBeNull();
   }, 60_000);
 
-  it("refunds altar levels bought above a new cap, including from an outdated client", async () => {
+  it("refunds the altars of a version 3 save, including from an outdated client", async () => {
     const client = new Client("10.0.0.9");
     const register = await client.call("POST", "/auth/register", { email: `fate${unique}@idlebound.test`, username: `Fate${unique.slice(-6)}`, password: "Un-Mot-De-Passe-Solide" });
     expect(register.status).toBe(201);
 
-    // A save from before the Altar of Fate was capped at 5: 12 levels bought for 156 essences
-    // (its ascension records are older than the history kept in the save).
+    // A save from before the altar rework (version 3): 12 levels of the Altar of Fate bought
+    // at the old linear price (2 + 4 + … + 24 = 156 essences), above its later cap of 5.
     const legacy = playedState(3);
+    legacy.version = 3;
     legacy.lifetime.ascensions = 1;
     legacy.lifetime.essencesEarned = 1_000;
     legacy.altars.fate = 12;
@@ -183,15 +184,16 @@ suite("API (real Postgres)", () => {
     const first = await client.call("PUT", "/save", { state: legacy, baseRevision: null });
     expect(first.status, JSON.stringify(first.json)).toBe(200);
     const cloud = await client.call("GET", "/save");
-    expect(cloud.json.save.state.altars.fate).toBe(5);
-    expect(cloud.json.save.state.essences).toBe(1_000 - 30);
+    expect(cloud.json.save.state.version).toBe(4);
+    expect(cloud.json.save.state.altars).toEqual({});
+    expect(cloud.json.save.state.essences).toBe(1_000);
 
     // A tab still running the old version sends the same outdated state: accepted, same result.
     const again = await client.call("PUT", "/save", { state: legacy, baseRevision: first.json.revision });
     expect(again.status, JSON.stringify(again.json)).toBe(200);
     const after = await client.call("GET", "/save");
-    expect(after.json.save.state.altars.fate).toBe(5);
-    expect(after.json.save.state.essences).toBe(1_000 - 30);
+    expect(after.json.save.state.altars).toEqual({});
+    expect(after.json.save.state.essences).toBe(1_000);
   }, 60_000);
 
   it("rate-limits login attempts", async () => {
