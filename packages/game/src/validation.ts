@@ -166,7 +166,9 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   // Power: the last boss beaten in this run must be beatable with this build.
   const lastBoss = lastBossCleared(state.maxStage);
   if (lastBoss > 0) {
-    const derived = derive(state, serverNow, { ignoreTimed: true });
+    // Idle forced: the boss may have been beaten by companions alone, with the idle bonus
+    // (clicks never include it, so the click bound is unaffected).
+    const derived = derive(state, serverNow, { ignoreTimed: true, forceIdle: true });
     // Every click a crit at maximum rate, ×10 for the crystals' "sharpness" bonus.
     const burstClick = derived.click * Math.max(1, derived.critMultiplier) * MAX_CLICKS_PER_SECOND * 10;
     const maxDps = (derived.dps * MAX_TIMED_DPS + burstClick) * derived.bossDamage;

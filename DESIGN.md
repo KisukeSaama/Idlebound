@@ -154,6 +154,10 @@ on one piece at 320px. Copy is short: a title, one or two sentences, the button,
 
 - Monsters: entrance, idle breathing, death; bosses and golden rats get a pulsing glow.
 - Damage numbers float up from the pointer; crits are bigger and gold; gold gains rise.
+  Companion damage shows once per second as a smaller green number beside the monster, so
+  passive damage is as visible as clicks without covering them.
+- The Patience chip is dashed with a countdown while the player clicks, solid once the idle
+  bonus applies.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%.
 - Crystals float, shine and blink before expiring; affordable talents pulse; the urgent
   badge pops.
@@ -171,8 +175,8 @@ pointer or key press, with an on/off switch and a volume slider in Settings.
 
 ## Voice and copy
 
-- **French**: warm, epic, playful, always *tutoiement* ("Clique sur le monstre…").
-- **English**: the same energy, direct second person ("Click the monster…"), idiomatic
+- **French**: warm, epic, playful, always *tutoiement* ("Recrute Maëlle : elle attaque même quand tu ne cliques pas.").
+- **English**: the same energy, direct second person ("Hire Maëlle: she attacks even when you don't click."), idiomatic
   rather than literal.
 - Short sentences, verbs first on buttons ("Jouer gratuitement" / "Play for free").
 - **Never use an em dash (—)** in any user-facing string, in either language. Use " : " (FR)

@@ -488,6 +488,13 @@ button.resource:hover {
   font-variant-numeric: tabular-nums;
 }
 
+/* Idle bonus not active yet: the player is still clicking. */
+.buff-chip.is-pending {
+  border-style: dashed;
+  box-shadow: none;
+  color: var(--muted);
+}
+
 /* ------------------------------------------------ arena and monster */
 
 .scene-arena {
@@ -610,6 +617,13 @@ button.resource:hover {
 .fx-damage.auto {
   font-size: 1.25rem;
   color: #d8ccff;
+}
+
+/* Companion damage over the last second: calmer than clicks, drifts from the side. */
+.fx-damage.companions {
+  font-size: 1.15rem;
+  color: var(--success);
+  animation-duration: 1000ms;
 }
 
 .fx-damage.crit {

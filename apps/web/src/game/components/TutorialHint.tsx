@@ -20,7 +20,6 @@ export function TutorialHint() {
 
   function pickHint(): Hint | null {
     if (state.lifetime.ascensions > 0 || done.includes("all")) return null;
-    if (!done.includes("click") && state.lifetime.clicks < 8) return { id: "click", text: m.click, position: "center" };
     const aldric = state.heroLevels[CLICK_HERO_ID] ?? 0;
     if (!done.includes("hire") && aldric === 0 && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1)) {
       return { id: "hire", text: m.hire, position: "right" };

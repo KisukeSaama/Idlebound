@@ -1,6 +1,6 @@
 "use client";
 
-import { SKILL_BY_ID, type SkillId } from "@idlebound/game";
+import { IDLE_DELAY_MS, SKILL_BY_ID, type SkillId } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
 import { BUFF_PICTO, Picto, SKILL_PICTO, type PictoName } from "../icons";
@@ -10,7 +10,7 @@ export function BuffChips() {
   const { t, g } = useI18n();
   const m = t.hud.buffs;
   const now = Date.now();
-  const chips: { key: string; icon: PictoName; label: string; seconds: number }[] = [];
+  const chips: { key: string; icon: PictoName; label: string; seconds: number; pending?: boolean }[] = [];
   for (const buff of state.buffs) {
     if (buff.until > now) chips.push({ key: buff.id, icon: BUFF_PICTO[buff.id], label: m[buff.id], seconds: (buff.until - now) / 1000 });
   }
@@ -19,13 +19,18 @@ export function BuffChips() {
     if (skill && def.duration > 0 && skill.activeUntil > now) chips.push({ key: id, icon: SKILL_PICTO[def.id], label: g.skills[def.id].name, seconds: (skill.activeUntil - now) / 1000 });
   }
   if (state.ritualStacks > 0) chips.push({ key: "ritual", icon: "orb", label: m.ritual(state.ritualStacks * 5), seconds: -1 });
-  if (derived.idle && (state.altars.patience ?? 0) > 0) chips.push({ key: "idle", icon: "lotus", label: m.patience, seconds: -1 });
+  if (derived.idleBonus > 0) {
+    // While the player clicks, show how long until the idle bonus kicks in.
+    const pct = Math.round(derived.idleBonus * 100);
+    if (derived.idle) chips.push({ key: "idle", icon: "lotus", label: m.patience(pct), seconds: -1 });
+    else chips.push({ key: "idle", icon: "lotus", label: m.patiencePending(pct), seconds: Math.max(0, (state.lastClickAt + IDLE_DELAY_MS - now) / 1000), pending: true });
+  }
 
   if (chips.length === 0) return <div className="buff-chips" />;
   return (
     <ul className="buff-chips" aria-label={m.label}>
       {chips.map((chip) => (
-        <li key={chip.key} className="buff-chip" title={chip.label}>
+        <li key={chip.key} className={`buff-chip ${chip.pending ? "is-pending" : ""}`} title={chip.label}>
           <Picto name={chip.icon} size={16} />
           <span className="buff-label">{chip.label}</span>
           {chip.seconds >= 0 ? <span className="buff-time">{formatTime(chip.seconds)}</span> : null}

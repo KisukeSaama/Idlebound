@@ -64,7 +64,8 @@ export const hud = defineMessages({
       overcharge: "Surcharge : DPS ×7",
       sharpness: "Affûtage : clic ×10",
       ritual: (pct: Count) => `Rituel : +${pct} % DPS`,
-      patience: "Patience active"
+      patience: (pct: Count) => `Patience : DPS +${pct} %`,
+      patiencePending: (pct: Count) => `Patience (DPS +${pct} %) dans`
     },
     skills: {
       label: "Pouvoirs",
@@ -107,6 +108,7 @@ export const hud = defineMessages({
       globalDps: (pct: Count) => `DPS de tous les compagnons +${pct} %`,
       click: (mult: Count) => `Dégâts de clic ×${mult}`,
       clickDps: (pct: Count) => `Chaque clic inflige aussi ${pct} % de tes DPS`,
+      idleDps: (pct: Count) => `DPS +${pct} % après 60 s sans cliquer`,
       critChance: (pct: Count) => `+${pct} % de chances de critique`,
       critDamage: (add: Count) => `Multiplicateur des critiques +${add} (×10 de base)`,
       gold: (pct: Count) => `Or gagné +${pct} %`,
@@ -123,7 +125,6 @@ export const hud = defineMessages({
     tutorial: {
       ok: "OK",
       okLabel: "Compris",
-      click: "Clique sur le monstre pour l'attaquer !",
       hire: "Tu as assez d'or : monte Aldric de niveau pour frapper plus fort.",
       companion: (hero: string) => `Recrute ${hero} : elle attaque même quand tu ne cliques pas.`,
       boss: "Un boss ! Terrasse-le avant la fin du chrono, sinon tu recules d'une étape.",
@@ -278,7 +279,8 @@ export const hud = defineMessages({
       overcharge: "Overcharge: DPS ×7",
       sharpness: "Sharpness: click ×10",
       ritual: (pct: Count) => `Ritual: +${pct}% DPS`,
-      patience: "Patience active"
+      patience: (pct: Count) => `Patience: DPS +${pct}%`,
+      patiencePending: (pct: Count) => `Patience (DPS +${pct}%) in`
     },
     skills: {
       label: "Powers",
@@ -321,6 +323,7 @@ export const hud = defineMessages({
       globalDps: (pct: Count) => `All companions' DPS +${pct}%`,
       click: (mult: Count) => `Click damage ×${mult}`,
       clickDps: (pct: Count) => `Each click also deals ${pct}% of your DPS`,
+      idleDps: (pct: Count) => `DPS +${pct}% after 60s without clicking`,
       critChance: (pct: Count) => `+${pct}% critical hit chance`,
       critDamage: (add: Count) => `Critical multiplier +${add} (×10 base)`,
       gold: (pct: Count) => `Gold earned +${pct}%`,
@@ -337,7 +340,6 @@ export const hud = defineMessages({
     tutorial: {
       ok: "OK",
       okLabel: "Got it",
-      click: "Click the monster to attack it!",
       hire: "You have enough gold: level up Aldric to hit harder.",
       companion: (hero: string) => `Hire ${hero}: she attacks even when you don't click.`,
       boss: "A boss! Defeat it before the timer runs out, or you'll fall back one stage.",

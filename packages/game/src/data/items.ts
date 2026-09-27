@@ -42,6 +42,16 @@ export const AFFIX_CAP: Partial<Record<AffixStat, number>> = {
   essence: 0.25
 };
 
+/**
+ * Caps on the total bonus of the four equipped relics. Critical damage multiplies clicks
+ * only: uncapped, late relics would make clicking dwarf companion DPS again.
+ */
+export const EQUIPMENT_CAP: Partial<Record<AffixStat, number>> = {
+  critChance: AFFIX_CAP.critChance! * 4,
+  essence: AFFIX_CAP.essence! * 4,
+  critDamage: 1
+};
+
 export const INVENTORY_LIMIT = 48;
 export const FORGE_MAX = 20;
 export const FORGE_STEP = 0.1;
