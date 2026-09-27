@@ -67,20 +67,29 @@ Content colors live with the game data, not in CSS:
   `.btn-violet` (magic actions: ascension), `.btn-ghost` (secondary), `.btn-danger`; sizes
   `.btn-sm` and `.btn-lg`. Minimum height 40px. Hover brightens, press nudges down 1px.
   One gold button per view at most.
-- **Resource pills** in the game header: gold (largest, Cinzel, gold gradient), essences,
-  shards, then the account chip.
+- **Resource pills** in the game header: gold (largest, Cinzel, gold gradient), DPS, click
+  damage, essences (only once the player has essences or has ascended), shards, then the
+  account chip. Gold, DPS and click keep a fixed minimum width so the header does not jump
+  as numbers grow.
 - **Cards** (`.card`): panel background, border, radius. Item cards, altar cards, market
   offers, achievement tiles, biome cards on the landing page.
 - **Modals** (`Modal.tsx`): the only secondary surface in the game. Titled, optional icon
   and tabs, focus trapped, Escape and backdrop click close, focus returns to the opener.
   A tabbed modal always takes its maximum height, so switching tabs never resizes it.
-  Sizes `sm` (settings), `md` (account, market), `lg` (map, ascension, achievements).
-- **Toasts**: top right (top center on mobile), at most 5, auto-dismiss 3.8 s (4.5 s for
+  Sizes `sm` (settings, confirmations), `md` (account, market, cloud save choice), `lg`
+  (map, equipment and inventory, ascension, achievements).
+- **Toasts**: on the right of the scene, next to the companions panel, under the scene's top
+  bar (placement details under Motion), at most 5, auto-dismiss 3.8 s (4.5 s for
   danger). Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
   in the item's rarity color), success, info, danger.
 - **Forms**: `.field` + `.input`, violet focus border, `aria-invalid` turns the border red,
   `.field-hint` and `.field-error` under the input.
 - **Segmented controls** for exclusive settings (notation, language), switches for booleans.
+  A small switch (`.switch-sm`) sits in context when a setting belongs to a panel: "Spend
+  while away" at the top of the companions panel.
+- **Tutorial hints**: one bubble at a time, pointing at what to do next (right, bottom or
+  centered); a centered one-time notice presented the altar rework to players who had
+  already ascended.
 - **Badges** on the navigation rail: `!` urgent (pulses), `+` something to spend, a count.
 
 ## Game layout
@@ -92,14 +101,15 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
 │ rail │                       combat scene                         │   companion panel   │
 │ 84px │  zone + era · stage bar · buffs                            │   410px (360px      │
 │      │  arena: monster, damage numbers, crystal, tutorial hint    │   under 1280px)     │
-│ menus│  monster name, HP bar, boss timer or kill progress         │   heroes, talents,  │
-│      │  power bar (keys 1 to 6)                                   │   buy mode          │
+│ menus│  monster name, HP bar, boss timer or kill progress         │   buy mode, spend   │
+│      │  power bar (keys 1 to 6)                                   │   switch, heroes,   │
+│      │                                                            │   talents           │
 └──────┴────────────────────────────────────────────────────────────┴─────────────────────┘
 ```
 
 - **Navigation rail**: map, equipment, inventory, market, ascension, achievements, account,
-  settings. Painted icons (`public/assets/icons/sidebar-*.webp`) plus a short label; each
-  opens a modal.
+  settings. Painted icons (`public/assets/icons/sidebar-*.webp`, the SVG `TrophyIcon` for
+  achievements) plus a short label; each opens a modal.
 - **≤ 1080px**: resource labels hidden, smaller logo, scene header centered.
 - **Desktop under 820px tall**: smaller rail icons so all eight buttons stay visible.
 - **Compact combat HUD** (≤ 900px wide or ≤ 560px tall): era and biome on one line, smaller
@@ -120,7 +130,7 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
 
 ## Public pages
 
-Landing (`/[locale]`), leaderboard, privacy, password reset, 404. Shared chrome:
+Landing (`/[locale]`), leaderboard, privacy, password reset, e-mail confirmation, 404. Shared chrome:
 `SiteNav` (logo, leaderboard, the game, gold "Play" button) and `SiteFooter` (links and a
 link to the same page in the other language). The landing page: hero with the Fallen King
 portrait and floating damage numbers, three steps, feature grid with the painted icons,
@@ -143,11 +153,13 @@ on one piece at 320px. Copy is short: a title, one or two sentences, the button,
 
 - Painted WebP assets under `apps/web/public/assets/` (brand logo, 12 enemy portraits, 5
   zone backgrounds, 7 sidebar icons), generated from `assets-src/original` by
-  `npm run assets`. Never commit unoptimized PNGs to `public/`.
+  `npm run assets`. Never commit unoptimized PNGs to `public/`; the only PNGs are the ones
+  that must be PNG: favicons and touch icons (`favicon.png`, `icon-180.png`, `icon-512.png`)
+  and the e-mail logo.
 - Monster variants (elites, eras, golden rat) reuse portraits with CSS `filter` tints and a
   `scale`, defined in `packages/game/src/data/biomes.ts`.
-- Hand-drawn SVG icons (`apps/web/src/game/icons.tsx`: trophy, gold, essence, shard and
-  the `Picto` set for powers, market offers, buffs, toasts and modals) follow the same gold
+- Hand-drawn SVG icons (`apps/web/src/game/icons.tsx`: trophy, gold, essence, shard,
+  sword (DPS), click, equipment slots and the `Picto` set for powers, market offers, buffs, toasts and modals) follow the same gold
   and amethyst style, with dark outlines. **No emoji anywhere in the app.**
 - Hero glyphs are Unicode symbols tinted with the hero's color, forced to text
   presentation (`TEXT_PRESENTATION`, `font-variant-emoji: text`) so they never turn into emoji.

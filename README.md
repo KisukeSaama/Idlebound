@@ -28,7 +28,8 @@ account) and every save is checked by an anti-cheat that replays the game rules.
 
 ```text
 apps/
-  web/            Next.js: /[locale] landing, /[locale]/play, /[locale]/leaderboard, /api/* proxy
+  web/            Next.js: /[locale] landing, play, leaderboard, privacy, reset-password,
+                  verify-email, /api/* proxy
   api/            Hono + Drizzle: accounts, sessions, verified saves, leaderboard
 packages/
   game/           game engine: data, content (fr/en), formulas, simulation, anti-cheat
@@ -48,6 +49,7 @@ compose.prod.yml  production images run locally, to check a release
 | Leaderboard | `/fr/leaderboard` | `/en/leaderboard` |
 | Privacy | `/fr/privacy` | `/en/privacy` |
 | Password reset | `/fr/reset-password` | `/en/reset-password` |
+| E-mail confirmation | `/fr/verify-email` | `/en/verify-email` |
 
 `/` and any unprefixed path redirect to the visitor's language: the `ib_lang` cookie (set
 from the in-game Settings window) wins, otherwise `Accept-Language` decides (French when the
@@ -68,7 +70,7 @@ docker compose -f compose.dev.yml up
 |---|---|
 | Game | http://localhost:3000 |
 | API | http://localhost:3000/api/… (proxied by the web app, as in production) |
-| Dev e-mails (Mailpit) | http://localhost:8025 (password-reset links land here) |
+| Dev e-mails (Mailpit) | http://localhost:8025 (confirmation, password-reset and inactivity e-mails land here) |
 | Postgres | `localhost:5432`, user/password/database `idlebound` |
 
 In development the game store is exposed in the console:

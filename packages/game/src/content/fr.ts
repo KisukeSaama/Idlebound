@@ -176,7 +176,8 @@ export const fr: GameText = {
     treasure: (t) => `Vaincre ${n(t)} ${s(t, "rat")} ${s(t, "doré")}.`,
     crystal: (t) => `Attraper ${n(t)} ${t > 1 ? "cristaux errants" : "cristal errant"}.`,
     levels: (t) => `Cumuler ${n(t)} niveaux de compagnons.`,
-    hired: (t) => `Recruter ${t} compagnons différents.`,
+    // The threshold counts Aldric (the player), who is not a companion.
+    hired: (t) => `Recruter ${t - 1} compagnons différents.`,
     skills: (t) => `Utiliser ${n(t)} pouvoirs.`,
     ascend: (t) => `Faire ${t} ${s(t, "ascension")}.`,
     essences: (t) => `Récolter ${n(t)} essences au total.`,

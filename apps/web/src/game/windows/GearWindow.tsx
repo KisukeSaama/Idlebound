@@ -95,7 +95,7 @@ function Equipped() {
           if (!item) {
             return (
               <div key={slot} className="item-card empty">
-                <SlotIcon slot={slot} size={30} color="#6f6794" />
+                <SlotIcon slot={slot} size={30} />
                 <p>{text.emptySlot(g.slots[slot])}</p>
                 <p className="modal-hint">{text.emptySlotHint}</p>
               </div>

@@ -92,7 +92,8 @@ services:
       TZ: Europe/Paris
     networks:
       - application
-      # Only service allowed out: sending password-reset e-mails (SMTP).
+      # Only service allowed out: sending e-mails (SMTP): confirmation, password reset,
+      # inactivity warning.
       - egress
     depends_on:
       postgres:

@@ -1,4 +1,4 @@
-import { ALTARS, BIOMES, HEROES, ACHIEVEMENTS, STAGES_PER_BIOME, formatNumber } from "@idlebound/game";
+import { ALTARS, BIOMES, CLICK_HERO_ID, HEROES, ACHIEVEMENTS, STAGES_PER_BIOME, formatNumber } from "@idlebound/game";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
@@ -18,6 +18,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/** Aldric is the player, not a companion. */
+const COMPANION_COUNT = HEROES.filter((hero) => hero.id !== CLICK_HERO_ID).length;
+
 const FEATURE_ICONS = [
   "/assets/icons/sidebar-zones-map.webp",
   "/assets/icons/sidebar-equipment-helmet.webp",
@@ -32,7 +35,7 @@ export default async function LandingPage({ params }: Props) {
   const l = t.landing;
   const [stats, board] = await Promise.all([fetchStats(), fetchLeaderboard("stage", 10)]);
   const url = siteUrl();
-  const features = l.features.items({ biomes: BIOMES.length, heroes: HEROES.length, altars: ALTARS.length });
+  const features = l.features.items({ biomes: BIOMES.length, heroes: COMPANION_COUNT, altars: ALTARS.length });
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -75,7 +78,7 @@ export default async function LandingPage({ params }: Props) {
               </div>
               <p className="hero-note">{l.hero.note}</p>
               <ul className="hero-proof" aria-label={l.hero.proofLabel}>
-                <li><strong>{HEROES.length}</strong> {l.hero.companions}</li>
+                <li><strong>{COMPANION_COUNT}</strong> {l.hero.companions}</li>
                 <li><strong>{ACHIEVEMENTS.length}</strong> {l.hero.achievements}</li>
                 {stats && stats.players > 0 ? <li><strong>{formatNumber(stats.players)}</strong> {l.hero.players}</li> : <li><strong>∞</strong> {l.hero.stages}</li>}
               </ul>

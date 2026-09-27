@@ -8,8 +8,10 @@
 #
 # Required GitLab CI/CD variables (scope per environment, protect the production ones):
 #   IDLEBOUND_POSTGRES_PASSWORD   required
-#   IDLEBOUND_SMTP_URL            optional — smtp(s)://user:pass@host:port for password-reset
-#                                 e-mails; without it, reset links are written to the API log
+#   IDLEBOUND_SMTP_URL            optional — smtp(s)://user:pass@host:port for e-mails
+#                                 (confirmation, password reset, inactivity warning); without
+#                                 it, links are written to the API log, addresses are not
+#                                 confirmed and inactive accounts are never purged
 #   IDLEBOUND_MAIL_FROM           optional — sender of those e-mails
 
 image: docker:29

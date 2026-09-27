@@ -64,7 +64,6 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
         </div>
         <Toggle label={text.damageNumbers} hint={text.damageNumbersHint} checked={settings.damageNumbers} onChange={(value) => update({ damageNumbers: value })} />
         <Toggle label={text.reducedMotion} hint={text.reducedMotionHint} checked={settings.reducedMotion} onChange={(value) => update({ reducedMotion: value })} />
-        <Toggle label={text.offlineSpending} hint={text.offlineSpendingHint} checked={settings.offlineSpending} onChange={(value) => update({ offlineSpending: value })} />
         <Toggle label={text.confirmAscension} hint={text.confirmAscensionHint} checked={settings.confirmAscension} onChange={(value) => update({ confirmAscension: value })} />
       </div>
       <h3 className="section-heading">{text.shortcuts}</h3>
