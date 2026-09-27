@@ -12,6 +12,9 @@ export type HeroEffect =
   | { kind: "treasure"; pct: number }
   | { kind: "idleDps"; pct: number };
 
+/** Visual family of a companion's hit: sword arc, claw marks, arrow, heavy blow or spell. */
+export type StrikeStyle = "blade" | "claw" | "arrow" | "blunt" | "magic";
+
 export interface HeroUpgradeDef {
   id: string;
   level: number;
@@ -31,6 +34,8 @@ export interface HeroDef {
   baseClick: number;
   color: string;
   glyph: string;
+  /** How the companion's hits look in the scene (visual only). */
+  strike: StrikeStyle;
   upgrades: HeroUpgradeDef[];
 }
 

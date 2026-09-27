@@ -108,6 +108,14 @@ button.resource:hover {
   font-size: 0.95rem;
 }
 
+/* Values that change every tick keep a stable width ("6.65Qi" is the longest letter form),
+   so the centered bar does not shift when a digit or a suffix changes. */
+.resource-value-fixed {
+  display: inline-block;
+  min-width: 6.4ch;
+  text-align: left;
+}
+
 .resource-gold {
   border-color: rgba(245, 200, 91, 0.45);
   background: linear-gradient(180deg, rgba(245, 200, 91, 0.16), rgba(245, 200, 91, 0.05));
@@ -118,7 +126,6 @@ button.resource:hover {
   font-family: var(--font-display);
   font-size: 1.2rem;
   color: var(--gold-2);
-  min-width: 4ch;
 }
 
 .resource-essence .resource-value {
@@ -698,26 +705,14 @@ button.resource:hover {
   animation: gold-rise 1300ms ease-out forwards;
 }
 
-/*
- * A companion's hit: a pixel-art blade trail (pixelSlash.ts) scaled up without smoothing,
- * revealed end to end and faded in steps, like the sprites around it. Size and image are set
- * per strike.
- */
-.fx-slash {
+/* Companion shots (strikeFx.ts), under the damage numbers. */
+.fx-canvas {
   position: absolute;
-  background: no-repeat center / 100% 100%;
-  image-rendering: pixelated;
-  transform: translate(-50%, -50%) rotate(var(--angle));
-  clip-path: inset(0 100% 0 0);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
   pointer-events: none;
-  animation: slash 360ms forwards;
-}
-
-@keyframes slash {
-  0% { clip-path: inset(0 100% 0 0); opacity: 1; animation-timing-function: steps(4, end); }
-  40% { clip-path: inset(0 0 0 0); opacity: 1; animation-timing-function: steps(1, end); }
-  65% { clip-path: inset(0 0 0 0); opacity: 1; animation-timing-function: steps(3, end); }
-  100% { clip-path: inset(0 0 0 0); opacity: 0; }
 }
 
 .fx-dying {
@@ -1449,6 +1444,16 @@ button.resource:hover {
 .modal-tabs,
 .modal-foot {
   flex: none;
+}
+
+/* A tabbed window keeps one height (its max-height) so switching tabs never resizes it. */
+.modal-tabbed {
+  height: 100%;
+}
+
+.modal-tabbed .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .modal-sm { max-width: 460px; }

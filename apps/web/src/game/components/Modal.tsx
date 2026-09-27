@@ -54,7 +54,7 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, tab
 
   return (
     <div className="modal-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) onClose?.(); }}>
-      <div ref={dialog} className={`modal modal-${size}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={dialog} className={`modal modal-${size}${tabs ? " modal-tabbed" : ""}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <header className="modal-head">
           {icon ? <span className="modal-icon" aria-hidden="true">{icon}</span> : null}
           <h2 id={titleId}>{title}</h2>

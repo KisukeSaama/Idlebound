@@ -23,17 +23,17 @@ export function GameHeader() {
       <div className="resource-bar" role="status" aria-live="off">
         <div className="resource resource-gold" title={m.gold}>
           <GoldIcon size={22} />
-          <span className="resource-value" data-testid="gold">{fmt(state.gold)}</span>
+          <span className="resource-value resource-value-fixed" data-testid="gold">{fmt(state.gold)}</span>
         </div>
         <div className="resource" title={m.dpsTitle}>
           <SwordIcon />
           <span className="resource-label">DPS</span>
-          <span className="resource-value">{fmt(derived.dps)}</span>
+          <span className="resource-value resource-value-fixed">{fmt(derived.dps)}</span>
         </div>
         <div className="resource" title={m.clickTitle}>
           <ClickIcon />
           <span className="resource-label">{m.clickLabel}</span>
-          <span className="resource-value">{fmt(derived.click)}</span>
+          <span className="resource-value resource-value-fixed">{fmt(derived.click)}</span>
         </div>
         {showEssences ? (
           <button type="button" className="resource resource-essence" title={m.essencesTitle} onClick={() => ui.openWindow("ascension")}>

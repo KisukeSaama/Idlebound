@@ -10,9 +10,9 @@ const PARTY_SIZE = 5;
 
 /**
  * The companions fighting beside the player, in the scene: one medallion per companion, the
- * strongest at the bottom. FxLayer makes a medallion lunge when that companion strikes, so
- * each colored slash has a visible author. Decorative: the companions panel carries the
- * information, and clicks go through to the arena.
+ * strongest at the bottom. When a companion strikes, FxLayer makes its medallion lunge and
+ * fire a shot in its color at the monster, so every hit has a visible author. Decorative:
+ * the companions panel carries the information, and clicks go through to the arena.
  */
 export function Party() {
   const { derived } = useGame();

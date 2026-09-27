@@ -73,6 +73,7 @@ Content colors live with the game data, not in CSS:
   offers, achievement tiles, biome cards on the landing page.
 - **Modals** (`Modal.tsx`): the only secondary surface in the game. Titled, optional icon
   and tabs, focus trapped, Escape and backdrop click close, focus returns to the opener.
+  A tabbed modal always takes its maximum height, so switching tabs never resizes it.
   Sizes `sm` (settings), `md` (account, market), `lg` (map, ascension, achievements).
 - **Toasts**: top right (top center on mobile), at most 5, auto-dismiss 3.8 s (4.5 s for
   danger). Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
@@ -158,16 +159,16 @@ on one piece at 320px. Copy is short: a title, one or two sentences, the button,
   Companion damage shows once per second beside the monster's body, in `--companion` mint under a
   small "COMPANIONS" label (same pattern as the "CRITICAL" label), as large as a click
   number but with a calmer rise, so passive damage reads as clearly as clicks.
-- Companions visibly strike about three times per second. Each strike picks a companion
-  (weighted by its share of DPS): its medallion in the scene's party lunges toward the
-  monster, and a **pixel-art blade trail** in its color lands on the monster's body. Trails
-  are drawn pixel by pixel on a tiny canvas (`game/pixelSlash.ts`: crescent, tapered ends,
-  color then light tint then white edge, dark one-pixel outline like the sprites), cached
-  per color and size, scaled up with `image-rendering: pixelated` (one art pixel = 4 screen
-  pixels) and revealed then faded in `steps()`, so they belong to the pixel art instead of
-  floating over it as vector glow. Effects aimed at the monster read the sprite's box:
-  trails land in its middle and scale with it. The monster flinches lightly; a player's hit
-  always takes over the flinch. Trails, lunges and flinches are skipped with reduced motion.
+- Companions visibly strike about three times per second, as **shots**. Each strike picks a
+  companion (weighted by its share of DPS): its medallion in the party lunges and flashes,
+  and a glowing comet in its color flies from the medallion to the monster's body, then
+  bursts (glow, cross flare, ring, sparks thrown back the way it came) while the monster
+  lights up in that color and flinches lightly. Each companion has a strike family
+  (`HeroDef.strike`) that sets the flight: arrows fly fast and flat, blades and claws
+  quick, heavy blows lob high and hit with a wider ring, spells wobble and leave sparkles.
+  All shots are drawn on one canvas over the arena (`game/strikeFx.ts`) with additive
+  blending, sized with the arena; every frame is a pure function of time. A player's hit
+  always takes over the flinch. Shots, lunges and flinches are skipped with reduced motion.
 - **Party**: the strongest hired companions (5 on desktop, 3 on phones) stand as medallions
   at the bottom left of the arena, strongest at the bottom, in the same medallion style as
   the companions panel. Decorative (`aria-hidden`, no pointer events): the panel carries the
