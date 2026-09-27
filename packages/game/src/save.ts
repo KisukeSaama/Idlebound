@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { ALTAR_BY_ID, altarOverflowRefund } from "./data/altars";
 import { SAVE_VERSION, createInitialState } from "./state";
-import type { GameState } from "./types";
+import type { AltarId, GameState } from "./types";
 
 const finite = z.number().refine(Number.isFinite, "invalid number");
 const positive = finite.refine((value) => value >= 0, "negative number");
@@ -112,8 +113,31 @@ export function migrateState(raw: unknown): unknown {
   merged.lifetime = { ...base.lifetime, ...(input.lifetime as object | undefined) };
   merged.run = { ...base.run, ...(input.run as object | undefined) };
   merged.tutorial = { ...base.tutorial, ...(input.tutorial as object | undefined) };
+  refundAltarOverflow(merged);
   merged.version = SAVE_VERSION;
   return merged;
+}
+
+/**
+ * An altar that became capped (Altar of Fate, version 3) keeps its maximum level and gives
+ * back the essences of the levels above it. Idempotent, and the essence ledger still holds:
+ * what leaves the altars returns to the owned essences.
+ */
+function refundAltarOverflow(merged: Record<string, unknown>) {
+  const altars = merged.altars;
+  if (!altars || typeof altars !== "object" || typeof merged.essences !== "number") return;
+  const levels = { ...(altars as Record<string, unknown>) };
+  let refund = 0;
+  for (const [id, level] of Object.entries(levels)) {
+    if (typeof level !== "number" || !Number.isInteger(level)) continue;
+    const essences = altarOverflowRefund(id, level);
+    if (essences <= 0) continue;
+    refund += essences;
+    levels[id] = ALTAR_BY_ID[id as AltarId].maxLevel;
+  }
+  if (refund <= 0) return;
+  merged.altars = levels;
+  merged.essences = merged.essences + refund;
 }
 
 export function parseState(raw: unknown): GameState {

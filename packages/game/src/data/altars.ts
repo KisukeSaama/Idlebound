@@ -8,7 +8,7 @@ export const ALTARS: AltarDef[] = [
   { id: "fortune", maxLevel: 0, costBase: 1, costGrowth: 1, costCurve: "linear", valuePerLevel: 0.15, format: "pct" },
   { id: "patience", maxLevel: 0, costBase: 1, costGrowth: 1, costCurve: "linear", valuePerLevel: 0.4, format: "pct" },
   { id: "time", maxLevel: 30, costBase: 2, costGrowth: 1.35, costCurve: "exp", valuePerLevel: 1, format: "seconds" },
-  { id: "fate", maxLevel: 0, costBase: 2, costGrowth: 1, costCurve: "linear", valuePerLevel: 0.2, format: "pct" },
+  { id: "fate", maxLevel: 5, costBase: 2, costGrowth: 1, costCurve: "linear", valuePerLevel: 0.2, format: "pct" },
   { id: "precision", maxLevel: 25, costBase: 3, costGrowth: 1.3, costCurve: "exp", valuePerLevel: 0.01, format: "pct" },
   { id: "treasure", maxLevel: 20, costBase: 3, costGrowth: 1.35, costCurve: "exp", valuePerLevel: 0.005, format: "pct" },
   { id: "bargain", maxLevel: 25, costBase: 4, costGrowth: 1.4, costCurve: "exp", valuePerLevel: 0.02, format: "pct" },
@@ -23,8 +23,25 @@ export const ALTAR_BY_ID = lookup(ALTARS.map((altar) => [altar.id, altar])) as R
 export function altarCost(id: AltarId, level: number): number {
   const altar = ALTAR_BY_ID[id];
   if (altar.maxLevel > 0 && level >= altar.maxLevel) return Number.POSITIVE_INFINITY;
+  return altarLevelPrice(altar, level);
+}
+
+/** Price of a level ignoring the maximum (used to refund levels above a new cap). */
+export function altarLevelPrice(altar: AltarDef, level: number): number {
   if (altar.costCurve === "linear") return altar.costBase * (level + 1);
   return Math.ceil(altar.costBase * Math.pow(altar.costGrowth, level));
+}
+
+/**
+ * Levels a save holds above an altar's maximum (the cap was added after they were bought)
+ * and the essences they cost. `migrateState` refunds them.
+ */
+export function altarOverflowRefund(id: string, level: number): number {
+  const altar = ALTAR_BY_ID[id as AltarId];
+  if (!altar || altar.maxLevel <= 0 || !(level > altar.maxLevel)) return 0;
+  let total = 0;
+  for (let index = altar.maxLevel; index < level; index += 1) total += altarLevelPrice(altar, index);
+  return total;
 }
 
 /** Total essences spent to reach a given level. */

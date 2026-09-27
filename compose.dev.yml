@@ -62,7 +62,7 @@ services:
     command: npm run dev -w @idlebound/api
     environment:
       <<: *node-env
-      API_PORT: "8080"
+      API_PORT: "8000"
       DATABASE_URL: postgres://idlebound:idlebound@postgres:5432/idlebound
       PUBLIC_SITE_URL: http://localhost:3000
       COOKIE_SECURE: "false"
@@ -79,7 +79,7 @@ services:
     command: npm run dev -w @idlebound/web
     environment:
       <<: *node-env
-      INTERNAL_API_BASE_URL: http://api:8080
+      INTERNAL_API_BASE_URL: http://api:8000
       PUBLIC_SITE_URL: http://localhost:3000
       SITE_INDEXABLE: "false"
     ports:

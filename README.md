@@ -79,7 +79,7 @@ In development the game store is exposed in the console:
 ```bash
 npm install
 cp .env.example .env        # DATABASE_URL pointing to a local Postgres
-npm run dev                 # API (8080) + web (3000)
+npm run dev                 # API (8000) + web (3000)
 ```
 
 ### Check the production images

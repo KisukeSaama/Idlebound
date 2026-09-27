@@ -167,6 +167,33 @@ suite("API (real Postgres)", () => {
     expect((await client.call("GET", "/auth/me")).json.user).toBeNull();
   }, 60_000);
 
+  it("refunds altar levels bought above a new cap, including from an outdated client", async () => {
+    const client = new Client("10.0.0.9");
+    const register = await client.call("POST", "/auth/register", { email: `fate${unique}@idlebound.test`, username: `Fate${unique.slice(-6)}`, password: "Un-Mot-De-Passe-Solide" });
+    expect(register.status).toBe(201);
+
+    // A save from before the Altar of Fate was capped at 5: 12 levels bought for 156 essences
+    // (its ascension records are older than the history kept in the save).
+    const legacy = playedState(3);
+    legacy.lifetime.ascensions = 1;
+    legacy.lifetime.essencesEarned = 1_000;
+    legacy.altars.fate = 12;
+    legacy.essences = 1_000 - 156;
+
+    const first = await client.call("PUT", "/save", { state: legacy, baseRevision: null });
+    expect(first.status, JSON.stringify(first.json)).toBe(200);
+    const cloud = await client.call("GET", "/save");
+    expect(cloud.json.save.state.altars.fate).toBe(5);
+    expect(cloud.json.save.state.essences).toBe(1_000 - 30);
+
+    // A tab still running the old version sends the same outdated state: accepted, same result.
+    const again = await client.call("PUT", "/save", { state: legacy, baseRevision: first.json.revision });
+    expect(again.status, JSON.stringify(again.json)).toBe(200);
+    const after = await client.call("GET", "/save");
+    expect(after.json.save.state.altars.fate).toBe(5);
+    expect(after.json.save.state.essences).toBe(1_000 - 30);
+  }, 60_000);
+
   it("rate-limits login attempts", async () => {
     const client = new Client("10.0.0.9");
     let last = 0;

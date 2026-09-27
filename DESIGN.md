@@ -33,6 +33,7 @@ Defined once on `:root` in `globals.css`. Never hardcode a color that has a toke
 | `--essence` | `#c38bff` | Essences and ascension |
 | `--shard` | `#7fd8ff` | Shards and the market |
 | `--danger` / `--success` | `#ff5c7a` / `#6fdc8c` | Errors, boss timer urgency / confirmations |
+| `--companion` | `#8ff0c4` | Companion (passive) damage numbers and their label |
 
 Content colors live with the game data, not in CSS:
 
@@ -154,10 +155,18 @@ on one piece at 320px. Copy is short: a title, one or two sentences, the button,
 
 - Monsters: entrance, idle breathing, death; bosses and golden rats get a pulsing glow.
 - Damage numbers float up from the pointer; crits are bigger and gold; gold gains rise.
-  Companion damage shows once per second as a smaller green number beside the monster, so
-  passive damage is as visible as clicks without covering them.
-- The Patience chip is dashed with a countdown while the player clicks, solid once the idle
-  bonus applies.
+  Companion damage shows once per second beside the monster, in `--companion` mint under a
+  small "COMPANIONS" label (same pattern as the "CRITICAL" label), as large as a click
+  number but with a calmer rise, so passive damage reads as clearly as clicks.
+- Companions visibly strike about three times per second: a crescent blade trail in the
+  color of a companion (drawn by its share of DPS), revealed end to end with `clip-path`,
+  tapered with a mask and edged in white, plus a light flinch of the monster. A player's
+  hit always takes over the flinch; both are skipped with reduced motion.
+- The Patience chip shows the idle bonus in effect. While it builds up after a click it
+  fills with violet from left to right (`--fill`, a registered custom property), its
+  tooltip telling the full value and the time left; it is a plain chip once full.
+- Capped equipment totals carry a small gold "MAX" pill whose tooltip explains that relic
+  bonuses above the cap do not count.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%.
 - Crystals float, shine and blink before expiring; affordable talents pulse; the urgent
   badge pops.

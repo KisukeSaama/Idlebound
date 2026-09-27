@@ -117,9 +117,9 @@ export const fr: GameText = {
   },
   altars: {
     might: { name: "Autel de puissance", description: "+25 % de DPS par niveau." },
-    blade: { name: "Autel de la lame", description: "+25 % de dégâts de clic par niveau." },
+    blade: { name: "Autel de la lame", description: "+25 % de dégâts de clic par niveau, et +5 % sur la part de DPS de tes clics (jusqu'à +50 %)." },
     fortune: { name: "Autel de fortune", description: "+15 % d'or par niveau." },
-    patience: { name: "Autel de la patience", description: "+40 % de DPS par niveau quand tu ne cliques pas depuis 60 s." },
+    patience: { name: "Autel de la patience", description: "+40 % de DPS par niveau quand tu ne cliques pas. Le bonus revient en 30 s après un clic." },
     time: { name: "Autel du temps", description: "+1 s au chrono des boss par niveau." },
     fate: { name: "Autel du destin", description: "+20 % de dégâts critiques par niveau." },
     precision: { name: "Autel de précision", description: "+1 % de chances de critique par niveau." },

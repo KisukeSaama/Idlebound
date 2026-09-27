@@ -232,9 +232,9 @@ export class GameEngine {
 
   click(now: number) {
     const s = this.state;
-    const wasIdle = this.derived.idle;
+    const hadIdleBonus = this.derived.idleRatio > 0;
     s.lastClickAt = now;
-    if (wasIdle) this.refresh(now);
+    if (hadIdleBonus) this.refresh(now);
     if (!s.monster) return;
     this.strike(now, "click");
   }

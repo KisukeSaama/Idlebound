@@ -63,22 +63,30 @@ Like the best of the genre, clicks carry the start of each run and companions ca
 late game; mashing the mouse is never required.
 
 - **Click damage** = Aldric's own damage (levels, click talents, Altar of the Blade, click
-  relics, half the achievement bonus) + **3% of companion DPS** at most (Aldric's talents).
-  Aldric's own damage fades out after the first stages, so late clicks are worth a fixed
-  share of DPS, multiplied by crits. Critical hits only apply to clicks.
-- **Idle bonus**: after **60 s without attacking the monster**, companions deal more:
+  relics, half the achievement bonus) + a **share of companion DPS**: 1% per Aldric talent
+  at levels 25, 100 and 200 (3%), raised by the Altar of the Blade (+5% of that share per
+  level, up to +50%, so 4.5% at most). Aldric's own damage fades out after the first
+  stages, so late clicks are worth that share of DPS, multiplied by crits. Critical hits
+  only apply to clicks.
+- **Idle bonus**: companions deal more while the player does not attack the monster:
   Sentinel's Vigil (Kaelen 50, +50%), Silent Legion (Morgrath 50, +100%) and the Altar of
-  Patience (+40% per level) add up. Clicks never include it. Automatic clicks (Frenzy,
-  striking scroll), powers, crystals and purchases do not break it. Offline progress
-  always counts as idle. A chip shows the bonus, with a countdown while the player clicks.
-- **Active bonus**: powers, crystals and crit investments (Altar of Fate, Precision,
-  crit relics) reward being there. Relic critical damage is capped at +100% in total.
-- **Feedback**: companion damage floats once per second next to the monster, so passive
-  damage is visible.
-- **Targets** (checked by tests and `npm run balance -- 24 compare`): with every talent
-  and no altar, 5 clicks/s add about half of companion DPS (up to about 1× with capped crit
-  relics), 10 clicks/s about 1×. An idle player overtakes 5 clicks/s after the first
-  ascensions; 10 clicks/s can lead mid-game but the idle build leads at 24 h.
+  Patience (+40% per level) add up. An attack click resets it; it starts growing again
+  3 s later and is back in full 30 s after the click, so an occasional click costs little.
+  Clicks never include it. Automatic clicks (Frenzy, striking scroll), powers, crystals
+  and purchases do not reset it. Offline progress always counts as fully idle. A chip shows
+  the bonus, with its current value and a countdown while it builds up.
+- **Active bonus**: powers, crystals and crit investments reward being there, within
+  bounds: Altar of Fate capped at 5 levels (+100% crit damage), relic totals capped at +50%
+  crit damage and +16% crit chance, Blade share capped at +50%.
+- **Feedback**: companions visibly strike the monster (slash in their color, light flinch)
+  and their damage floats once per second next to it, so passive damage is visible.
+- **Targets** (checked by tests and `npm run balance -- 24 compare 5`, median of 5 seeds):
+  with every talent and no altar, 5 clicks/s add about half of companion DPS; a click build
+  with every crit investment maxed stays under 6× at 5 clicks/s. Clicking leads the first
+  hours (stage 78 at 3 h at 10 clicks/s vs 55 idle); by 24 h the occasional player (short
+  bursts of clicks every 2 min) leads (stage 810), then pure idle (676), then sustained
+  clicking at 10/s (581), 5/s (413) and 2/s (313). An hour offline is worth a few percent
+  of an hour played, since only playing pushes new stages.
 
 ### Powers (keys 1 to 6)
 
@@ -97,15 +105,17 @@ late game; mashing the mouse is never required.
 - Essences earned grow with the highest stage cleared, deliberately slower than monster HP.
 - Each owned essence gives +10% DPS. Essences also buy **13 altars** (might, blade,
   fortune, patience, time, fate, precision, treasure, bargain, echoes, harvest, wanderer,
-  memory): permanent bonuses, some capped, some unlimited.
+  memory): permanent bonuses, some capped, some unlimited. When an altar gets a new cap
+  (Altar of Fate, save version 3), the levels above it are refunded in essences when the
+  save is loaded, on the server and in the client.
 - Ascension resets gold, hero levels, talents, stage, powers and run statistics. It keeps
   essences, altars, relics, shards, achievements and lifetime statistics.
 
 ### Relics and market
 
 - **4 slots** (weapon, armor, amulet, ring), each with a fixed main stat (DPS, boss damage,
-  click damage, gold). Totals are capped for crit chance (+32%), essences (+100%) and
-  critical damage (+100%).
+  click damage, gold). Totals are capped for crit chance (+16%), essences (+100%) and
+  critical damage (+50%).
 - **5 rarities** (common, rare, epic, legendary, mythic) with 1 to 4 affixes; legendary and
   mythic add an ascension-essence affix. Power scales with the stage the item dropped at.
 - Drops: biome guardians 40% (guaranteed on a first clear), elites 15%. Guardians also give

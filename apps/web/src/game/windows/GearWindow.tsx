@@ -125,12 +125,14 @@ function Equipped() {
         <dl>
           {STATS.map((stat) => {
             const bonus = equipmentBonus(state, stat);
-            const value = `+${percent(bonus * 100, locale)}`;
             const cap = EQUIPMENT_CAP[stat];
             return (
               <div key={stat}>
                 <dt>{g.affixes[stat]}</dt>
-                <dd>{cap !== undefined && bonus >= cap ? text.totalCapped(value) : value}</dd>
+                <dd>
+                  +{percent(bonus * 100, locale)}
+                  {cap !== undefined && bonus >= cap ? <span className="cap-badge" title={text.capTitle}>{text.capBadge}</span> : null}
+                </dd>
               </div>
             );
           })}

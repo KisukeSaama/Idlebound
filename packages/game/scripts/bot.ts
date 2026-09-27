@@ -3,12 +3,14 @@ import { ALTARS, altarCost } from "../src/data/altars";
 import { HEROES } from "../src/data/heroes";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, isSkillUnlocked } from "../src/engine";
-import { derive, heroCost, heroCostMultiplier } from "../src/formulas";
+import { BLADE_DPS_SHARE_MAX, BLADE_DPS_SHARE_PER_LEVEL, derive, heroCost, heroCostMultiplier } from "../src/formulas";
 
 export interface BotOptions {
   clicksPerSecond: number;
   /** Stop attack clicks from this stage of each run on (idle player); powers and crystals stay. */
   idleFromStage?: number;
+  /** Occasional player: clicks only `seconds` out of every `everySeconds`. */
+  burst?: { everySeconds: number; seconds: number };
   /** Ascend after this long without a new stage. */
   stagnationMs?: number;
   onMilestone?: (engine: GameEngine, now: number) => void;
@@ -51,7 +53,8 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
   while (now < endAt) {
     now += DT * 1000;
     step += 1;
-    const clicking = options.idleFromStage === undefined || s.maxStage < options.idleFromStage;
+    const inBurst = !options.burst || ((now - start) / 1000) % options.burst.everySeconds < options.burst.seconds;
+    const clicking = inBurst && (options.idleFromStage === undefined || s.maxStage < options.idleFromStage);
     const clicksPerSecond = clicking ? options.clicksPerSecond : 0;
     clickDebt += clicksPerSecond * DT;
     while (clickDebt >= 1) {
@@ -89,11 +92,13 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       const gain = engine.ascend(now);
       options.onAscend?.(engine, now, gain, from);
       for (let guard = 0; guard < 500; guard += 1) {
-        // A clicking player never benefits from patience; the blade only boosts Aldric, weak late.
-        const wanted = options.idleFromStage === undefined
-          ? ["might", "fortune", "time", "precision", "fate"]
+        // A clicking player never benefits from patience, an idle one from click altars.
+        const wanted = options.idleFromStage === undefined && !options.burst
+          ? ["might", "blade", "fortune", "time", "precision", "fate"]
           : ["might", "fortune", "time", "patience"];
-        const choices = ALTARS.filter((altar) => wanted.includes(altar.id))
+        // Past the level that maxes its DPS share, the blade only helps the first stages.
+        const bladeMaxed = (s.altars.blade ?? 0) >= BLADE_DPS_SHARE_MAX / BLADE_DPS_SHARE_PER_LEVEL;
+        const choices = ALTARS.filter((altar) => wanted.includes(altar.id) && !(altar.id === "blade" && bladeMaxed))
           .map((altar) => ({ id: altar.id, cost: altarCost(altar.id, s.altars[altar.id] ?? 0) }))
           .filter((entry) => entry.cost <= s.essences * 0.7)
           .sort((a, b) => a.cost - b.cost);

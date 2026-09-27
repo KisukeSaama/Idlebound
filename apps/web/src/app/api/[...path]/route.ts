@@ -52,7 +52,7 @@ async function readBody(request: NextRequest): Promise<ArrayBuffer | null> {
 }
 
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
-  const base = process.env.INTERNAL_API_BASE_URL ?? "http://localhost:8080";
+  const base = process.env.INTERNAL_API_BASE_URL ?? "http://localhost:8000";
   const { path } = await context.params;
   const target = new URL(`${base.replace(/\/$/, "")}/${path.map(encodeURIComponent).join("/")}`);
   target.search = request.nextUrl.search;

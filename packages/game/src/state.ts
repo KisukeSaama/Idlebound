@@ -1,6 +1,6 @@
 import type { GameState, LifetimeStats, StatBlock } from "./types";
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export function emptyStats(): StatBlock {
   return { clicks: 0, crits: 0, kills: 0, bosses: 0, treasures: 0, goldEarned: 0, crystals: 0, skillsUsed: 0, maxHit: 0, playTime: 0 };
