@@ -5,7 +5,7 @@ import { currentMessages } from "@/i18n/client";
 import { api, type AccountUser, type CloudSave } from "@/lib/api";
 import type { GameStore } from "./store";
 
-export type CloudStatus = "offline" | "idle" | "syncing" | "synced" | "error" | "rejected";
+export type CloudStatus = "offline" | "idle" | "syncing" | "synced" | "error" | "rejected" | "unverified";
 
 export interface SaveSummary {
   maxStage: number;
@@ -81,7 +81,8 @@ export class CloudSync {
         this.store.onAction(() => this.requestSave()),
         this.store.onFx((event) => {
           if (event.type === "achievement" || event.type === "loot" || (event.type === "stage" && event.biomeChanged)) this.requestSave();
-        })
+        }),
+        this.watchReturn()
       ];
     }
     this.timer ??= setInterval(() => {
@@ -116,10 +117,42 @@ export class CloudSync {
     this.set({ pendingChoice: cloud, status: "idle" });
   }
 
+  /** Back on the tab after clicking the confirmation link elsewhere: pick up the new account state. */
+  private watchReturn() {
+    const onReturn = () => {
+      if (document.visibilityState === "visible" && this.user && !this.user.emailVerified) void this.refreshUser();
+    };
+    window.addEventListener("focus", onReturn);
+    document.addEventListener("visibilitychange", onReturn);
+    return () => {
+      window.removeEventListener("focus", onReturn);
+      document.removeEventListener("visibilitychange", onReturn);
+    };
+  }
+
+  async refreshUser() {
+    const result = await api.me();
+    if (!result.ok || !result.data.user || !this.user) return;
+    this.setUser(result.data.user);
+  }
+
+  /** New account data (address confirmed or changed); saving resumes once confirmed. */
+  setUser(user: AccountUser) {
+    const unblocked = this.status === "unverified" && user.emailVerified;
+    this.set({ user, ...(unblocked ? { status: "idle" as const, message: null } : {}) });
+    if (unblocked) void this.sync();
+  }
+
   adopt(cloud: CloudSave) {
     this.store.replaceState(cloud.state);
     this.lastUploadAt = Date.now();
-    this.set({ pendingChoice: null, status: "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
+    this.set({ pendingChoice: null, status: this.saveBlocked() ? "unverified" : "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
+  }
+
+  /** Past the deadline to confirm the address: the server refuses saves. */
+  private saveBlocked() {
+    const verifyBy = this.user?.emailVerified === false ? this.user.verifyBy : null;
+    return verifyBy !== null && verifyBy !== undefined && Date.parse(verifyBy) <= Date.now();
   }
 
   async resolveChoice(choice: "local" | "cloud") {
@@ -153,6 +186,13 @@ export class CloudSync {
         if (cloud.ok && cloud.data.save) this.set({ pendingChoice: cloud.data.save, status: "idle", message: result.error });
         break;
       }
+      case 403:
+        if (result.body?.code === "email-unverified") {
+          this.set({ status: "unverified", message: result.error });
+          break;
+        }
+        this.set({ status: "error", message: result.error });
+        break;
       case 422: {
         this.rejectedAt = Date.now();
         const violations = (result.body?.violations as { code?: string }[] | undefined) ?? [];
@@ -171,7 +211,7 @@ export class CloudSync {
 
   /** Schedules an early save after a player action or a milestone. */
   requestSave() {
-    if (!this.user || this.pendingChoice || this.status === "rejected" || this.saveTimer) return;
+    if (!this.user || this.pendingChoice || this.status === "rejected" || this.status === "unverified" || this.saveTimer) return;
     const delay = Math.max(SAVE_DEBOUNCE_MS, this.lastUploadAt + MIN_UPLOAD_GAP_MS - Date.now());
     this.saveTimer = setTimeout(() => {
       this.saveTimer = null;
@@ -184,6 +224,8 @@ export class CloudSync {
   async sync(options: { force?: boolean; keepalive?: boolean } = {}) {
     if (!this.user || this.pendingChoice) return;
     if (this.status === "rejected" && !options.force && Date.now() - this.rejectedAt < RETRY_AFTER_REJECT_MS) return;
+    // Refused until the address is confirmed: setUser() resumes saving.
+    if (this.status === "unverified" && !options.force) return;
     await this.upload(this.revision, false, options.keepalive);
   }
 

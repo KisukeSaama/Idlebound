@@ -16,6 +16,7 @@ export function describeEffect(effect: HeroEffect, heroName: string, locale: Loc
     case "gold": return t.gold(pct(effect.pct));
     case "bossTimer": return t.bossTimer(effect.seconds);
     case "treasure": return t.treasure(pct(effect.pct));
+    case "idleDps": return t.idleDps(pct(effect.pct));
   }
 }
 

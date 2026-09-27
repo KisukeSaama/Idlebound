@@ -26,7 +26,8 @@ market is French-speaking, with a full English version.
 ## Core loop
 
 1. **Click** the monster to deal damage and earn gold. Critical hits deal ×10.
-2. **Hire and level companions** with gold. They deal damage per second, even offline.
+2. **Hire and level companions** with gold. They deal damage per second, even offline,
+   and take over from clicks as the run goes on (see "Idle and active play").
 3. **Push stages.** Beat 10 monsters to unlock the next stage; beat the boss before its
    timer runs out.
 4. **Ascend** once the Fallen King (stage 50) is beaten: restart from stage 1 in exchange
@@ -42,7 +43,7 @@ market is French-speaking, with a full English version.
 | Biomes | 5 biomes of 10 stages: Verdant Plains, Dark Forest, Forgotten Caves, Corrupted Marsh, Fallen King's Ruins. |
 | Eras | Each full loop of the 5 biomes (50 stages) starts a new era: tinted, prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial…). |
 | Golden rat | 1% base spawn chance on normal stages, ×10 gold. |
-| Wandering crystal | Appears every 90 to 240 s while the tab is visible, stays 13 s. Gives gold (40%), overcharge DPS ×7 for 15 s (25%), sharpness click ×10 for 20 s (20%), 2 to 6 shards (12%) or essences (3%, only after a first ascension). |
+| Wandering crystal | Appears every 90 to 240 s while the tab is visible, stays 13 s. Gives gold (40%), overcharge DPS ×7 for 15 s (25%), sharpness click ×10 (DPS share included) for 20 s (20%), 2 to 6 shards (12%) or essences (3%, only after a first ascension). |
 | HP curve | Three segments (steep early, then ×1.15 then ×1.18 per stage) tuned so ascension income never outruns monster HP. |
 
 ### Companions
@@ -51,9 +52,33 @@ market is French-speaking, with a full English version.
   The 20 others deal DPS, each unlocking after the previous one is hired.
 - **Talents** at levels 10, 25, 50, 100 and 150 (Aldric: 10, 25, 50, 75, 100, 150, 200).
   Level-50 talents are unique effects (gold, crit chance, crit damage, boss timer, treasure
-  chance, global DPS, click-as-DPS).
+  chance, global DPS, idle DPS). Aldric's talents at 25, 100 and 200 each add 1% of
+  companion DPS to every click.
 - **Automatic milestones:** ×3.5 hero DPS every 25 levels from level 200.
 - **Bulk buying:** ×1, ×10, ×25, ×100 or Max. Cost grows ×1.07 per level (Aldric ×1.1).
+
+### Idle and active play
+
+Like the best of the genre, clicks carry the start of each run and companions carry the
+late game; mashing the mouse is never required.
+
+- **Click damage** = Aldric's own damage (levels, click talents, Altar of the Blade, click
+  relics, half the achievement bonus) + **3% of companion DPS** at most (Aldric's talents).
+  Aldric's own damage fades out after the first stages, so late clicks are worth a fixed
+  share of DPS, multiplied by crits. Critical hits only apply to clicks.
+- **Idle bonus**: after **60 s without attacking the monster**, companions deal more:
+  Sentinel's Vigil (Kaelen 50, +50%), Silent Legion (Morgrath 50, +100%) and the Altar of
+  Patience (+40% per level) add up. Clicks never include it. Automatic clicks (Frenzy,
+  striking scroll), powers, crystals and purchases do not break it. Offline progress
+  always counts as idle. A chip shows the bonus, with a countdown while the player clicks.
+- **Active bonus**: powers, crystals and crit investments (Altar of Fate, Precision,
+  crit relics) reward being there. Relic critical damage is capped at +100% in total.
+- **Feedback**: companion damage floats once per second next to the monster, so passive
+  damage is visible.
+- **Targets** (checked by tests and `npm run balance -- 24 compare`): with every talent
+  and no altar, 5 clicks/s add about half of companion DPS (up to about 1× with capped crit
+  relics), 10 clicks/s about 1×. An idle player overtakes 5 clicks/s after the first
+  ascensions; 10 clicks/s can lead mid-game but the idle build leads at 24 h.
 
 ### Powers (keys 1 to 6)
 
@@ -79,7 +104,8 @@ market is French-speaking, with a full English version.
 ### Relics and market
 
 - **4 slots** (weapon, armor, amulet, ring), each with a fixed main stat (DPS, boss damage,
-  click damage, gold).
+  click damage, gold). Totals are capped for crit chance (+32%), essences (+100%) and
+  critical damage (+100%).
 - **5 rarities** (common, rare, epic, legendary, mythic) with 1 to 4 affixes; legendary and
   mythic add an ascension-essence affix. Power scales with the stage the item dropped at.
 - Drops: biome guardians 40% (guaranteed on a first clear), elites 15%. Guardians also give
@@ -108,13 +134,22 @@ market is French-speaking, with a full English version.
 ### Balance targets
 
 Validated by the bot simulation (`npm run balance`): stage 10 in about 2 min, stage 50 in
-about 2 h, first ascension around 3 h, stage 100 in about 6 h, then steady progress carried
-by ascensions. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
+about 1.5 to 2 h, first ascension around 3 h, stage 100 in about 6 h, then steady progress
+carried by ascensions. `npm run balance -- 24 compare` plays the same game idle and at 2, 5
+and 10 clicks/s to check the idle/active gap. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
 ## Accounts
 
-- Sign-up asks for **e-mail, username and password, nothing else**.
+- Sign-up asks for **e-mail, username and password (typed twice), nothing else**.
+- **E-mail confirmation**, only when an SMTP server is configured (otherwise the address is
+  accepted as is). The player plays and saves right away; the account window shows the
+  deadline, a "resend" button and a way to fix a mistyped address (password required).
+  After **3 days** without confirmation, saves are refused until the link is clicked (the
+  game stays playable, the account icon shows `!`). Links are valid 7 days, a new one
+  voids the previous one. A password reset through the e-mail link also confirms the
+  address. An account never confirmed is deleted 30 days after sign-up. Accounts created
+  before this rule are considered confirmed.
 - Usernames: 3 to 16 characters (letters, digits, `-`, `_`), at least one letter, unique
   regardless of case and accents, reserved names blocked, strict FR/EN profanity filter that
   sees through leet-speak, accents, repeated letters and separators (usernames are public).
@@ -122,6 +157,8 @@ rejects real play.
 - Sessions: 30 days sliding, httpOnly cookie; changing the password revokes every session.
 - Forgotten password: single-use link valid 1 h, same answer whether the account exists.
 - Self-service account deletion (GDPR) and a privacy page.
+- E-mails (confirmation, password reset, inactivity warning) share one template in
+  `apps/api/src/lib/mail.ts`: see DESIGN.md.
 - Accounts inactive for 3 years are deleted, after a warning e-mail sent 30 days before
   (in the player's language). Without a configured SMTP server, nobody is warned, so
   nobody is deleted.

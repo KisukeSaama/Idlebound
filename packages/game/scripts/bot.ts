@@ -7,6 +7,8 @@ import { derive, heroCost, heroCostMultiplier } from "../src/formulas";
 
 export interface BotOptions {
   clicksPerSecond: number;
+  /** Stop attack clicks from this stage of each run on (idle player); powers and crystals stay. */
+  idleFromStage?: number;
   /** Ascend after this long without a new stage. */
   stagnationMs?: number;
   onMilestone?: (engine: GameEngine, now: number) => void;
@@ -28,7 +30,7 @@ function bestHeroPurchase(engine: GameEngine, now: number, clicksPerSecond: numb
     s.heroLevels[hero.id] = level + 1;
     const after = derive(s, now, { ignoreTimed: true });
     s.heroLevels[hero.id] = level;
-    const gain = after.dps - base.dps + (after.click - base.click) * clicksPerSecond;
+    const gain = after.dps - base.dps + (after.click - base.click) * clicksPerSecond * (1 + after.critChance * (after.critMultiplier - 1));
     const ratio = gain / cost;
     if (!best || ratio > best.ratio) best = { id: hero.id, ratio };
   }
@@ -49,7 +51,9 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
   while (now < endAt) {
     now += DT * 1000;
     step += 1;
-    clickDebt += options.clicksPerSecond * DT;
+    const clicking = options.idleFromStage === undefined || s.maxStage < options.idleFromStage;
+    const clicksPerSecond = clicking ? options.clicksPerSecond : 0;
+    clickDebt += clicksPerSecond * DT;
     while (clickDebt >= 1) {
       clickDebt -= 1;
       engine.click(now);
@@ -60,7 +64,7 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
     if (step % 5 === 0) {
       engine.buyAllUpgrades(now);
       for (let guard = 0; guard < 50; guard += 1) {
-        const best = bestHeroPurchase(engine, now, options.clicksPerSecond);
+        const best = bestHeroPurchase(engine, now, clicksPerSecond);
         if (!best) break;
         engine.buyHero(best.id, 1, now);
       }
@@ -85,7 +89,11 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       const gain = engine.ascend(now);
       options.onAscend?.(engine, now, gain, from);
       for (let guard = 0; guard < 500; guard += 1) {
-        const choices = ALTARS.filter((altar) => ["might", "blade", "fortune", "time", "patience", "precision"].includes(altar.id))
+        // A clicking player never benefits from patience; the blade only boosts Aldric, weak late.
+        const wanted = options.idleFromStage === undefined
+          ? ["might", "fortune", "time", "precision", "fate"]
+          : ["might", "fortune", "time", "patience"];
+        const choices = ALTARS.filter((altar) => wanted.includes(altar.id))
           .map((altar) => ({ id: altar.id, cost: altarCost(altar.id, s.altars[altar.id] ?? 0) }))
           .filter((entry) => entry.cost <= s.essences * 0.7)
           .sort((a, b) => a.cost - b.cost);

@@ -11,6 +11,7 @@ import { SKILLS } from "./data/skills";
 import { GameEngine } from "./engine";
 import {
   ASCENSION_MIN_STAGE,
+  IDLE_DELAY_MS,
   bossHp,
   derive,
   essencesForStage,
@@ -27,6 +28,7 @@ import { seededRng } from "./rng";
 import { parseState } from "./save";
 import { createInitialState } from "./state";
 import { verifyState, verifyTransition } from "./validation";
+import type { GameState } from "./types";
 
 const T0 = Date.UTC(2026, 2, 1);
 
@@ -154,6 +156,106 @@ describe("combat loop", () => {
     expect(engine.state.crystal).not.toBeNull();
     expect(engine.clickCrystal(T0 + 200)).toBe(true);
     expect(engine.state.lifetime.crystals).toBe(1);
+  });
+});
+
+/** A late run: every companion at level 200 with every talent, as a player around stage 110. */
+function lateGame(): GameState {
+  const state = createInitialState(T0);
+  for (const hero of HEROES) {
+    state.heroLevels[hero.id] = hero.id === "aldric" ? 400 : 200;
+    for (const upgrade of hero.upgrades) state.heroUpgrades.push(upgrade.id);
+  }
+  return state;
+}
+
+/** Average damage per second of `clicksPerSecond` clicks (crits included) over the active DPS. */
+function clickRatio(state: GameState, now: number, clicksPerSecond: number): number {
+  const d = derive(state, now, { ignoreTimed: true });
+  const activeDps = d.idle ? d.dps / (1 + d.idleBonus) : d.dps;
+  return (clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1))) / activeDps;
+}
+
+describe("idle and active balance", () => {
+  it("lets clicks carry the start of a run", () => {
+    const engine = newGame();
+    engine.state.gold = 500;
+    engine.buyHero("aldric", 10, T0);
+    engine.buyHero("maelle", 1, T0);
+    expect(clickRatio(engine.state, T0, 5)).toBeGreaterThan(2);
+  });
+
+  it("keeps sustained clicking around companion DPS in the late game", () => {
+    const state = lateGame();
+    state.lastClickAt = T0;
+    const ratio = clickRatio(state, T0, 5);
+    expect(ratio).toBeGreaterThan(0.1);
+    expect(ratio).toBeLessThan(1);
+    // Mashing at 10 clicks/s beats an idle player by a modest margin at most.
+    const idle = derive(state, T0 + IDLE_DELAY_MS, { ignoreTimed: true });
+    const active = derive(state, T0, { ignoreTimed: true });
+    expect(active.dps * (1 + clickRatio(state, T0, 10))).toBeLessThan(idle.dps * 1.5);
+  });
+
+  it("gives the idle bonus to companions only, never to clicks", () => {
+    const state = lateGame();
+    state.altars.patience = 5;
+    state.lastClickAt = T0;
+    const active = derive(state, T0);
+    const idle = derive(state, T0 + IDLE_DELAY_MS);
+    expect(active.idle).toBe(false);
+    expect(idle.idle).toBe(true);
+    // Sentinel's Vigil (+50%), Silent Legion (+100%), Patience 5 (+200%).
+    expect(idle.idleBonus).toBeCloseTo(3.5);
+    expect(active.idleBonus).toBeCloseTo(3.5);
+    expect(idle.dps).toBeCloseTo(active.dps * 4.5);
+    expect(idle.heroDps.maelle).toBeCloseTo(active.heroDps.maelle * 4.5);
+    expect(idle.click).toBeCloseTo(active.click);
+    expect(derive(state, T0, { forceIdle: true }).dps).toBeCloseTo(idle.dps);
+  });
+
+  it("applies sharpness to the whole click, DPS share included", () => {
+    const state = lateGame();
+    const plain = derive(state, T0);
+    state.buffs.push({ id: "sharpness", until: T0 + 20_000 });
+    expect(derive(state, T0).click).toBeCloseTo(plain.click * 10);
+  });
+
+  it("caps the critical damage of relics", () => {
+    const state = lateGame();
+    const base = derive(state, T0).critMultiplier;
+    for (const slot of SLOTS) {
+      state.equipment[slot] = { ...generateItem(seededRng(3), 100, { slot }), affixes: [{ stat: "critDamage", value: 5 }] };
+    }
+    expect(derive(state, T0).critMultiplier).toBeCloseTo(base * 2);
+  });
+
+  it("reports companion damage once per second", () => {
+    const engine = newGame();
+    engine.state.gold = 1e6;
+    engine.buyHero("maelle", 25, T0);
+    const now = run(engine, T0, 3);
+    const events = engine.drainEvents().filter((event) => event.type === "dps");
+    expect(events.length).toBeGreaterThanOrEqual(2);
+    expect(events.length).toBeLessThanOrEqual(3);
+    for (const event of events) expect(event.type === "dps" && event.damage).toBeGreaterThan(0);
+    expect(now).toBe(T0 + 3000);
+  });
+
+  it("does not reject a boss beaten while idle", () => {
+    const state = lateGame();
+    // Idle bonus (+40,000%) far above the margins of the power check (timed buffs, bursts
+    // of crits, ×10 slack), so only the idle bonus itself can explain the boss.
+    state.altars.patience = 100_000;
+    state.lifetime.essencesEarned = 1e10;
+    state.lastClickAt = T0;
+    const idle = derive(state, T0 + IDLE_DELAY_MS, { ignoreTimed: true });
+    // The highest boss the idle companions alone beat in half the timer.
+    let stage = 10;
+    while (bossHp(stage + 5) < (idle.dps * idle.bossTimer) / 2) stage += 5;
+    state.stage = state.maxStage = state.maxStageEver = stage + 1;
+    const codes = verifyState(state, T0 + 1000).map((violation) => violation.code);
+    expect(codes).not.toContain("power");
   });
 });
 

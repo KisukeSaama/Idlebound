@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { createApp } from "./app";
 import { sql } from "./db/client";
 import { env } from "./env";
+import { checkMailTransport } from "./lib/mail";
 import { purgeExpired } from "./lib/session";
 import { runMigrations } from "./migrate";
 
@@ -11,6 +12,8 @@ console.log("[api] migrations up to date");
 const server = serve({ fetch: createApp().fetch, port: env.API_PORT, hostname: "0.0.0.0" }, (info) => {
   console.log(`[api] listening on :${info.port} (${env.NODE_ENV})`);
 });
+
+void checkMailTransport();
 
 const runPurge = () => purgeExpired().catch((error) => console.error("[api] periodic purge", error));
 void runPurge();

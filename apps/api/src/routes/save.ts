@@ -7,6 +7,7 @@ import { leaderboard, saveRejections, saves } from "../db/schema";
 import { t } from "../lib/i18n";
 import { limiter, tooMany } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
+import { verificationOverdue } from "../lib/verification";
 
 /** At most one cloud save every 10 s per player (the client sends one every 30 s). */
 const saveLimiter = limiter(6, 60_000);
@@ -46,6 +47,8 @@ export const saveRoutes = new Hono()
   .put("/", async (c) => {
     const user = await currentUser(c);
     if (!user) return c.json({ error: t(c).loginRequired }, 401);
+    // After the grace period, an unconfirmed address blocks saving (loading still works).
+    if (verificationOverdue(user)) return c.json({ error: t(c).emailUnverified, code: "email-unverified" }, 403);
     const wait = saveLimiter.consume(user.id);
     if (wait > 0) return tooMany(c, wait);
 

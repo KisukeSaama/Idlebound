@@ -62,6 +62,9 @@ export class GameEngine {
   private events: GameEvent[] = [];
   private autoClickAccumulator = 0;
   private achievementTimer = 0;
+  /** Companion damage dealt since the last "dps" event (one per second, for the UI). */
+  private companionDamage = 0;
+  private companionTimer = 0;
   private unlockedAchievements: Set<string>;
 
   constructor(state: GameState, rng: Rng = Math.random, now = Date.now()) {
@@ -149,12 +152,21 @@ export class GameEngine {
       }
       if (s.monster && d.dps > 0) {
         const bossFactor = s.monster.kind === "boss" || s.monster.kind === "miniboss" ? d.bossDamage : 1;
-        this.damage(d.dps * dt * bossFactor, now);
+        const amount = d.dps * dt * bossFactor;
+        this.companionDamage += amount;
+        this.damage(amount, now);
       }
       if (s.monster && (s.monster.kind === "boss" || s.monster.kind === "miniboss")) {
         s.bossTimeLeft -= dt;
         if (s.bossTimeLeft <= 0) this.failBoss();
       }
+    }
+
+    this.companionTimer += dt;
+    if (this.companionTimer >= 1) {
+      if (this.companionDamage > 0) this.emit({ type: "dps", damage: this.companionDamage });
+      this.companionTimer = 0;
+      this.companionDamage = 0;
     }
 
     this.achievementTimer += dt;

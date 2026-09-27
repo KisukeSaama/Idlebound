@@ -99,10 +99,20 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
   settings. Painted icons (`public/assets/icons/sidebar-*.webp`) plus a short label; each
   opens a modal.
 - **≤ 1080px**: resource labels hidden, smaller logo, scene header centered.
-- **≤ 900px (mobile)**: single column. Scene on top (at least 300px, 52%), companions below;
-  a floating pill toggles "Companions" / "Full-screen combat". The rail becomes a fixed
-  bottom bar that respects `safe-area-inset-bottom`. Logo hidden, toasts centered.
-- **≤ 520px**: denser grids and hero rows.
+- **Desktop under 820px tall**: smaller rail icons so all eight buttons stay visible.
+- **Compact combat HUD** (≤ 900px wide or ≤ 560px tall): era and biome on one line, smaller
+  stage pips, powers and HP bar, so the monster keeps most of the scene.
+- **Portrait mobile** (≤ 900px wide and taller than 560px, or any width under 600px):
+  single column. Scene on top (at least 290px, 58%), companions below; a floating pill
+  toggles "Companions" / "Full-screen combat" (in full-screen the scene stops above it).
+  The rail becomes a fixed bottom bar that respects the safe-area insets. Logo hidden,
+  toasts centered, windows open as bottom sheets.
+- **Short landscape** (≤ 560px tall, at least 600px wide, i.e. phones held sideways): the
+  three desktop columns, tightened: 46px header, icon-only rail, narrower companions panel
+  whose title is visually hidden to leave room for the buy modes.
+- **≤ 520px**: denser grids, hero rows and window padding; market in two columns.
+- **≤ 480px**: the bottom bar shows icons only (eight labels do not fit; each button keeps
+  its `aria-label` and `title`).
 - The whole scene area is the click target (pointer down, not click, for responsiveness);
   Enter attacks when the arena has focus.
 
@@ -116,6 +126,16 @@ five biome cards, top-10 leaderboard, FAQ (`<details>`), final call to action.
 
 There is **no language switcher in the header**. The language is chosen automatically, or
 in the game's Settings window; the footer link is the only switch on public pages.
+
+## E-mails
+
+Every e-mail uses one template (`render` in `apps/api/src/lib/mail.ts`) carrying the site's
+identity: night background, framed panel, painted logo (`/assets/brand/idlebound-logo-mail.png`,
+PNG because several clients do not show WebP), Cinzel gold title, one gold button, a muted
+note, then the raw link as a fallback. Tables and inline styles only, 520px max, declared
+dark (`color-scheme`) so clients do not invert it; the button is a block that keeps its label
+on one piece at 320px. Copy is short: a title, one or two sentences, the button, one note
+(validity and "wasn't you?"). Every e-mail has a plain-text version.
 
 ## Imagery
 
@@ -134,6 +154,10 @@ in the game's Settings window; the footer link is the only switch on public page
 
 - Monsters: entrance, idle breathing, death; bosses and golden rats get a pulsing glow.
 - Damage numbers float up from the pointer; crits are bigger and gold; gold gains rise.
+  Companion damage shows once per second as a smaller green number beside the monster, so
+  passive damage is as visible as clicks without covering them.
+- The Patience chip is dashed with a countdown while the player clicks, solid once the idle
+  bonus applies.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%.
 - Crystals float, shine and blink before expiring; affordable talents pulse; the urgent
   badge pops.
@@ -151,8 +175,8 @@ pointer or key press, with an on/off switch and a volume slider in Settings.
 
 ## Voice and copy
 
-- **French**: warm, epic, playful, always *tutoiement* ("Clique sur le monstre…").
-- **English**: the same energy, direct second person ("Click the monster…"), idiomatic
+- **French**: warm, epic, playful, always *tutoiement* ("Recrute Maëlle : elle attaque même quand tu ne cliques pas.").
+- **English**: the same energy, direct second person ("Hire Maëlle: she attacks even when you don't click."), idiomatic
   rather than literal.
 - Short sentences, verbs first on buttons ("Jouer gratuitement" / "Play for free").
 - **Never use an em dash (—)** in any user-facing string, in either language. Use " : " (FR)

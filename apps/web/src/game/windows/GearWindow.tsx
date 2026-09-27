@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  EQUIPMENT_CAP,
   FORGE_MAX,
   FORGE_STEP,
   INVENTORY_LIMIT,
@@ -122,12 +123,17 @@ function Equipped() {
       <aside className="gear-totals card">
         <h3>{text.totalsTitle}</h3>
         <dl>
-          {STATS.map((stat) => (
-            <div key={stat}>
-              <dt>{g.affixes[stat]}</dt>
-              <dd>+{percent(equipmentBonus(state, stat) * 100, locale)}</dd>
-            </div>
-          ))}
+          {STATS.map((stat) => {
+            const bonus = equipmentBonus(state, stat);
+            const value = `+${percent(bonus * 100, locale)}`;
+            const cap = EQUIPMENT_CAP[stat];
+            return (
+              <div key={stat}>
+                <dt>{g.affixes[stat]}</dt>
+                <dd>{cap !== undefined && bonus >= cap ? text.totalCapped(value) : value}</dd>
+              </div>
+            );
+          })}
         </dl>
         <p className="modal-hint">{text.totalsHint}</p>
       </aside>

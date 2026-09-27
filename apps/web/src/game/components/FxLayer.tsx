@@ -92,6 +92,12 @@ export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMem
         const x = origin.x + (recent ? 0 : (Math.random() - 0.5) * 120);
         const y = origin.y + (recent ? -10 : (Math.random() - 0.5) * 60);
         spawn(`fx-damage ${event.crit ? "crit" : ""} ${event.source === "auto" ? "auto" : ""}`, fmtRef.current(event.damage), x, y, 900, event.crit ? currentMessages().hud.fx.crit : undefined);
+      } else if (event.type === "dps") {
+        // Companion damage over the last second, beside the monster so it never hides clicks.
+        if (!settings.damageNumbers) return;
+        const { x, y } = center();
+        const side = Math.random() < 0.5 ? -1 : 1;
+        spawn("fx-damage companions", fmtRef.current(event.damage), x + side * (70 + Math.random() * 30), y - 30 - Math.random() * 30, 1000);
       } else if (event.type === "kill") {
         dying(event);
         const { x, y } = center();

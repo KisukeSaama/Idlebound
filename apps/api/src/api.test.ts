@@ -210,6 +210,70 @@ suite("API (real Postgres)", () => {
     expect(await sql`select 1 from users where email = ${activeEmail}`).toHaveLength(1);
   });
 
+  it("requires a confirmed e-mail once SMTP is configured, after a grace period", async () => {
+    const { sql } = await import("./db/client");
+    const { env } = await import("./env");
+    const { hashToken, purgeExpired } = await import("./lib/session");
+    const previousSmtp = env.SMTP_URL;
+    // Unreachable relay: sends fail in the background (and are only logged), the flow is what is tested.
+    env.SMTP_URL = "smtp://127.0.0.1:9";
+    try {
+      const password = "unBonMotDePasse!";
+      const client = new Client("10.0.0.20");
+      const email = `verif-${unique}@test.fr`;
+      const register = await client.call("POST", "/auth/register", { email, username: `Ver${unique.slice(-6)}`, password });
+      expect(register.status).toBe(201);
+      expect(register.json.user.emailVerified).toBe(false);
+      expect(register.json.user.verifyBy).toBeTruthy();
+
+      // Within the grace period, saving works.
+      const state = playedState(1);
+      expect((await client.call("PUT", "/save", { state, baseRevision: null })).status).toBe(200);
+
+      // Past it, saves are refused until the address is confirmed; loading still works.
+      await sql`update users set created_at = now() - interval '4 days' where email = ${email}`;
+      const blocked = await client.call("PUT", "/save", { state, baseRevision: 1 });
+      expect(blocked.status).toBe(403);
+      expect(blocked.json.code).toBe("email-unverified");
+      expect((await client.call("GET", "/save")).status).toBe(200);
+
+      // A mistyped address can be fixed, with the password.
+      const fixed = `verif-fixed-${unique}@test.fr`;
+      expect((await client.call("POST", "/auth/email", { email: fixed, password: "wrong" })).status).toBe(401);
+      const changed = await client.call("POST", "/auth/email", { email: fixed, password });
+      expect(changed.status).toBe(200);
+      expect(changed.json.user.email).toBe(fixed);
+      expect(changed.json.user.emailVerified).toBe(false);
+
+      // A link sent to the previous address confirms nothing.
+      const [row] = await sql`select id from users where email = ${fixed}`;
+      const staleToken = `stale-token-${unique}-padding-padding`;
+      await sql`insert into email_verifications (id, user_id, email, expires_at) values (${hashToken(staleToken)}, ${row.id}, ${email}, now() + interval '1 day')`;
+      expect((await new Client("10.0.0.21").call("POST", "/auth/verify", { token: staleToken })).status).toBe(400);
+
+      // The right link works from any browser, once.
+      const token = `fresh-token-${unique}-padding-padding`;
+      await sql`insert into email_verifications (id, user_id, email, expires_at) values (${hashToken(token)}, ${row.id}, ${fixed}, now() + interval '1 day')`;
+      const verified = await new Client("10.0.0.21").call("POST", "/auth/verify", { token });
+      expect(verified.status).toBe(200);
+      expect((await new Client("10.0.0.21").call("POST", "/auth/verify", { token })).status).toBe(400);
+      expect((await client.call("GET", "/auth/me")).json.user.emailVerified).toBe(true);
+      expect((await client.call("PUT", "/save", { state, baseRevision: 1 })).status).toBe(200);
+      expect((await client.call("POST", "/auth/verify/resend")).status).toBe(400);
+      expect((await client.call("POST", "/auth/email", { email, password })).status).toBe(403);
+
+      // An account never confirmed is deleted after 30 days.
+      const ghost = `ghost-${unique}@test.fr`;
+      expect((await new Client("10.0.0.22").call("POST", "/auth/register", { email: ghost, username: `Gho${unique.slice(-6)}`, password })).status).toBe(201);
+      await sql`update users set created_at = now() - interval '31 days' where email = ${ghost}`;
+      await purgeExpired();
+      expect(await sql`select 1 from users where email = ${ghost}`).toHaveLength(0);
+      expect(await sql`select 1 from users where email = ${fixed}`).toHaveLength(1);
+    } finally {
+      env.SMTP_URL = previousSmtp;
+    }
+  }, 60_000);
+
   it("does not reveal whether an e-mail exists when resetting", async () => {
     const client = new Client("10.0.0.10");
     const response = await client.call("POST", "/auth/forgot", { email: `unknown-${unique}@test.fr` });

@@ -1,15 +1,16 @@
-import { usernameKey, validateUsername } from "@idlebound/game";
+import { usernameKey, validateUsername, type Locale } from "@idlebound/game";
 import { and, eq, gt, isNull, ne } from "drizzle-orm";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
 import { db } from "../db/client";
-import { passwordResets, users } from "../db/schema";
+import { emailVerifications, passwordResets, users } from "../db/schema";
 import { env } from "../env";
 import { localeOf, t } from "../lib/i18n";
-import { resetPasswordMail, sendMail } from "../lib/mail";
+import { resetPasswordMail, sendMail, verifyEmailMail } from "../lib/mail";
 import { checkPasswordStrength, dummyVerify, hashPassword, verifyPassword } from "../lib/password";
 import { clientIp, limiter, tooMany } from "../lib/rate-limit";
 import { createSession, currentUser, destroyAllSessions, destroySession, hashToken, newToken } from "../lib/session";
+import { VERIFY_LINK_DAYS, verificationRequired, verifyDeadline } from "../lib/verification";
 
 const registerIp = limiter(5, 60 * 60_000);
 const loginIp = limiter(20, 15 * 60_000);
@@ -17,6 +18,8 @@ const loginAccount = limiter(8, 15 * 60_000);
 const forgotIp = limiter(5, 60 * 60_000);
 const forgotAccount = limiter(3, 60 * 60_000);
 const sensitiveUser = limiter(10, 15 * 60_000);
+const verifyIp = limiter(20, 60 * 60_000);
+const resendUser = limiter(3, 60 * 60_000);
 
 const email = z.string().trim().toLowerCase().max(254).pipe(z.email());
 const password = z.string().min(1).max(256);
@@ -27,6 +30,8 @@ const forgotBody = z.object({ email });
 const resetBody = z.object({ token: z.string().min(20).max(100), password });
 const changeBody = z.object({ currentPassword: password, newPassword: password });
 const deleteBody = z.object({ password });
+const verifyBody = z.object({ token: z.string().min(20).max(100) });
+const emailBody = z.object({ email, password });
 
 /** Parses the JSON body; errors come back in the language of the request. */
 async function body<T>(c: Context, schema: z.ZodType<T>): Promise<{ data: T } | { error: string }> {
@@ -41,8 +46,31 @@ async function body<T>(c: Context, schema: z.ZodType<T>): Promise<{ data: T } | 
   return { data: parsed.data };
 }
 
-function publicUser(user: { id: string; username: string; email: string; createdAt: Date }) {
-  return { id: user.id, username: user.username, email: user.email, createdAt: user.createdAt.toISOString() };
+function publicUser(user: { id: string; username: string; email: string; emailVerifiedAt: Date | null; createdAt: Date }) {
+  const deadline = verifyDeadline(user);
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    createdAt: user.createdAt.toISOString(),
+    emailVerified: deadline === null,
+    /** Until when saves are accepted without a confirmed address. */
+    verifyBy: deadline?.toISOString() ?? null
+  };
+}
+
+/** New confirmation link for the account's current address; earlier links stop working. */
+async function sendVerification(user: { id: string; email: string; username: string }, locale: Locale) {
+  const token = newToken();
+  await db.delete(emailVerifications).where(eq(emailVerifications.userId, user.id));
+  await db.insert(emailVerifications).values({
+    id: hashToken(token),
+    userId: user.id,
+    email: user.email,
+    expiresAt: new Date(Date.now() + VERIFY_LINK_DAYS * 86_400_000)
+  });
+  const link = `${env.PUBLIC_SITE_URL}/${locale}/verify-email?token=${encodeURIComponent(token)}`;
+  sendMail(user.email, verifyEmailMail(user.username, link, locale)).catch((error) => console.error("[mail] send failed", error));
 }
 
 export const authRoutes = new Hono()
@@ -72,8 +100,11 @@ export const authRoutes = new Hono()
 
     const passwordHash = await hashPassword(secret);
     try {
-      const [user] = await db.insert(users).values({ email: address, username: name.value, usernameKey: key, passwordHash, lastLoginAt: new Date(), locale: localeOf(c) }).returning();
+      // Without SMTP the address cannot be checked: it is taken as is.
+      const emailVerifiedAt = verificationRequired() ? null : new Date();
+      const [user] = await db.insert(users).values({ email: address, username: name.value, usernameKey: key, passwordHash, emailVerifiedAt, lastLoginAt: new Date(), locale: localeOf(c) }).returning();
       await createSession(c, user.id);
+      if (!user.emailVerifiedAt) await sendVerification(user, localeOf(c));
       return c.json({ user: publicUser(user) }, 201);
     } catch (error) {
       // Race between two identical sign-ups: the unique constraint decides.
@@ -123,8 +154,7 @@ export const authRoutes = new Hono()
     // The e-mail and the page it links to use the language the player requested it in.
     const locale = localeOf(c);
     const link = `${env.PUBLIC_SITE_URL}/${locale}/reset-password?token=${encodeURIComponent(token)}`;
-    const mail = resetPasswordMail(user.username, link, locale);
-    sendMail(user.email, mail.subject, mail.text, mail.html).catch((error) => console.error("[mail] send failed", error));
+    sendMail(user.email, resetPasswordMail(user.username, link, locale)).catch((error) => console.error("[mail] send failed", error));
     return reply;
   })
 
@@ -144,6 +174,8 @@ export const authRoutes = new Hono()
     if (weak) return c.json({ error: t(c).password[weak], field: "password" }, 400);
 
     const passwordHash = await hashPassword(parsed.data.password);
+    // The link reached the account's mailbox: that confirms the address too.
+    const emailVerifiedAt = user.emailVerifiedAt ?? new Date();
     // The token is consumed atomically: two concurrent requests cannot both use it. Any
     // other link still in circulation for this account becomes void.
     const applied = await db.transaction(async (tx) => {
@@ -151,14 +183,72 @@ export const authRoutes = new Hono()
         .where(and(eq(passwordResets.id, id), isNull(passwordResets.usedAt), gt(passwordResets.expiresAt, new Date())))
         .returning({ userId: passwordResets.userId });
       if (!claimed) return false;
-      await tx.update(users).set({ passwordHash }).where(eq(users.id, claimed.userId));
+      await tx.update(users).set({ passwordHash, emailVerifiedAt }).where(eq(users.id, claimed.userId));
       await tx.delete(passwordResets).where(and(eq(passwordResets.userId, claimed.userId), ne(passwordResets.id, id)));
       return true;
     });
     if (!applied) return c.json({ error: t(c).resetLinkInvalid }, 400);
     await destroyAllSessions(user.id);
     await createSession(c, user.id);
-    return c.json({ user: publicUser(user) });
+    return c.json({ user: publicUser({ ...user, emailVerifiedAt }) });
+  })
+
+  .post("/verify", async (c) => {
+    const wait = verifyIp.consume(clientIp(c));
+    if (wait > 0) return tooMany(c, wait);
+    const parsed = await body(c, verifyBody);
+    if ("error" in parsed) return c.json({ error: parsed.error }, 400);
+    const id = hashToken(parsed.data.token);
+    const [link] = await db.select().from(emailVerifications)
+      .where(and(eq(emailVerifications.id, id), gt(emailVerifications.expiresAt, new Date())))
+      .limit(1);
+    if (!link) return c.json({ error: t(c).verifyLinkInvalid }, 400);
+    // Only the address the link was sent to is confirmed, never one changed since.
+    const [user] = await db.update(users).set({ emailVerifiedAt: new Date() })
+      .where(and(eq(users.id, link.userId), eq(users.email, link.email)))
+      .returning();
+    await db.delete(emailVerifications).where(eq(emailVerifications.userId, link.userId));
+    if (!user) return c.json({ error: t(c).verifyLinkInvalid }, 400);
+    return c.json({ ok: true, username: user.username });
+  })
+
+  .post("/verify/resend", async (c) => {
+    const user = await currentUser(c);
+    if (!user) return c.json({ error: t(c).loginRequired }, 401);
+    if (verifyDeadline(user) === null) return c.json({ error: t(c).alreadyVerified }, 400);
+    const wait = resendUser.consume(user.id);
+    if (wait > 0) return tooMany(c, wait);
+    await sendVerification(user, localeOf(c));
+    return c.json({ ok: true });
+  })
+
+  // Fixes a mistyped address before it is confirmed. A confirmed address stays as is.
+  .post("/email", async (c) => {
+    const user = await currentUser(c);
+    if (!user) return c.json({ error: t(c).loginRequired }, 401);
+    if (verifyDeadline(user) === null) return c.json({ error: t(c).emailLocked }, 403);
+    const wait = sensitiveUser.consume(user.id);
+    if (wait > 0) return tooMany(c, wait);
+    const parsed = await body(c, emailBody);
+    if ("error" in parsed) return c.json({ error: parsed.error, field: "email" }, 400);
+    const [row] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
+    if (!row || !(await verifyPassword(parsed.data.password, row.passwordHash))) {
+      return c.json({ error: t(c).wrongPassword, field: "password" }, 401);
+    }
+    const address = parsed.data.email;
+    if (address !== row.email) {
+      const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, address)).limit(1);
+      if (taken) return c.json({ error: t(c).emailTaken, field: "email" }, 409);
+      try {
+        await db.update(users).set({ email: address }).where(eq(users.id, user.id));
+      } catch (error) {
+        if ((error as { code?: string }).code === "23505") return c.json({ error: t(c).emailTaken, field: "email" }, 409);
+        throw error;
+      }
+    }
+    // Same deadline as before: fixing the address does not extend the grace period.
+    await sendVerification({ ...row, email: address }, localeOf(c));
+    return c.json({ user: publicUser({ ...row, email: address }) });
   })
 
   .post("/password", async (c) => {

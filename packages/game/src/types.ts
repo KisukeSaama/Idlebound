@@ -9,7 +9,8 @@ export type HeroEffect =
   | { kind: "critDamage"; add: number }
   | { kind: "gold"; pct: number }
   | { kind: "bossTimer"; seconds: number }
-  | { kind: "treasure"; pct: number };
+  | { kind: "treasure"; pct: number }
+  | { kind: "idleDps"; pct: number };
 
 export interface HeroUpgradeDef {
   id: string;
@@ -249,6 +250,10 @@ export interface Derived {
   dpsMultiplier: number;
   essenceMultiplier: number;
   idle: boolean;
+  /** DPS bonus granted while idle (Altar of Patience + idle talents), active or not. */
+  idleBonus: number;
+  /** Share of companion DPS added to each click. */
+  clickDpsShare: number;
   autoClicksPerSecond: number;
 }
 
