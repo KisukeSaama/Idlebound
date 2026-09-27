@@ -4,6 +4,7 @@ import { HERO_BY_ID, type GameEvent } from "@idlebound/game";
 import { useEffect, useRef, type RefObject } from "react";
 import { currentMessages } from "@/i18n/client";
 import { useFormat, useStoreRef } from "../context";
+import { SLASH_PIXEL, slashColumns, slashRows, slashSprite } from "../pixelSlash";
 
 export interface PointerMemo {
   x: number;
@@ -64,6 +65,20 @@ export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMem
 
     const center = () => ({ x: size.width / 2, y: size.height * 0.62 });
 
+    /**
+     * Box of the monster sprite inside the layer. Sprites differ in size, shape and scale,
+     * so effects aimed at the monster read it instead of assuming the scene's center.
+     */
+    const spriteBox = () => {
+      const root = layer.current;
+      const sprite = monsterRef.current?.querySelector("img");
+      if (!root || !sprite) return null;
+      const rootRect = root.getBoundingClientRect();
+      const rect = sprite.getBoundingClientRect();
+      if (rect.width < 10 || rect.height < 10) return null;
+      return { x: rect.left - rootRect.left, y: rect.top - rootRect.top, width: rect.width, height: rect.height };
+    };
+
     const react = (monster: HTMLElement | null, crit: boolean) => {
       if (!monster || store.state.settings.reducedMotion) return;
       // One reaction at a time: during frenzy, animations don't pile up. A companion flinch
@@ -83,8 +98,8 @@ export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMem
       );
     };
 
-    /** Color of a companion drawn at random, weighted by the damage each one deals. */
-    const companionColor = (): string | null => {
+    /** A companion drawn at random, weighted by the damage each one deals. */
+    const pickCompanion = (): string | null => {
       const heroDps = store.derived.heroDps;
       let total = 0;
       for (const value of Object.values(heroDps)) total += value;
@@ -92,29 +107,49 @@ export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMem
       let roll = Math.random() * total;
       for (const [id, value] of Object.entries(heroDps)) {
         roll -= value;
-        if (value > 0 && roll <= 0) return HERO_BY_ID[id]?.color ?? null;
+        if (value > 0 && roll <= 0 && HERO_BY_ID[id]) return id;
       }
       return null;
     };
 
-    /** A companion hits: a slash in its color and a light flinch that never hides the player's hits. */
+    /**
+     * A companion hits: its medallion in the party lunges, a pixel-art blade trail in its
+     * color lands on the monster's body, and the monster flinches lightly (never over the
+     * player's own hits).
+     */
     const companionStrike = () => {
       const root = layer.current;
       const monster = monsterRef.current;
       if (!root || !store.state.monster || reducedMotion()) return;
-      const color = companionColor();
-      if (!color) return;
+      const heroId = pickCompanion();
+      if (!heroId) return;
+      const box = spriteBox();
+      if (!box) return;
+      const columns = slashColumns(box.width);
+      const sprite = slashSprite(HERO_BY_ID[heroId].color, columns);
+      if (!sprite) return;
       while (root.childElementCount >= MAX_NODES) root.firstElementChild?.remove();
-      const { x, y } = center();
+      // Aim at the body (the middle of the sprite, where its transparent margins end).
       const slash = document.createElement("span");
       slash.className = "fx-slash";
-      slash.style.left = `${x + (Math.random() - 0.5) * 110}px`;
-      slash.style.top = `${y - 20 + (Math.random() - 0.5) * 90}px`;
+      slash.style.left = `${box.x + box.width * (0.3 + Math.random() * 0.4)}px`;
+      slash.style.top = `${box.y + box.height * (0.3 + Math.random() * 0.35)}px`;
+      slash.style.width = `${columns * SLASH_PIXEL}px`;
+      slash.style.height = `${slashRows(columns) * SLASH_PIXEL}px`;
+      slash.style.backgroundImage = `url(${sprite})`;
       // Arcs cut from either side, never straight up or down.
       slash.style.setProperty("--angle", `${(Math.random() < 0.5 ? 0 : 180) - 35 + Math.random() * 70}deg`);
-      slash.style.setProperty("--slash-color", color);
       root.appendChild(slash);
-      setTimeout(() => slash.remove(), 320);
+      setTimeout(() => slash.remove(), 380);
+      const member = root.parentElement?.querySelector<HTMLElement>(`.party-member[data-hero="${heroId}"]`);
+      member?.animate(
+        [
+          { transform: "translateX(0) scale(1)", filter: "brightness(1)" },
+          { transform: "translateX(7px) scale(1.12)", filter: "brightness(1.5)", offset: 0.35 },
+          { transform: "translateX(0) scale(1)", filter: "brightness(1)" }
+        ],
+        { duration: 260, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+      );
       if (monster && reaction?.playState !== "running") {
         reactionSource = "companion";
         reaction = monster.animate(
@@ -158,9 +193,14 @@ export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMem
           later(companionStrike, (index * 1000) / COMPANION_STRIKES + Math.random() * 120);
         }
         if (!settings.damageNumbers) return;
-        const { x, y } = center();
+        // Beside the monster's body (sprites carry transparent margins above it), alternating
+        // sides, kept inside the scene; the number then rises.
+        const box = spriteBox();
         const side = Math.random() < 0.5 ? -1 : 1;
-        spawn("fx-damage companions", fmtRef.current(event.damage), x + side * (70 + Math.random() * 30), y - 30 - Math.random() * 30, 1000, currentMessages().hud.fx.companions);
+        const { x: cx, y: cy } = center();
+        const x = box ? box.x + box.width * (side < 0 ? 0.16 : 0.84) : cx + side * 85;
+        const y = box ? box.y + box.height * (0.38 + Math.random() * 0.1) : cy - 45;
+        spawn("fx-damage companions", fmtRef.current(event.damage), Math.min(size.width - 60, Math.max(60, x)), y, 1000, currentMessages().hud.fx.companions);
       } else if (event.type === "kill") {
         dying(event);
         const { x, y } = center();

@@ -7,6 +7,7 @@ import { useFormat, useGame } from "../context";
 import { BuffChips } from "./BuffChips";
 import { CrystalView } from "./CrystalView";
 import { FxLayer, type PointerMemo } from "./FxLayer";
+import { Party } from "./Party";
 import { SkillBar } from "./SkillBar";
 import { StageBar } from "./StageBar";
 import { TutorialHint } from "./TutorialHint";
@@ -73,6 +74,7 @@ export function Scene() {
             </div>
           ) : null}
         </div>
+        <Party />
         <FxLayer pointer={pointer} monsterRef={monsterRef} />
         <CrystalView />
         <TutorialHint />
