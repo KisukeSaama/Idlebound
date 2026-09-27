@@ -1161,6 +1161,33 @@ button.resource:hover {
   color: #241603;
 }
 
+.hero-autospend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.switch-sm {
+  width: 36px;
+  height: 20px;
+}
+
+.switch-sm::after {
+  width: 14px;
+  height: 14px;
+}
+
+.switch-sm:checked::after {
+  transform: translateX(16px);
+}
+
 .talents-all {
   margin: 8px 12px 0;
   animation: nudge 2s ease-in-out infinite;
@@ -1821,6 +1848,10 @@ button.resource:hover {
 
 .item-card.empty p {
   margin: 0;
+}
+
+.item-card.empty svg {
+  color: var(--faint);
 }
 
 .item-head {

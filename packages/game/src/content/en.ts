@@ -164,7 +164,8 @@ export const en: GameText = {
     treasure: (t) => `Defeat ${n(t)} golden ${s(t, "rat")}.`,
     crystal: (t) => `Catch ${n(t)} wandering ${s(t, "crystal")}.`,
     levels: (t) => `Reach ${n(t)} total companion levels.`,
-    hired: (t) => `Hire ${t} different companions.`,
+    // The threshold counts Aldric (the player), who is not a companion.
+    hired: (t) => `Hire ${t - 1} different companions.`,
     skills: (t) => `Use ${n(t)} powers.`,
     ascend: (t) => `Ascend ${t} ${s(t, "time")}.`,
     essences: (t) => `Collect ${n(t)} essences in total.`,

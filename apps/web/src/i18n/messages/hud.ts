@@ -83,6 +83,8 @@ export const hud = defineMessages({
     heroes: {
       title: "Compagnons",
       buyAmount: "Quantité achetée",
+      autoSpend: "Achats en ton absence",
+      autoSpendHint: "Tes compagnons dépensent l'or gagné en niveaux et talents pour continuer à progresser. Désactive-le pour garder ton or.",
       max: "Max",
       buyAllTalents: (count: number) => `Acheter ${count} talent${count > 1 ? "s" : ""} disponible${count > 1 ? "s" : ""}`,
       mysteryLabel: "Compagnon à découvrir",
@@ -291,6 +293,8 @@ export const hud = defineMessages({
     heroes: {
       title: "Companions",
       buyAmount: "Amount to buy",
+      autoSpend: "Spend while away",
+      autoSpendHint: "Your companions spend the gold they earn on levels and talents to keep progressing. Turn it off to save your gold.",
       max: "Max",
       buyAllTalents: (count: number) => `Buy ${count} available talent${count > 1 ? "s" : ""}`,
       mysteryLabel: "Companion to discover",

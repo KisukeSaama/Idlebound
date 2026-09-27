@@ -50,7 +50,8 @@ packages/game/            @idlebound/game: pure TypeScript, shared by web and AP
   src/numbers.ts          number, duration and percent formatting
   scripts/                bot player + balance simulation (npm run balance)
 apps/web/                 Next.js App Router, standalone output
-  src/app/[locale]/       pages: landing, play, leaderboard, privacy, reset-password, 404
+  src/app/[locale]/       pages: landing, play, leaderboard, privacy, reset-password,
+                          verify-email, 404
   src/app/api/[...path]/  proxy from the browser to the API (the API is not public)
   src/app/{robots,sitemap,manifest}.ts
   src/proxy.ts            nonce CSP + locale redirects (Next 16 "proxy", ex-middleware)
@@ -60,7 +61,8 @@ apps/web/                 Next.js App Router, standalone output
   src/lib/                API clients (browser and server), site config
 apps/api/                 Hono on Node, bundled with esbuild
   src/routes/             auth, save, leaderboard
-  src/lib/                sessions, passwords, rate limits, mail, i18n
+  src/lib/                sessions, passwords, rate limits, mail, i18n, e-mail
+                          verification, inactivity warnings and purge
   src/db/ + drizzle/      Drizzle schema and versioned SQL migrations
 assets-src/               original art + optimize.py (WebP generation)
 deploy/                   production compose, paths.env, app.env template
@@ -70,7 +72,7 @@ deploy/                   production compose, paths.env, app.env template
 
 - **Engine.** `GameEngine` owns a mutable `GameState` and a cached `Derived` (computed
   stats). The web `GameStore` ticks it every 50 ms and notifies React at most every 100 ms
-  (immediately after a player action). The engine emits `GameEvent`s (hits, kills, loot,
+  (on the next animation frame after a player action). The engine emits `GameEvent`s (hits, kills, loot,
   achievements, crystal rewards…) that drive sounds, toasts and effects without re-rendering.
 - **Data vs content.** `data/` describes mechanics by id. `content/<locale>.ts` holds every
   name, description and lore line for that id. Components read text through
@@ -78,12 +80,13 @@ deploy/                   production compose, paths.env, app.env template
   `biomeName`, `eraLabel`. Items store the index of their base noun (`base`) so their name
   follows the language; legacy items keep their stored French `name`.
 - **Saves.** `CloudSync` (`apps/web/src/game/cloud.ts`) sends the whole state every 30 s,
-  a few seconds after a player action (`store.act`, except attack clicks), when the tab is
-  hidden and on logout, with the revision it builds on. The API
+  3 s after a player action (`store.act`, except attack clicks), an achievement, a loot drop
+  or a new biome (at least 15 s between uploads), when the tab is hidden and on logout, with
+  the revision it builds on. The API
   (`routes/save.ts`) parses it with the shared zod schema, runs `verifyState` and, for the
   same lineage (`createdAt`), `verifyTransition` against the previous save and the elapsed
   server time. 409 = another device or run (the player chooses), 422 = anti-cheat rejection
-  (logged in `save_rejections`), 200 = accepted and the leaderboard row keeps the best
+  (logged in `save_rejections`), 403 = e-mail confirmation overdue, 200 = accepted and the leaderboard row keeps the best
   verified values.
 - **Request path.** Browser → web container (Traefik) → `/api/*` route handler → API on the
   internal network → Postgres. Server components call the API directly

@@ -61,6 +61,21 @@ export function HeroPanel() {
           ))}
         </div>
       </div>
+      <label className="hero-autospend" title={m.autoSpendHint}>
+        <span>{m.autoSpend}</span>
+        <input
+          type="checkbox"
+          role="switch"
+          className="switch switch-sm"
+          checked={state.settings.offlineSpending}
+          aria-describedby="autospend-hint"
+          onChange={(event) => {
+            const value = event.target.checked;
+            store.act((engine) => { engine.state.settings.offlineSpending = value; });
+          }}
+        />
+      </label>
+      <span id="autospend-hint" className="visually-hidden">{m.autoSpendHint}</span>
       {affordableTalents > 0 ? (
         <button type="button" className="btn btn-violet btn-sm talents-all" onClick={() => store.act((engine, now) => engine.buyAllUpgrades(now))}>
           {m.buyAllTalents(affordableTalents)}
