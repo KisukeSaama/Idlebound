@@ -14,7 +14,7 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
   const ui = useUi();
   const fmt = useFormat();
   const now = Date.now();
-  const hourglass = offlineGains(state, 3600, 1, now).gold;
+  const hourglass = offlineGains(state, 3600, now).gold;
 
   return (
     <Modal title={t.hud.windowTitles.market.label} icon={<img src={WINDOW_META.market.icon!} alt="" width={34} height={34} />} onClose={onClose} size="md">

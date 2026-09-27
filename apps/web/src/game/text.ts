@@ -1,4 +1,4 @@
-import { formatPercent, gameText, trimmed, type AffixStat, type AltarDef, type HeroEffect, type Locale } from "@idlebound/game";
+import { altarEffect, formatPercent, gameText, trimmed, type AffixStat, type AltarDef, type HeroEffect, type Locale } from "@idlebound/game";
 import { messages } from "@/i18n/messages";
 
 const pct = (value: number) => Math.round(value * 100);
@@ -30,10 +30,11 @@ export function formatAffix(stat: AffixStat, value: number, locale: Locale): str
 /** Current total bonus of an altar at a given level. */
 export function formatAltarValue(altar: AltarDef, level: number, locale: Locale): string {
   const t = messages(locale).hud.altarValue;
-  const value = altar.valuePerLevel * level;
+  const value = altarEffect(altar, level);
   switch (altar.format) {
     case "pct": return t.pct(formatPercent(value, "letters", "en").replace("%", ""));
     case "seconds": return t.seconds(value);
+    case "stages": return level === 0 ? t.none : t.stages(value);
     case "flat": return level === 0 ? t.none : t.stage(value);
   }
 }

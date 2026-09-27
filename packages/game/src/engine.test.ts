@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
 import { achievementText, gameText, itemName, monsterName } from "./content";
 import { ACHIEVEMENTS } from "./data/achievements";
-import { ALTARS, altarCost } from "./data/altars";
+import { ALTARS, ALTAR_BY_ID, altarCost, altarTotalCost } from "./data/altars";
 import { BIOMES, TREASURE_MONSTER } from "./data/biomes";
 import { HEROES } from "./data/heroes";
 import { SLOTS, SLOT_BASE_COUNT } from "./data/items";
@@ -11,6 +11,9 @@ import { SKILLS } from "./data/skills";
 import { GameEngine } from "./engine";
 import {
   ASCENSION_MIN_STAGE,
+  MONSTERS_PER_STAGE,
+  ascensionPreview,
+  wandererSkip,
   IDLE_FULL_MS,
   IDLE_GRACE_MS,
   altarValue,
@@ -28,7 +31,7 @@ import { LOCALES, negotiateLocale, resolveLocale } from "./i18n";
 import { formatDuration, formatNumber, formatPercent } from "./numbers";
 import { seededRng } from "./rng";
 import { migrateState, parseState } from "./save";
-import { createInitialState } from "./state";
+import { ALTAR_REWORK_NOTICE, createInitialState } from "./state";
 import { verifyState, verifyTransition } from "./validation";
 import type { GameState } from "./types";
 
@@ -131,6 +134,18 @@ describe("combat loop", () => {
     expect(engine.state.lifetime.bossFails).toBe(1);
   });
 
+  it("gives no shards or items for a boss replayed below the furthest stage", () => {
+    const game = new GameEngine(lateGame(), seededRng(1), T0);
+    game.state.maxStage = 60;
+    game.state.maxStageEver = 60;
+    game.travel(50);
+    run(game, T0, 60);
+    expect(game.state.run.bosses).toBeGreaterThan(5);
+    expect(game.state.lifetime.shardsEarned).toBe(0);
+    expect(game.state.lifetime.itemsFound).toBe(0);
+    expect(game.state.gold).toBeGreaterThan(0);
+  });
+
   it("hires companions that deal DPS", () => {
     const engine = newGame();
     engine.state.gold = 1_000;
@@ -207,11 +222,13 @@ describe("idle and active balance", () => {
     const idle = derive(state, T0 + IDLE_FULL_MS);
     expect(active.idle).toBe(false);
     expect(idle.idle).toBe(true);
-    // Sentinel's Vigil (+50%), Silent Legion (+100%), Patience 5 (+200%).
-    expect(idle.idleBonus).toBeCloseTo(3.5);
-    expect(active.idleBonus).toBeCloseTo(3.5);
-    expect(idle.dps).toBeCloseTo(active.dps * 4.5);
-    expect(idle.heroDps.maelle).toBeCloseTo(active.heroDps.maelle * 4.5);
+    // Sentinel's Vigil (+50%), Silent Legion (+100%), Altar of Patience at level 5.
+    const bonus = 1.5 + altarValue(state, "patience");
+    expect(altarValue(state, "patience")).toBeGreaterThan(0);
+    expect(idle.idleBonus).toBeCloseTo(bonus);
+    expect(active.idleBonus).toBeCloseTo(bonus);
+    expect(idle.dps).toBeCloseTo(active.dps * (1 + bonus));
+    expect(idle.heroDps.maelle).toBeCloseTo(active.heroDps.maelle * (1 + bonus));
     expect(idle.click).toBeCloseTo(active.click);
     expect(derive(state, T0, { forceIdle: true }).dps).toBeCloseTo(idle.dps);
   });
@@ -290,27 +307,79 @@ describe("idle and active balance", () => {
     expect(share(40)).toBeCloseTo(1.5);
   });
 
-  it("caps the Altar of Fate and refunds the levels bought above the cap", () => {
-    expect(altarCost("fate", 4)).toBe(10);
+  it("caps altars and prices their levels exponentially", () => {
+    expect(altarCost("fate", 4)).toBe(48);
     expect(altarCost("fate", 5)).toBe(Number.POSITIVE_INFINITY);
     const engine = new GameEngine(lateGame(), seededRng(1), T0);
     engine.state.essences = 1_000;
     engine.state.lifetime.essencesEarned = 1_000;
     for (let level = 0; level < 5; level += 1) expect(engine.buyAltar("fate", T0)).toBe(true);
     expect(engine.buyAltar("fate", T0)).toBe(false);
-    expect(engine.state.essences).toBe(1_000 - 30);
+    expect(engine.state.essences).toBe(1_000 - (3 + 6 + 12 + 24 + 48));
+    expect(altarTotalCost("fate", 5)).toBeLessThanOrEqual(3 + 6 + 12 + 24 + 48);
+    // Open-ended altars multiply their effect at each level.
+    engine.state.altars.might = 3;
+    expect(altarValue(engine.state, "might")).toBeCloseTo(Math.pow(1 + ALTAR_BY_ID.might.valuePerLevel, 3) - 1);
+  });
 
-    // A save from before the cap: 12 levels bought for 2 + 4 + … + 24 = 156 essences.
-    const legacy = structuredClone(engine.state);
-    legacy.altars.fate = 12;
-    legacy.essences = 1_000 - 156;
-    expect(altarValue(legacy, "fate")).toBeCloseTo(1);
+  it("lets the Altar of the Wanderer skip the first stages of a run, never paying them twice", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    const s = engine.state;
+    // A record of 80 and the essences of two levels, as after a few ascensions.
+    s.maxStageEver = 80;
+    s.altars.wanderer = 2;
+    s.maxStage = 60;
+    s.stage = 60;
+    const before = structuredClone(s);
+    const kills = s.lifetime.kills;
+    engine.ascend(now);
+    expect(wandererSkip(s)).toBe(20);
+    expect(s.runStartStage).toBe(21);
+    expect(s.maxStage).toBe(21);
+    expect(s.stage).toBe(21);
+    expect(s.lifetime.kills - kills).toBe(16 * MONSTERS_PER_STAGE + 4);
+    expect(s.gold).toBeGreaterThan(0);
+    // The skipped stages pay nothing on the next ascension, and the run cannot be cashed at once.
+    expect(engine.canAscend()).toBe(false);
+    s.maxStage = 60;
+    expect(ascensionPreview(s, now)).toBe(Math.floor((essencesForStage(59) - essencesForStage(20)) * derive(s, now).essenceMultiplier));
+    s.maxStage = 21;
+    now += 60_000;
+    expect(verifyTransition(before, s, 60_000).map((v) => v.code)).not.toContain("kills");
+    expect(verifyState(s, now).map((v) => v.code)).not.toContain("power");
+    expect(verifyState(s, now).map((v) => v.code)).not.toContain("stage-order");
+    const cheated = structuredClone(s);
+    cheated.runStartStage = 41;
+    cheated.maxStage = 41;
+    cheated.stage = 41;
+    expect(verifyState(cheated, now).map((v) => v.code)).toContain("stage-order");
+  });
+
+  it("never pays fewer essences than before version 4, so older ascension records stay valid", () => {
+    const legacy = (stage: number) => stage < ASCENSION_MIN_STAGE - 1
+      ? 0
+      : Math.floor(5 * Math.pow(1.075, Math.min(stage, 140) - 50) * Math.pow(1.02, Math.max(0, stage - 140)) + (stage - 50));
+    for (let stage = 1; stage <= 3000; stage += 1) expect(essencesForStage(stage)).toBeGreaterThanOrEqual(legacy(stage));
+  });
+
+  it("refunds the altars of a version 3 save once, in essences", () => {
+    const legacy = structuredClone(lateGame()) as GameState;
+    legacy.version = 3;
+    legacy.lifetime.essencesEarned = 10_000;
+    // Old prices: might linear (1 + 2 + … + 10 = 55), fate linear by 2 (2 + … + 24 = 156,
+    // bought before its cap), time 2 × 1.35^n.
+    legacy.altars = { might: 10, fate: 12, time: 3 };
+    legacy.essences = 10_000 - 55 - 156 - 9;
     const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
-    expect(migrated.altars.fate).toBe(5);
-    expect(migrated.essences).toBe(1_000 - 30);
-    expect(parseState(migrateState(JSON.parse(JSON.stringify(migrated)))).essences).toBe(1_000 - 30);
+    expect(migrated.altars).toEqual({});
+    expect(migrated.version).toBe(4);
+    expect(migrated.essences).toBeGreaterThan(10_000 - 1);
+    expect(migrated.essences).toBeLessThanOrEqual(10_000);
     expect(verifyState(migrated, T0).map((violation) => violation.code)).not.toContain("essence-ledger");
-    expect(verifyState(legacy, T0).map((violation) => violation.code)).toContain("essence-ledger");
+    // Idempotent: a version 4 save keeps its altars.
+    migrated.altars = { might: 2 };
+    expect(parseState(JSON.parse(JSON.stringify(migrated))).altars).toEqual({ might: 2 });
   });
 
   it("reports companion damage once per second", () => {
@@ -406,9 +475,11 @@ describe("save", () => {
   });
 
   it("fills in an older save", () => {
-    const partial = { ...createInitialState(T0) } as Record<string, unknown>;
+    const partial = { ...createInitialState(T0), version: 3 } as Record<string, unknown>;
     delete partial.tutorial;
+    // An older save still has to see the notice of the altar rework; a new one never does.
     expect(parseState(partial).tutorial.done).toEqual([]);
+    expect(createInitialState(T0).tutorial.done).toEqual([ALTAR_REWORK_NOTICE]);
   });
 });
 
@@ -439,6 +510,72 @@ describe("anti-cheat", () => {
     expect(verifyTransition(before, engine.state, 6 * 3600_000 + 1000)).toEqual([]);
     expect(verifyState(engine.state, now)).toEqual([]);
   });
+
+  it("levels companions and pushes stages while away, up to a boss they cannot beat", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.state.autoAdvance = true;
+    engine.state.stage = engine.state.maxStage;
+    const before = structuredClone(engine.state);
+    now += 8 * 3600_000;
+    const summary = engine.tick(now)!;
+    const s = engine.state;
+    expect(summary.levels).toBeGreaterThan(0);
+    expect(summary.spent).toBeGreaterThan(0);
+    expect(summary.stages).toBeGreaterThan(0);
+    expect(s.maxStage).toBe(before.maxStage + summary.stages);
+    expect(summary.blockedAt).toBe(s.maxStage);
+    const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+    expect(bossHp(s.maxStage)).toBeGreaterThan(d.dps * d.bossDamage * d.bossTimer);
+    expect(s.stage).toBe(s.maxStage - 1);
+    expect(s.autoAdvance).toBe(false);
+    expect(verifyTransition(before, s, 8 * 3600_000 + 1000)).toEqual([]);
+    expect(verifyState(s, now)).toEqual([]);
+  });
+
+  it("keeps the gold earned while away when offline spending is off", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.state.settings.offlineSpending = false;
+    const gold = engine.state.gold;
+    const levels = structuredClone(engine.state.heroLevels);
+    now += 8 * 3600_000;
+    const summary = engine.tick(now)!;
+    expect(summary.levels).toBe(0);
+    expect(summary.spent).toBe(0);
+    expect(engine.state.heroLevels).toEqual(levels);
+    expect(engine.state.gold).toBeCloseTo(gold + summary.gold);
+  });
+
+  it("pushes on while away even when auto-advance was paused by a failed boss", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.state.autoAdvance = false;
+    engine.state.stage = Math.max(1, engine.state.maxStage - 1);
+    const { maxStage } = engine.state;
+    now += 3600_000;
+    const summary = engine.tick(now)!;
+    expect(summary.gold).toBeGreaterThan(0);
+    expect(engine.state.maxStage).toBe(maxStage + summary.stages);
+    expect(engine.state.stage).toBeGreaterThanOrEqual(engine.state.maxStage - 1);
+  });
+
+  it("lets the autopilot of an open tab level companions and retry bosses, only once the player is away", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.afkAfterMs = 60_000;
+    engine.markInput(now);
+    const levels = () => Object.values(engine.state.heroLevels).reduce((total, level) => total + level, 0);
+    const before = structuredClone(engine.state);
+    now = run(engine, now, 50);
+    expect(levels()).toBe(Object.values(before.heroLevels).reduce((total, level) => total + level, 0));
+
+    now = run(engine, now, 2 * 3600);
+    expect(levels()).toBeGreaterThan(Object.values(before.heroLevels).reduce((total, level) => total + level, 0));
+    expect(engine.state.maxStage).toBeGreaterThan(before.maxStage);
+    expect(verifyTransition(before, engine.state, 2 * 3600_000 + 50_000)).toEqual([]);
+    expect(verifyState(engine.state, now)).toEqual([]);
+  }, 60_000);
 
   it("detects edited gold", () => {
     const engine = newGame();

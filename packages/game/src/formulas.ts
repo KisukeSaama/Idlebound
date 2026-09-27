@@ -1,5 +1,5 @@
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
-import { ALTAR_BY_ID } from "./data/altars";
+import { ALTAR_BY_ID, altarEffect } from "./data/altars";
 import { CLICK_HERO_ID, HEROES, UPGRADE_BY_ID } from "./data/heroes";
 import { EQUIPMENT_CAP, FORGE_STEP } from "./data/items";
 import type { AffixStat, AltarId, BuffId, Derived, GameState, HeroDef, Item } from "./types";
@@ -21,7 +21,13 @@ export const RESPAWN_SECONDS = 0.35;
 export const BOSS_RESPAWN_SECONDS = 0.8;
 export const ASCENSION_MIN_STAGE = 51;
 export const ESSENCE_DPS_BONUS = 0.1;
-export const OFFLINE_BASE_EFFICIENCY = 0.5;
+/**
+ * Essence growth per stage past stage 140: +2% per stage pushed before ascending. Faster,
+ * the altars' multipliers make each ascension overshoot the last (runaway); never lower,
+ * or past ascension records would exceed what the formula allows.
+ */
+export const LATE_ESSENCE_GROWTH = 1.02;
+/** A single catch-up (hidden tab, computer asleep) counts at most this many hours. */
 export const OFFLINE_BASE_CAP_HOURS = 8;
 
 const LN_155 = Math.log(1.55);
@@ -58,9 +64,7 @@ export function altarLevel(state: GameState, id: AltarId): number {
 }
 
 export function altarValue(state: GameState, id: AltarId): number {
-  const altar = ALTAR_BY_ID[id];
-  const level = altar.maxLevel > 0 ? Math.min(altarLevel(state, id), altar.maxLevel) : altarLevel(state, id);
-  return level * altar.valuePerLevel;
+  return altarEffect(ALTAR_BY_ID[id], altarLevel(state, id));
 }
 
 /** Share of the idle bonus in effect, from 0 (just clicked) to 1 (idle for 30 s). */
@@ -111,13 +115,15 @@ export function milestoneMultiplier(level: number): number {
 
 /**
  * Essences earned on ascension. Growth must stay below monster HP growth, otherwise each
- * ascension pays enough to skip hundreds of stages (runaway).
+ * ascension pays enough to skip hundreds of stages (runaway). Since save version 4 the first
+ * ascensions pay four times more (a newcomer's first one is a real leap); the formula only
+ * ever grew, so older ascension records stay within it.
  */
 export function essencesForStage(highestCleared: number): number {
   if (highestCleared < ASCENSION_MIN_STAGE - 1) return 0;
   const early = Math.min(highestCleared, 140) - 50;
   const late = Math.max(0, highestCleared - 140);
-  return Math.floor(5 * Math.pow(1.075, early) * Math.pow(1.02, late) + (highestCleared - 50));
+  return Math.floor(20 * Math.pow(1.075, early) * Math.pow(LATE_ESSENCE_GROWTH, late) + 3 * (highestCleared - 50));
 }
 
 export function affixValue(item: Item, stat: AffixStat): number {
@@ -254,10 +260,24 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
   };
 }
 
+/**
+ * Essences of an ascension now. Only the stages this run fought through pay: those the
+ * Altar of the Wanderer skipped are deducted, so a run cannot be skipped and cashed again.
+ */
 export function ascensionPreview(state: GameState, now: number): number {
   const highestCleared = state.maxStage - 1;
-  if (highestCleared < ASCENSION_MIN_STAGE - 1) return 0;
-  return Math.floor(essencesForStage(highestCleared) * derive(state, now).essenceMultiplier);
+  if (highestCleared < ASCENSION_MIN_STAGE - 1 || state.maxStage <= state.runStartStage) return 0;
+  const earned = essencesForStage(highestCleared) - essencesForStage(state.runStartStage - 1);
+  return Math.max(0, Math.floor(earned * derive(state, now).essenceMultiplier));
+}
+
+/**
+ * Stages the Altar of the Wanderer clears at the start of a run: its value, never more than
+ * half the stage record, rounded down to a multiple of 5 so a run never starts on a boss.
+ */
+export function wandererSkip(state: GameState): number {
+  const skip = Math.min(altarValue(state, "wanderer"), Math.floor(state.maxStageEver / 2));
+  return Math.floor(skip / 5) * 5;
 }
 
 /** Starting gold after an ascension (Altar of Memory). */
@@ -266,13 +286,7 @@ export function memoryStartGold(level: number): number {
   return Math.floor(100 * stageGold(level * 5));
 }
 
-export function offlineCapSeconds(state: GameState): number {
-  return (OFFLINE_BASE_CAP_HOURS + altarLevel(state, "wanderer")) * 3600;
-}
-
-export function offlineEfficiency(state: GameState): number {
-  return Math.min(1, OFFLINE_BASE_EFFICIENCY + altarValue(state, "wanderer"));
-}
+export const OFFLINE_CAP_SECONDS = OFFLINE_BASE_CAP_HOURS * 3600;
 
 export function skillCooldownMultiplier(state: GameState): number {
   return 1 - altarValue(state, "echoes");

@@ -1,9 +1,10 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
-import { ALTARS, altarCost } from "../src/data/altars";
+import { ALTAR_BY_ID, altarCost } from "../src/data/altars";
 import { HEROES } from "../src/data/heroes";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, isSkillUnlocked } from "../src/engine";
-import { BLADE_DPS_SHARE_MAX, BLADE_DPS_SHARE_PER_LEVEL, derive, heroCost, heroCostMultiplier } from "../src/formulas";
+import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier } from "../src/formulas";
+import type { AltarId } from "../src/types";
 
 export interface BotOptions {
   clicksPerSecond: number;
@@ -15,7 +16,25 @@ export interface BotOptions {
   stagnationMs?: number;
   onMilestone?: (engine: GameEngine, now: number) => void;
   onAscend?: (engine: GameEngine, now: number, gain: number, from: number) => void;
+  /** Altar plan after each ascension (default: by play style, see `buyAltars`). */
+  altars?: AltarPlan;
 }
+
+export interface AltarPlan {
+  /** Capped altars bought whenever cheap. */
+  milestones: AltarId[];
+  /** Open-ended altars, weighted by how much of their effect reaches this play style. */
+  weights: Partial<Record<AltarId, number>>;
+}
+
+export const CLICKER_ALTARS: AltarPlan = {
+  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "fate", "precision", "echoes"],
+  weights: { might: 1, blade: 0.6, fortune: 0.7 }
+};
+export const IDLE_ALTARS: AltarPlan = {
+  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "echoes"],
+  weights: { might: 1, patience: 0.9, fortune: 0.7 }
+};
 
 const DT = 0.1;
 
@@ -91,23 +110,40 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       const from = s.maxStage;
       const gain = engine.ascend(now);
       options.onAscend?.(engine, now, gain, from);
-      for (let guard = 0; guard < 500; guard += 1) {
-        // A clicking player never benefits from patience, an idle one from click altars.
-        const wanted = options.idleFromStage === undefined && !options.burst
-          ? ["might", "blade", "fortune", "time", "precision", "fate"]
-          : ["might", "fortune", "time", "patience"];
-        // Past the level that maxes its DPS share, the blade only helps the first stages.
-        const bladeMaxed = (s.altars.blade ?? 0) >= BLADE_DPS_SHARE_MAX / BLADE_DPS_SHARE_PER_LEVEL;
-        const choices = ALTARS.filter((altar) => wanted.includes(altar.id) && !(altar.id === "blade" && bladeMaxed))
-          .map((altar) => ({ id: altar.id, cost: altarCost(altar.id, s.altars[altar.id] ?? 0) }))
-          .filter((entry) => entry.cost <= s.essences * 0.7)
-          .sort((a, b) => a.cost - b.cost);
-        if (!choices.length) break;
-        engine.buyAltar(choices[0].id, now);
-      }
+      // A clicking player never benefits from patience, an idle one from click altars.
+      buyAltars(engine, now, options.altars ?? (options.idleFromStage === undefined && !options.burst ? CLICKER_ALTARS : IDLE_ALTARS));
       lastMaxStage = s.maxStage;
       lastProgressAt = now;
     }
   }
   return now;
+}
+
+/** Capped altars bought as soon as they cost little next to the owned essences. */
+const MILESTONE_SHARE = 0.03;
+
+/**
+ * Essence spending after an ascension: capped altars when cheap, then the open-ended level
+ * that adds the most log-power per essence, as long as it beats keeping the essences
+ * (each one owned gives +10% DPS).
+ */
+export function buyAltars(engine: GameEngine, now: number, { milestones, weights }: AltarPlan) {
+  const s = engine.state;
+  for (let guard = 0; guard < 2000; guard += 1) {
+    let bought = false;
+    for (const id of milestones) {
+      const cost = altarCost(id, s.altars[id] ?? 0);
+      if (Number.isFinite(cost) && cost <= s.essences * MILESTONE_SHARE && engine.buyAltar(id, now)) bought = true;
+    }
+    const hold = ESSENCE_DPS_BONUS / (1 + ESSENCE_DPS_BONUS * s.essences);
+    let best: { id: AltarId; ratio: number } | null = null;
+    for (const [id, weight] of Object.entries(weights) as [AltarId, number][]) {
+      const cost = altarCost(id, s.altars[id] ?? 0);
+      if (cost > s.essences) continue;
+      const ratio = (Math.log(1 + ALTAR_BY_ID[id].valuePerLevel) * weight) / cost;
+      if (ratio > hold && (!best || ratio > best.ratio)) best = { id, ratio };
+    }
+    if (best && engine.buyAltar(best.id, now)) bought = true;
+    if (!bought) return;
+  }
 }

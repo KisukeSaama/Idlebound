@@ -6,11 +6,11 @@
  *
  * `compare` plays the same game with several profiles (idle, occasional bursts, 2, 5 and
  * 10 clicks/s) over several seeds and prints the median stage each one reaches over time,
- * the click/DPS ratio at the end and the gold of one hour offline against the next hour
- * played the same way (runs that ascend during that hour are left out).
+ * the click/DPS ratio at the end and the stages a night away (8 h offline, auto-advance on,
+ * offline spending on) adds to the final state.
  */
-import { GameEngine, offlineGains } from "../src/engine";
-import { derive, offlineEfficiency } from "../src/formulas";
+import { GameEngine } from "../src/engine";
+import { derive } from "../src/formulas";
 import { formatDuration, formatNumber } from "../src/numbers";
 import { seededRng } from "../src/rng";
 import { createInitialState } from "../src/state";
@@ -41,7 +41,7 @@ if (mode === "compare") {
   ];
   const checkpoints = [0.5, 1, 2, 3, 6, 12, 24, 48].filter((h) => h <= hours);
   console.log(`Median of ${seeds} seeds.`);
-  console.log(`${"profile".padEnd(30)}${checkpoints.map((h) => `${h} h`.padStart(8)).join("")}  click/DPS  offline/online gold`);
+  console.log(`${"profile".padEnd(30)}${checkpoints.map((h) => `${h} h`.padStart(8)).join("")}  click/DPS  8 h away`);
   for (const profile of profiles) {
     const stages: number[][] = checkpoints.map(() => []);
     const ratios: number[] = [];
@@ -57,15 +57,12 @@ if (mode === "compare") {
       });
       const cps = profile.options.idleFromStage === undefined ? profile.options.clicksPerSecond : 5;
       ratios.push(clickRatio(engine, now, cps));
-      const away = offlineGains(engine.state, 3600, offlineEfficiency(engine.state), now).gold;
-      const goldBefore = engine.state.lifetime.goldEarned;
-      const ascensionsBefore = engine.state.lifetime.ascensions;
-      now = playBot(engine, now, 3600, profile.options);
-      const online = engine.state.lifetime.goldEarned - goldBefore;
-      if (engine.state.lifetime.ascensions === ascensionsBefore && online > 0) offline.push(away / online);
+      const away = new GameEngine(structuredClone(engine.state), seededRng(seed), now);
+      away.state.autoAdvance = true;
+      offline.push(away.catchUp(8 * 3600, now + 8 * 3600_000).stages);
     }
     const cps = profile.options.idleFromStage === undefined ? profile.options.clicksPerSecond : 5;
-    const offlineText = offline.length ? `${(median(offline) * 100).toFixed(0)}%` : "n/a";
+    const offlineText = `+${median(offline)}`;
     console.log(`${profile.label.padEnd(30)}${stages.map((values) => String(median(values)).padStart(8)).join("")}  ${median(ratios).toFixed(2).padStart(5)} (${cps}/s)  ${offlineText.padStart(6)}`);
   }
 } else {

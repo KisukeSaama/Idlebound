@@ -1,4 +1,4 @@
-import { leaderboardSummary, safeParseState, verifyState, verifyTransition, type GameState, type Violation } from "@idlebound/game";
+import { leaderboardSummary, migrateState, safeParseState, verifyState, verifyTransition, type GameState, type Violation } from "@idlebound/game";
 import { eq, sql as raw } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -68,7 +68,8 @@ export const saveRoutes = new Hono()
 
     const result = await db.transaction(async (tx) => {
       const [existing] = await tx.select().from(saves).where(eq(saves.userId, user.id)).for("update").limit(1);
-      const previous = existing?.state as GameState | undefined;
+      // The stored save may predate the current version: compare like with like.
+      const previous = existing ? (migrateState(existing.state) as GameState) : undefined;
 
       // Another revision (another device) or another game (new game): the player must choose
       // explicitly, never a silent overwrite.

@@ -10,6 +10,15 @@ repository lives in [AGENTS.md](AGENTS.md).
 A free, browser-based fantasy idle clicker that can stand next to the best of the genre:
 instant to start, satisfying to click, deep enough to come back to for weeks, and fair.
 
+**The two core pleasures of the genre**, used to settle design choices:
+
+1. **Producing by simply letting the game run in the background.** With the tab open, the
+   player can work, study or play something else: companions keep buying, pushing stages
+   and retraining on their own, at full speed. Presence adds what only a player can do
+   (crystals, powers, ascensions, gear), never a ratio taken from the away player. A closed tab stops the game.
+2. **Turning a big number into an even bigger one.** Damage, gold and stages grow by
+   visible leaps (milestones, talents, ascensions), and every screen shows them.
+
 - **Free, no ads, no in-app purchases, no pay-to-win.** Everything is earned by playing.
 - **Nothing to install.** Desktop and mobile browsers, French and English.
 - **Try first, sign up later.** A guest can play immediately; creating an account keeps
@@ -20,13 +29,14 @@ instant to start, satisfying to click, deep enough to come back to for weeks, an
 ## Audience
 
 Casual and incremental-game players who enjoy numbers going up, short active sessions
-(boss fights, powers, crystals) and long passive ones (offline progress). The primary
+(boss fights, powers, crystals) and long passive ones (the tab left open while doing something else). The primary
 market is French-speaking, with a full English version.
 
 ## Core loop
 
 1. **Click** the monster to deal damage and earn gold. Critical hits deal ×10.
-2. **Hire and level companions** with gold. They deal damage per second, even offline,
+2. **Hire and level companions** with gold. They deal damage per second, even while the
+   player is away from an open tab,
    and take over from clicks as the run goes on (see "Idle and active play").
 3. **Push stages.** Beat 10 monsters to unlock the next stage; beat the boss before its
    timer runs out.
@@ -73,7 +83,7 @@ late game; mashing the mouse is never required.
   Patience (+40% per level) add up. An attack click resets it; it starts growing again
   3 s later and is back in full 30 s after the click, so an occasional click costs little.
   Clicks never include it. Automatic clicks (Frenzy, striking scroll), powers, crystals
-  and purchases do not reset it. Offline progress always counts as fully idle. A chip shows
+  and purchases do not reset it. Background catch-ups always count as fully idle. A chip shows
   the bonus, with its current value and a countdown while it builds up.
 - **Active bonus**: powers, crystals and crit investments reward being there, within
   bounds: Altar of Fate capped at 5 levels (+100% crit damage), relic totals capped at +50%
@@ -84,10 +94,22 @@ late game; mashing the mouse is never required.
 - **Targets** (checked by tests and `npm run balance -- 24 compare 5`, median of 5 seeds):
   with every talent and no altar, 5 clicks/s add about half of companion DPS; a click build
   with every crit investment maxed stays under 6× at 5 clicks/s. Clicking leads the first
-  hours (stage 78 at 3 h at 10 clicks/s vs 55 idle); by 24 h the occasional player (short
-  bursts of clicks every 2 min) leads (stage 810), then pure idle (676), then sustained
-  clicking at 10/s (581), 5/s (413) and 2/s (313). An hour offline is worth a few percent
-  of an hour played, since only playing pushes new stages.
+  hours (stage 105 at 3 h at 10 clicks/s vs 55 idle); by 24 h every style stands within a
+  quarter of the others: occasional bursts (784), sustained clicking at 10/s (761), idle
+  (683), 5/s (683) and 2/s (636). 8 h in a background tab after 24 h of play adds 1 to 30
+  stages (median per profile): less than an evening of play, since powers, crystals and
+  ascensions are what push the walls. The 72 h bot reaches stage 1066 after 12 ascensions,
+  slowing down smoothly (no runaway).
+- **Real schedules** (hybrid simulation: active sessions played by the bot, the tab left
+  open in between with the autopilot, closed at night): a newcomer (a first hour, then four
+  15 min sessions a day) reaches stage 94 on day 1 and 379 on day 2; an engaged player
+  (eight 20 min sessions a day) leads early (about 300 on day 1, 1280 on day 3), an
+  occasional one catches up (within about 10% after two weeks, around 1550 against 1700).
+- **Known limit**: progress flattens over weeks (everyone converges toward stage 1500 to
+  1700 after two weeks). Late essence growth sits on a knife edge: 1.02 per stage
+  converges, 1.025 already runs away to stage 3000 within a week. Keeping players apart in
+  the long run needs a second prestige layer; until then the essence leaderboard (orders of
+  magnitude apart) is the long-run ranking.
 
 ### Powers (keys 1 to 6)
 
@@ -103,14 +125,47 @@ late game; mashing the mouse is never required.
 ### Ascension
 
 - Available once stage 51 is reached (the Fallen King is beaten).
-- Essences earned grow with the highest stage cleared, deliberately slower than monster HP.
-- Each owned essence gives +10% DPS. Essences also buy **13 altars** (might, blade,
-  fortune, patience, time, fate, precision, treasure, bargain, echoes, harvest, wanderer,
-  memory): permanent bonuses, some capped, some unlimited. When an altar gets a new cap
-  (Altar of Fate, save version 3), the levels above it are refunded in essences when the
-  save is loaded, on the server and in the client.
+- Essences earned grow with the highest stage cleared in the run (`20 × 1.075^(h - 50)` up
+  to stage 140, then +2% per stage, plus 3 per stage past 50; 65 for a first ascension from
+  stage 60), deliberately slower than monster HP: pushing a few more stages
+  pays, farming a wall for hours does not. The fastest progress comes from ascending soon
+  after progress stalls (AFK simulation, 72 h: stage 1776 when ascending 5 min after the
+  last new stage, 1684 after 20 min, 1323 after 1 h, 810 after 3 h).
+- Each owned essence gives +10% DPS. Essences also buy **13 altars**, permanent bonuses
+  kept across ascensions. Every level costs `base × growth^level`:
+
+  | Altar | Effect per level | Price growth | Cap |
+  |---|---|---|---|
+  | Might | DPS ×1.10 | ×1.6 | none |
+  | Blade | click damage ×1.15, +5% of the click's DPS share (up to +50%) | ×1.6 | none |
+  | Fortune | gold ×1.12 | ×1.6 | none |
+  | Patience | DPS ×1.15 while not clicking | ×1.7 | none |
+  | Time | +1 s boss timer | ×1.35 | 30 |
+  | Fate | +20% critical damage | ×2 | 5 |
+  | Precision | +1% crit chance | ×1.3 | 25 |
+  | Treasure | +0.5% golden rat chance | ×1.35 | 20 |
+  | Bargain | -2% companion cost | ×1.4 | 25 |
+  | Echoes | -5% power cooldowns | ×1.6 | 10 |
+  | Harvest | +10% essences | ×1.3 | none |
+  | Wanderer | 10 stages cleared at the start of each run | ×1.8 | 10 |
+  | Memory | starting gold of 100 monsters of stage 5 × level | ×1.5 | 20 |
+
+- **Spending versus holding** is the core decision: the open-ended altars multiply at each
+  level against an exponential price, so the best split keeps about half the essences in
+  hand at every stage of the game, and which altars to feed depends on the play style
+  (idle: patience, clicks: blade, both: might and fortune). In the AFK simulation over
+  72 h, a sound choice reaches stage 1684, leaving out might 1139, leaving out patience
+  1042, holding everything 468.
+- **Wanderer**: companions clear the first stages of a new run at once, with their kills
+  and gold, never more than half the stage record (a multiple of 5, so a run never starts
+  on a boss). Those stages do not pay essences again at the next ascension, and a run
+  must clear at least one stage by itself before ascending.
 - Ascension resets gold, hero levels, talents, stage, powers and run statistics. It keeps
   essences, altars, relics, shards, achievements and lifetime statistics.
+- **Save version 4** reworked the altars: every level of an older save is refunded in
+  essences at the old prices (on the server and in the client) and a one-time notice
+  invites the player to choose again. The essence formula did not change, so ascension
+  records and the essence leaderboard stay valid.
 
 ### Relics and market
 
@@ -120,7 +175,8 @@ late game; mashing the mouse is never required.
 - **5 rarities** (common, rare, epic, legendary, mythic) with 1 to 4 affixes; legendary and
   mythic add an ascension-essence affix. Power scales with the stage the item dropped at.
 - Drops: biome guardians 40% (guaranteed on a first clear), elites 15%. Guardians also give
-  shards.
+  shards. Only the boss at the furthest stage of the run drops relics and shards: a boss
+  replayed from the stage selector pays gold only.
 - **Forge** (up to +20, +10% per level) costs shards; **salvaging** returns shards.
   Inventory holds 48 items (full inventory auto-salvages new drops).
 - **Shard market:** relic chest, great chest (epic or better), rage potion (DPS ×2), fortune
@@ -135,19 +191,40 @@ late game; mashing the mouse is never required.
   tiers of a series ×2.5); click damage gets half of it.
 - Detailed run and lifetime statistics, ascension history.
 
-### Offline progress
+### Playing in the background (AFK)
 
-- Companions keep farming while the tab is closed: up to 8 h at 50% efficiency, improved by
-  the Altar of the Wanderer (+1 h and +10% per level).
-- A tab in the background for less than 15 min catches up at full efficiency.
-- A summary modal greets the player after 60 s or more away.
+The game progresses while its tab is open, whether the player watches it or works, studies
+or plays something else. It does not progress while it is closed.
+
+- **Open tab, player away**: after 60 s without any action or input on the page, the
+  **autopilot** takes over once a minute: companions spend the gold (below) and, once they
+  can beat the boss that stopped them, turn auto-advance back on and try again. Until then
+  they train on the stage before it.
+- **Hidden or throttled tab, computer asleep**: when the tab wakes up, the time elapsed is
+  simulated in one go (up to 8 h per gap), exactly as the autopilot would have played it: one-minute slices, spending
+  between slices, stages pushed from the furthest one reached (bosses included, shards of
+  biome bosses too, no item drops) until a boss companions cannot beat in time, then
+  training on the stage before it and trying again after each purchase. Companions fight
+  alone: idle bonus in full, no clicks, powers, crystals or potions.
+- **Closed tab**: nothing. A freshly opened page skips the time since the last save; only
+  a tab that was already running the game gets it back: one the browser discarded to save
+  memory (`document.wasDiscarded` in Chromium) or that was reloaded, told apart by a
+  per-tab `sessionStorage` flag (`ib_tab`, Firefox and Safari included). A live tab saves
+  every 30 s, so reloading it loses nothing.
+- **Spending while away** (Settings, on by default): every affordable talent, then
+  companion levels by best DPS gained per gold, by batches up to the next 25-level
+  milestone. Aldric is never levelled. Turned off, the gold is kept.
+- **What presence adds**, with no ratio applied to the away player: wandering crystals,
+  powers, faster purchases, ascensions, altars, the shard market, gear and the forge.
+- No summary when the player comes back: comparing with what they remember is part of
+  the game.
 
 ### Balance targets
 
 Validated by the bot simulation (`npm run balance`): stage 10 in about 2 min, stage 50 in
-about 1.5 to 2 h, first ascension around 3 h, stage 100 in about 6 h, then steady progress
-carried by ascensions. `npm run balance -- 24 compare` plays the same game idle and at 2, 5
-and 10 clicks/s to check the idle/active gap. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
+about 1.5 to 2 h, first ascension around 3 h, stage 100 in about 4 to 6 h, then steady
+progress carried by ascensions. `npm run balance -- 24 compare` plays the same game idle and at 2, 5
+and 10 clicks/s to check the idle/active gap, and the stages 8 h in a background tab add. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
 ## Accounts
