@@ -249,8 +249,11 @@ export interface Derived {
   treasureChance: number;
   dpsMultiplier: number;
   essenceMultiplier: number;
+  /** The full idle bonus applies (no attack click for 30 s). */
   idle: boolean;
-  /** DPS bonus granted while idle (Altar of Patience + idle talents), active or not. */
+  /** Share of the idle bonus in effect, from 0 right after a click to 1. */
+  idleRatio: number;
+  /** Full DPS bonus granted while idle (Altar of Patience + idle talents), active or not. */
   idleBonus: number;
   /** Share of companion DPS added to each click. */
   clickDpsShare: number;

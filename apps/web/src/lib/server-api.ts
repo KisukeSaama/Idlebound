@@ -14,7 +14,7 @@ export interface LeaderboardResponse {
   rows: LeaderboardRow[];
 }
 
-const base = () => (process.env.INTERNAL_API_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "");
+const base = () => (process.env.INTERNAL_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
 async function getJson<T>(path: string): Promise<T | null> {
   try {

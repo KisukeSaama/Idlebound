@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  API_PORT: z.coerce.number().int().default(8080),
+  API_PORT: z.coerce.number().int().default(8000),
   DATABASE_URL: z.string().min(1).default("postgres://idlebound:idlebound@localhost:5432/idlebound"),
   PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   /** Secure cookie: on by default as soon as the site is served over HTTPS. */

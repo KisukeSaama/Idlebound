@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
 import { achievementText, gameText, itemName, monsterName } from "./content";
 import { ACHIEVEMENTS } from "./data/achievements";
-import { ALTARS } from "./data/altars";
+import { ALTARS, altarCost } from "./data/altars";
 import { BIOMES, TREASURE_MONSTER } from "./data/biomes";
 import { HEROES } from "./data/heroes";
 import { SLOTS, SLOT_BASE_COUNT } from "./data/items";
@@ -11,7 +11,9 @@ import { SKILLS } from "./data/skills";
 import { GameEngine } from "./engine";
 import {
   ASCENSION_MIN_STAGE,
-  IDLE_DELAY_MS,
+  IDLE_FULL_MS,
+  IDLE_GRACE_MS,
+  altarValue,
   bossHp,
   derive,
   essencesForStage,
@@ -25,7 +27,7 @@ import { validateUsername } from "./moderation";
 import { LOCALES, negotiateLocale, resolveLocale } from "./i18n";
 import { formatDuration, formatNumber, formatPercent } from "./numbers";
 import { seededRng } from "./rng";
-import { parseState } from "./save";
+import { migrateState, parseState } from "./save";
 import { createInitialState } from "./state";
 import { verifyState, verifyTransition } from "./validation";
 import type { GameState } from "./types";
@@ -172,7 +174,7 @@ function lateGame(): GameState {
 /** Average damage per second of `clicksPerSecond` clicks (crits included) over the active DPS. */
 function clickRatio(state: GameState, now: number, clicksPerSecond: number): number {
   const d = derive(state, now, { ignoreTimed: true });
-  const activeDps = d.idle ? d.dps / (1 + d.idleBonus) : d.dps;
+  const activeDps = d.dps / (1 + d.idleBonus * d.idleRatio);
   return (clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1))) / activeDps;
 }
 
@@ -192,7 +194,7 @@ describe("idle and active balance", () => {
     expect(ratio).toBeGreaterThan(0.1);
     expect(ratio).toBeLessThan(1);
     // Mashing at 10 clicks/s beats an idle player by a modest margin at most.
-    const idle = derive(state, T0 + IDLE_DELAY_MS, { ignoreTimed: true });
+    const idle = derive(state, T0 + IDLE_FULL_MS, { ignoreTimed: true });
     const active = derive(state, T0, { ignoreTimed: true });
     expect(active.dps * (1 + clickRatio(state, T0, 10))).toBeLessThan(idle.dps * 1.5);
   });
@@ -202,7 +204,7 @@ describe("idle and active balance", () => {
     state.altars.patience = 5;
     state.lastClickAt = T0;
     const active = derive(state, T0);
-    const idle = derive(state, T0 + IDLE_DELAY_MS);
+    const idle = derive(state, T0 + IDLE_FULL_MS);
     expect(active.idle).toBe(false);
     expect(idle.idle).toBe(true);
     // Sentinel's Vigil (+50%), Silent Legion (+100%), Patience 5 (+200%).
@@ -227,7 +229,88 @@ describe("idle and active balance", () => {
     for (const slot of SLOTS) {
       state.equipment[slot] = { ...generateItem(seededRng(3), 100, { slot }), affixes: [{ stat: "critDamage", value: 5 }] };
     }
-    expect(derive(state, T0).critMultiplier).toBeCloseTo(base * 2);
+    expect(derive(state, T0).critMultiplier).toBeCloseTo(base * 1.5);
+  });
+
+  it("bounds a click build with every crit investment maxed", () => {
+    const state = lateGame();
+    state.lastClickAt = T0;
+    Object.assign(state.altars, { precision: 25, fate: 5, blade: 10 });
+    state.lifetime.essencesEarned = 1e6;
+    for (const slot of SLOTS) {
+      state.equipment[slot] = { ...generateItem(seededRng(3), 100, { slot }), affixes: [{ stat: "critChance", value: 0.08 }, { stat: "critDamage", value: 5 }] };
+    }
+    const ratio = clickRatio(state, T0, 5);
+    expect(ratio).toBeGreaterThan(1);
+    expect(ratio).toBeLessThan(6);
+  });
+
+  it("grows the idle bonus from 3 s to 30 s after the last click", () => {
+    const state = lateGame();
+    state.lastClickAt = T0;
+    const at = (ms: number) => derive(state, T0 + ms).idleRatio;
+    expect(at(0)).toBe(0);
+    expect(at(IDLE_GRACE_MS)).toBe(0);
+    expect(at((IDLE_GRACE_MS + IDLE_FULL_MS) / 2)).toBeCloseTo(0.5);
+    expect(at(IDLE_FULL_MS)).toBe(1);
+    expect(derive(state, T0 + IDLE_FULL_MS).idle).toBe(true);
+    expect(derive(state, T0 + IDLE_FULL_MS - 1).idle).toBe(false);
+    const half = derive(state, T0 + (IDLE_GRACE_MS + IDLE_FULL_MS) / 2);
+    const none = derive(state, T0);
+    expect(half.dps).toBeCloseTo(none.dps * (1 + half.idleBonus / 2));
+  });
+
+  it("makes an isolated click cheap for an idle player", () => {
+    const engine = new GameEngine(lateGame(), seededRng(1), T0);
+    let now = run(engine, T0, 60);
+    engine.click(now);
+    expect(engine.derived.idleRatio).toBe(0);
+    // Average idle bonus kept over the two minutes that follow one click.
+    let kept = 0;
+    for (let step = 0; step < 1200; step += 1) {
+      now += 100;
+      engine.tick(now);
+      kept += engine.derived.idleRatio / 1200;
+    }
+    expect(kept).toBeGreaterThan(0.85);
+  });
+
+  it("lets the Altar of the Blade raise the DPS share of clicks, up to +50%", () => {
+    const state = lateGame();
+    const base = derive(state, T0);
+    const share = (blade: number) => {
+      state.altars.blade = blade;
+      const d = derive(state, T0);
+      const flat = (base.click - base.dps * base.clickDpsShare) * (1 + blade * 0.25);
+      return (d.click - flat) / (d.dps * d.clickDpsShare);
+    };
+    expect(share(0)).toBeCloseTo(1);
+    expect(share(4)).toBeCloseTo(1.2);
+    expect(share(10)).toBeCloseTo(1.5);
+    expect(share(40)).toBeCloseTo(1.5);
+  });
+
+  it("caps the Altar of Fate and refunds the levels bought above the cap", () => {
+    expect(altarCost("fate", 4)).toBe(10);
+    expect(altarCost("fate", 5)).toBe(Number.POSITIVE_INFINITY);
+    const engine = new GameEngine(lateGame(), seededRng(1), T0);
+    engine.state.essences = 1_000;
+    engine.state.lifetime.essencesEarned = 1_000;
+    for (let level = 0; level < 5; level += 1) expect(engine.buyAltar("fate", T0)).toBe(true);
+    expect(engine.buyAltar("fate", T0)).toBe(false);
+    expect(engine.state.essences).toBe(1_000 - 30);
+
+    // A save from before the cap: 12 levels bought for 2 + 4 + … + 24 = 156 essences.
+    const legacy = structuredClone(engine.state);
+    legacy.altars.fate = 12;
+    legacy.essences = 1_000 - 156;
+    expect(altarValue(legacy, "fate")).toBeCloseTo(1);
+    const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
+    expect(migrated.altars.fate).toBe(5);
+    expect(migrated.essences).toBe(1_000 - 30);
+    expect(parseState(migrateState(JSON.parse(JSON.stringify(migrated)))).essences).toBe(1_000 - 30);
+    expect(verifyState(migrated, T0).map((violation) => violation.code)).not.toContain("essence-ledger");
+    expect(verifyState(legacy, T0).map((violation) => violation.code)).toContain("essence-ledger");
   });
 
   it("reports companion damage once per second", () => {
@@ -249,7 +332,7 @@ describe("idle and active balance", () => {
     state.altars.patience = 100_000;
     state.lifetime.essencesEarned = 1e10;
     state.lastClickAt = T0;
-    const idle = derive(state, T0 + IDLE_DELAY_MS, { ignoreTimed: true });
+    const idle = derive(state, T0 + IDLE_FULL_MS, { ignoreTimed: true });
     // The highest boss the idle companions alone beat in half the timer.
     let stage = 10;
     while (bossHp(stage + 5) < (idle.dps * idle.bossTimer) / 2) stage += 5;

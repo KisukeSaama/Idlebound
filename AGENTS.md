@@ -136,7 +136,7 @@ deploy/                   production compose, paths.env, app.env template
 | Command | What it does |
 |---|---|
 | `docker compose -f compose.dev.yml up` | Full dev stack: web :3000, API, Postgres, Mailpit :8025 |
-| `npm run dev` | API (8080) + web (3000) without Docker (needs a Postgres in `.env`) |
+| `npm run dev` | API (8000) + web (3000) without Docker (needs a Postgres in `.env`) |
 | `npm run lint` | Type-checks the game package, the API and the web app |
 | `npm test` | Vitest: engine, balance, anti-cheat, i18n; API tests when `TEST_DATABASE_URL` is set |
 | `npm run build` | API bundle + Next.js build |

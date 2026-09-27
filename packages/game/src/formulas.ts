@@ -10,7 +10,13 @@ export const MAX_STAGE = 3000;
 export const BASE_BOSS_TIMER = 30;
 export const BASE_CRIT_MULTIPLIER = 10;
 export const BASE_TREASURE_CHANCE = 0.01;
-export const IDLE_DELAY_MS = 60_000;
+/** The idle bonus starts this long after the last attack click… */
+export const IDLE_GRACE_MS = 3_000;
+/** …and reaches its full value this long after it (it grows linearly in between). */
+export const IDLE_FULL_MS = 30_000;
+/** Altar of the Blade: extra share of the click's DPS part per level, and its maximum. */
+export const BLADE_DPS_SHARE_PER_LEVEL = 0.05;
+export const BLADE_DPS_SHARE_MAX = 0.5;
 export const RESPAWN_SECONDS = 0.35;
 export const BOSS_RESPAWN_SECONDS = 0.8;
 export const ASCENSION_MIN_STAGE = 51;
@@ -52,7 +58,20 @@ export function altarLevel(state: GameState, id: AltarId): number {
 }
 
 export function altarValue(state: GameState, id: AltarId): number {
-  return altarLevel(state, id) * ALTAR_BY_ID[id].valuePerLevel;
+  const altar = ALTAR_BY_ID[id];
+  const level = altar.maxLevel > 0 ? Math.min(altarLevel(state, id), altar.maxLevel) : altarLevel(state, id);
+  return level * altar.valuePerLevel;
+}
+
+/** Share of the idle bonus in effect, from 0 (just clicked) to 1 (idle for 30 s). */
+export function idleRatio(state: GameState, now: number): number {
+  const elapsed = now - state.lastClickAt - IDLE_GRACE_MS;
+  return Math.min(1, Math.max(0, elapsed / (IDLE_FULL_MS - IDLE_GRACE_MS)));
+}
+
+/** Extra share of the click's DPS part granted by the Altar of the Blade. */
+export function bladeDpsShare(state: GameState): number {
+  return Math.min(BLADE_DPS_SHARE_MAX, altarLevel(state, "blade") * BLADE_DPS_SHARE_PER_LEVEL);
 }
 
 export function heroCostMultiplier(state: GameState): number {
@@ -170,7 +189,7 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     }
   }
 
-  const idle = options.forceIdle || now - state.lastClickAt >= IDLE_DELAY_MS;
+  const ratio = options.forceIdle ? 1 : idleRatio(state, now);
   const idleBonus = altarValue(state, "patience") + idleDps;
   let dpsMultiplier = globalDps
     * (1 + achievementBonus(state))
@@ -184,8 +203,8 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     if (buffActive(state, "overcharge", now)) dpsMultiplier *= 7;
   }
 
-  // Clicking ends the idle state, so clicks draw on the DPS without the idle bonus.
-  const idleFactor = idle ? 1 + idleBonus : 1;
+  // Clicking resets the idle bonus, so clicks draw on the DPS without it.
+  const idleFactor = 1 + idleBonus * ratio;
   const heroDps: Record<string, number> = {};
   let activeDps = 0;
   for (const hero of HEROES) {
@@ -200,7 +219,7 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
   const aldricLevel = state.heroLevels[CLICK_HERO_ID] ?? 0;
   const clickFlatMult = clickMult * (1 + altarValue(state, "blade")) * (1 + equipmentBonus(state, "click")) * (1 + achievementBonus(state) * 0.5);
   const sharpness = timed && buffActive(state, "sharpness", now) ? 10 : 1;
-  const click = ((1 + aldricLevel * heroMult[CLICK_HERO_ID]) * clickFlatMult + activeDps * clickDps) * sharpness;
+  const click = ((1 + aldricLevel * heroMult[CLICK_HERO_ID]) * clickFlatMult + activeDps * clickDps * (1 + bladeDpsShare(state))) * sharpness;
 
   critChance += altarValue(state, "precision") + equipmentBonus(state, "critChance");
   if (timed && skillActive(state, "hawkeye", now)) critChance += 0.5;
@@ -227,7 +246,8 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     treasureChance: Math.min(0.25, treasure + altarValue(state, "treasure")),
     dpsMultiplier: dpsMultiplier * idleFactor,
     essenceMultiplier: (1 + altarValue(state, "harvest")) * (1 + equipmentBonus(state, "essence")),
-    idle,
+    idle: ratio >= 1,
+    idleRatio: ratio,
     idleBonus,
     clickDpsShare: clickDps,
     autoClicksPerSecond

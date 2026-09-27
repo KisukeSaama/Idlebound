@@ -65,7 +65,7 @@ export const hud = defineMessages({
       sharpness: "Affûtage : clic ×10",
       ritual: (pct: Count) => `Rituel : +${pct} % DPS`,
       patience: (pct: Count) => `Patience : DPS +${pct} %`,
-      patiencePending: (pct: Count) => `Patience (DPS +${pct} %) dans`
+      patiencePending: (full: Count, seconds: Count) => `La Patience remonte : DPS +${full} % dans ${seconds} s si tu ne cliques pas`
     },
     skills: {
       label: "Pouvoirs",
@@ -108,7 +108,7 @@ export const hud = defineMessages({
       globalDps: (pct: Count) => `DPS de tous les compagnons +${pct} %`,
       click: (mult: Count) => `Dégâts de clic ×${mult}`,
       clickDps: (pct: Count) => `Chaque clic inflige aussi ${pct} % de tes DPS`,
-      idleDps: (pct: Count) => `DPS +${pct} % après 60 s sans cliquer`,
+      idleDps: (pct: Count) => `DPS +${pct} % quand tu ne cliques pas (plein effet en 30 s)`,
       critChance: (pct: Count) => `+${pct} % de chances de critique`,
       critDamage: (add: Count) => `Multiplicateur des critiques +${add} (×10 de base)`,
       gold: (pct: Count) => `Or gagné +${pct} %`,
@@ -134,6 +134,7 @@ export const hud = defineMessages({
     },
     fx: {
       crit: "CRITIQUE",
+      companions: "COMPAGNONS",
       shards: (count: number) => `+${count} éclat${count > 1 ? "s" : ""}`
     },
     toasts: {
@@ -280,7 +281,7 @@ export const hud = defineMessages({
       sharpness: "Sharpness: click ×10",
       ritual: (pct: Count) => `Ritual: +${pct}% DPS`,
       patience: (pct: Count) => `Patience: DPS +${pct}%`,
-      patiencePending: (pct: Count) => `Patience (DPS +${pct}%) in`
+      patiencePending: (full: Count, seconds: Count) => `Patience is building up: DPS +${full}% in ${seconds}s if you don't click`
     },
     skills: {
       label: "Powers",
@@ -323,7 +324,7 @@ export const hud = defineMessages({
       globalDps: (pct: Count) => `All companions' DPS +${pct}%`,
       click: (mult: Count) => `Click damage ×${mult}`,
       clickDps: (pct: Count) => `Each click also deals ${pct}% of your DPS`,
-      idleDps: (pct: Count) => `DPS +${pct}% after 60s without clicking`,
+      idleDps: (pct: Count) => `DPS +${pct}% while you don't click (full effect within 30s)`,
       critChance: (pct: Count) => `+${pct}% critical hit chance`,
       critDamage: (add: Count) => `Critical multiplier +${add} (×10 base)`,
       gold: (pct: Count) => `Gold earned +${pct}%`,
@@ -349,6 +350,7 @@ export const hud = defineMessages({
     },
     fx: {
       crit: "CRITICAL",
+      companions: "COMPANIONS",
       shards: (count: number) => `+${count} shard${count > 1 ? "s" : ""}`
     },
     toasts: {

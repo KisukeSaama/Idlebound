@@ -1,6 +1,6 @@
 "use client";
 
-import { createInitialState, type GameState } from "@idlebound/game";
+import { createInitialState, migrateState, type GameState } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
 import { api, type AccountUser, type CloudSave } from "@/lib/api";
 import type { GameStore } from "./store";
@@ -144,7 +144,9 @@ export class CloudSync {
   }
 
   adopt(cloud: CloudSave) {
-    this.store.replaceState(cloud.state);
+    // A save written by an older version gets the same migration as on the server
+    // (new fields, refunded altar levels) before it runs.
+    this.store.replaceState(migrateState(cloud.state) as GameState);
     this.lastUploadAt = Date.now();
     this.set({ pendingChoice: null, status: this.saveBlocked() ? "unverified" : "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
   }

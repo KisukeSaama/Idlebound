@@ -105,9 +105,9 @@ export const en: GameText = {
   },
   altars: {
     might: { name: "Altar of Might", description: "+25% DPS per level." },
-    blade: { name: "Altar of the Blade", description: "+25% click damage per level." },
+    blade: { name: "Altar of the Blade", description: "+25% click damage per level, and +5% on the DPS share of your clicks (up to +50%)." },
     fortune: { name: "Altar of Fortune", description: "+15% gold per level." },
-    patience: { name: "Altar of Patience", description: "+40% DPS per level when you haven't clicked for 60 s." },
+    patience: { name: "Altar of Patience", description: "+40% DPS per level while you don't click. The bonus comes back within 30s of a click." },
     time: { name: "Altar of Time", description: "+1 s on the boss timer per level." },
     fate: { name: "Altar of Fate", description: "+20% critical damage per level." },
     precision: { name: "Altar of Precision", description: "+1% critical hit chance per level." },

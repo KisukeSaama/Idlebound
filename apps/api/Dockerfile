@@ -20,5 +20,5 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build --chown=node:node /app/apps/api/dist ./
 USER node
-EXPOSE 8080
+EXPOSE 8000
 CMD ["node", "--enable-source-maps", "index.js"]

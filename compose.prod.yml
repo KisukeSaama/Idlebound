@@ -21,7 +21,7 @@ services:
     environment:
       NODE_ENV: production
       PUBLIC_SITE_URL: http://localhost:3000
-      INTERNAL_API_BASE_URL: http://api:8080
+      INTERNAL_API_BASE_URL: http://api:8000
       SITE_INDEXABLE: "false"
     ports:
       - "127.0.0.1:3000:3000"
@@ -58,7 +58,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/health >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 20

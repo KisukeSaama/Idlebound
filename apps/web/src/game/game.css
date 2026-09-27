@@ -488,11 +488,23 @@ button.resource:hover {
   font-variant-numeric: tabular-nums;
 }
 
-/* Idle bonus not active yet: the player is still clicking. */
+/* Patience building up after a click: the chip fills from left to right. */
+@property --fill {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
 .buff-chip.is-pending {
-  border-style: dashed;
+  --chip-bg: rgba(8, 7, 16, 0.72);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--violet) 34%, var(--chip-bg)) calc(var(--fill) * 100%), var(--chip-bg) calc(var(--fill) * 100%));
+  border-color: var(--border-strong);
   box-shadow: none;
-  color: var(--muted);
+  transition: --fill 120ms linear;
+}
+
+.buff-chip.is-pending .buff-label {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ------------------------------------------------ arena and monster */
@@ -619,11 +631,25 @@ button.resource:hover {
   color: #d8ccff;
 }
 
-/* Companion damage over the last second: calmer than clicks, drifts from the side. */
+/* Companion damage over the last second: as readable as a click, calmer, labelled. */
 .fx-damage.companions {
-  font-size: 1.15rem;
-  color: var(--success);
-  animation-duration: 1000ms;
+  font-size: 1.5rem;
+  color: var(--companion);
+  text-shadow: 0 3px 0 #000, 0 0 12px color-mix(in srgb, var(--companion) 45%, transparent);
+  animation: dmg-companion 1000ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.fx-damage.companions::before {
+  content: attr(data-label);
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-align: center;
+  -webkit-text-stroke: 0;
+  color: var(--companion);
+  opacity: 0.85;
 }
 
 .fx-damage.crit {
@@ -672,6 +698,40 @@ button.resource:hover {
   animation: gold-rise 1300ms ease-out forwards;
 }
 
+/*
+ * A companion's hit: a crescent blade trail in the companion's color, drawn from one end to
+ * the other (clip-path), tapered at both ends (mask), with a white edge.
+ */
+.fx-slash {
+  position: absolute;
+  width: 150px;
+  height: 54px;
+  border-radius: 50%;
+  border-top: 8px solid var(--slash-color);
+  transform: translate(-50%, -50%) rotate(var(--angle));
+  filter: drop-shadow(0 0 5px var(--slash-color)) drop-shadow(0 0 12px var(--slash-color));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
+  clip-path: inset(0 100% 0 0);
+  pointer-events: none;
+  animation: slash 340ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.fx-slash::after {
+  content: "";
+  position: absolute;
+  inset: -6px 14% auto;
+  height: 100%;
+  border-radius: 50%;
+  border-top: 3px solid #fff;
+}
+
+@keyframes slash {
+  0% { clip-path: inset(0 100% 0 0); opacity: 1; }
+  45% { clip-path: inset(0 0 0 0); opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; transform: translate(-50%, -40%) rotate(var(--angle)) scale(1.06); }
+}
+
 .fx-dying {
   position: absolute;
   left: 50%;
@@ -687,6 +747,13 @@ button.resource:hover {
   0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
   15% { opacity: 1; transform: translate(-50%, -60%) scale(1.15); }
   100% { opacity: 0; transform: translate(calc(-50% + var(--drift)), -260%) scale(0.95); }
+}
+
+@keyframes dmg-companion {
+  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.85); }
+  18% { opacity: 1; transform: translate(-50%, -55%) scale(1.05); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -200%) scale(1); }
 }
 
 @keyframes dmg-crit {
@@ -1685,6 +1752,25 @@ button.resource:hover {
   margin: 0;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
+}
+
+.gear-totals dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The total reached its cap: extra relic bonuses no longer count. */
+.cap-badge {
+  padding: 1px 6px;
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  border-radius: 999px;
+  color: var(--gold);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: help;
 }
 
 .item-card {
@@ -2826,6 +2912,14 @@ kbd {
   }
   .fx-damage.crit {
     font-size: 1.9rem;
+  }
+  .fx-damage.companions {
+    font-size: 1.2rem;
+  }
+  .fx-slash {
+    width: 112px;
+    height: 40px;
+    border-top-width: 6px;
   }
   .crystal {
     width: 56px;
