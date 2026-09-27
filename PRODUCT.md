@@ -78,7 +78,8 @@ late game; mashing the mouse is never required.
 - **Active bonus**: powers, crystals and crit investments reward being there, within
   bounds: Altar of Fate capped at 5 levels (+100% crit damage), relic totals capped at +50%
   crit damage and +16% crit chance, Blade share capped at +50%.
-- **Feedback**: companions visibly strike the monster (slash in their color, light flinch)
+- **Feedback**: companions fight in the scene: each hit is a shot in their color from their
+  medallion to the monster (arrow, blade, claw, heavy blow or spell), which lights up on impact,
   and their damage floats once per second next to it, so passive damage is visible.
 - **Targets** (checked by tests and `npm run balance -- 24 compare 5`, median of 5 seeds):
   with every talent and no altar, 5 clicks/s add about half of companion DPS; a click build

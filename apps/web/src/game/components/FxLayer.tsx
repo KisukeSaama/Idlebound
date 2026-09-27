@@ -4,7 +4,7 @@ import { HERO_BY_ID, type GameEvent } from "@idlebound/game";
 import { useEffect, useRef, type RefObject } from "react";
 import { currentMessages } from "@/i18n/client";
 import { useFormat, useStoreRef } from "../context";
-import { SLASH_PIXEL, slashColumns, slashRows, slashSprite } from "../pixelSlash";
+import { drawShot, shotDuration, shotFlight, type Shot } from "../strikeFx";
 
 export interface PointerMemo {
   x: number;
@@ -13,16 +13,17 @@ export interface PointerMemo {
 }
 
 const MAX_NODES = 36;
-/** Visible companion strikes per "dps" event (one event per second). */
+/** Visible companion shots per "dps" event (one event per second). */
 const COMPANION_STRIKES = 3;
 
 /**
- * Visual effects (damage numbers, companion strikes, gold, dying sprite) handled directly in
+ * Visual effects (damage numbers, companion shots, gold, dying sprite) handled directly in
  * the DOM: dozens of elements per second without ever re-rendering React.
  */
 export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMemo>; monsterRef: RefObject<HTMLDivElement | null> }) {
   const store = useStoreRef();
   const layer = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
   const fmt = useFormat();
   const fmtRef = useRef(fmt);
   fmtRef.current = fmt;
@@ -112,55 +113,110 @@ export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMem
       return null;
     };
 
+    // ---- companion shots, drawn on one canvas over the arena
+    const shots: (Shot & { landed: boolean })[] = [];
+    let shotFrame = 0;
+
+    const fitCanvas = () => {
+      const surface = canvas.current;
+      if (!surface) return;
+      const ratio = Math.min(2, window.devicePixelRatio || 1);
+      const width = Math.round(size.width * ratio);
+      const height = Math.round(size.height * ratio);
+      if (surface.width !== width || surface.height !== height) {
+        surface.width = width;
+        surface.height = height;
+      }
+      return ratio;
+    };
+
+    /** The monster lights up in the companion's color and flinches (never over the player's hits). */
+    const land = (color: string) => {
+      const monster = monsterRef.current;
+      if (!monster || reaction?.playState === "running") return;
+      reactionSource = "companion";
+      reaction = monster.animate(
+        [
+          { transform: "translate(0, 0)", filter: "brightness(1) drop-shadow(0 0 0 transparent)" },
+          { transform: `translate(${Math.random() < 0.5 ? -2 : 2}px, 1px)`, filter: `brightness(1.3) drop-shadow(0 0 14px ${color})`, offset: 0.3 },
+          { transform: "translate(0, 0)", filter: "brightness(1) drop-shadow(0 0 0 transparent)" }
+        ],
+        { duration: 220, easing: "ease-out" }
+      );
+    };
+
+    const renderShots = (now: number) => {
+      shotFrame = 0;
+      const surface = canvas.current;
+      const ctx = surface?.getContext("2d");
+      if (!surface || !ctx) return;
+      const ratio = fitCanvas() ?? 1;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, surface.width, surface.height);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      for (let index = shots.length - 1; index >= 0; index -= 1) {
+        const shot = shots[index];
+        const t = (now - shot.start) / 1000;
+        if (t >= shotDuration(shot.style)) {
+          shots.splice(index, 1);
+          continue;
+        }
+        if (!shot.landed && t >= shotFlight(shot.style)) {
+          shot.landed = true;
+          land(shot.color);
+        }
+        drawShot(ctx, shot, t);
+      }
+      if (shots.length > 0) shotFrame = requestAnimationFrame(renderShots);
+    };
+
+    /** Center of an element inside the layer, or null when it is not displayed. */
+    const centerOf = (element: Element | null | undefined) => {
+      const root = layer.current;
+      if (!root || !element) return null;
+      const rect = element.getBoundingClientRect();
+      if (rect.width === 0) return null;
+      const rootRect = root.getBoundingClientRect();
+      return { x: rect.left - rootRect.left + rect.width / 2, y: rect.top - rootRect.top + rect.height / 2 };
+    };
+
     /**
-     * A companion hits: its medallion in the party lunges, a pixel-art blade trail in its
-     * color lands on the monster's body, and the monster flinches lightly (never over the
-     * player's own hits).
+     * A companion hits: its medallion in the party lunges and fires a shot in its color that
+     * arcs to the monster's body and bursts there.
      */
     const companionStrike = () => {
       const root = layer.current;
-      const monster = monsterRef.current;
       if (!root || !store.state.monster || reducedMotion()) return;
       const heroId = pickCompanion();
       if (!heroId) return;
       const box = spriteBox();
       if (!box) return;
-      const columns = slashColumns(box.width);
-      const sprite = slashSprite(HERO_BY_ID[heroId].color, columns);
-      if (!sprite) return;
-      while (root.childElementCount >= MAX_NODES) root.firstElementChild?.remove();
-      // Aim at the body (the middle of the sprite, where its transparent margins end).
-      const slash = document.createElement("span");
-      slash.className = "fx-slash";
-      slash.style.left = `${box.x + box.width * (0.3 + Math.random() * 0.4)}px`;
-      slash.style.top = `${box.y + box.height * (0.3 + Math.random() * 0.35)}px`;
-      slash.style.width = `${columns * SLASH_PIXEL}px`;
-      slash.style.height = `${slashRows(columns) * SLASH_PIXEL}px`;
-      slash.style.backgroundImage = `url(${sprite})`;
-      // Arcs cut from either side, never straight up or down.
-      slash.style.setProperty("--angle", `${(Math.random() < 0.5 ? 0 : 180) - 35 + Math.random() * 70}deg`);
-      root.appendChild(slash);
-      setTimeout(() => slash.remove(), 380);
+      const hero = HERO_BY_ID[heroId];
       const member = root.parentElement?.querySelector<HTMLElement>(`.party-member[data-hero="${heroId}"]`);
+      // Companions not shown in the party (small screens) shoot from the party's side.
+      const from = centerOf(member) ?? centerOf(root.parentElement?.querySelector(".party-member")) ?? { x: 24, y: size.height * 0.7 };
+      shots.push({
+        style: hero.strike,
+        color: hero.color,
+        seed: Math.floor(Math.random() * 2 ** 31),
+        start: performance.now(),
+        fromX: from.x,
+        fromY: from.y,
+        // Aim at the body: the middle of the sprite, where its transparent margins end.
+        toX: box.x + box.width * (0.35 + Math.random() * 0.3),
+        toY: box.y + box.height * (0.35 + Math.random() * 0.3),
+        scale: Math.min(1.15, Math.max(0.65, size.width / 900)),
+        landed: false
+      });
+      if (!shotFrame) shotFrame = requestAnimationFrame(renderShots);
       member?.animate(
         [
           { transform: "translateX(0) scale(1)", filter: "brightness(1)" },
-          { transform: "translateX(7px) scale(1.12)", filter: "brightness(1.5)", offset: 0.35 },
+          { transform: "translateX(6px) scale(1.14)", filter: "brightness(1.6)", offset: 0.3 },
           { transform: "translateX(0) scale(1)", filter: "brightness(1)" }
         ],
-        { duration: 260, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+        { duration: 280, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
       );
-      if (monster && reaction?.playState !== "running") {
-        reactionSource = "companion";
-        reaction = monster.animate(
-          [
-            { transform: "translate(0, 0)", filter: "brightness(1)" },
-            { transform: `translate(${Math.random() < 0.5 ? -2 : 2}px, 1px)`, filter: "brightness(1.35)" },
-            { transform: "translate(0, 0)", filter: "brightness(1)" }
-          ],
-          { duration: 110, easing: "ease-out" }
-        );
-      }
     };
 
     const dying = (event: Extract<GameEvent, { type: "kill" }>) => {
@@ -211,9 +267,15 @@ export function FxLayer({ pointer, monsterRef }: { pointer: RefObject<PointerMem
     return () => {
       unsubscribe();
       observer.disconnect();
+      if (shotFrame) cancelAnimationFrame(shotFrame);
       for (const id of timers) clearTimeout(id);
     };
   }, [store, pointer, monsterRef]);
 
-  return <div ref={layer} className="fx-layer" aria-hidden="true" />;
+  return (
+    <>
+      <canvas ref={canvas} className="fx-canvas" aria-hidden="true" />
+      <div ref={layer} className="fx-layer" aria-hidden="true" />
+    </>
+  );
 }
