@@ -1,6 +1,6 @@
 "use client";
 
-import { GameEngine, createInitialState, type GameEvent, type GameState, type OfflineSummary } from "@idlebound/game";
+import { GameEngine, createInitialState, type GameEvent, type GameState } from "@idlebound/game";
 
 type Listener = () => void;
 export type FxListener = (event: GameEvent) => void;
@@ -11,6 +11,9 @@ export interface ActOptions {
 
 const TICK_MS = 50;
 const RENDER_MS = 100;
+/** Without any action or input for this long, the player is away and the autopilot plays. */
+const AFK_AFTER_MS = 60_000;
+
 
 /**
  * Bridge between the engine (mutable, outside React) and the UI.
@@ -20,7 +23,6 @@ const RENDER_MS = 100;
  */
 export class GameStore {
   engine: GameEngine;
-  offlineSummary: OfflineSummary | null = null;
   private listeners = new Set<Listener>();
   private fxListeners = new Set<FxListener>();
   private actionListeners = new Set<Listener>();
@@ -31,7 +33,7 @@ export class GameStore {
   private dirty = false;
 
   constructor(state: GameState = createInitialState()) {
-    this.engine = new GameEngine(state);
+    this.engine = this.createEngine(state);
   }
 
   get state() {
@@ -103,31 +105,45 @@ export class GameStore {
 
   private step() {
     const summary = this.engine.tick(Date.now());
-    if (summary && summary.seconds >= 60) this.offlineSummary = summary;
     this.flushEvents();
     this.notify(summary !== null);
   }
 
   /** Runs a player action on the engine. */
   act<T>(action: (engine: GameEngine, now: number) => T, options: ActOptions = {}): T {
-    const result = action(this.engine, Date.now());
+    const now = Date.now();
+    this.engine.markInput(now);
+    const result = action(this.engine, now);
     this.flushEvents();
     this.notify(true);
     if (options.save !== false) for (const listener of this.actionListeners) listener();
     return result;
   }
 
-  /** Replaces the whole game (server save, new game, logout). */
-  replaceState(state: GameState) {
-    this.engine = new GameEngine(state);
-    this.offlineSummary = null;
+  /**
+   * Replaces the whole game (server save, new game, logout). The game only runs while its
+   * page is open: the time since the save was written is skipped, unless `creditAbsence`
+   * (the browser discarded this very tab, which was still open).
+   */
+  replaceState(state: GameState, { creditAbsence = false }: { creditAbsence?: boolean } = {}) {
+    if (!creditAbsence) state.lastTickAt = Math.max(state.lastTickAt, Date.now());
+    const visible = this.engine.visible;
+    this.engine = this.createEngine(state);
+    this.engine.visible = visible;
     this.step();
     this.publish();
   }
 
-  dismissOffline() {
-    this.offlineSummary = null;
-    this.publish();
+  /** Any input on the page (a click, a key, opening a window) means the player is here. */
+  markInput() {
+    this.engine.markInput(Date.now());
+  }
+
+  private createEngine(state: GameState) {
+    const engine = new GameEngine(state);
+    engine.afkAfterMs = AFK_AFTER_MS;
+    engine.markInput(Date.now());
+    return engine;
   }
 
   setVisible(visible: boolean) {

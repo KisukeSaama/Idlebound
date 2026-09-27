@@ -116,10 +116,10 @@ export const fr: GameText = {
     echo: { name: "Écho temporel", description: "Réinitialise le temps de recharge du dernier pouvoir utilisé." }
   },
   altars: {
-    might: { name: "Autel de puissance", description: "+25 % de DPS par niveau." },
-    blade: { name: "Autel de la lame", description: "+25 % de dégâts de clic par niveau, et +5 % sur la part de DPS de tes clics (jusqu'à +50 %)." },
-    fortune: { name: "Autel de fortune", description: "+15 % d'or par niveau." },
-    patience: { name: "Autel de la patience", description: "+40 % de DPS par niveau quand tu ne cliques pas. Le bonus revient en 30 s après un clic." },
+    might: { name: "Autel de puissance", description: "Chaque niveau multiplie ton DPS par 1,10." },
+    blade: { name: "Autel de la lame", description: "Chaque niveau multiplie tes dégâts de clic par 1,15 et ajoute 5 % à la part de DPS de tes clics (jusqu'à +50 %)." },
+    fortune: { name: "Autel de fortune", description: "Chaque niveau multiplie ton or par 1,12." },
+    patience: { name: "Autel de la patience", description: "Quand tu ne cliques pas, chaque niveau multiplie ton DPS par 1,15. Le bonus revient en 30 s après un clic." },
     time: { name: "Autel du temps", description: "+1 s au chrono des boss par niveau." },
     fate: { name: "Autel du destin", description: "+20 % de dégâts critiques par niveau." },
     precision: { name: "Autel de précision", description: "+1 % de chances de critique par niveau." },
@@ -127,7 +127,7 @@ export const fr: GameText = {
     bargain: { name: "Autel du marchandage", description: "-2 % sur le coût des compagnons par niveau." },
     echoes: { name: "Autel des échos", description: "-5 % de temps de recharge des pouvoirs par niveau." },
     harvest: { name: "Autel de la récolte", description: "+10 % d'essences à l'ascension par niveau." },
-    wanderer: { name: "Autel du voyageur", description: "+10 % d'efficacité hors ligne et +1 h de plafond par niveau." },
+    wanderer: { name: "Autel du voyageur", description: "Au début de chaque run, tes compagnons franchissent d'office 10 étapes par niveau et en rapportent l'or, sans dépasser la moitié de ton record. Ces étapes ne comptent pas dans les essences de l'ascension." },
     memory: { name: "Autel de la mémoire", description: "Commence chaque ascension avec l'or de 100 monstres de l'étape 5 × niveau." }
   },
   market: {

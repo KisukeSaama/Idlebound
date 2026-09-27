@@ -17,7 +17,7 @@ import { isBossStage } from "./data/biomes";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
 import { crystalEssenceReward } from "./engine";
-import { bossHp, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost } from "./formulas";
+import { MONSTERS_PER_STAGE, bossHp, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, wandererSkip } from "./formulas";
 import { maxAffixValue } from "./loot";
 import type { AltarId, GameState } from "./types";
 
@@ -36,6 +36,8 @@ const MAX_TIMED_GOLD = 3 * 2 * 10;
 const MAX_CLICKS_PER_SECOND = 40;
 /** Minimum respawn 0.35 s → fewer than 3 kills per second. */
 const MAX_KILLS_PER_SECOND = 3;
+/** Kills the Altar of the Wanderer can grant in one go (its maximum skip, 10 per stage). */
+const MAX_SKIP_KILLS = (ALTAR_BY_ID.wanderer.maxLevel * ALTAR_BY_ID.wanderer.valuePerLevel) * MONSTERS_PER_STAGE;
 /** Slack granted to client/server clocks. */
 const CLOCK_SLACK_SECONDS = 120;
 /** Launch date: no save can be older. */
@@ -69,13 +71,14 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
 
   // Progression structure.
   if (state.stage > state.maxStage || state.maxStage > state.maxStageEver) fail("stage-order", "Inconsistent stage order.");
+  if (state.runStartStage > state.maxStage || state.runStartStage > wandererSkip(state) + 1) fail("stage-order", "Run started further than the Altar of the Wanderer allows.");
   if (state.createdAt < GAME_EPOCH || state.createdAt > serverNow + CLOCK_SLACK_SECONDS * 1000) fail("created-at", "Impossible creation date.");
   const age = (serverNow - state.createdAt) / 1000 + CLOCK_SLACK_SECONDS;
   if (state.lifetime.playTime + state.lifetime.offlineSeconds > age) fail("time", "More play time than the game has existed.");
 
   // Kills and gold bounded by total time and the best reachable loot.
   const totalSeconds = state.lifetime.playTime + state.lifetime.offlineSeconds;
-  if (state.lifetime.kills > totalSeconds * MAX_KILLS_PER_SECOND + 10) fail("kills", "Too many kills for the play time.");
+  if (state.lifetime.kills > totalSeconds * MAX_KILLS_PER_SECOND + 10 + state.lifetime.ascensions * MAX_SKIP_KILLS) fail("kills", "Too many kills for the play time.");
   if (state.lifetime.clicks > state.lifetime.playTime * MAX_CLICKS_PER_SECOND + 10) fail("clicks", "Impossible click rate.");
   const bestGold = bestGoldPerKill(state);
   const goldBound = (state.lifetime.kills + state.lifetime.crystals * 15 + state.lifetime.hourglasses * 12_000 + 1) * bestGold;
@@ -163,9 +166,10 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     else if (achievement.metric(state) < achievement.threshold) fail("achievement", `Unearned achievement: ${id}.`);
   }
 
-  // Power: the last boss beaten in this run must be beatable with this build.
+  // Power: the last boss beaten in this run must be beatable with this build (bosses the
+  // Altar of the Wanderer skipped were not fought).
   const lastBoss = lastBossCleared(state.maxStage);
-  if (lastBoss > 0) {
+  if (lastBoss >= state.runStartStage) {
     // Idle forced: the boss may have been beaten by companions alone, with the idle bonus
     // (clicks never include it, so the click bound is unaffected).
     const derived = derive(state, serverNow, { ignoreTimed: true, forceIdle: true });
@@ -214,7 +218,8 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   const activeSeconds = Math.max(0, played) + 1;
   if (b.clicks - a.clicks > activeSeconds * MAX_CLICKS_PER_SECOND) fail("clicks", "Impossible click rate.");
   const kills = b.kills - a.kills;
-  if (kills > (activeSeconds + Math.max(0, offline)) * MAX_KILLS_PER_SECOND + 10) fail("kills", "Too many kills for the elapsed time.");
+  const skipKills = Math.max(0, b.ascensions - a.ascensions) * MAX_SKIP_KILLS;
+  if (kills > (activeSeconds + Math.max(0, offline)) * MAX_KILLS_PER_SECOND + 10 + skipKills) fail("kills", "Too many kills for the elapsed time.");
   if (next.maxStageEver - previous.maxStageEver > kills + 1) fail("stage", "Stages cleared without fighting.");
   if (b.ascensions - a.ascensions > elapsed / 30 + 1) fail("ascension", "Too many ascensions.");
 

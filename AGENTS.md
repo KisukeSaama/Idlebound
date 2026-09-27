@@ -12,7 +12,9 @@ documents, update the document in the same change.
 ## Non-negotiable rules
 
 1. **Saves live on the server only.** No `localStorage`/IndexedDB save, no export/import.
-   Browser storage may only hold small UI conveniences, never game state.
+   Browser storage may only hold small UI conveniences, never game state. One exception,
+   not game state either: the per-tab `ib_tab` sessionStorage flag that tells a tab
+   reloaded by the browser from a newly opened one (`apps/web/src/game/cloud.ts`).
 2. **Every save is verified.** Any change to `GameState`, to a formula, or to anything the
    player can earn or spend must keep `packages/game/src/validation.ts` correct, and the
    test "accepts a real multi-hour game saved regularly" must keep passing (no false

@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { ALTAR_BY_ID, altarOverflowRefund } from "./data/altars";
-import { SAVE_VERSION, createInitialState } from "./state";
-import type { AltarId, GameState } from "./types";
+import { ALTAR_REWORK_NOTICE, SAVE_VERSION, createInitialState } from "./state";
+import type { GameState } from "./types";
 
 const finite = z.number().refine(Number.isFinite, "invalid number");
 const positive = finite.refine((value) => value >= 0, "negative number");
@@ -49,6 +48,7 @@ export const gameStateSchema = z.object({
   stage: z.number().int().min(1),
   maxStage: z.number().int().min(1),
   maxStageEver: z.number().int().min(1),
+  runStartStage: z.number().int().min(1),
   kills: z.number().int().min(0).max(100),
   autoAdvance: z.boolean(),
   monster: z.object({
@@ -98,7 +98,8 @@ export const gameStateSchema = z.object({
     damageNumbers: z.boolean(),
     reducedMotion: z.boolean(),
     confirmAscension: z.boolean(),
-    buyMode: z.union([z.literal(1), z.literal(10), z.literal(25), z.literal(100), z.literal("max")])
+    buyMode: z.union([z.literal(1), z.literal(10), z.literal(25), z.literal(100), z.literal("max")]),
+    offlineSpending: z.boolean()
   }),
   tutorial: z.object({ done: z.array(z.string().max(40)).max(50) })
 });
@@ -113,30 +114,58 @@ export function migrateState(raw: unknown): unknown {
   merged.lifetime = { ...base.lifetime, ...(input.lifetime as object | undefined) };
   merged.run = { ...base.run, ...(input.run as object | undefined) };
   merged.tutorial = { ...base.tutorial, ...(input.tutorial as object | undefined) };
-  refundAltarOverflow(merged);
+  const version = typeof input.version === "number" ? input.version : 0;
+  if (version < 4) {
+    refundLegacyAltars(merged);
+    // The rework notice is for these saves, even when their tutorial came from the defaults.
+    const tutorial = merged.tutorial as { done?: unknown };
+    if (Array.isArray(tutorial.done)) merged.tutorial = { ...tutorial, done: tutorial.done.filter((id) => id !== ALTAR_REWORK_NOTICE) };
+  }
   merged.version = SAVE_VERSION;
   return merged;
 }
 
 /**
- * An altar that became capped (Altar of Fate, version 3) keeps its maximum level and gives
- * back the essences of the levels above it. Idempotent, and the essence ledger still holds:
- * what leaves the altars returns to the owned essences.
+ * Altar prices up to save version 3 (linear: base × (level + 1); exp: base × growth^level).
+ * Version 4 reworked the altars, so their levels are refunded once, at these prices.
  */
-function refundAltarOverflow(merged: Record<string, unknown>) {
+const LEGACY_ALTARS: Record<string, { base: number; growth: number; linear: boolean }> = {
+  might: { base: 1, growth: 1, linear: true },
+  blade: { base: 1, growth: 1, linear: true },
+  fortune: { base: 1, growth: 1, linear: true },
+  patience: { base: 1, growth: 1, linear: true },
+  time: { base: 2, growth: 1.35, linear: false },
+  fate: { base: 2, growth: 1, linear: true },
+  precision: { base: 3, growth: 1.3, linear: false },
+  treasure: { base: 3, growth: 1.35, linear: false },
+  bargain: { base: 4, growth: 1.4, linear: false },
+  echoes: { base: 5, growth: 1.6, linear: false },
+  harvest: { base: 5, growth: 1.25, linear: false },
+  wanderer: { base: 5, growth: 2, linear: false },
+  memory: { base: 10, growth: 1.5, linear: false }
+};
+
+/** Essences a version 3 save spent on an altar (a hair under the rounded-up prices). */
+export function legacyAltarSpend(id: string, level: number): number {
+  const legacy = Object.hasOwn(LEGACY_ALTARS, id) ? LEGACY_ALTARS[id] : undefined;
+  if (!legacy || !(level > 0)) return 0;
+  if (legacy.linear) return (legacy.base * level * (level + 1)) / 2;
+  return (legacy.base * (Math.pow(legacy.growth, level) - 1)) / (legacy.growth - 1);
+}
+
+/**
+ * Version 4 reworked the altars: every level of an older save goes back to the owned
+ * essences and the player chooses again. The essence ledger still holds (what leaves the
+ * altars returns to the owned essences), and it runs once: the version is then 4.
+ */
+function refundLegacyAltars(merged: Record<string, unknown>) {
   const altars = merged.altars;
   if (!altars || typeof altars !== "object" || typeof merged.essences !== "number") return;
-  const levels = { ...(altars as Record<string, unknown>) };
   let refund = 0;
-  for (const [id, level] of Object.entries(levels)) {
-    if (typeof level !== "number" || !Number.isInteger(level)) continue;
-    const essences = altarOverflowRefund(id, level);
-    if (essences <= 0) continue;
-    refund += essences;
-    levels[id] = ALTAR_BY_ID[id as AltarId].maxLevel;
+  for (const [id, level] of Object.entries(altars as Record<string, unknown>)) {
+    if (typeof level === "number" && Number.isFinite(level)) refund += legacyAltarSpend(id, level);
   }
-  if (refund <= 0) return;
-  merged.altars = levels;
+  merged.altars = {};
   merged.essences = merged.essences + refund;
 }
 

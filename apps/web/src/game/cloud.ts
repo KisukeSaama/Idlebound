@@ -26,6 +26,8 @@ export function summarize(state: GameState): SaveSummary {
 /** The save only lives on the server: sync often so nothing is lost. */
 const SYNC_INTERVAL_MS = 30_000;
 const SYNC_CHECK_MS = 5_000;
+/** sessionStorage key: this tab has run the game (see `tabWasRunning`). */
+const TAB_MARKER = "ib_tab";
 /** A player action or a milestone saves soon after, grouping bursts of actions. */
 const SAVE_DEBOUNCE_MS = 3_000;
 /** Keeps uploads under the API limit (6 per minute), with room for page-hide saves. */
@@ -37,9 +39,35 @@ const RETRY_AFTER_REJECT_MS = 10 * 60_000;
  * a conflict (another device, another game) triggers an explicit choice. Without an
  * account, the game is not kept.
  */
+/**
+ * Whether this very tab was already running the game before this load: the browser
+ * discarded it to save memory (Page Lifecycle API in Chromium, a per-tab sessionStorage
+ * marker elsewhere) or the player reloaded it. A new tab starts without the marker, so a
+ * closed game never earns the time it was closed. The marker is set for the next load.
+ * Only a presence flag: no game state lives in browser storage.
+ */
+let tabWasRunningCache: boolean | undefined;
+
+function tabWasRunning(): boolean {
+  if (typeof document === "undefined") return false;
+  // Read once per page load: React may build the sync twice in development.
+  if (tabWasRunningCache !== undefined) return tabWasRunningCache;
+  let marked = false;
+  try {
+    marked = window.sessionStorage.getItem(TAB_MARKER) === "1";
+    window.sessionStorage.setItem(TAB_MARKER, "1");
+  } catch {
+    // Storage blocked: only the Page Lifecycle API remains.
+  }
+  tabWasRunningCache = marked || (document as Document & { wasDiscarded?: boolean }).wasDiscarded === true;
+  return tabWasRunningCache;
+}
+
 export class CloudSync {
   user: AccountUser | null = null;
   status: CloudStatus = "offline";
+  /** This load restores a tab that was already running the game (see `tabWasRunning`). */
+  private tabWasDiscarded = tabWasRunning();
   message: string | null = null;
   lastSyncAt: number | null = null;
   revision: number | null = null;
@@ -145,8 +173,11 @@ export class CloudSync {
 
   adopt(cloud: CloudSave) {
     // A save written by an older version gets the same migration as on the server
-    // (new fields, refunded altar levels) before it runs.
-    this.store.replaceState(migrateState(cloud.state) as GameState);
+    // (new fields, refunded altar levels) before it runs. The time since it was written
+    // only counts if the browser discarded this tab while it was open.
+    const creditAbsence = this.tabWasDiscarded;
+    this.tabWasDiscarded = false;
+    this.store.replaceState(migrateState(cloud.state) as GameState, { creditAbsence });
     this.lastUploadAt = Date.now();
     this.set({ pendingChoice: null, status: this.saveBlocked() ? "unverified" : "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
   }

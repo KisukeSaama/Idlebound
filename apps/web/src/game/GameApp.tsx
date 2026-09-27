@@ -13,7 +13,6 @@ import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
 import { GameHeader } from "./components/GameHeader";
 import { HeroPanel } from "./components/HeroPanel";
 import { NavRail } from "./components/NavRail";
-import { OfflineModal } from "./components/OfflineModal";
 import { Scene } from "./components/Scene";
 import { Toasts, type Toast } from "./components/Toasts";
 import { WindowHost } from "./windows/WindowHost";
@@ -85,14 +84,18 @@ export default function GameApp() {
       document.documentElement.classList.toggle("reduced-motion", store.state.settings.reducedMotion);
     };
     sync();
-    const unlock = () => audio.unlock();
-    window.addEventListener("pointerdown", unlock);
-    window.addEventListener("keydown", unlock);
+    // Any input also tells the engine the player is here (the autopilot waits for them to leave).
+    const onInput = () => {
+      audio.unlock();
+      store.markInput();
+    };
+    window.addEventListener("pointerdown", onInput);
+    window.addEventListener("keydown", onInput);
     const unsubscribe = store.subscribe(sync);
     return () => {
       unsubscribe();
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("pointerdown", onInput);
+      window.removeEventListener("keydown", onInput);
     };
   }, [store]);
 
@@ -215,7 +218,6 @@ export default function GameApp() {
           <button type="button" className={mobileTab === "scene" ? "active" : ""} onClick={() => setMobileTab("scene")}>{t.hud.mobileTabs.scene}</button>
         </nav>
         {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
-        <OfflineModal />
         <CloudChoiceModal />
         {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
         <Toasts toasts={toasts} />

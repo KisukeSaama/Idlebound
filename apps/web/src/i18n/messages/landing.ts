@@ -29,7 +29,7 @@ export const landing = defineMessages({
       title: "Simple à prendre en main, impossible à lâcher",
       items: [
         { title: "Clique", text: "Frappe les monstres pour gagner de l'or. Les coups critiques infligent dix fois plus de dégâts." },
-        { title: "Recrute", text: "Dépense ton or pour engager des compagnons qui attaquent sans relâche, même hors ligne. Plus tu avances, plus ce sont eux qui portent l'aventure." },
+        { title: "Recrute", text: "Dépense ton or pour engager des compagnons qui attaquent sans relâche, même quand tu fais autre chose. Plus tu avances, plus ce sont eux qui portent l'aventure." },
         { title: "Renais", text: "Fais ton ascension pour récolter des essences, bâtir tes autels et repousser tes records." }
       ]
     },
@@ -42,7 +42,7 @@ export const landing = defineMessages({
         { title: "Ascension", text: `Renais plus fort : les essences récoltées nourrissent ${c.altars} autels permanents qui changent ta façon de jouer.` },
         { title: "Reliques et butin", text: "Les boss lâchent des armes, armures, amulettes et anneaux, du commun au mythique. Forge-les pour les renforcer." },
         { title: "Marché d'éclats", text: "Recycle ton butin en éclats et échange-les contre des coffres, des potions et des sabliers dorés." },
-        { title: "Progression hors ligne", text: "Tes compagnons combattent même quand tu fermes l'onglet. Ta partie est sauvegardée sur nos serveurs et te suit sur tous tes appareils." }
+        { title: "Progression en fond", text: "Laisse l'onglet ouvert et va travailler, étudier ou jouer à autre chose : tes compagnons continuent de se battre et de se renforcer. Ta partie est sauvegardée sur nos serveurs et te suit sur tous tes appareils." }
       ]
     },
     biomes: {
@@ -100,7 +100,7 @@ export const landing = defineMessages({
       title: "Easy to pick up, impossible to put down",
       items: [
         { title: "Click", text: "Strike monsters to earn gold. Critical hits deal ten times the damage." },
-        { title: "Hire", text: "Spend your gold on companions who attack relentlessly, even while you're offline. The further you go, the more they carry the adventure." },
+        { title: "Hire", text: "Spend your gold on companions who attack relentlessly, even while you do something else. The further you go, the more they carry the adventure." },
         { title: "Ascend", text: "Ascend to harvest essences, build your altars and push your records further." }
       ]
     },
@@ -113,7 +113,7 @@ export const landing = defineMessages({
         { title: "Ascension", text: `Be reborn stronger: the essences you harvest feed ${c.altars} permanent altars that change the way you play.` },
         { title: "Relics and loot", text: "Bosses drop weapons, armor, amulets and rings, from common to mythic. Forge them to make them stronger." },
         { title: "Shard market", text: "Salvage your loot into shards and trade them for chests, potions and golden hourglasses." },
-        { title: "Offline progress", text: "Your companions keep fighting after you close the tab. Your game is saved on our servers and follows you on every device." }
+        { title: "Progress in the background", text: "Leave the tab open and go work, study or play something else: your companions keep fighting and getting stronger. Your game is saved on our servers and follows you on every device." }
       ]
     },
     biomes: {

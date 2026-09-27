@@ -67,13 +67,13 @@ export type AltarId =
 export interface AltarDef {
   id: AltarId;
   maxLevel: number;
-  /** Cost of the next level, in essences. */
+  /** Price of level n, in essences: `costBase × costGrowth^n`. */
   costBase: number;
   costGrowth: number;
-  /** "linear": cost = base × (level + 1). "exp": base × growth^level. */
-  costCurve: "linear" | "exp";
+  /** "add": the effect is `value × level`; "mult": `(1 + value)^level - 1`. */
+  stacking: "add" | "mult";
   valuePerLevel: number;
-  format: "pct" | "seconds" | "flat";
+  format: "pct" | "seconds" | "stages" | "flat";
 }
 
 export type ItemSlot = "weapon" | "armor" | "amulet" | "ring";
@@ -188,6 +188,8 @@ export interface Settings {
   reducedMotion: boolean;
   confirmAscension: boolean;
   buyMode: BuyMode;
+  /** While away, companions spend the gold they earn on levels and talents. */
+  offlineSpending: boolean;
 }
 
 export interface TutorialState {
@@ -212,6 +214,8 @@ export interface GameState {
   stage: number;
   maxStage: number;
   maxStageEver: number;
+  /** Stage this run started on: 1, or past the stages the Altar of the Wanderer skips. */
+  runStartStage: number;
   kills: number;
   autoAdvance: boolean;
   monster: MonsterState | null;
@@ -291,5 +295,13 @@ export interface OfflineSummary {
   seconds: number;
   kills: number;
   gold: number;
-  efficiency: number;
+  /** New stages reached while away. */
+  stages: number;
+  shards: number;
+  /** Boss stage the companions could not beat in time, if they stopped on one. */
+  blockedAt: number | null;
+  /** Companion levels and talents bought with offline spending, and their cost. */
+  levels: number;
+  upgrades: number;
+  spent: number;
 }

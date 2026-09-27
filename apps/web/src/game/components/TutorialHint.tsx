@@ -1,6 +1,6 @@
 "use client";
 
-import { CLICK_HERO_ID, HERO_BY_ID, heroCost, isBossStage, SKILLS, isSkillUnlocked } from "@idlebound/game";
+import { ALTAR_REWORK_NOTICE, CLICK_HERO_ID, HERO_BY_ID, heroCost, isBossStage, SKILLS, isSkillUnlocked } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
 
@@ -19,6 +19,9 @@ export function TutorialHint() {
   const hint = pickHint();
 
   function pickHint(): Hint | null {
+    if (!done.includes(ALTAR_REWORK_NOTICE) && state.lifetime.ascensions > 0) {
+      return { id: ALTAR_REWORK_NOTICE, text: m.altarRework, position: "center" };
+    }
     if (state.lifetime.ascensions > 0 || done.includes("all")) return null;
     const aldric = state.heroLevels[CLICK_HERO_ID] ?? 0;
     if (!done.includes("hire") && aldric === 0 && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1)) {

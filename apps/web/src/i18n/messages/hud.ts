@@ -118,6 +118,7 @@ export const hud = defineMessages({
     altarValue: {
       pct: (value: string) => `+${value} %`,
       seconds: (value: Count) => `+${value} s`,
+      stages: (value: Count) => `${value} étapes`,
       none: "aucune",
       stage: (stage: Count) => `étape ${stage}`
     },
@@ -130,7 +131,8 @@ export const hud = defineMessages({
       boss: "Un boss ! Terrasse-le avant la fin du chrono, sinon tu recules d'une étape.",
       skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou clique dessus en bas.`,
       farm: "Tu farmes l'étape précédente. Renforce-toi, puis réactive la progression (bouton Farm → Auto).",
-      ascend: "Le Roi déchu est tombé ! L'ascension est disponible dans le menu des essences."
+      ascend: "Le Roi déchu est tombé ! L'ascension est disponible dans le menu des essences.",
+      altarRework: "Les autels ont été refondus : chaque niveau des autels illimités multiplie désormais son effet, et le voyageur fait sauter les premières étapes. Tous tes niveaux t'ont été rendus en essences : choisis de nouveau tes autels dans la fenêtre d'ascension."
     },
     fx: {
       crit: "CRITIQUE",
@@ -158,16 +160,6 @@ export const hud = defineMessages({
       ascendedText: (essences: string) => `+${essences} essences. Une nouvelle vie commence.`,
       inventoryFull: (item: string, shards: number) => `Inventaire plein : ${item} recyclé (+${shards} éclats).`,
       hourglass: (kills: string) => `Le sablier s'écoule : ${kills} monstres vaincus en un instant.`
-    },
-    offline: {
-      title: "Bon retour, aventurier !",
-      resume: "Reprendre le combat",
-      intro: "Pendant ton absence de ",
-      introEnd: ", tes compagnons ont poursuivi la chasse.",
-      kills: "monstres vaincus",
-      gold: "pièces d'or",
-      efficiency: (pct: Count) => `Efficacité hors ligne : ${pct} %. L'Autel du voyageur l'améliore.`,
-      noCompanions: "Recrute des compagnons : eux seuls combattent en ton absence."
     },
     cloudChoice: {
       title: "Deux parties trouvées",
@@ -334,6 +326,7 @@ export const hud = defineMessages({
     altarValue: {
       pct: (value: string) => `+${value}%`,
       seconds: (value: Count) => `+${value}s`,
+      stages: (value: Count) => `${value} stages`,
       none: "none",
       stage: (stage: Count) => `stage ${stage}`
     },
@@ -346,7 +339,8 @@ export const hud = defineMessages({
       boss: "A boss! Defeat it before the timer runs out, or you'll fall back one stage.",
       skill: (key: string) => `New power unlocked: press ${key} or click it at the bottom.`,
       farm: "You're farming the previous stage. Get stronger, then turn progression back on (Farm → Auto button).",
-      ascend: "The Fallen King has fallen! Ascension is available in the essences menu."
+      ascend: "The Fallen King has fallen! Ascension is available in the essences menu.",
+      altarRework: "The altars have been reworked: each level of an open-ended altar now multiplies its effect, and the Wanderer skips the first stages. All your levels were refunded in essences: pick your altars again in the ascension window."
     },
     fx: {
       crit: "CRITICAL",
@@ -374,16 +368,6 @@ export const hud = defineMessages({
       ascendedText: (essences: string) => `+${essences} essences. A new life begins.`,
       inventoryFull: (item: string, shards: number) => `Inventory full: ${item} salvaged (+${shards} shards).`,
       hourglass: (kills: string) => `The hourglass runs out: ${kills} monsters defeated in an instant.`
-    },
-    offline: {
-      title: "Welcome back, adventurer!",
-      resume: "Back to battle",
-      intro: "While you were away for ",
-      introEnd: ", your companions kept on hunting.",
-      kills: "monsters defeated",
-      gold: "gold coins",
-      efficiency: (pct: Count) => `Offline efficiency: ${pct}%. The Altar of the Wanderer improves it.`,
-      noCompanions: "Hire companions: only they fight while you're away."
     },
     cloudChoice: {
       title: "Two games found",

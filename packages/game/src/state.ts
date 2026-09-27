@@ -1,6 +1,8 @@
 import type { GameState, LifetimeStats, StatBlock } from "./types";
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
+/** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
+export const ALTAR_REWORK_NOTICE = "altars-v4";
 
 export function emptyStats(): StatBlock {
   return { clicks: 0, crits: 0, kills: 0, bosses: 0, treasures: 0, goldEarned: 0, crystals: 0, skillsUsed: 0, maxHit: 0, playTime: 0 };
@@ -35,6 +37,7 @@ export function createInitialState(now = Date.now()): GameState {
     stage: 1,
     maxStage: 1,
     maxStageEver: 1,
+    runStartStage: 1,
     kills: 0,
     autoAdvance: true,
     monster: null,
@@ -61,8 +64,10 @@ export function createInitialState(now = Date.now()): GameState {
       damageNumbers: true,
       reducedMotion: false,
       confirmAscension: true,
-      buyMode: 1
+      buyMode: 1,
+      offlineSpending: true
     },
-    tutorial: { done: [] }
+    // A new game never needs the notice of the altar rework (save version 4).
+    tutorial: { done: [ALTAR_REWORK_NOTICE] }
   };
 }

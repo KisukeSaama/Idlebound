@@ -104,10 +104,10 @@ export const en: GameText = {
     echo: { name: "Time Echo", description: "Resets the cooldown of the last power you used." }
   },
   altars: {
-    might: { name: "Altar of Might", description: "+25% DPS per level." },
-    blade: { name: "Altar of the Blade", description: "+25% click damage per level, and +5% on the DPS share of your clicks (up to +50%)." },
-    fortune: { name: "Altar of Fortune", description: "+15% gold per level." },
-    patience: { name: "Altar of Patience", description: "+40% DPS per level while you don't click. The bonus comes back within 30s of a click." },
+    might: { name: "Altar of Might", description: "Each level multiplies your DPS by 1.10." },
+    blade: { name: "Altar of the Blade", description: "Each level multiplies your click damage by 1.15 and adds 5% to the DPS share of your clicks (up to +50%)." },
+    fortune: { name: "Altar of Fortune", description: "Each level multiplies your gold by 1.12." },
+    patience: { name: "Altar of Patience", description: "While you don't click, each level multiplies your DPS by 1.15. The bonus comes back within 30s of a click." },
     time: { name: "Altar of Time", description: "+1 s on the boss timer per level." },
     fate: { name: "Altar of Fate", description: "+20% critical damage per level." },
     precision: { name: "Altar of Precision", description: "+1% critical hit chance per level." },
@@ -115,7 +115,7 @@ export const en: GameText = {
     bargain: { name: "Altar of Bargains", description: "-2% companion cost per level." },
     echoes: { name: "Altar of Echoes", description: "-5% power cooldowns per level." },
     harvest: { name: "Altar of Harvest", description: "+10% essences on ascension per level." },
-    wanderer: { name: "Altar of the Wanderer", description: "+10% offline efficiency and +1 h offline cap per level." },
+    wanderer: { name: "Altar of the Wanderer", description: "At the start of each run, your companions clear 10 stages per level at once and bring back their gold, never more than half your record. These stages do not count toward ascension essences." },
     memory: { name: "Altar of Memory", description: "Start each ascension with the gold of 100 monsters from stage 5 × level." }
   },
   market: {

@@ -1,7 +1,7 @@
 import { ACHIEVEMENTS } from "./data/achievements";
 import { ALTAR_BY_ID, altarCost } from "./data/altars";
 import { TREASURE_MONSTER, biomeForStage, eraVariant, isBiomeBossStage, isBossStage } from "./data/biomes";
-import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
+import { CLICK_HERO_ID, HEROES, HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, forgeCost } from "./data/items";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, MARKET_BY_ID, type MarketOfferId } from "./data/market";
 import { SKILLS, SKILL_BY_ID } from "./data/skills";
@@ -13,6 +13,7 @@ import {
   RESPAWN_SECONDS,
   altarLevel,
   ascensionPreview,
+  wandererSkip,
   bossHp,
   bossHpMultiplier,
   derive,
@@ -20,8 +21,7 @@ import {
   heroCostMultiplier,
   maxAffordableLevels,
   memoryStartGold,
-  offlineCapSeconds,
-  offlineEfficiency,
+  OFFLINE_CAP_SECONDS,
   skillCooldownMultiplier,
   stageGold,
   stageHp,
@@ -34,8 +34,12 @@ import type { AltarId, BuffId, BuyMode, Derived, GameEvent, GameState, Item, Ite
 
 /** Past this gap between two ticks, gains are computed in one catch-up instead of simulated. */
 const CATCH_UP_THRESHOLD_MS = 5_000;
-/** Below this gap the tab was merely in the background: full efficiency. */
-const BACKGROUND_THRESHOLD_MS = 15 * 60_000;
+/** Offline progress is simulated in slices of this many (effective) seconds, spending in between. */
+const OFFLINE_SLICE_SECONDS = 60;
+/** Most purchase batches per offline slice. */
+const OFFLINE_SPEND_ROUNDS = 200;
+/** While the player is away from an open tab, the autopilot acts this often (like an offline slice). */
+const AUTOPILOT_INTERVAL_SECONDS = OFFLINE_SLICE_SECONDS;
 const MAX_ASCENSION_HISTORY = 100;
 
 export function isSkillUnlocked(state: GameState, id: SkillId): boolean {
@@ -43,14 +47,18 @@ export function isSkillUnlocked(state: GameState, id: SkillId): boolean {
   return (state.heroLevels[skill.unlock.heroId] ?? 0) >= skill.unlock.level;
 }
 
-export function offlineGains(state: GameState, seconds: number, efficiency: number, now: number): { kills: number; gold: number } {
+export function offlineGains(state: GameState, seconds: number, now: number): { kills: number; gold: number } {
   const derived = derive(state, now, { ignoreTimed: true, forceIdle: true });
   if (derived.dps <= 0 || seconds <= 0) return { kills: 0, gold: 0 };
   const farmStage = isBossStage(state.stage) ? Math.max(1, state.stage - 1) : state.stage;
   const timePerKill = stageHp(farmStage) / derived.dps + RESPAWN_SECONDS;
   const kills = Math.floor(seconds / timePerKill);
-  const gold = kills * stageGold(farmStage) * derived.goldMultiplier * (1 + derived.treasureChance * 9) * efficiency;
+  const gold = kills * stageGold(farmStage) * derived.goldMultiplier * (1 + derived.treasureChance * 9);
   return { kills, gold: Math.floor(gold) };
+}
+
+function levelSum(state: GameState): number {
+  return Object.values(state.heroLevels).reduce((total, level) => total + level, 0);
 }
 
 export class GameEngine {
@@ -59,6 +67,13 @@ export class GameEngine {
   rng: Rng;
   /** Set by the UI: no crystal spawns while the tab is hidden. */
   visible = true;
+  /**
+   * Set by the UI: without player input for this long, the autopilot takes over (buying,
+   * retrying bosses). Null (simulations, tests): never.
+   */
+  afkAfterMs: number | null = null;
+  private lastInputAt = 0;
+  private autopilotTimer = 0;
   private events: GameEvent[] = [];
   private autoClickAccumulator = 0;
   private achievementTimer = 0;
@@ -116,18 +131,20 @@ export class GameEngine {
 
   // ---------------------------------------------------------------- loop
 
-  /** Advances the simulation to `now`. Returns a summary when a catch-up happened. */
+  /**
+   * Advances the simulation to `now`. Returns the summary of a catch-up when one happened,
+   * however short: a throttled background tab catches up in many small steps.
+   */
   tick(now: number): OfflineSummary | null {
     const s = this.state;
     const gapMs = now - s.lastTickAt;
     if (gapMs <= 0) return null;
 
     if (gapMs > CATCH_UP_THRESHOLD_MS) {
-      const efficiency = gapMs > BACKGROUND_THRESHOLD_MS ? offlineEfficiency(s) : 1;
-      const summary = this.catchUp(gapMs / 1000, efficiency, now);
+      const summary = this.catchUp(gapMs / 1000, now);
       s.lastTickAt = now;
       this.refresh(now);
-      return summary.seconds >= 60 ? summary : null;
+      return summary;
     }
 
     const dt = gapMs / 1000;
@@ -169,6 +186,16 @@ export class GameEngine {
       this.companionDamage = 0;
     }
 
+    if (this.afkAfterMs !== null && now - this.lastInputAt >= this.afkAfterMs) {
+      this.autopilotTimer += dt;
+      if (this.autopilotTimer >= AUTOPILOT_INTERVAL_SECONDS) {
+        this.autopilotTimer = 0;
+        this.autopilot(now);
+      }
+    } else {
+      this.autopilotTimer = 0;
+    }
+
     this.achievementTimer += dt;
     if (this.achievementTimer >= 1) {
       this.achievementTimer = 0;
@@ -177,19 +204,176 @@ export class GameEngine {
     return null;
   }
 
-  /** Offline / background-tab progress. */
-  catchUp(seconds: number, efficiency: number, now: number): OfflineSummary {
+  /** The player is here (any action or input on the page). */
+  markInput(now: number) {
+    this.lastInputAt = now;
+  }
+
+  /**
+   * What companions do on their own while the player is away from an open tab: spend the
+   * gold (offline spending setting), and go back to the boss that stopped them once they
+   * can beat it. Powers, crystals, ascension and gear stay with the player.
+   */
+  private autopilot(now: number) {
     const s = this.state;
-    const capped = Math.min(seconds, offlineCapSeconds(s));
-    const { kills, gold } = offlineGains(s, capped, efficiency, now);
-    this.earnGold(gold);
+    const eventMark = this.events.length;
+    if (s.settings.offlineSpending) this.autoSpend(now);
+    this.events = [...this.events.slice(0, eventMark), ...this.events.slice(eventMark).filter((event) => event.type === "skillUnlocked")];
+    if (!s.autoAdvance && this.canBeatNextBoss(now)) {
+      s.autoAdvance = true;
+      if (s.stage < s.maxStage && !s.monster) this.setStage(s.maxStage);
+    }
+  }
+
+  /** Whether companions alone beat the boss ahead in time (true when no boss blocks the way). */
+  private canBeatNextBoss(now: number): boolean {
+    const s = this.state;
+    if (!isBossStage(s.maxStage)) return true;
+    const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+    return d.dps > 0 && bossHp(s.maxStage) <= d.dps * d.bossDamage * d.bossTimer;
+  }
+
+  /**
+   * Offline / background-tab progress, simulated in slices. Companions fight alone (idle
+   * bonus, no timed bonus) at full speed, exactly as in an open tab left alone: closing the
+   * tab costs nothing but what a present player adds. They push stages from the furthest one
+   * reached and train on the stage before a boss they cannot beat in time; with offline
+   * spending on, they level themselves up with the gold they earn between slices and try again.
+   */
+  catchUp(seconds: number, now: number): OfflineSummary {
+    const s = this.state;
+    const capped = Math.min(seconds, OFFLINE_CAP_SECONDS);
+    const startStage = s.stage;
+    const startMaxStage = s.maxStage;
+    const startLevels = levelSum(s);
+    const startUpgrades = s.heroUpgrades.length;
+    const eventMark = this.events.length;
+    const spending = s.settings.offlineSpending;
+    let remaining = capped;
+    let carry = 0;
+    let kills = 0;
+    let gold = 0;
+    let bosses = 0;
+    let shards = 0;
+    let spent = 0;
+    let blockedAt: number | null = null;
+    s.stage = s.maxStage;
+
+    while (remaining > 0) {
+      if (spending) spent += this.autoSpend(now);
+      const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+      if (d.dps <= 0) break;
+      // Without spending the power never changes: one slice is enough.
+      const slice = spending ? Math.min(remaining, OFFLINE_SLICE_SECONDS) : remaining;
+      remaining -= slice;
+      let time = slice + carry;
+      let sliceGold = 0;
+      blockedAt = null;
+
+      while (s.maxStage < MAX_STAGE) {
+        const stage = s.maxStage;
+        if (isBossStage(stage)) {
+          const fight = bossHp(stage) / (d.dps * d.bossDamage);
+          if (fight > d.bossTimer) { blockedAt = stage; break; }
+          if (fight + BOSS_RESPAWN_SECONDS > time) break;
+          time -= fight + BOSS_RESPAWN_SECONDS;
+          kills += 1;
+          bosses += 1;
+          sliceGold += stageGold(stage) * bossHpMultiplier(stage) * d.goldMultiplier;
+          if (isBiomeBossStage(stage)) shards += 1 + Math.floor(stage / 25);
+        } else {
+          const perKill = stageHp(stage) / d.dps + RESPAWN_SECONDS;
+          const needed = MONSTERS_PER_STAGE - s.kills;
+          const done = Math.min(needed, Math.floor(time / perKill));
+          time -= done * perKill;
+          kills += done;
+          sliceGold += done * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+          s.kills += done;
+          if (done < needed) break;
+        }
+        s.maxStage += 1;
+        s.kills = 0;
+        if (s.maxStage > s.maxStageEver) s.maxStageEver = s.maxStage;
+        s.stage = s.maxStage;
+      }
+
+      // Blocked by a boss (or at the last stage): farm the stage before it.
+      if (blockedAt !== null || s.maxStage >= MAX_STAGE) {
+        const base = blockedAt ?? s.stage;
+        const farmStage = isBossStage(base) ? Math.max(1, base - 1) : base;
+        const perKill = stageHp(farmStage) / d.dps + RESPAWN_SECONDS;
+        const done = Math.floor(time / perKill);
+        time -= done * perKill;
+        kills += done;
+        sliceGold += done * stageGold(farmStage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+      }
+      carry = time;
+      gold += sliceGold;
+      this.earnGold(sliceGold);
+    }
+
+    // Blocked: train on the stage before the boss, as after a failed boss online; the next
+    // catch-up or the autopilot tries again once companions are strong enough.
+    s.autoAdvance = blockedAt === null;
+    if (blockedAt !== null) s.stage = Math.max(1, blockedAt - 1);
     s.run.kills += kills;
     s.lifetime.kills += kills;
+    s.run.bosses += bosses;
+    s.lifetime.bosses += bosses;
+    this.earnShards(shards);
     s.lifetime.offlineSeconds += capped;
     s.buffs = s.buffs.filter((buff) => buff.until > now);
     if (s.crystal && s.crystal.expiresAt < now) s.crystal = null;
+    // Purchases made while away are summed up in the summary, not replayed as effects.
+    this.events = [...this.events.slice(0, eventMark), ...this.events.slice(eventMark).filter((event) => event.type === "skillUnlocked")];
+    if (s.stage !== startStage) {
+      s.monster = null;
+      s.respawnIn = 0.25;
+      s.bossTimeLeft = 0;
+      this.emit({ type: "stage", stage: s.stage, biomeChanged: biomeForStage(s.stage).id !== biomeForStage(startStage).id });
+    }
     this.checkAchievements();
-    return { seconds: capped, kills, gold, efficiency };
+    return {
+      seconds: capped,
+      kills,
+      gold,
+      stages: s.maxStage - startMaxStage,
+      shards,
+      blockedAt,
+      levels: levelSum(s) - startLevels,
+      upgrades: s.heroUpgrades.length - startUpgrades,
+      spent
+    };
+  }
+
+  /**
+   * Spending while away: every affordable talent, then companion levels by best DPS gained
+   * per gold, a batch at a time (up to the next 25-level milestone). Returns the gold spent.
+   */
+  private autoSpend(now: number): number {
+    const s = this.state;
+    const goldBefore = s.gold;
+    const multiplier = heroCostMultiplier(s);
+    for (let round = 0; round < OFFLINE_SPEND_ROUNDS; round += 1) {
+      this.buyAllUpgrades(now);
+      const base = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps;
+      let best: { id: string; count: number; ratio: number } | null = null;
+      for (const hero of HEROES) {
+        if (hero.id === CLICK_HERO_ID) continue;
+        const level = s.heroLevels[hero.id] ?? 0;
+        // Companions are hired in order, as in the shop.
+        if (level === 0 && hero.index > 1 && (s.heroLevels[HEROES[hero.index - 1].id] ?? 0) === 0) continue;
+        const count = Math.min(25 - (level % 25), maxAffordableLevels(hero, level, s.gold, multiplier));
+        if (count <= 0) continue;
+        s.heroLevels[hero.id] = level + count;
+        const gain = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps - base;
+        s.heroLevels[hero.id] = level;
+        const ratio = gain / heroCost(hero, level, count, multiplier);
+        if (ratio > 0 && (!best || ratio > best.ratio)) best = { id: hero.id, count, ratio };
+      }
+      if (!best || !this.buyHero(best.id, best.count, now)) break;
+    }
+    return goldBefore - s.gold;
   }
 
   // ---------------------------------------------------------------- combat
@@ -285,12 +469,16 @@ export class GameEngine {
     if (isBoss) {
       s.run.bosses += 1;
       s.lifetime.bosses += 1;
-      shards = monster.kind === "boss" ? 1 + Math.floor(s.stage / 25) : this.rng() < 0.35 ? 1 : 0;
-      this.earnShards(shards);
-      const firstClear = s.stage >= s.maxStageEver;
-      const chance = monster.kind === "boss" ? 0.4 : 0.15;
-      if ((monster.kind === "boss" && firstClear) || this.rng() < chance) {
-        this.addItem(generateItem(this.rng, s.stage, { luck: monster.kind === "boss" ? 2 : 1 }));
+      // Shards and items only drop from the boss that blocks progression: a boss already
+      // beaten in this run and replayed from the stage selector pays gold only.
+      if (s.stage === s.maxStage) {
+        shards = monster.kind === "boss" ? 1 + Math.floor(s.stage / 25) : this.rng() < 0.35 ? 1 : 0;
+        this.earnShards(shards);
+        const firstClear = s.stage >= s.maxStageEver;
+        const chance = monster.kind === "boss" ? 0.4 : 0.15;
+        if ((monster.kind === "boss" && firstClear) || this.rng() < chance) {
+          this.addItem(generateItem(this.rng, s.stage, { luck: monster.kind === "boss" ? 2 : 1 }));
+        }
       }
     }
 
@@ -361,7 +549,7 @@ export class GameEngine {
 
   // ---------------------------------------------------------------- companions
 
-  heroPurchase(heroId: string, mode: BuyMode): { count: number; cost: number } {
+  heroPurchase(heroId: string, mode: BuyMode | number): { count: number; cost: number } {
     const s = this.state;
     const hero = HERO_BY_ID[heroId];
     if (!hero) return { count: 0, cost: Number.POSITIVE_INFINITY };
@@ -374,7 +562,7 @@ export class GameEngine {
     return { count: mode, cost: heroCost(hero, level, mode, multiplier) };
   }
 
-  buyHero(heroId: string, mode: BuyMode, now: number): boolean {
+  buyHero(heroId: string, mode: BuyMode | number, now: number): boolean {
     const s = this.state;
     const hero = HERO_BY_ID[heroId];
     if (!hero) return false;
@@ -504,13 +692,15 @@ export class GameEngine {
   // ---------------------------------------------------------------- ascension
 
   canAscend(): boolean {
-    return this.state.maxStage >= ASCENSION_MIN_STAGE;
+    const s = this.state;
+    return s.maxStage >= ASCENSION_MIN_STAGE && s.maxStage > s.runStartStage;
   }
 
   ascend(now: number): number {
     const s = this.state;
     if (!this.canAscend()) return 0;
     const gain = ascensionPreview(s, now);
+    const skip = wandererSkip(s);
     s.essences += gain;
     s.lifetime.essencesEarned += gain;
     s.lifetime.ascensions += 1;
@@ -531,10 +721,44 @@ export class GameEngine {
     s.lastSkill = undefined;
     s.ritualStacks = 0;
     s.run = emptyStats();
+    s.runStartStage = 1;
+    this.refresh(now);
+    if (skip > 0) this.skipStages(skip);
     this.emit({ type: "ascended", essences: gain });
     this.refresh(now);
     this.checkAchievements();
     return gain;
+  }
+
+  /**
+   * Altar of the Wanderer: companions clear the first `count` stages of a new run at once,
+   * with the kills and gold they would have earned there. The run starts right after them.
+   */
+  private skipStages(count: number) {
+    const s = this.state;
+    const d = this.derived;
+    let gold = 0;
+    let kills = 0;
+    let bosses = 0;
+    for (let stage = 1; stage <= count; stage += 1) {
+      if (isBossStage(stage)) {
+        kills += 1;
+        bosses += 1;
+        gold += stageGold(stage) * bossHpMultiplier(stage) * d.goldMultiplier;
+      } else {
+        kills += MONSTERS_PER_STAGE;
+        gold += MONSTERS_PER_STAGE * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+      }
+    }
+    this.earnGold(gold);
+    s.run.kills += kills;
+    s.lifetime.kills += kills;
+    s.run.bosses += bosses;
+    s.lifetime.bosses += bosses;
+    s.maxStage = count + 1;
+    s.stage = count + 1;
+    s.runStartStage = count + 1;
+    this.emit({ type: "stage", stage: s.stage, biomeChanged: true });
   }
 
   buyAltar(id: AltarId, now: number): boolean {
@@ -659,7 +883,7 @@ export class GameEngine {
         this.addBuff("autoclick", BUFF_DURATION_SECONDS, now);
         break;
       case "hourglass": {
-        const { gold, kills } = offlineGains(s, 3600, 1, now);
+        const { gold, kills } = offlineGains(s, 3600, now);
         if (gold <= 0) return false;
         s.shards -= offer.cost;
         this.earnGold(gold);
