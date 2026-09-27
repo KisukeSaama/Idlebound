@@ -155,16 +155,30 @@ on one piece at 320px. Copy is short: a title, one or two sentences, the button,
 
 - Monsters: entrance, idle breathing, death; bosses and golden rats get a pulsing glow.
 - Damage numbers float up from the pointer; crits are bigger and gold; gold gains rise.
-  Companion damage shows once per second beside the monster, in `--companion` mint under a
+  Companion damage shows once per second beside the monster's body, in `--companion` mint under a
   small "COMPANIONS" label (same pattern as the "CRITICAL" label), as large as a click
   number but with a calmer rise, so passive damage reads as clearly as clicks.
-- Companions visibly strike about three times per second: a crescent blade trail in the
-  color of a companion (drawn by its share of DPS), revealed end to end with `clip-path`,
-  tapered with a mask and edged in white, plus a light flinch of the monster. A player's
-  hit always takes over the flinch; both are skipped with reduced motion.
+- Companions visibly strike about three times per second. Each strike picks a companion
+  (weighted by its share of DPS): its medallion in the scene's party lunges toward the
+  monster, and a **pixel-art blade trail** in its color lands on the monster's body. Trails
+  are drawn pixel by pixel on a tiny canvas (`game/pixelSlash.ts`: crescent, tapered ends,
+  color then light tint then white edge, dark one-pixel outline like the sprites), cached
+  per color and size, scaled up with `image-rendering: pixelated` (one art pixel = 4 screen
+  pixels) and revealed then faded in `steps()`, so they belong to the pixel art instead of
+  floating over it as vector glow. Effects aimed at the monster read the sprite's box:
+  trails land in its middle and scale with it. The monster flinches lightly; a player's hit
+  always takes over the flinch. Trails, lunges and flinches are skipped with reduced motion.
+- **Party**: the strongest hired companions (5 on desktop, 3 on phones) stand as medallions
+  at the bottom left of the arena, strongest at the bottom, in the same medallion style as
+  the companions panel. Decorative (`aria-hidden`, no pointer events): the panel carries the
+  information and clicks go through to the arena.
 - The Patience chip shows the idle bonus in effect. While it builds up after a click it
   fills with violet from left to right (`--fill`, a registered custom property), its
   tooltip telling the full value and the time left; it is a plain chip once full.
+- Toasts never cover the stages or the effect chips: they sit right under the scene's top
+  bar, whose bottom edge is measured (it grows with the chips and moves when the page
+  scrolls). On portrait phones two toasts at most are shown: above the companions / combat
+  tabs while the companions are visible, under the top bar in full-screen combat.
 - Capped equipment totals carry a small gold "MAX" pill whose tooltip explains that relic
   bonuses above the cap do not count.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%.
