@@ -1,10 +1,18 @@
+import { AGE_ECHOES_TEXT } from "./story/ages";
+import { BESTIARY_TEXT } from "./story/bestiary";
+import { BESTIARY_KEEP_TEXT } from "./story/bestiary-keep";
+import { COMPANY_TEXT } from "./story/company";
+import { COMPANY_LATE_TEXT } from "./story/company-late";
+import { PLACES_TEXT } from "./story/places";
+import { STRATA_TEXT } from "./story/strata";
+import { SYSTEMS_TEXT } from "./story/systems";
+import { VOICES_TEXT } from "./story/voices";
+import { roman } from "./roman";
 import type { GameText } from "./types";
 
 const n = (value: number) => value.toLocaleString("fr-FR");
 const exp = (value: number) => value.toExponential(0).replace("e+", "e");
 const s = (count: number, word: string) => (count > 1 ? `${word}s` : word);
-
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
 const RARITY_ADJECTIVE = {
   common: { m: "", f: "" },
@@ -23,43 +31,43 @@ const BIOME_SUFFIX = [
 ] as const;
 
 export const fr: GameText = {
-  biomes: {
-    "green-plains": { name: "Plaines verdoyantes", description: "Des collines paisibles où tout aventurier fait ses premières armes." },
-    "dark-forest": { name: "Forêt sombre", description: "Un bois dense où les ombres ont faim et où les ronces murmurent." },
-    "forgotten-caves": { name: "Cavernes oubliées", description: "Des galeries glacées où chaque écho semble vivant." },
-    "corrupted-marsh": { name: "Marais corrompu", description: "Une fange toxique qui avale les routes et les imprudents." },
-    "fallen-king-ruins": { name: "Ruines du roi déchu", description: "Les derniers murs d'un royaume maudit vibrent encore de magie." }
-  },
+  biomes: PLACES_TEXT.fr.biomes,
   monsters: {
     "field-rat": "Rat des champs",
     "wild-boar": "Sanglier nerveux",
-    "rabid-rat": "Rat enragé",
-    "tusk-king": "Grand-Défense",
+    "carrion-crow": "Corbeau charognard",
+    "last-reaper": "Dernier Faucheur",
     "moss-alpha": "Alpha moussu",
     "shade-wolf": "Loup de l'ombre",
     "briar-witch": "Sorcière des ronces",
-    "blight-boar": "Sanglier flétri",
-    "briar-matron": "Matrone des ronces",
+    "grove-spinner": "Fileuse du bosquet",
+    "root-knight": "Chevalier-racine",
     "old-grove": "Cœur du vieux bosquet",
     "blind-crawler": "Rampeur aveugle",
     "echo-bat": "Chauve-souris d'écho",
-    "deep-wolf": "Loup des profondeurs",
-    "howling-swarm": "Nuée hurlante",
+    "crystal-mite": "Acarien de cristal",
+    "miner-shade": "Ombre de mineur",
     "stone-devourer": "Dévorateur de pierre",
     "bog-remnant": "Vestige fangeux",
-    "putrid-crawler": "Rampeur putride",
-    "marsh-hag": "Sorcière des marais",
+    "rot-toad": "Crapaud putride",
+    "will-o-wisp": "Feu follet",
     "bog-colossus": "Colosse de la fange",
     "rot-baron": "Baron de la pourriture",
-    "royal-hound": "Molosse spectral",
-    "crown-bat": "Chauve-souris royale",
+    "hour-gargoyle": "Gargouille des heures",
+    "banner-wraith": "Spectre-bannière",
     "fallen-sentinel": "Sentinelle déchue",
     "stone-warden": "Gardien de pierre",
     "ruined-king": "Roi déchu",
-    "golden-rat": "Rat doré"
+    "golden-rat": "Rat doré",
+    "hollow-scarecrow": "Épouvantail creux",
+    "lantern-moth": "Phalène-lanterne",
+    "dusk-hare": "Lièvre du crépuscule",
+    "lost-shepherd": "Le Berger égaré",
+    "lantern-queen": "Reine-lanterne",
+    ...BESTIARY_TEXT.fr.monsters,
+    ...BESTIARY_KEEP_TEXT.fr.monsters
   },
-  eraTags: ["", "Écho", "Cendre", "Néant", "Astral", "Primordial"],
-  eraName: (era) => `Ère ${ROMAN[era] ?? era + 1}`,
+  eraName: (era) => `Ère ${roman(era + 1)}`,
   heroes: {
     aldric: { name: "Aldric", title: "L'Aventurier", lore: "C'est toi. Chaque clic est un coup d'épée. Chaque niveau, une leçon apprise." },
     maelle: { name: "Maëlle", title: "Chasseuse des plaines", lore: "Elle traque le gibier des plaines depuis l'enfance et ne rate jamais deux fois." },
@@ -113,7 +121,8 @@ export const fr: GameText = {
     hawkeye: { name: "Œil de faucon", description: "+50 % de chances de coup critique pendant 30 s." },
     goldrain: { name: "Pluie d'or", description: "Triple l'or gagné pendant 30 s." },
     ritual: { name: "Rituel de résonance", description: "+5 % de DPS jusqu'à la prochaine ascension. Cumulable." },
-    echo: { name: "Écho temporel", description: "Réinitialise le temps de recharge du dernier pouvoir utilisé." }
+    echo: { name: "Écho temporel", description: "Réinitialise le temps de recharge du dernier pouvoir utilisé." },
+    unweave: SYSTEMS_TEXT.fr.unweave
   },
   altars: {
     might: { name: "Autel de puissance", description: "Chaque niveau multiplie ton DPS par 1,10." },
@@ -156,7 +165,8 @@ export const fr: GameText = {
     mythic: ["Impossible !"],
     hit: ["Coup solide", "Coup titanesque", "Coup cosmique", "Big bang"],
     time: ["Une heure déjà", "Dévoué", "Vétéran"],
-    fails: ["Retour à la case départ", "Persévérant"]
+    fails: ["Retour à la case départ", "Persévérant"],
+    ...SYSTEMS_TEXT.fr.achievementNames
   },
   achievementCategories: {
     progression: "Progression",
@@ -185,7 +195,8 @@ export const fr: GameText = {
     mythic: (t) => `Trouver ${t} ${s(t, "objet")} ${s(t, "mythique")}.`,
     hit: (t) => `Infliger un coup de ${exp(t)} dégâts.`,
     time: (t) => `Jouer ${Math.round(t / 3600)} h au total.`,
-    fails: (t) => `Échouer ${t} fois contre un boss.`
+    fails: (t) => `Échouer ${t} fois contre un boss.`,
+    ...SYSTEMS_TEXT.fr.achievementDescriptions
   },
   slots: { weapon: "Arme", armor: "Armure", amulet: "Amulette", ring: "Anneau" },
   rarities: { common: "Commun", rare: "Rare", epic: "Épique", legendary: "Légendaire", mythic: "Mythique" },
@@ -211,5 +222,135 @@ export const fr: GameText = {
     ring: [{ noun: "Anneau", gender: "m" }, { noun: "Sceau", gender: "m" }, { noun: "Chevalière", gender: "f" }, { noun: "Bague", gender: "f" }]
   },
   itemName: ({ noun, gender, rarity, biome }) =>
-    [noun, RARITY_ADJECTIVE[rarity][gender], BIOME_SUFFIX[biome]?.[gender]].filter(Boolean).join(" ")
+    [noun, RARITY_ADJECTIVE[rarity][gender], BIOME_SUFFIX[biome]?.[gender]].filter(Boolean).join(" "),
+
+  openingLine: "Le crépuscule, encore.",
+  bestiary: {
+    "field-rat": [
+      "Tous les rats qui ont volé du grain à Orvane, réunis en un seul rat très décidé.",
+      "Il fuit toujours vers la gauche. Le Grand Livre a vérifié : le grenier était à gauche.",
+      "Défait mille fois. Il s'arrête encore pour flairer l'endroit où la charrette de grain s'est renversée."
+    ],
+    "wild-boar": [
+      "Nerveux parce qu'on l'a déjà tué. Il s'en souvient, un peu.",
+      "Désormais, il sursaute avant le coup. Une fois, il a sursauté pile au bon moment.",
+      "Il ne charge plus. Il se plante sur la route et t'attend, comme une corvée."
+    ],
+    "carrion-crow": [
+      "Il glane ce que la moisson a laissé. La moisson a tout laissé.",
+      "Il tient compagnie à l'épouvantail. Ils sont convenus de ne jamais parler du métier de l'épouvantail.",
+      "Son nid, dans le moulin, est tapissé de boutons. Tous viennent du même manteau."
+    ],
+    "hollow-scarecrow": [
+      "Bourré de la dernière moisson. Il garde des champs que personne ne fauchera.",
+      "Sa tête suit le marcheur. Elle suivait de même celui d'avant.",
+      "Sous la paille, un ruban d'enfant, noué deux fois. Ce champ était à quelqu'un."
+    ],
+    "lantern-moth": [
+      "Attirée par la lumière du marcheur. Tout, dans la nuit, l'est.",
+      "Elle meurt tournée vers ce qu'il y a de plus clair. Ces temps-ci, c'est toi.",
+      "Les phalènes ont une reine. Elle vient quand on regarde la lumière très fort."
+    ],
+    "dusk-hare": [
+      "Il court toujours vers le crépuscule. Il n'arrive jamais.",
+      "Une fois par nuit, il s'arrête, oreilles dressées, et écoute vers l'est. Puis il repart.",
+      "Maëlle n'en a jamais tiré un. Elle dit qu'un lièvre aussi rapide mérite d'arriver quelque part."
+    ],
+    "last-reaper": [
+      "Il est venu rentrer la dernière moisson. Il attend le petit jour pour commencer.",
+      "Chaque nuit, il affûte sa faux. Le fil est plus mince qu'une ombre, à présent.",
+      "Un soir, il a demandé l'heure à Maëlle. Elle ne savait pas. Plus personne ne sait, depuis longtemps."
+    ],
+    "moss-alpha": [
+      "Le plus vieil ennemi de Maëlle. Il la laisse gagner. Il l'a toujours fait.",
+      "La mousse pousse sur lui : il n'a plus bougé depuis très longtemps, sauf pour mourir.",
+      "Il lui manque la défense gauche. Le cor de Maëlle est taillé dans une défense. Aucun des deux n'en dira plus."
+    ],
+    "lost-shepherd": [
+      "Il compte ses moutons chaque nuit. Le nombre augmente.",
+      "Il n'a pas de moutons. Il compte les marcheurs qui passent et leur donne des noms d'agneaux.",
+      "Un jour, il a demandé son propre numéro au Grand Livre. Pas de réponse : le nombre était trop grand."
+    ],
+    "golden-rat": [
+      "Le même dans chaque strate. Le seul.",
+      "Il n'est jamais là où étaient les autres. Il est toujours là où tu regardes.",
+      "Le Grand Livre ne tient qu'une entrée pour Pip. Elle est de la main de Pip."
+    ],
+    "lantern-queen": [
+      "Reine des phalènes. Elle suit la lumière partout où quelqu'un regarde.",
+      "Elle ne se pose jamais. Le Grand Livre n'a jamais noté où elle se repose, ni si elle se repose.",
+      "Ses ailes sont faites de toutes les lampes qu'on a laissées allumées pour quelqu'un."
+    ],
+    ...BESTIARY_TEXT.fr.lines,
+    ...BESTIARY_KEEP_TEXT.fr.lines
+  },
+  bestiaryPages: BESTIARY_TEXT.fr.pages,
+  echoes: {
+    "green-plains": [
+      { by: "Maëlle", text: "Le blé est encore debout. Personne n'est venu le couper depuis plus longtemps que je ne vis. Ou alors je vis depuis longtemps." },
+      { by: "Brom", text: "Ma forge est au carrefour. Chaque soir, le feu est déjà allumé quand j'arrive." },
+      { by: "Le Grand Livre", text: "Le moulin tourne sans vent. Il moud toujours le même sac de farine, celui du premier soir." },
+      { by: "Un épouvantail", text: "Tu marches trop fort. Le précédent marchait plus doucement. Celui d'avant, plus doucement encore." },
+      { by: "Maëlle", text: "Chaque nuit, je taille une encoche dans le poteau. Il n'y a plus de place. Quelqu'un en a commencé un deuxième." },
+      { by: "Le Grand Livre", text: "Dans la ferme au bord de la route, la table est mise pour quatre. La soupe est chaude. Les chaises sont poussiéreuses." },
+      { by: "Un rat des champs", text: "Du grain. Du grain. Du grain. Puis le marcheur. Puis du grain." },
+      { by: "Brom", text: "Le roi m'a commandé un marteau, une fois. J'y travaille encore. Les rois savent attendre." },
+      { by: "Le Grand Livre", text: "Les arpenteurs du roi ont posé les bornes. Chacune s'allume quand la route est dégagée. Aucune n'est restée allumée." },
+      { by: "Le Grand Livre", text: "Avant ton arrivée, le vieux sanglier s'est couché dans le blé et a attendu, comme un chien attend derrière une porte." },
+      { by: "Maëlle", text: "La fête de la moisson, c'était le lendemain. J'avais un ruban. Je crois que j'avais un ruban." },
+      { by: "Le Grand Livre", text: "Dans les Plaines, le crépuscule dure un peu plus qu'ailleurs. Comme si les champs demandaient encore une heure." }
+    ],
+    ...PLACES_TEXT.fr.echoes
+  },
+  wanderers: {
+    "lost-shepherd": { by: "Le Berger égaré", text: "Quatre-vingt-dix-huit. Quatre-vingt-dix-neuf. Cent. Toi. Je t'ai compté hier soir aussi." },
+    ...PLACES_TEXT.fr.wanderers
+  },
+  memories: {
+    maelle: [
+      { by: "Maëlle", text: "Maëlle te dévisage par-dessus son arc. « On se connaît ? Tu as une tête que je manque toujours de reconnaître. »" },
+      { by: "Maëlle", text: "Elle t'appelle par ton nom avant que tu le lui donnes. Puis elle fronce les sourcils, comme si le mot était entré tout seul." },
+      { by: "Maëlle", text: "Elle te montre le poteau au bord de la route, couvert d'encoches. « Il y en a de ma main. Je ne me souviens pas de les avoir faites. »" },
+      { by: "Maëlle", text: "Quand tu arrives au feu, une place t'attend déjà, et un bol encore chaud. Elle ne lève pas les yeux." },
+      { by: "Maëlle", text: "« Ne me dis rien. Je préfère te rencontrer encore. C'est mon moment préféré. »" }
+    ],
+    brom: [
+      { by: "Brom", text: "Il retourne ta relique entre ses mains. « C'est mon travail. Je reconnaîtrais mes plis n'importe où. Quand est-ce que je l'ai faite ? »" },
+      { by: "Brom", text: "« Qui t'a appris à tenir un marteau comme ça ? C'est ma prise. Personne n'a ma prise. »" },
+      { by: "Brom", text: "Au fond de la forge, un marteau sans manche, la tête encore rouge. « Pour le roi. Il me l'a demandé. Je le finirai. »" },
+      { by: "Brom", text: "Il frappe une nouvelle marque dans son enclume, à côté de la sienne : la tienne. « Pour que le métal te reconnaisse, la prochaine fois. »" },
+      { by: "Brom", text: "Il te pose le marteau dans les mains, enfin fini. « Lui n'en a plus besoin. Toi, tu marches encore. Il est à toi. »" }
+    ],
+    ...COMPANY_TEXT.fr.memories,
+    ...COMPANY_LATE_TEXT.fr.memories
+  },
+  hireLines: {
+    maelle: [
+      "Tu as l'air d'avoir besoin d'un arc et d'une amie. Je suis les deux.",
+      "Encore toi ? Non. Je m'en souviendrais. Pas vrai ?",
+      "Te voilà. Je t'ai gardé ta place."
+    ],
+    brom: [
+      "Rapporte-la en un seul morceau. Ou en plusieurs. Je ne suis pas difficile.",
+      "Ton tranchant est émoussé au même endroit que la dernière fois. Quelle dernière fois ?",
+      "Le feu est prêt. Pose ta lame sur l'enclume."
+    ],
+    ...COMPANY_TEXT.fr.hireLines,
+    ...COMPANY_LATE_TEXT.fr.hireLines
+  },
+  relics: SYSTEMS_TEXT.fr.relics,
+  namedEffects: SYSTEMS_TEXT.fr.namedEffects,
+  secrets: SYSTEMS_TEXT.fr.secrets,
+  events: SYSTEMS_TEXT.fr.events,
+
+  strata: STRATA_TEXT.fr,
+  voices: VOICES_TEXT.fr,
+  ageEchoes: AGE_ECHOES_TEXT.fr,
+  places: PLACES_TEXT.fr.places,
+  lessons: COMPANY_LATE_TEXT.fr.lessons,
+  altarLegends: SYSTEMS_TEXT.fr.altarLegends,
+  weaves: SYSTEMS_TEXT.fr.weaves,
+  caravan: SYSTEMS_TEXT.fr.caravan,
+  crown: SYSTEMS_TEXT.fr.crown,
+  speakers: { king: "Le Roi", stallkeeper: "Le Comptoir", ledger: "Le Grand Livre" }
 };

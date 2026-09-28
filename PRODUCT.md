@@ -50,11 +50,13 @@ market is French-speaking, with a full English version.
 | Element | Rule |
 |---|---|
 | Stages | 10 monsters per stage. Technical cap at stage 3000 (floating-point precision). |
-| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). |
-| Biomes | 5 biomes of 10 stages: Verdant Plains, Dark Forest, Forgotten Caves, Corrupted Marsh, Fallen King's Ruins. |
-| Eras | Each full loop of the 5 biomes (50 stages) starts a new era: tinted, prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial…). |
+| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through; the Keep's gate (stage 45), the King and the strata below heal whole. |
+| Biomes | 5 biomes of 10 stages, six normal creatures, an elite and a guardian each: the Verdant Plains (Field Rat, Jumpy Boar, Carrion Crow, Hollow Scarecrow, Lantern Moth, Dusk Hare; Last Reaper; Moss Alpha), the Dark Forest (Shade Wolf, Briar Witch, Grove Spinner, Mourning Owl, Toadstool Choir, Whispering Bramble; Root Knight; Heart of the Old Grove), the Forgotten Caves (Blind Crawler, Echo Bat, Crystal Mite, Drip Leech, Haunted Cart, Hollow Canary; Miner's Shade; Stone Devourer), the Corrupted Marsh (Bog Remnant, Rot Toad, Will-o'-Wisp, Drowned Courtier, Peat Cutter, Mire Heron; Mire Colossus; Baron of Rot) and the Fallen King's Ruins (Gargoyle of the Hours, Banner Wraith, Fallen Sentinel, Hollow Page, Hound of the Last Hunt, Candle Maid; Stone Warden; the King). |
+| The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000, the last one, the Dawn stands in his place. |
+| Rare wanderers | One per biome (the Lost Shepherd, the Weeping Stag, the Singing Geode, the Ferryman, the Court Jester): 0.5% of the biome's normal spawns that are not a golden rat or an event, once a run at most, ×5 gold, a Chronicle fragment on the first defeat. |
+| Eras | Each full loop of the 5 biomes (50 stages) starts a new era, a **stratum** with its own name (60 in all, from the present night to Dawn, in 12 Ages of five: the Kingdom, the Elder World, the Hallowed, the Making of the Stars, the Loom, the Draft, the Words, the Edge of Sleep, the Dreamer's Room, the Unmaking, the Blank, the First Mark): prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial, Titan…), drawn with that era's treatment (each Age transforms creatures and scenes, and every era wears the places down; see DESIGN.md). |
 | Golden rat | 1% base spawn chance on normal stages, ×10 gold. Chance capped at 25%. |
-| Wandering crystal | Appears every 90 to 240 s while the tab is visible, stays 13 s. Gives gold (40%), overcharge DPS ×7 for 15 s (25%), sharpness click ×10 (DPS share included) for 20 s (20%), 2 to 6 shards (12%) or essences (3%, only after a first ascension). Gold = 15 monsters of the current stage; essences = 1 + 1 per 100 stages of the best stage ever. The first crystal of a new game comes after 75 s. |
+| Wandering crystal | Appears every 90 to 240 s while the tab is visible (sooner with Garrick's Lodestone, the Humming Loom or the Moth Lantern), stays 13 s (18 s with the Singing Stone). Gives gold (40%), overcharge DPS ×7 for 15 s (25%), sharpness click ×10 (DPS share included) for 20 s (20%), 2 to 6 shards (12%) or essences (3%, only after a first ascension). Gold = 15 monsters of the current stage; essences = 1 + 1 per 100 stages of the best stage ever. The first crystal of a new game comes after 75 s. One crystal in 20 is a **Crystal Storm**: the Lantern Queen crosses the sky and five crystals fall in turn, 3 s each, a normal reward roll each (only while the tab is visible). |
 | HP curve | Three segments (steep early, then ×1.15 then ×1.18 per stage) tuned so ascension income never outruns monster HP. |
 
 ### Companions
@@ -99,13 +101,15 @@ late game; mashing the mouse is never required.
   companions (3 on phones). Reduced motion removes the shots.
 - **Targets** (checked by tests and `npm run balance -- 24 compare 5`, median of 5 seeds):
   with every talent and no altar, 5 clicks/s add about half of companion DPS; a click build
-  with every crit investment maxed stays under 6× at 5 clicks/s. Clicking leads the first
-  hours (stage 105 at 3 h at 10 clicks/s vs 55 idle); by 24 h every style stands within a
-  quarter of the others: occasional bursts (784), sustained clicking at 10/s (761), idle
-  (683), 5/s (683) and 2/s (636). 8 h in a background tab after 24 h of play adds 1 to 30
-  stages (median per profile): less than an evening of play, since powers, crystals and
-  ascensions are what push the walls. The 72 h bot reaches stage 1066 after 12 ascensions,
-  slowing down smoothly (no runaway).
+  with every crit investment maxed stays under 6× at 5 clicks/s. At 24 h (median of 9 seeds)
+  every style stands within a quarter of the others, and the occasional player leads: back
+  every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
+  blocks the company (780, 4 h of real play); then continuous bursts (776), 10 clicks/s
+  (747), idle (717), 5/s (698) and 2/s (590). 8 h in a background tab after 24 h of play
+  adds 4 to 33 stages (median per profile), and the Reunion doubles the first hour back
+  (+13 to +33 stages instead of +6 to +17). The 72 h bot
+  reaches stage 1097 after 13 ascensions (stage 250 at 10 h 30, 500 at 18 h, 750 at 28 h,
+  1000 at 50 h, then 97 stages in the last 22 h), slowing down smoothly (no runaway).
 - **Real schedules** (hybrid simulation: active sessions played by the bot, the tab left
   open in between with the autopilot, closed at night): a newcomer (a first hour, then four
   15 min sessions a day) reaches stage 94 on day 1 and 379 on day 2; an engaged player
@@ -121,7 +125,7 @@ late game; mashing the mouse is never required.
   options of `packages/game/scripts/bot.ts` (`stagnationMs`, `altars`); they have no CLI
   mode yet.
 
-### Powers (keys 1 to 6)
+### Powers (keys 1 to 7)
 
 | Power | Unlock | Effect | Cooldown |
 |---|---|---|---|
@@ -131,10 +135,15 @@ late game; mashing the mouse is never required.
 | Golden Rain | Brother Cinder 25 | Gold ×3 for 30 s | 30 min |
 | Resonance Ritual | Nyx 25 | +5% DPS until next ascension, stacks | 60 min |
 | Time Echo | Garrick 25 | Resets the last power's cooldown | 60 min |
+| Unweave | The Seventh Night (a Weave of the Loom) | Skips the current stage (never a boss's) | 60 min |
+
+The Altar of Echoes and Eldra's Locket lower the cooldowns together, never below 40% of
+their base. The Vestment of Cinders makes Golden Rain last 45 s.
 
 ### Ascension
 
-- Available once stage 51 is reached (the Fallen King is beaten).
+- Available once stage 51 is reached (the Fallen King is beaten). The ascension window is the
+  Sanctum of Dusk; from level 5, an altar tells who raised it.
 - Essences earned grow with the highest stage cleared in the run (`20 × 1.075^(h - 50)` up
   to stage 140, then +2% per stage, plus 3 per stage past 50; a first ascension pays 65 when stage 60 is
   reached, 71 once it is cleared), deliberately slower than monster HP: pushing a few more stages
@@ -181,6 +190,32 @@ late game; mashing the mouse is never required.
   times more generous (20 instead of 5 as its base, 3 instead of 1 per stage past 50); since
   it only grew, older ascension records and the essence leaderboard stay valid.
 
+### The Descent
+
+The second layer of rebirth, for the long run (it keeps players apart after weeks of play).
+
+- **Unlock**: a best stage of 1000 ever and Eldra's Recognition 5 (she shows her Loom).
+- **A Descent** resets everything an ascension resets, plus the essences and the altars;
+  it keeps relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime
+  statistics and the best stage ever. It weaves **threads** from the essences gathered
+  since the last Descent: `floor(2 × (log10(E) − 5))`, 0 under a million, 8 at 1e9, 20 at
+  1e15.
+- **Weaves** at Eldra's Loom, permanent, bought with threads (price `ceil(base × growth^level)`):
+
+  | Weave | Effect per level | Cap |
+  |---|---|---|
+  | Warp of Plenty | Essences ×1.25 (multiplies) | none |
+  | Knot of Dusk | Altar of the Wanderer +10 levels of cap | 5 |
+  | The Long Thread | Background catch-up cap +1 h | 4 |
+  | Humming Loom | Crystals come 10% sooner | 5 |
+  | Kinship | Recognition tiers ask one run less | 3 |
+  | Remembered Stones | 5% of each altar level survives a Descent | 5 |
+  | Frayed Edge | Fragment chance +20% | 5 |
+  | The Seventh Night | The seventh power, Unweave | 1 |
+
+- Each Descent reopens the strata's keystones in a second reading. The Roll has a fifth
+  board, Night (Descents, then the best stage).
+
 ### Relics and market
 
 - **4 slots** (weapon, armor, amulet, ring), each with a fixed main stat (DPS, boss damage,
@@ -197,17 +232,137 @@ late game; mashing the mouse is never required.
   **salvaging** returns the rarity's shards (1, 3, 8… from common up) plus 50% per forge
   level. Items can be locked, salvaged in bulk up to a rarity, and unequipped. Inventory
   holds 48 items (full inventory auto-salvages new drops).
-- **Shard market:** relic chest (30), great chest (160, epic or better), rage potion (20,
-  DPS ×2), fortune elixir (20, gold ×2), striking scroll (25, 5 clicks/s), golden hourglass
-  (60, 1 h of gold now). Timed buffs last 10 min and stack up to 1 h. Chests are refused
-  when the inventory is full, the hourglass when it would pay nothing.
+- **Shard market** (the Stallkeeper's stall; one of their twelve sayings at each visit):
+  relic chest (30), great chest (160, epic or better), rage potion (20, DPS ×2), fortune
+  elixir (20, gold ×2), striking scroll (25, 5 clicks/s), golden hourglass (60, 1 h of gold
+  now). Timed buffs last 10 min and stack up to 1 h. Chests are refused when the inventory
+  is full, the hourglass when it would pay nothing. The Stallkeeper's Token takes 10% off
+  every price. From the third ascension, the Caravan (see Events) brings one more ware a
+  week.
+
+### The Chronicle
+
+The story of the game is laid over its mechanics (docs/BIBLE.md). The save never stores a
+line of text: it stores counters, and the n-th fragment of a source is always the same
+(written by hand, then built by the fragment grammar in the voice of its source).
+
+- **Bestiary** (Hall tab, from the first creature met): 63 Remnants on seven pages (the
+  five biomes, Beyond the Road, the Twelve Kings), three lines each unlocked at 1, 100 and
+  1,000 kills (1, 5 and 25 for rare wanderers and event creatures, 1, 10 and 100 for the
+  King's forms), silhouettes for the ones not met yet. Meeting every creature of a biome's
+  page gives **+1% gold** (five pages, +5%). Kills made in bulk (background catch-up, Altar
+  of the Wanderer) are spread over the stage's creatures. Vorn's Biscuit gets a page of
+  its own once the Good Boy secret is found.
+- **Chronicle** (Hall tab, from the first fragment): every fragment found, by source, newest
+  first (eight shown per source, more on demand), new ones marked until read (per source); the Hall button shows the unread count. Sources:
+  - the **keystones** of the 60 strata (the first fall of each stratum's King) and, from
+    the first Descent, each stratum's second reading, one per Descent;
+  - 20 **milestones** of the walker's own story (ascensions 1, 5, 10, 25, 50, 100;
+    Descents 1, 3, 5, 10; the first companions who remember, and whole companies);
+  - the **King's Words**, one per ascension: 50 written, then his voice through the
+    grammar; every seventh night a word of his Eclipse; in his Regalia, 12 words of their
+    own (as a toast);
+  - the **echoes** of the road: 12 per biome, then the grammar (a guardian's first clear
+    brings the next back: always the first, then 15% + 5% per era);
+  - the **Age echoes**: 8 per Age, then the grammar, brought back by the King's first fall
+    in an Age, by every Seam closed and by the Quiet;
+  - rare wanderers, events (their first time), Recognition memories (100), **Aldric's
+    Lessons** (the first purchase of each of his seven talents), **Célestine's songs** (5%
+    of the crystals caught once she has been met), **what stays after an absence** (a
+    return after an hour or more in a hidden tab or a sleeping computer: one line over the
+    scene for 6 s, no numbers), the Stallkeeper's twelve sayings (one per visit to the
+    stall), named relic legends, altar legends (level 5), secrets and the Crown.
+  - A fragment toast at most once a minute; the others wait in the Chronicle. The
+    Frayed Edge, Oriane's Ear (guardians) and Remembrance Nights make fragments more
+    frequent.
+- **The Night list**: the ascension history written as one line per night, with the King's
+  Word of that night.
+- **Recognition**: a companion who reached level 100 in a run remembers the walker a
+  little; tiers at 1, 3, 7, 15 and 30 such runs (one run less per level of Kinship), each a
+  memory and a gold ring on the medallion, the fifth +10% DPS for that companion. Every
+  companion greets the walker when hired, as a stranger, half remembered (tier 1 or 2) or
+  remembered (tier 3 or more). Eight give a named relic at tier 5.
+- **Named relics** (24, legendary or mythic, found once per save, locked on arrival, room
+  made for them even in a full pack, rolled at the level of the best stage), each with a
+  fixed source and one unique effect:
+
+  | Relic | Source | Effect |
+  |---|---|---|
+  | Oathcutter (weapon) | The King, 2% per fall at the head of a run | Damage to the King ×2 |
+  | The Thousandth Arrow (weapon) | The Moss Alpha's 1,000th kill | +3% crit chance (within the cap) |
+  | Quietus (weapon) | Morgrath's gift | Idle bonus full 20 s after an attack click instead of 30 |
+  | The Unfinished Hammer (weapon) | Brom's gift | Forging costs 15% fewer shards |
+  | Splinter of the Sky (weapon) | Guardians of the Astral stratum (era 4), 1% | +1 shard per guardian |
+  | Dawnbreak (weapon) | The Dawn beaten after 5 Descents | +25% DPS during a Seam |
+  | The Hollow Plate (armor) | The Stray Armor's first defeat | +2 s boss timer |
+  | Mosshide (armor) | Moss Alpha from the Echo era on, 3% | +10% guardian gold |
+  | Briar Mantle (armor) | Heart of the Old Grove from the Echo era on, 3% | Idle bonus ×1.1 |
+  | Scales of Aurelion (armor) | Aurelion's gift | Damage to elites and guardians ×1.2 |
+  | Vestment of Cinders (armor) | Guardians of the Ash stratum (era 2), 2% | Golden Rain lasts 45 s |
+  | Mantle of the Last Court (armor) | The King from Age III, 1% | One of the Regalia |
+  | Eldra's Locket (amulet) | Eldra's gift | -10% power cooldowns |
+  | The Singing Stone (amulet) | The Singing Geode, 5% | Crystals stay 18 s |
+  | Oriane's Ear (amulet) | Oriane's gift | +25% fragment chance from guardians |
+  | Seed of the Old Grove (amulet) | Séraphine's gift | +10% click damage per companion who fully remembers (at most +100%) |
+  | Morgrath's Phylactery (amulet) | A guardian while Morgrath stands at level 150, 1% | Idle bonus ×1.25, click damage ×0.75 |
+  | The Last Decree (amulet) | The King from Age V, 1% | One of the Regalia |
+  | Signet of Orvane (ring) | The King from Age II, 1% | One of the Regalia |
+  | The Rat's Ring (ring) | Pip, 0.5% per catch | +2% golden rat chance (within the cap) |
+  | Garrick's Lodestone (ring) | Garrick's gift | Crystals come 15% sooner |
+  | Mirelle's Wedding Ring (ring) | Mirelle's gift | +25% gold, damage to the Baron of Rot ×1.5 |
+  | The Stallkeeper's Token (ring) | The Caravan | -10% shard prices |
+  | Ring of the Second Morning (ring) | Guardians of the Aurora stratum (era 19), 1% | The Altar of the Wanderer clears 5 more stages (within its caps) |
+
+  The **Regalia of Orvane** (the Signet, the Mantle, the Decree) worn together: the King
+  knows the walker (his words change) and takes 10% more damage. The **Crown of Orvane**
+  never drops: from the tenth Descent a fifth slot appears in the equipment window, which
+  cannot be filled.
+- **Secrets** (20, no power): each a secret deed, hidden as "???" with its riddle until
+  found, worth no bonus: Let Him Rest (the King's timer run out three times in a row at
+  stage 50 without an attack), Even (100 golden rats in a run with Thorvald at level 50),
+  Faceless (Nyx's portrait touched seven times in three seconds), Small Change (a mythic
+  salvaged), Night Owl (an hour between midnight and 4 a.m.: the Hearthfields' moon turns
+  full), the Thousandth Notch (1,000 kills on stages 1 to 10 in a run), Same Road (three
+  ascensions in a row from the same stage), Keep Some (ascending with 1,000 essences and no
+  altar bought since the last dusk), That's How It Starts (1,000 essences offered and none
+  left), Empty Hands (the King at stage 50 beaten with no relic), Pacifist (stage 50 reached
+  with Brother Cinder the strongest), the Last Second (a guardian beaten with half a second
+  left, seven times), Listening (an hour in the Forgotten Caves, watched and untouched), Good
+  Boy (Vorn at level 150 in ten runs), Till Death (the Baron beaten wearing Mirelle's ring),
+  the Last Blow (the King beaten with Kaelen, who fully remembers, the strongest), It Wears
+  You (the fifth slot held five seconds after the tenth Descent), Behind the Glass (the
+  Keep's window, in the Dreamer's Room), Two Tongues (an hour in each language), Welcome
+  Back (the game opened again after thirty days).
+- Each run opens on stage 1 with one line in the scene: "Dusk again."
+
+### Events of the Long Night
+
+Only in a watched tab, never during a catch-up, drawn from the engine's RNG; a toast when
+they begin and a fragment the first time.
+
+| Event | Trigger | What happens |
+|---|---|---|
+| Crystal Storm | 1 crystal in 20 | The Lantern Queen crosses the sky; five crystals fall in turn, 3 s each. |
+| The Seam | Normal stage 60+, 1 spawn in 400 | A Seam Warden (elite HP, 20 s). Beaten: an elite's drop, an Age echo. Escaped: nothing lost. |
+| Pip's Wager | 1 golden rat in 10 | Pip stops: 13 strikes in 5 s and he pays ×30 instead of ×10; missed, he runs off. |
+| Echo of a Walker | From 5 ascensions, 1% per guardian's first clear | Another walker's shadow (a name from the Roll) fights beside the company: DPS ×1.25 for 30 s. |
+| The Caravan | From 3 ascensions, once a calendar week | The week's ware (the same for everyone, by ISO week): the Stallkeeper's Token (300), a Sealed Coffer (a legendary or better, 400), Bottled Night (2 h of gold, 100), Pip's Cheese (golden rats twice as often for 30 min, 45), a Moth Lantern (crystals every 45 to 90 s for 30 min, 60), an Ember Draught (rage and fortune, 35), Eldra's Thread (every power ready, 80), Three Crates (three relic chests, 75). |
+| The Quiet | Void stratum and deeper, 1 spawn in 1,000 | A colorless creature, 10 s; sounds drop. Beaten: an Age echo. |
+| Stray Armor | Once the Nameless is hired, 1 spawn in 2,000 | An empty armor walks across the road (30 s). The first defeat gives the Hollow Plate. |
+| The King's Eclipse | Every 7th ascension, the next King | Shadowed, +50% HP, same timer; he always leaves a relic, and a word of his own. |
+| The Slow Tide | A return after 4 h or more | The next crystal comes within 20 s. |
+| Remembrance Night | October 1st and December 21st | Fragments twice as often. No power. |
+| The Migration | Era 1+, 1 new stage in 50 | For that stage, another biome's Remnants cross it. |
+| The Unfinished | Age VI and deeper, 1 spawn in 200 | A Remnant half drawn; beaten, an echo of the Draft. |
 
 ### Achievements and statistics
 
-- **75 achievements** in 18 series (stages, clicks, crits, kills, bosses, gold, golden rats,
-  crystals, companion levels, hires, powers, ascensions, essences, legendaries, mythics, big
-  hits, play time, boss failures). Each gives a permanent DPS bonus (+2%; +3% for ascensions
-  and essences, +5% for the mythic one; the last two tiers of a series ×2.5); click damage gets half of it.
+- **136 achievements**: 116 in 26 series (stages, strata, clicks, crits, kills, bosses,
+  Kings, Seams, gold, golden rats, crystals, companion levels, hires, powers, Recognition,
+  ascensions, essences, Descents, legendaries, mythics, big hits, play time, boss failures,
+  Bestiary, fragments, named relics), each a permanent DPS bonus (+2%; +3% for stages,
+  ascensions and essences, +5% for the mythic one; the last two tiers of a series ×2.5;
+  click damage gets half of it), and 20 secret deeds with no bonus.
 - Detailed run and lifetime statistics, ascension history.
 
 ### Playing in the background (AFK)
@@ -236,15 +391,30 @@ or plays something else. It does not progress while it is closed.
   milestone. Aldric is never levelled. Turned off, the gold is kept.
 - **What presence adds**, with no ratio applied to the away player: wandering crystals,
   powers, faster purchases, ascensions, altars, the shard market, gear and the forge.
+- **Reunion** (*Retrouvailles*): back from 30 min or more away (no input on the page, or
+  time a reloaded or background tab caught up), the player's first input brings a gold toast
+  and companion damage ×3 for a sixth of the absence, counted from that moment and capped
+  at an hour (a night gives the full hour). It never applies during the absence, catch-ups
+  ignore it, and like every boon it cannot last more than an hour past the last tick
+  (anti-cheat, where the damage bound counts it).
 - No summary when the player comes back: comparing with what they remember is part of
   the game.
 
 ### Balance targets
 
-Validated by the bot simulation (`npm run balance`): stage 10 in about 2 min, stage 50 in
-about 1.5 to 2 h, first ascension around 3 h, stage 100 in about 4 to 6 h, then steady
-progress carried by ascensions. `npm run balance -- 24 compare` plays the same game idle, in occasional
-bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, and the stages 8 h in a background tab add. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
+Validated by the bot simulation, median of 9 seeds at 5 clicks/s
+(`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 48, stage 50 in
+1 h 41, first ascension at 3 h 03, stage 100 at 4 h 38 (21 seeds: 1 min 48, 1 h 38, 3 h 03,
+4 h 31), then steady progress carried by ascensions. A naive walker (it buys the newest companion it can afford, never the best
+value) loses 2 min 30 at the stage 30 guardian and 3 min at the stage 40 guardian (median of
+9 seeds, `npx tsx packages/game/scripts/walls.ts 9`). The pace of a run is set by the gold a
+monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to stage 10.
+`npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
+bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
+background tab add and the first hour back with and without the Reunion. The balance
+scripts play each seed (and each profile) in its own process, one per core: the 24 h
+comparison takes about 4 minutes. Over 120 seeds the first ascension comes at 2 h 48
+(median), 80% of walkers between 2 h 01 and 3 h 43. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
 ## Game screen
@@ -252,7 +422,8 @@ rejects real play.
 - A navigation rail opens the windows: map (stage selector and auto-advance), equipment and
   inventory, altars and ascension, market, Hall (achievements, statistics, leaderboard),
   account and settings. Badges (`!`, `+` or a count) flag an available ascension or altar,
-  a nearly full inventory, enough shards for the market and an unconfirmed e-mail.
+  a nearly full inventory, enough shards for the market, an unconfirmed e-mail and the
+  number of unread Chronicle fragments.
 - Settings: language, number notation (letters, scientific, engineering), sound and volume,
   damage numbers, reduced motion, ascension confirmation.
 - One-time tutorial hints guide the first minutes; saves that had ascended before version 4
@@ -304,6 +475,27 @@ rejects real play.
   carries the revision it builds on; a newer save from another device triggers the choice.
   A save refused by the anti-cheat is retried after 10 min; once the e-mail confirmation is
   overdue, saves are refused (403) until the address is confirmed.
+- **Save version 8** tells the whole story: the Kings beaten, Seams closed and threads woven,
+  the Descent (Descents, threads, Weaves, the essences mark), the Caravan's week, the
+  Chronicle's new counters (Age echoes, songs, returns, sayings, Lessons, events, altar
+  legends, readings, what was read per source), the run's trail for the secrets, event
+  creatures on the road and the "Keep the night dark" setting. An older save starts them
+  from their defaults; its Kings beaten are the Fallen King's falls the Bestiary counted,
+  one per stratum crossed at least. Proved on the running server: a save written by the
+  last release (version 4, stage 78, one ascension) is accepted, loads as version 8,
+  verifies, plays on and saves again.
+- **Save version 7** follows the redrawn bestiary: ten creatures became others in the same
+  place of the road (the Rabid Rat the Carrion Crow, Greattusk the Last Reaper, the Blighted
+  Boar the Grove Spinner, the Briar Matron the Root Knight, the Deep Wolf the Crystal Mite,
+  the Howling Swarm the Miner's Shade, the Putrid Crawler the Rot Toad, the Marsh Hag the
+  Will-o'-Wisp, the Spectral Hound the Gargoyle of the Hours, the Crown Bat the Banner
+  Wraith). Their Bestiary kills carry over to their successor (a completed page stays
+  complete) and a monster on the road becomes its successor.
+- **Save version 6** adds the Chronicle (Bestiary kills, echoes, Recognition, named relics,
+  secrets and the run's trail); an older save starts it empty and fills it by playing.
+- **Save version 5** stores a monster by its id only: its look comes from the art recipe of
+  that id. The painted image path, CSS filter and scale of older saves are dropped when they
+  load; nothing else changes.
 
 ## Anti-cheat
 
@@ -312,14 +504,26 @@ deterministic with the shared engine (`packages/game/src/validation.ts`) and ref
 when a ledger does not hold: gold spent vs earned, essences spent vs collected, play time vs
 real elapsed time, click and kill rates, gold per kill, boss beatable with the declared
 power, item and achievement generation rules, no statistic going backwards, no backdated run.
+The Chronicle is bounded the same way: Bestiary kills by lifetime kills (guardians by
+bosses, the King's forms by Kings beaten, wanderers by runs, storms by play time, a walker's
+echo by guardians), echoes by the strata reached, Age echoes by keystones, Seams and the
+Quiet, songs by crystals, returns by time away, sayings by play time, Recognition by
+ascensions, Lessons, events and altar legends by their tables, named relics by a source
+the save reached (and their slot and rarity), secrets by their conditions. The Descent is
+bounded by its unlock (stage 1000, Eldra's Recognition), threads by the essences gathered,
+Weaves by their caps and the threads woven; Kings, Seams, threads, Descents, secrets and
+the Chronicle's counters never go back.
 Rejections are logged (kept 90 days); only accepted saves feed the leaderboard, which keeps each player's
 best verified values.
 
 ## Leaderboard
 
-Public page with four boards: highest stage, ascensions, essences collected, achievements.
-The landing page shows the top 10 by stage and the number of ranked players. Logged-in
-players see their own rank, also in the Hall of the game. A row can be hidden by hand in the
+The **Roll of the Bound** (FR: *le Registre des Liés*): a public page with five boards, each
+named in the fiction with its plain meaning beneath: **Depth** (highest stage), **Nights**
+(ascensions), **Light** (essences collected), **Deeds** (achievements) and **Night**
+(Descents, highest stage breaking ties). The landing page shows the top 10 by stage and the
+number of ranked players. Logged-in players see their own rank, also in the Hall of the
+game, where the Night board appears once the Descent is open to the walker. A row can be hidden by hand in the
 database (`hidden` flag), for moderation.
 
 ## Languages

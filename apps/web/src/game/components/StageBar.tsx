@@ -2,12 +2,13 @@
 
 import { isBiomeBossStage, isBossStage } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
-import { useGame } from "../context";
+import { useGame, useReveals } from "../context";
 import { Picto, TEXT_PRESENTATION } from "../icons";
 
 export function StageBar() {
   const { state, store } = useGame();
   const m = useI18n().t.hud.stageBar;
+  const { shown, freshClass } = useReveals();
   const current = state.stage;
   const first = Math.max(1, Math.min(current - 2, state.maxStage - 4));
   const pips = Array.from({ length: 5 }, (_, index) => first + index);
@@ -33,9 +34,10 @@ export function StageBar() {
         })}
       </ol>
       <button type="button" className="stage-arrow" aria-label={m.next} disabled={current >= state.maxStage} onClick={() => travel(current + 1)}>›</button>
+      {shown.autoToggle ? (
       <button
         type="button"
-        className={`auto-toggle ${state.autoAdvance ? "on" : "off"} ${canProgress ? "nudge" : ""}`}
+        className={`auto-toggle ${state.autoAdvance ? "on" : "off"} ${canProgress ? "nudge" : ""}${freshClass("autoToggle")}`}
         onClick={() => store.act((engine) => engine.toggleAutoAdvance())}
         title={state.autoAdvance ? m.autoOn : m.autoOff}
         aria-pressed={state.autoAdvance}
@@ -43,6 +45,7 @@ export function StageBar() {
         <Picto name={state.autoAdvance ? "fastForward" : "pause"} size={14} />
         <span className="auto-label">{state.autoAdvance ? m.auto : m.farm}</span>
       </button>
+      ) : null}
     </div>
   );
 }

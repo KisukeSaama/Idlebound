@@ -12,6 +12,8 @@ import { GameEngine } from "./engine";
 import {
   ASCENSION_MIN_STAGE,
   MONSTERS_PER_STAGE,
+  REUNION_DPS,
+  REUNION_MIN_AWAY_SECONDS,
   ascensionPreview,
   wandererSkip,
   IDLE_FULL_MS,
@@ -31,7 +33,7 @@ import { LOCALES, negotiateLocale, resolveLocale } from "./i18n";
 import { formatDuration, formatNumber, formatPercent } from "./numbers";
 import { seededRng } from "./rng";
 import { migrateState, parseState } from "./save";
-import { ALTAR_REWORK_NOTICE, createInitialState } from "./state";
+import { ALTAR_REWORK_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 import { verifyState, verifyTransition } from "./validation";
 import type { GameState } from "./types";
 
@@ -373,13 +375,34 @@ describe("idle and active balance", () => {
     legacy.essences = 10_000 - 55 - 156 - 9;
     const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
     expect(migrated.altars).toEqual({});
-    expect(migrated.version).toBe(4);
+    expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.essences).toBeGreaterThan(10_000 - 1);
     expect(migrated.essences).toBeLessThanOrEqual(10_000);
     expect(verifyState(migrated, T0).map((violation) => violation.code)).not.toContain("essence-ledger");
     // Idempotent: a version 4 save keeps its altars.
     migrated.altars = { might: 2 };
     expect(parseState(JSON.parse(JSON.stringify(migrated))).altars).toEqual({ might: 2 });
+  });
+
+  it("loads a version 4 save whose monster still carries its painted image, and plays it", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 10 * 60, { clicksPerSecond: 6, stagnationMs: 10 * 60_000 });
+    // Between two monsters the state holds none: step until one stands.
+    while (!engine.state.monster) now = run(engine, now, 0.1);
+    const legacy = structuredClone(engine.state) as GameState & { monster: Record<string, unknown> };
+    legacy.version = 4;
+    legacy.monster = { ...legacy.monster, image: "/assets/enemies/field-rat.webp", filter: "hue-rotate(160deg)", scale: 1.12 };
+    const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(migrated.monster).not.toHaveProperty("image");
+    expect(migrated.monster).not.toHaveProperty("filter");
+    expect(migrated.monster).not.toHaveProperty("scale");
+    expect(verifyState(migrated, now)).toEqual([]);
+    expect(verifyTransition(engine.state, migrated, 1000)).toEqual([]);
+    const resumed = new GameEngine(migrated, seededRng(5), now);
+    const kills = resumed.state.lifetime.kills;
+    run(resumed, now, 120, 5);
+    expect(resumed.state.lifetime.kills).toBeGreaterThan(kills);
   });
 
   it("reports companion damage once per second", () => {
@@ -545,6 +568,48 @@ describe("anti-cheat", () => {
     expect(summary.spent).toBe(0);
     expect(engine.state.heroLevels).toEqual(levels);
     expect(engine.state.gold).toBeCloseTo(gold + summary.gold);
+  });
+
+  it("welcomes the walker back with the Reunion, a sixth of the time away, never during it", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.markInput(now);
+    const before = structuredClone(engine.state);
+    now += 8 * 3600_000;
+    engine.tick(now);
+    // A background tab caught up: nothing while away, the Reunion when the player is back.
+    expect(engine.state.buffs.some((buff) => buff.id === "reunion")).toBe(false);
+    engine.drainEvents();
+    engine.markInput(now);
+    expect(engine.state.buffs.find((buff) => buff.id === "reunion")?.until).toBe(now + 3600_000);
+    expect(engine.drainEvents()).toContainEqual({ type: "reunion", seconds: 3600 });
+    const timed = derive(engine.state, now);
+    const untimed = derive(engine.state, now, { ignoreTimed: true });
+    expect(timed.dps / untimed.dps).toBeCloseTo(REUNION_DPS);
+    expect(verifyTransition(before, engine.state, 8 * 3600_000 + 1000)).toEqual([]);
+    expect(verifyState(engine.state, now)).toEqual([]);
+
+    // An open tab left alone counts too; a short absence brings nothing.
+    const open = newGame(4);
+    let then = playBot(open, T0, 30 * 60, { clicksPerSecond: 5 });
+    open.markInput(then);
+    then = run(open, then, REUNION_MIN_AWAY_SECONDS - 60);
+    open.markInput(then);
+    expect(open.state.buffs.some((buff) => buff.id === "reunion")).toBe(false);
+    then = run(open, then, 2 * 3600);
+    open.markInput(then);
+    expect(open.state.buffs.find((buff) => buff.id === "reunion")?.until).toBe(then + 1_200_000);
+  }, 60_000);
+
+  it("rejects boons that last too long", () => {
+    const engine = newGame(4);
+    const now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    const forged = structuredClone(engine.state);
+    forged.buffs.push({ id: "reunion", until: forged.lastTickAt + 3 * 3600_000 });
+    expect(verifyState(forged, now).map((violation) => violation.code)).toContain("buff");
+    const endless = structuredClone(engine.state);
+    endless.buffs.push({ id: "rage", until: endless.lastTickAt + 24 * 3600_000 });
+    expect(verifyState(endless, now).map((violation) => violation.code)).toContain("buff");
   });
 
   it("pushes on while away even when auto-advance was paused by a failed boss", () => {

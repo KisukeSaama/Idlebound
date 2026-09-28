@@ -5,8 +5,7 @@ strike, hire companions who fight for you, beat timed bosses, collect relics and
 come back stronger. Progress is saved **on the server only** (e-mail + username + password
 account) and every save is checked by an anti-cheat that replays the game rules.
 
-- Production: `https://idlebound.kisukesaama.com` (deployed on `v*` tags)
-- Development: `https://idlebound-d.kisukesaama.com` (manual deploy from `develop`)
+Play at [idlebound.kisukesaama.com](https://idlebound.kisukesaama.com).
 
 | Document | Content |
 |---|---|
@@ -24,7 +23,7 @@ account) and every save is checked by an anti-cheat that replays the game rules.
 | Engine | `@idlebound/game`: pure TypeScript shared by the front and the API |
 | i18n | French and English: game content in `packages/game/src/content`, UI in `apps/web/src/i18n` |
 | Tests | Vitest (engine, balance, anti-cheat, i18n, API against a real Postgres) |
-| Infra | Docker Compose (dev and prod), GitLab CI, Traefik (platform `devops/docs`) |
+| Infra | Docker Compose (dev and prod) |
 
 ```text
 apps/
@@ -34,10 +33,9 @@ apps/
 packages/
   game/           game engine: data, content (fr/en), formulas, simulation, anti-cheat
     scripts/      bot player + balance simulation (npm run balance)
-assets-src/       original art (PNG) + script that generates the WebP served by the front
-deploy/           platform compose.yml, paths.env, app.env (deployed by the CI)
+assets-src/       brand art (logo, favicon) + script that generates its web versions
 compose.dev.yml   full development environment (hot reload, Postgres, Mailpit)
-compose.prod.yml  production images run locally, to check a release
+compose.prod.yml  production images run locally
 ```
 
 ## URLs and languages
@@ -73,6 +71,9 @@ docker compose -f compose.dev.yml up
 | Dev e-mails (Mailpit) | http://localhost:8025 (confirmation, password-reset and inactivity e-mails land here) |
 | Postgres | `localhost:5432`, user/password/database `idlebound` |
 
+The pixel workshop, a catalogue of everything the pixel art engine draws, is served in
+development at `/fr/workshop` and `/en/workshop` (in production only with `PIXEL_WORKSHOP=1`).
+
 In development the game store is exposed in the console:
 `window.__idlebound.act((engine, now) => …)`.
 
@@ -84,7 +85,7 @@ cp .env.example .env        # DATABASE_URL pointing to a local Postgres
 npm run dev                 # API (8000) + web (3000)
 ```
 
-### Check the production images
+### Run the production images
 
 ```bash
 docker compose -f compose.prod.yml up --build     # → http://localhost:3000
@@ -102,7 +103,8 @@ no published API port.
 | `npm run build` | API bundle + Next.js build |
 | `npm run balance -- 24 5` | Simulates 24 h of play at 5 clicks/s and prints the progression curve |
 | `npm run db:generate` | Generates a migration after editing `apps/api/src/db/schema.ts` |
-| `npm run assets` | Regenerates the WebP files and the OpenGraph image from `assets-src/original` |
+| `npm run assets` | Regenerates the brand logo (WebP, e-mail PNG) and the favicons from `assets-src` |
+| `npm run art` | Renders the OpenGraph image (`apps/web/public/og.png`) with the pixel generator |
 
 API tests locally:
 
@@ -117,39 +119,9 @@ TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test n
 - Sessions: 256-bit random token in an `httpOnly`, `Secure`, `SameSite=Lax` cookie, only its
   SHA-256 stored, 30 days sliding, all revoked on password change.
 - CSRF: `X-Idlebound` header required on every write, origin checked in production.
-- Rate limits per IP and per account, plus a Traefik limit on `/api/auth/`.
+- Rate limits per IP and per account.
 - Nonce-based Content Security Policy on every page, strict security headers.
 - The API and Postgres sit on an internal network; only the web container is exposed.
 
 Details on accounts, saves and the anti-cheat are in [PRODUCT.md](PRODUCT.md).
 
-## Deployment
-
-Deployment follows `devops/docs` (`webapp` templates):
-
-| Stage | Trigger |
-|---|---|
-| `test`: `npm ci`, `npm audit`, types, tests (Postgres as a service) | `develop`, `v*` tags, merge requests |
-| `build`: `api` and `web` images pushed to the GitLab registry | `develop`, `v*` tags |
-| `deploy_dev` → `idlebound-d.kisukesaama.com` | manual, from `develop` |
-| `deploy_prod` → `idlebound.kisukesaama.com` | automatic on `v*` tags |
-
-CI/CD variables (scoped per environment, "Protected" in production):
-
-| Variable | Required | Purpose |
-|---|---|---|
-| `IDLEBOUND_POSTGRES_PASSWORD` | yes | Postgres password (no `@ : / ? # %` or spaces) |
-| `IDLEBOUND_SMTP_URL` | no | `smtps://user:pass@host:465` for e-mails. With it, new accounts must confirm their address (checked at API start-up, see the logs). Without it, e-mails are written to the API logs, sign-ups are not confirmed, and inactive accounts are never warned nor deleted |
-| `IDLEBOUND_MAIL_FROM` | no | E-mail sender |
-
-Only the `web` container is on the `traefik` network; the API and Postgres are on an internal
-network, and the API also has an `egress` network to reach the SMTP server. Migrations run
-when the API starts. Only production is indexable by search engines (`SITE_INDEXABLE`); the
-dev environment answers `noindex`.
-
-Release a version:
-
-```bash
-git switch main && git merge --ff-only develop && git push
-git tag v1.0.0 && git push origin v1.0.0
-```

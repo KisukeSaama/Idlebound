@@ -3,7 +3,7 @@
  * They run when TEST_DATABASE_URL is set (CI job, or locally with compose.dev.yml):
  *   TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test
  */
-import { GameEngine, createInitialState, seededRng, type GameState } from "@idlebound/game";
+import { GameEngine, SAVE_VERSION, createInitialState, seededRng, type GameState } from "@idlebound/game";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
 
@@ -152,6 +152,11 @@ suite("API (real Postgres)", () => {
     const board = await client.call("GET", "/leaderboard?board=stage");
     expect(board.status).toBe(200);
     expect(board.json.me.rank).toBeGreaterThanOrEqual(1);
+    // The Night board: Descents first, Depth breaking the tie.
+    const night = await client.call("GET", "/leaderboard?board=descents");
+    expect(night.status).toBe(200);
+    expect(night.json.me).toEqual({ rank: expect.any(Number), value: 0 });
+    expect(night.json.rows.every((row: { descents: number }) => typeof row.descents === "number")).toBe(true);
 
     // Log out, then log in.
     await client.call("POST", "/auth/logout");
@@ -184,7 +189,7 @@ suite("API (real Postgres)", () => {
     const first = await client.call("PUT", "/save", { state: legacy, baseRevision: null });
     expect(first.status, JSON.stringify(first.json)).toBe(200);
     const cloud = await client.call("GET", "/save");
-    expect(cloud.json.save.state.version).toBe(4);
+    expect(cloud.json.save.state.version).toBe(SAVE_VERSION);
     expect(cloud.json.save.state.altars).toEqual({});
     expect(cloud.json.save.state.essences).toBe(1_000);
 

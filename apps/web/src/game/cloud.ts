@@ -177,7 +177,11 @@ export class CloudSync {
     // only counts if the browser discarded this tab while it was open.
     const creditAbsence = this.tabWasDiscarded;
     this.tabWasDiscarded = false;
-    this.store.replaceState(migrateState(cloud.state) as GameState, { creditAbsence });
+    const state = migrateState(cloud.state) as GameState;
+    // How long the walker was gone, read before the load moves the clock (Welcome Back).
+    const awayMs = Date.now() - state.lastTickAt;
+    this.store.replaceState(state, { creditAbsence });
+    this.store.apply((engine) => engine.welcomeBack(awayMs));
     this.lastUploadAt = Date.now();
     this.set({ pendingChoice: null, status: this.saveBlocked() ? "unverified" : "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
   }
@@ -229,9 +233,12 @@ export class CloudSync {
       case 422: {
         this.rejectedAt = Date.now();
         const violations = (result.body?.violations as { code?: string }[] | undefined) ?? [];
-        const texts = currentMessages().hud.violations;
+        const messages = currentMessages();
+        const texts = messages.hud.violations;
         const code = violations[0]?.code;
-        this.set({ status: "rejected", message: (code && Object.hasOwn(texts, code) ? texts[code] : undefined) ?? texts.generic });
+        const reason = (code && Object.hasOwn(texts, code) ? texts[code] : undefined) ?? texts.generic;
+        // The Ledger's voice first, the plain reason next to it.
+        this.set({ status: "rejected", message: `${messages.account.ledger.refused}. ${reason}` });
         break;
       }
       case 429:

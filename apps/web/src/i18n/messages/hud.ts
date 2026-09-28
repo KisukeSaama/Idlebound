@@ -25,12 +25,12 @@ export const hud = defineMessages({
       clickLabel: "Clic",
       essencesTitle: "Essences : +10 % de DPS chacune tant qu'elles ne sont pas dépensées",
       shardsTitle: "Éclats : à dépenser au marché",
-      guest: "Invité",
       notSaved: "Non sauvegardé"
     },
     nav: {
       label: "Menus du jeu",
-      hallTitle: (label: string, ratio: string) => `${label} (${ratio})`
+      hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
+      unread: (count: number) => `${count} ${count > 1 ? "fragments non lus" : "fragment non lu"}`
     },
     mobileTabs: {
       label: "Affichage mobile",
@@ -40,7 +40,7 @@ export const hud = defineMessages({
     scene: {
       label: (biome: string, stage: Count) => `Combat : ${biome}, étape ${stage}`,
       attack: "Attaquer le monstre",
-      kinds: { boss: "Boss", miniboss: "Élite", treasure: "Trésor", normal: "" },
+      kinds: { boss: "Boss", miniboss: "Élite", treasure: "Trésor", rare: "Errant", normal: "" },
       killProgressTitle: "Monstres à vaincre pour débloquer l'étape suivante",
       killProgress: (kills: Count, total: Count) => `${kills} / ${total} monstres`,
       bossBeaten: "Boss vaincu : tu peux le combattre à nouveau",
@@ -71,8 +71,6 @@ export const hud = defineMessages({
       label: "Pouvoirs",
       ready: (name: string, key: string, description: string) => `${name} (touche ${key}) : ${description}`,
       cooldown: (time: string) => ` Recharge : ${time}.`,
-      locked: (hero: string, level: Count) => `Débloqué par ${hero} niveau ${level}.`,
-      lockedLabel: (name: string, hero: string, level: Count) => `${name} : débloqué par ${hero} niveau ${level}.`,
       minutes: (value: Count) => `${value} min`,
       seconds: (value: Count) => `${value} s`,
       activeSeconds: (value: Count) => `${value}s`
@@ -87,9 +85,6 @@ export const hud = defineMessages({
       autoSpendHint: "Tes compagnons dépensent l'or gagné en niveaux et talents pour continuer à progresser. Désactive-le pour garder ton or.",
       max: "Max",
       buyAllTalents: (count: number) => `Acheter ${count} talent${count > 1 ? "s" : ""} disponible${count > 1 ? "s" : ""}`,
-      mysteryLabel: "Compagnon à découvrir",
-      mysteryName: "Compagnon mystère",
-      mysteryHint: (hero: string) => `Recrute ${hero} pour le révéler · `,
       click: "Clic : ",
       dps: "DPS : ",
       dpsPerLevel: (value: string) => `${value} DPS par niveau`,
@@ -99,9 +94,9 @@ export const hud = defineMessages({
       talentsOf: (hero: string) => `Talents de ${hero}`,
       talentOwned: "Acquis",
       talentCost: (cost: string) => `${cost} or`,
-      talentLevel: (level: Count) => `Niveau ${level} requis`,
       talentLabel: (name: string, text: string, status: string) => `${name} : ${text}. ${status}.`,
       hire: "Recruter",
+      train: "S'entraîner",
       buyLabel: (hired: boolean, hero: string, count: number, cost: string) =>
         `${hired ? "Monter" : "Recruter"} ${hero} de ${count} niveau${count > 1 ? "x" : ""} pour ${cost} or`
     },
@@ -133,7 +128,7 @@ export const hud = defineMessages({
       boss: "Un boss ! Terrasse-le avant la fin du chrono, sinon tu recules d'une étape.",
       skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou clique dessus en bas.`,
       farm: "Tu farmes l'étape précédente. Renforce-toi, puis réactive la progression (bouton Farm → Auto).",
-      ascend: "Le Roi déchu est tombé ! L'ascension est disponible dans le menu des essences.",
+      ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu pour rejoindre le Sanctuaire du Crépuscule.",
       altarRework: "Les autels ont été refondus : chaque niveau des autels illimités multiplie désormais son effet, et le voyageur fait sauter les premières étapes. Tous tes niveaux t'ont été rendus en essences : choisis de nouveau tes autels dans la fenêtre d'ascension."
     },
     fx: {
@@ -144,6 +139,7 @@ export const hud = defineMessages({
     toasts: {
       bossFailedTitle: "Le boss a résisté",
       bossFailedText: "Renforce tes compagnons puis relance la progression.",
+      bossFailedWounded: (pct: number) => `Il garde ses blessures : il reviendra entamé de ${pct} %. Relance la progression, il cédera.`,
       biome: (era: string, stage: Count) => `${era} · étape ${stage}`,
       achievement: (name: string) => `Succès : ${name}`,
       achievementText: (description: string, pct: Count) => `${description} +${pct} % DPS`,
@@ -161,7 +157,15 @@ export const hud = defineMessages({
       ascendedTitle: "Ascension accomplie",
       ascendedText: (essences: string) => `+${essences} essences. Une nouvelle vie commence.`,
       inventoryFull: (item: string, shards: number) => `Inventaire plein : ${item} recyclé (+${shards} éclats).`,
-      hourglass: (kills: string) => `Le sablier s'écoule : ${kills} monstres vaincus en un instant.`
+      hourglass: (kills: string) => `Le sablier s'écoule : ${kills} monstres vaincus en un instant.`,
+      fragmentTitle: "Un fragment refait surface",
+      fragmentMore: "Il t'attend dans la Chronique du Hall.",
+      bestiary: (name: string) => `Bestiaire : ${name}`,
+      recognition: (name: string, tier: number) =>
+        tier === 1 ? `${name} te regarde d'un drôle d'air.` : tier === 5 ? `${name} se souvient de toi.` : `${name} se souvient un peu plus de toi.`,
+      secretTitle: "Secret découvert",
+      namedTitle: (name: string) => `Relique nommée : ${name}`,
+      wandererTitle: (name: string) => `${name} croise ta route`
     },
     cloudChoice: {
       title: "Deux parties trouvées",
@@ -235,12 +239,12 @@ export const hud = defineMessages({
       clickLabel: "Click",
       essencesTitle: "Essences: +10% DPS each as long as they are not spent",
       shardsTitle: "Shards: spend them at the market",
-      guest: "Guest",
       notSaved: "Not saved"
     },
     nav: {
       label: "Game menus",
-      hallTitle: (label: string, ratio: string) => `${label} (${ratio})`
+      hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
+      unread: (count: number) => `${count} unread ${count > 1 ? "fragments" : "fragment"}`
     },
     mobileTabs: {
       label: "Mobile view",
@@ -250,7 +254,7 @@ export const hud = defineMessages({
     scene: {
       label: (biome: string, stage: Count) => `Combat: ${biome}, stage ${stage}`,
       attack: "Attack the monster",
-      kinds: { boss: "Boss", miniboss: "Elite", treasure: "Treasure", normal: "" },
+      kinds: { boss: "Boss", miniboss: "Elite", treasure: "Treasure", rare: "Wanderer", normal: "" },
       killProgressTitle: "Monsters to defeat to unlock the next stage",
       killProgress: (kills: Count, total: Count) => `${kills} / ${total} monsters`,
       bossBeaten: "Boss defeated: you can fight it again",
@@ -281,8 +285,6 @@ export const hud = defineMessages({
       label: "Powers",
       ready: (name: string, key: string, description: string) => `${name} (key ${key}): ${description}`,
       cooldown: (time: string) => ` Cooldown: ${time}.`,
-      locked: (hero: string, level: Count) => `Unlocked by ${hero} at level ${level}.`,
-      lockedLabel: (name: string, hero: string, level: Count) => `${name}: unlocked by ${hero} at level ${level}.`,
       minutes: (value: Count) => `${value}m`,
       seconds: (value: Count) => `${value}s`,
       activeSeconds: (value: Count) => `${value}s`
@@ -297,9 +299,6 @@ export const hud = defineMessages({
       autoSpendHint: "Your companions spend the gold they earn on levels and talents to keep progressing. Turn it off to save your gold.",
       max: "Max",
       buyAllTalents: (count: number) => `Buy ${count} available talent${count > 1 ? "s" : ""}`,
-      mysteryLabel: "Companion to discover",
-      mysteryName: "Mystery companion",
-      mysteryHint: (hero: string) => `Hire ${hero} to reveal them · `,
       click: "Click: ",
       dps: "DPS: ",
       dpsPerLevel: (value: string) => `${value} DPS per level`,
@@ -309,9 +308,9 @@ export const hud = defineMessages({
       talentsOf: (hero: string) => `${hero}'s talents`,
       talentOwned: "Owned",
       talentCost: (cost: string) => `${cost} gold`,
-      talentLevel: (level: Count) => `Level ${level} required`,
       talentLabel: (name: string, text: string, status: string) => `${name}: ${text}. ${status}.`,
       hire: "Hire",
+      train: "Train",
       buyLabel: (hired: boolean, hero: string, count: number, cost: string) =>
         `${hired ? "Level up" : "Hire"} ${hero} by ${count} level${count > 1 ? "s" : ""} for ${cost} gold`
     },
@@ -343,7 +342,7 @@ export const hud = defineMessages({
       boss: "A boss! Defeat it before the timer runs out, or you'll fall back one stage.",
       skill: (key: string) => `New power unlocked: press ${key} or click it at the bottom.`,
       farm: "You're farming the previous stage. Get stronger, then turn progression back on (Farm → Auto button).",
-      ascend: "The Fallen King has fallen! Ascension is available in the essences menu.",
+      ascend: "The Fallen King has fallen! Open “Ascension” in the menu to reach the Sanctum of Dusk.",
       altarRework: "The altars have been reworked: each level of an open-ended altar now multiplies its effect, and the Wanderer skips the first stages. All your levels were refunded in essences: pick your altars again in the ascension window."
     },
     fx: {
@@ -354,6 +353,7 @@ export const hud = defineMessages({
     toasts: {
       bossFailedTitle: "The boss held on",
       bossFailedText: "Strengthen your companions, then resume progression.",
+      bossFailedWounded: (pct: number) => `It keeps its wounds: it will come back ${pct}% down. Resume progression, it will give way.`,
       biome: (era: string, stage: Count) => `${era} · stage ${stage}`,
       achievement: (name: string) => `Achievement: ${name}`,
       achievementText: (description: string, pct: Count) => `${description} +${pct}% DPS`,
@@ -371,7 +371,15 @@ export const hud = defineMessages({
       ascendedTitle: "Ascension complete",
       ascendedText: (essences: string) => `+${essences} essences. A new life begins.`,
       inventoryFull: (item: string, shards: number) => `Inventory full: ${item} salvaged (+${shards} shards).`,
-      hourglass: (kills: string) => `The hourglass runs out: ${kills} monsters defeated in an instant.`
+      hourglass: (kills: string) => `The hourglass runs out: ${kills} monsters defeated in an instant.`,
+      fragmentTitle: "A fragment surfaces",
+      fragmentMore: "It waits in the Chronicle, in the Hall.",
+      bestiary: (name: string) => `Bestiary: ${name}`,
+      recognition: (name: string, tier: number) =>
+        tier === 1 ? `${name} looks at you strangely.` : tier === 5 ? `${name} remembers you.` : `${name} remembers you a little more.`,
+      secretTitle: "Secret found",
+      namedTitle: (name: string) => `Named relic: ${name}`,
+      wandererTitle: (name: string) => `${name} crosses your path`
     },
     cloudChoice: {
       title: "Two games found",

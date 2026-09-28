@@ -8,22 +8,28 @@ import {
   heroCostMultiplier,
   maxAffordableLevels,
   milestoneMultiplier,
+  recognitionTier,
   talentName,
   upgradeCost,
   type BuyMode,
   type HeroDef
 } from "@idlebound/game";
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
-import { useFormat, useGame } from "../context";
-import { GoldIcon, TEXT_PRESENTATION } from "../icons";
+import { useFormat, useGame, useReveals } from "../context";
+import { GoldIcon } from "../icons";
+import { PixelSprite } from "../pixel/PixelSprite";
+import { awakenedSeed, emblemSource, portraitSource } from "../pixel/sources";
 import { describeEffect } from "../text";
 
 const MODES: BuyMode[] = [1, 10, 25, 100, "max"];
+/** The Faceless: how long Nyx's medallion shows the stars. */
+const STARFIELD_MS = 1_000;
 
 export function HeroPanel() {
   const { state, derived, store } = useGame();
+  const { shown, freshClass } = useReveals();
   const fmt = useFormat();
   const { t, g, locale } = useI18n();
   const m = t.hud.heroes;
@@ -34,48 +40,71 @@ export function HeroPanel() {
     return !state.heroUpgrades.includes(id) && (state.heroLevels[entry.hero.id] ?? 0) >= entry.upgrade.level && upgradeCost(id) <= state.gold;
   }).length;
 
-  // Show the hired companions, the next one, and a mystery preview of the one after.
-  let lastHired = 0;
-  HEROES.forEach((hero, index) => {
-    if ((state.heroLevels[hero.id] ?? 0) > 0) lastHired = index;
-  });
-  const visible = HEROES.slice(0, Math.min(HEROES.length, Math.max(2, lastHired + 2)));
-  const mystery = HEROES[visible.length];
+  // Aldric, the companions hired, and the next one once the walker can hire them this
+  // night (or hired them on an earlier one). Once shown this night, it stays.
+  const night = `${state.createdAt}:${state.lifetime.ascensions}:${state.descents}`;
+  const offered = useRef<{ night: string; ids: Set<string> }>({ night, ids: new Set() });
+  if (offered.current.night !== night) offered.current = { night, ids: new Set() };
+  const next = HEROES.find((hero) => hero.id !== CLICK_HERO_ID && (state.heroLevels[hero.id] ?? 0) === 0);
+  if (next && (next.index < state.lifetime.bestHired || heroCost(next, 0, 1, costMultiplier) <= state.gold)) offered.current.ids.add(next.id);
+  const visible = HEROES.filter((hero) => hero.id === CLICK_HERO_ID || (state.heroLevels[hero.id] ?? 0) > 0 || (hero === next && offered.current.ids.has(hero.id)));
+
+  // The Faceless: when Nyx's secret is found, her medallion shows the stars for a moment.
+  const [starfield, setStarfield] = useState(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const unsubscribe = store.onFx((event) => {
+      if (event.type !== "secret" || event.id !== "faceless") return;
+      setStarfield(true);
+      clearTimeout(timer);
+      timer = setTimeout(() => setStarfield(false), STARFIELD_MS);
+    });
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
+  }, [store]);
 
   return (
     <aside className="hero-panel" aria-label={m.title}>
       <div className="hero-panel-head">
         <h2>{m.title}</h2>
-        <div className="buy-modes" role="radiogroup" aria-label={m.buyAmount}>
-          {MODES.map((entry) => (
-            <button
-              key={String(entry)}
-              type="button"
-              role="radio"
-              aria-checked={mode === entry}
-              className={mode === entry ? "active" : ""}
-              onClick={() => store.act((engine) => { engine.state.settings.buyMode = entry; })}
-            >
-              {entry === "max" ? m.max : `×${entry}`}
-            </button>
-          ))}
-        </div>
+        {shown.buyModes ? (
+          <div className={`buy-modes${freshClass("buyModes")}`} role="radiogroup" aria-label={m.buyAmount}>
+            {MODES.map((entry) => (
+              <button
+                key={String(entry)}
+                type="button"
+                role="radio"
+                aria-checked={mode === entry}
+                className={mode === entry ? "active" : ""}
+                onClick={() => store.act((engine) => { engine.state.settings.buyMode = entry; })}
+              >
+                {entry === "max" ? m.max : `×${entry}`}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
-      <label className="hero-autospend" title={m.autoSpendHint}>
-        <span>{m.autoSpend}</span>
-        <input
-          type="checkbox"
-          role="switch"
-          className="switch switch-sm"
-          checked={state.settings.offlineSpending}
-          aria-describedby="autospend-hint"
-          onChange={(event) => {
-            const value = event.target.checked;
-            store.act((engine) => { engine.state.settings.offlineSpending = value; });
-          }}
-        />
-      </label>
-      <span id="autospend-hint" className="visually-hidden">{m.autoSpendHint}</span>
+      {shown.autoSpend ? (
+        <>
+          <label className={`hero-autospend${freshClass("autoSpend")}`} title={m.autoSpendHint}>
+            <span>{m.autoSpend}</span>
+            <input
+              type="checkbox"
+              role="switch"
+              className="switch switch-sm"
+              checked={state.settings.offlineSpending}
+              aria-describedby="autospend-hint"
+              onChange={(event) => {
+                const value = event.target.checked;
+                store.act((engine) => { engine.state.settings.offlineSpending = value; });
+              }}
+            />
+          </label>
+          <span id="autospend-hint" className="visually-hidden">{m.autoSpendHint}</span>
+        </>
+      ) : null}
       {affordableTalents > 0 ? (
         <button type="button" className="btn btn-violet btn-sm talents-all" onClick={() => store.act((engine, now) => engine.buyAllUpgrades(now))}>
           {m.buyAllTalents(affordableTalents)}
@@ -89,20 +118,24 @@ export function HeroPanel() {
             : { count: mode, cost: 0 };
           purchase.cost = heroCost(hero, level, purchase.count, costMultiplier);
           const share = derived.dps > 0 ? (derived.heroDps[hero.id] ?? 0) / derived.dps : 0;
-          const talents = hero.upgrades.map((upgrade) => ({
-            id: upgrade.id,
-            level: upgrade.level,
-            name: talentName(upgrade.id, locale),
-            text: describeEffect(upgrade.effect, g.heroes[hero.id].name, locale),
-            cost: upgradeCost(upgrade.id),
-            owned: state.heroUpgrades.includes(upgrade.id),
-            reachable: level >= upgrade.level
-          }));
+          // Only the talents within reach or owned: the rest appear with the levels.
+          const talents = hero.upgrades
+            .filter((upgrade) => level >= upgrade.level || state.heroUpgrades.includes(upgrade.id))
+            .map((upgrade) => ({
+              id: upgrade.id,
+              level: upgrade.level,
+              name: talentName(upgrade.id, locale),
+              text: describeEffect(upgrade.effect, g.heroes[hero.id].name, locale),
+              cost: upgradeCost(upgrade.id),
+              owned: state.heroUpgrades.includes(upgrade.id)
+            }));
           return (
             <HeroRow
               key={hero.id}
               hero={hero}
+              portraitSeed={hero.id === "awakened" ? awakenedSeed(state.settings.notation, state.settings.sound, locale) : undefined}
               level={level}
+              recognition={recognitionTier(state, hero.id)}
               count={purchase.count}
               cost={purchase.cost}
               affordable={purchase.cost <= state.gold}
@@ -116,18 +149,11 @@ export function HeroPanel() {
               fmt={fmt}
               onBuy={() => store.act((engine, now) => engine.buyHero(hero.id, mode, now))}
               onTalent={(id) => store.act((engine, now) => engine.buyUpgrade(id, now))}
+              onPortrait={hero.id === "nyx" && level > 0 ? () => store.act((engine, now) => engine.touchPortrait(hero.id, now), { save: false }) : undefined}
+              starfield={hero.id === "nyx" && starfield}
             />
           );
         })}
-        {mystery ? (
-          <li className="hero-row mystery" aria-label={m.mysteryLabel}>
-            <div className="hero-medallion" aria-hidden="true">?</div>
-            <div className="hero-info">
-              <div className="hero-name">{m.mysteryName}</div>
-              <div className="hero-sub">{m.mysteryHint(g.heroes[visible[visible.length - 1].id].name)}<GoldIcon size={13} /> {fmt(mystery.baseCost)}</div>
-            </div>
-          </li>
-        ) : null}
       </ol>
     </aside>
   );
@@ -147,12 +173,15 @@ interface Talent {
   text: string;
   cost: number;
   owned: boolean;
-  reachable: boolean;
 }
 
 interface HeroRowProps {
   hero: HeroDef;
+  /** The Awakened's portrait follows the walker's settings. */
+  portraitSeed?: number;
   level: number;
+  /** Recognition tier (0 to 5): a thin gold ring per tier on the medallion. */
+  recognition: number;
   count: number;
   cost: number;
   affordable: boolean;
@@ -166,19 +195,29 @@ interface HeroRowProps {
   fmt: (value: number) => string;
   onBuy: () => void;
   onTalent: (id: string) => void;
+  /** Touching the portrait (only Nyx listens: the Faceless). */
+  onPortrait?: () => void;
+  /** The Faceless was just found: the medallion shows the stars. */
+  starfield: boolean;
 }
 
-const HeroRow = memo(function HeroRow({ hero, level, count, cost, affordable, gold, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent }: HeroRowProps) {
+const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, gold, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent, onPortrait, starfield }: HeroRowProps) {
   const isClick = hero.id === CLICK_HERO_ID;
   const hired = level > 0;
   return (
     <li className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}`} style={{ ["--hero" as string]: hero.color }}>
-      <div className="hero-medallion" aria-hidden="true">
-        <span className="hero-glyph">{hero.glyph}{TEXT_PRESENTATION}</span>
+      <div
+        className={`hero-medallion ${recognition > 0 ? `recognized recognition-${recognition}` : ""} ${starfield ? "starfield" : ""}`}
+        aria-hidden="true"
+        onPointerDown={onPortrait}
+      >
+        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size={44} cover /></span>
+        {starfield ? <span className="medallion-stars" /> : null}
         {hired ? <span className="hero-level">{level}</span> : null}
       </div>
       <div className="hero-info">
         <div className="hero-name" title={text.lore}>
+          <PixelSprite source={emblemSource(hero.id)} size={14} className="hero-emblem" />
           {text.name} <span className="hero-title">{text.title}</span>
         </div>
         <div className="hero-sub">
@@ -189,12 +228,12 @@ const HeroRow = memo(function HeroRow({ hero, level, count, cost, affordable, go
               : <>{m.dpsPerLevel(fmt(hero.baseDps))}</>}
           {nextMilestone ? <span className="hero-milestone" title={m.milestoneTitle(fmt(milestoneMultiplier(level)))}>{m.milestone(nextMilestone)}</span> : null}
         </div>
-        {hired ? (
+        {hired && talents.length > 0 ? (
           <div className="talents" role="list" aria-label={m.talentsOf(text.name)}>
             {talents.map((talent) => {
-              const canBuy = !talent.owned && talent.reachable && talent.cost <= gold;
-              const state = talent.owned ? "owned" : talent.reachable ? (canBuy ? "buyable" : "reachable") : "locked";
-              const status = talent.owned ? m.talentOwned : talent.reachable ? m.talentCost(fmt(talent.cost)) : m.talentLevel(talent.level);
+              const canBuy = !talent.owned && talent.cost <= gold;
+              const state = talent.owned ? "owned" : canBuy ? "buyable" : "reachable";
+              const status = talent.owned ? m.talentOwned : m.talentCost(fmt(talent.cost));
               return (
                 <button
                   key={talent.id}
@@ -218,7 +257,7 @@ const HeroRow = memo(function HeroRow({ hero, level, count, cost, affordable, go
         ) : null}
       </div>
       <button type="button" className="hero-buy" disabled={!affordable} onClick={onBuy} aria-label={m.buyLabel(hired, text.name, count, fmt(cost))}>
-        <span className="hero-buy-label">{hired ? `+${count}` : m.hire}</span>
+        <span className="hero-buy-label">{hired ? `+${count}` : isClick ? m.train : m.hire}</span>
         <span className="hero-buy-cost"><GoldIcon size={14} /> {fmt(cost)}</span>
       </button>
     </li>

@@ -28,15 +28,18 @@ export const ALTARS: AltarDef[] = [
 
 export const ALTAR_BY_ID = lookup(ALTARS.map((altar) => [altar.id, altar])) as Record<AltarId, AltarDef>;
 
-/** Total effect of an altar at a given level: `value × level`, or `(1 + value)^level - 1`. */
-export function altarEffect(altar: AltarDef, level: number): number {
-  const capped = altar.maxLevel > 0 ? Math.min(level, altar.maxLevel) : level;
+/**
+ * Total effect of an altar at a given level: `value × level`, or `(1 + value)^level - 1`.
+ * `maxLevel` is the altar's cap for this walker (the Knot of Dusk raises the Wanderer's).
+ */
+export function altarEffect(altar: AltarDef, level: number, maxLevel = altar.maxLevel): number {
+  const capped = maxLevel > 0 ? Math.min(level, maxLevel) : level;
   return altar.stacking === "mult" ? Math.pow(1 + altar.valuePerLevel, capped) - 1 : capped * altar.valuePerLevel;
 }
 
-export function altarCost(id: AltarId, level: number): number {
+export function altarCost(id: AltarId, level: number, maxLevel = ALTAR_BY_ID[id].maxLevel): number {
   const altar = ALTAR_BY_ID[id];
-  if (altar.maxLevel > 0 && level >= altar.maxLevel) return Number.POSITIVE_INFINITY;
+  if (maxLevel > 0 && level >= maxLevel) return Number.POSITIVE_INFINITY;
   return altarLevelPrice(altar, level);
 }
 

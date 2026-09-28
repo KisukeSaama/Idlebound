@@ -2,6 +2,7 @@ import { DEFAULT_LOCALE, isLocale } from "@idlebound/game";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
+import { Art } from "@/game/pixel/Art";
 import { messages } from "@/i18n/messages";
 import { href } from "@/i18n/routing";
 import { LOCALE_HEADER } from "@/proxy";
@@ -15,7 +16,9 @@ export default async function NotFound() {
     <div className="page-shell">
       <SiteNav locale={locale} />
       <main className="page-content" style={{ textAlign: "center" }}>
-        <img src="/assets/enemies/field-rat.webp" alt="" width={220} height={150} style={{ margin: "2rem auto 1rem", width: 220, height: "auto" }} />
+        <div className="not-found-art">
+          <Art spec={{ kind: "creature", id: "field-rat" }} size={200} />
+        </div>
         <h1>{t.site.notFound.title}</h1>
         <p>{t.site.notFound.text}</p>
         <p style={{ marginTop: "1.5rem" }}>

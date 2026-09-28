@@ -7,6 +7,7 @@ export interface LeaderboardRow {
   maxStage: number;
   ascensions: number;
   achievements: number;
+  descents: number;
 }
 
 export interface LeaderboardResponse {

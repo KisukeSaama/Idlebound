@@ -405,3 +405,28 @@ button {
   from { transform: translateX(-100%); }
   to { transform: translateX(250%); }
 }
+
+/* ============================================================ pixel art */
+
+/* World art drawn by the pixel generator: whole-number scaling, never smoothed. */
+.pixel-sprite {
+  display: block;
+  image-rendering: pixelated;
+  flex: none;
+}
+
+/* The pixel world of a combat scene: biome layers, monster, shots and particles (pixel/arena.ts). */
+.scene-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -2;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.not-found-art {
+  display: grid;
+  place-items: center;
+  margin: 2rem auto 1rem;
+}

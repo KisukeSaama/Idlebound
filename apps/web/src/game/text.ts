@@ -27,10 +27,10 @@ export function formatAffix(stat: AffixStat, value: number, locale: Locale): str
   return messages(locale).hud.affix(text, gameText(locale).affixes[stat]);
 }
 
-/** Current total bonus of an altar at a given level. */
-export function formatAltarValue(altar: AltarDef, level: number, locale: Locale): string {
+/** Current total bonus of an altar at a given level, within this walker's cap (`maxLevel`). */
+export function formatAltarValue(altar: AltarDef, level: number, locale: Locale, maxLevel = altar.maxLevel): string {
   const t = messages(locale).hud.altarValue;
-  const value = altarEffect(altar, level);
+  const value = altarEffect(altar, level, maxLevel);
   switch (altar.format) {
     case "pct": return t.pct(formatPercent(value, "letters", "en").replace("%", ""));
     case "seconds": return t.seconds(value);

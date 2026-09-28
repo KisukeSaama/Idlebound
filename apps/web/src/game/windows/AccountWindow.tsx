@@ -7,14 +7,14 @@ import { useI18n } from "@/i18n/client";
 import { href } from "@/i18n/routing";
 import { api } from "@/lib/api";
 import { useCloud, useUi } from "../context";
-import { WINDOW_META } from "../icons";
+import { WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 
 export function AccountWindow({ onClose }: { onClose: () => void }) {
   const cloud = useCloud();
   const { t } = useI18n();
   return (
-    <Modal title={t.hud.windowTitles.account.label} icon={<img src={WINDOW_META.account.icon!} alt="" width={34} height={34} />} onClose={onClose} size="md">
+    <Modal title={t.hud.windowTitles.account.label} icon={<WindowIcon id="account" />} onClose={onClose} size="md">
       {cloud.user ? <Profile /> : <AuthForms />}
       <NewGame />
     </Modal>
@@ -75,7 +75,7 @@ function VerifyNotice() {
   const deadlineText = deadline ? deadline.toLocaleString(intlLocale(locale), { dateStyle: "long", timeStyle: "short" }) : "";
   return (
     <div className={`verify-notice ${overdue ? "is-overdue" : ""}`} role={overdue ? "alert" : undefined}>
-      <strong>{text.verifyTitle}</strong>
+      <strong>{text.ledger.seal} <span className="ledger-plain">{text.ledger.sealPlain}</span></strong>
       <p>{overdue ? text.verifyOverdue(user.email) : text.verifyText(user.email, deadlineText)}</p>
       {info ? <p className={info.ok ? "form-success" : "form-error"} role="status">{info.text}</p> : null}
       <div className="account-actions">
@@ -217,6 +217,13 @@ function AuthForms() {
   const text = useI18n().t.account;
   return (
     <section className="account-section">
+      <div className="profile-card is-guest">
+        <div className="profile-avatar" aria-hidden="true">?</div>
+        <div>
+          <h3>{text.ledger.guest}</h3>
+          <p className="modal-hint">{text.ledger.guestPlain}</p>
+        </div>
+      </div>
       <div className="auth-pitch">
         <strong>{text.pitchTitle}</strong>
         <span> {text.pitchText}</span>
@@ -247,6 +254,7 @@ function RegisterForm() {
   return (
     <form
       className="account-form"
+      aria-labelledby="reg-title"
       onSubmit={async (event) => {
         event.preventDefault();
         if (nameCheck && !nameCheck.ok) return setError({ text: text.usernameIssues[nameCheck.reason], field: "username" });
@@ -262,6 +270,7 @@ function RegisterForm() {
         ui.toast({ tone: "success", icon: "cloud", title: text.welcome(user.username), text: user.emailVerified ? text.welcomeText : text.checkInbox(user.email) });
       }}
     >
+      <p id="reg-title" className="ledger-voice">{text.ledger.inscribe} <span className="ledger-plain">{text.ledger.inscribePlain}</span></p>
       <div className="field">
         <label htmlFor="reg-email">{text.email}</label>
         <input id="reg-email" className="input" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} aria-invalid={error?.field === "email"} />

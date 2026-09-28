@@ -1,4 +1,5 @@
-import { and, count, desc, eq, gt, sql as raw } from "drizzle-orm";
+import { and, count, desc, eq, gt, or, sql as raw } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { Hono } from "hono";
 import { db } from "../db/client";
 import { leaderboard, users } from "../db/schema";
@@ -6,19 +7,23 @@ import { t } from "../lib/i18n";
 import { limiter, rateLimitByIp } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
 
-/** Leaderboards by id; the web app localizes their titles. */
-export const BOARDS = {
+/**
+ * Leaderboards by id; the web app localizes their titles. A board ranks by its column, then
+ * by its tiebreak (the Night board: Descents, then Depth), then by who got there first.
+ */
+export const BOARDS: Record<"stage" | "ascensions" | "essences" | "achievements" | "descents", { column: AnyPgColumn; tiebreak?: AnyPgColumn }> = {
   stage: { column: leaderboard.maxStage },
   ascensions: { column: leaderboard.ascensions },
   essences: { column: leaderboard.essences },
-  achievements: { column: leaderboard.achievements }
-} as const;
+  achievements: { column: leaderboard.achievements },
+  descents: { column: leaderboard.descents, tiebreak: leaderboard.maxStage }
+};
 
 export type BoardId = keyof typeof BOARDS;
 
 interface CachedBoard {
   at: number;
-  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number }[];
+  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number }[];
 }
 
 const CACHE_MS = 30_000;
@@ -29,19 +34,20 @@ async function topRows(board: BoardId, limit: number) {
   const key = `${board}:${limit}`;
   const cached = cache.get(key);
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.rows;
-  const column = BOARDS[board].column;
+  const { column, tiebreak } = BOARDS[board];
   const rows = await db
     .select({
       username: users.username,
       value: column,
       maxStage: leaderboard.maxStage,
       ascensions: leaderboard.ascensions,
-      achievements: leaderboard.achievements
+      achievements: leaderboard.achievements,
+      descents: leaderboard.descents
     })
     .from(leaderboard)
     .innerJoin(users, eq(users.id, leaderboard.userId))
     .where(eq(leaderboard.hidden, false))
-    .orderBy(desc(column), leaderboard.updatedAt)
+    .orderBy(desc(column), ...(tiebreak ? [desc(tiebreak)] : []), leaderboard.updatedAt)
     .limit(limit);
   const ranked = rows.map((row, index) => ({ rank: index + 1, ...row, value: Number(row.value) }));
   cache.set(key, { at: Date.now(), rows: ranked });
@@ -62,11 +68,13 @@ export const leaderboardRoutes = new Hono()
     let me: { rank: number; value: number } | null = null;
     const user = await currentUser(c);
     if (user) {
-      const column = BOARDS[board].column;
-      const [mine] = await db.select({ value: column }).from(leaderboard).where(eq(leaderboard.userId, user.id)).limit(1);
+      const { column, tiebreak } = BOARDS[board];
+      const [mine] = await db.select({ value: column, tie: tiebreak ?? column }).from(leaderboard).where(eq(leaderboard.userId, user.id)).limit(1);
       if (mine) {
+        // Ranked above: a better value, or the same value and a better tiebreak.
+        const ahead = tiebreak ? or(gt(column, mine.value), and(eq(column, mine.value), gt(tiebreak, mine.tie))) : gt(column, mine.value);
         const [above] = await db.select({ total: count() }).from(leaderboard)
-          .where(and(eq(leaderboard.hidden, false), gt(column, mine.value)));
+          .where(and(eq(leaderboard.hidden, false), ahead));
         me = { rank: Number(above.total) + 1, value: Number(mine.value) };
       }
     }

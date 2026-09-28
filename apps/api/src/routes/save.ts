@@ -111,6 +111,7 @@ export const saveRoutes = new Hono()
             ascensions: raw`greatest(${leaderboard.ascensions}, ${board.ascensions})`,
             essences: raw`greatest(${leaderboard.essences}, ${board.essences})`,
             achievements: raw`greatest(${leaderboard.achievements}, ${board.achievements})`,
+            descents: raw`greatest(${leaderboard.descents}, ${board.descents})`,
             playTime: raw`greatest(${leaderboard.playTime}, ${board.playTime})`,
             updatedAt: new Date(now)
           }

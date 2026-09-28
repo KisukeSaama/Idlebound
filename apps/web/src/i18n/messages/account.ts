@@ -13,7 +13,16 @@ export const account = defineMessages({
       rejected: "Sauvegarde refusée",
       unverified: "E-mail à confirmer"
     },
-    verifyTitle: "Confirme ton e-mail",
+    ledger: {
+      guest: "Marcheur sans nom",
+      guestPlain: "Invité : ta partie n'est pas conservée.",
+      inscribe: "Inscris ton nom au Registre",
+      inscribePlain: "(crée un compte)",
+      seal: "Scelle ton nom",
+      sealPlain: "(confirme ton e-mail sous 3 jours)",
+      conflict: "Deux fils portent ton nom. Le Grand Livre demande lequel est toi.",
+      refused: "Le Grand Livre ne peut pas écrire ce qui n'est pas arrivé"
+    },
     verifyText: (email: string, deadline: string) => `Clique sur le lien envoyé à ${email}. Sans confirmation, ta partie ne sera plus sauvegardée à partir du ${deadline}.`,
     verifyOverdue: (email: string) => `Ta partie n'est plus sauvegardée. Clique sur le lien envoyé à ${email} pour reprendre.`,
     resend: "Renvoyer l'e-mail",
@@ -94,7 +103,16 @@ export const account = defineMessages({
       rejected: "Save rejected",
       unverified: "E-mail not confirmed"
     },
-    verifyTitle: "Confirm your e-mail",
+    ledger: {
+      guest: "Unnamed walker",
+      guestPlain: "Guest: this game is not kept.",
+      inscribe: "Inscribe your name on the Roll",
+      inscribePlain: "(create an account)",
+      seal: "Seal your name",
+      sealPlain: "(confirm your e-mail within 3 days)",
+      conflict: "Two threads carry your name. The Ledger asks which one is you.",
+      refused: "The Ledger cannot write what did not happen"
+    },
     verifyText: (email: string, deadline: string) => `Click the link sent to ${email}. Without confirmation, your game will stop being saved on ${deadline}.`,
     verifyOverdue: (email: string) => `Your game is no longer being saved. Click the link sent to ${email} to resume.`,
     resend: "Resend the e-mail",

@@ -20,7 +20,8 @@
     "db:generate": "npm run db:generate -w @idlebound/api",
     "db:migrate": "npm run db:migrate -w @idlebound/api",
     "balance": "tsx packages/game/scripts/simulate.ts",
-    "assets": "python assets-src/optimize.py"
+    "assets": "python assets-src/optimize.py",
+    "art": "tsx apps/web/scripts/art.ts"
   },
   "devDependencies": {
     "@types/node": "^24.13.6",

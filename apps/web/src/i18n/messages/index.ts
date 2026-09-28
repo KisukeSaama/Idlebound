@@ -1,16 +1,20 @@
 import type { Locale } from "@idlebound/game";
 import { account } from "./account";
+import { chronicle } from "./chronicle";
 import { common } from "./common";
 import { hud } from "./hud";
 import { landing } from "./landing";
 import { leaderboard } from "./leaderboard";
+import { night } from "./night";
 import { privacy } from "./privacy";
 import { reset } from "./reset";
+import { sanctum } from "./sanctum";
 import { site } from "./site";
 import { verify } from "./verify";
 import { windows } from "./windows";
+import { workshop } from "./workshop";
 
-const NAMESPACES = { common, site, landing, leaderboard, privacy, reset, verify, hud, windows, account };
+const NAMESPACES = { common, site, landing, leaderboard, privacy, reset, verify, hud, windows, account, workshop, sanctum, chronicle, night };
 
 type Namespaces = typeof NAMESPACES;
 export type Messages = { [K in keyof Namespaces]: Namespaces[K]["fr"] };

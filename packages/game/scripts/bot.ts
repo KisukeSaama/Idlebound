@@ -95,6 +95,9 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       if (s.shards >= 30 && s.inventory.length < 40) engine.buyOffer("chest", now);
       for (const item of [...s.inventory]) {
         const equipped = s.equipment[item.slot];
+        // Morgrath's Phylactery halves the click: only a walker who lets go of the sword wears it.
+        if (item.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) continue;
+        if (equipped?.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) { engine.equip(item.uid, now); continue; }
         if (!equipped || item.affixes[0].value > equipped.affixes[0].value) engine.equip(item.uid, now);
       }
       engine.salvageUpTo("rare");

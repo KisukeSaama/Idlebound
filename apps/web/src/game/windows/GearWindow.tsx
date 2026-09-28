@@ -1,28 +1,35 @@
 "use client";
 
 import {
+  CROWN_DESCENTS,
+  CROWN_HOLD_MS,
   EQUIPMENT_CAP,
   FORGE_MAX,
   FORGE_STEP,
   INVENTORY_LIMIT,
   RARITY_INFO,
+  REGALIA_KING_DAMAGE,
   SLOTS,
   affixValue,
+  NAMED_BY_ID,
   equipmentBonus,
-  forgeCost,
+  forgePrice,
   itemName,
   salvageValue,
   trimmed,
+  wearsRegalia,
   type AffixStat,
   type Item,
   type Locale,
   type Rarity
 } from "@idlebound/game";
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { useFormat, useGame, useUi } from "../context";
-import { Picto, ShardIcon, SlotIcon, WINDOW_META } from "../icons";
+import { Picto, ShardIcon, SlotIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
+import { PixelSprite } from "../pixel/PixelSprite";
+import { relicSource } from "../pixel/sources";
 import { formatAffix } from "../text";
 
 const STATS: AffixStat[] = ["dps", "click", "gold", "bossDamage", "critChance", "critDamage", "essence"];
@@ -40,7 +47,7 @@ export function GearWindow({ onClose, initialTab }: { onClose: () => void; initi
   return (
     <Modal
       title={t.hud.windowTitles[id].label}
-      icon={<img src={WINDOW_META[id].icon!} alt="" width={34} height={34} />}
+      icon={<WindowIcon id={id} />}
       onClose={onClose}
       size="lg"
       tabs={[{ id: "equipped", label: t.windows.gear.equippedTab }, { id: "bag", label: t.windows.gear.bagTab(state.inventory.length, INVENTORY_LIMIT) }]}
@@ -52,18 +59,33 @@ export function GearWindow({ onClose, initialTab }: { onClose: () => void; initi
   );
 }
 
+/**
+ * A relic as the world draws it (twice its pixels, so its rarity reads at a glance) and,
+ * once forged, its level in the Ledger's ink on its corner.
+ */
+export function RelicIcon({ item }: { item: Item }) {
+  return (
+    <span className="item-slot-icon">
+      <PixelSprite source={relicSource(item)} size={64} />
+      {item.forge > 0 ? <span className={`relic-forge${item.forge >= FORGE_MAX ? " max" : ""}`} aria-hidden="true">+{item.forge}</span> : null}
+    </span>
+  );
+}
+
 export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?: Item; children?: React.ReactNode }) {
   const { t, g, locale } = useI18n();
   const info = RARITY_INFO[item.rarity];
   const main = item.affixes[0];
+  const named = item.named ? NAMED_BY_ID[item.named] : undefined;
+  const legend = item.named ? g.relics[item.named] : undefined;
   const delta = compareTo ? affixValue(item, main.stat) - affixValue(compareTo, main.stat) : null;
   return (
-    <article className={`item-card rarity-${item.rarity}`} style={{ ["--rarity" as string]: info.color }}>
+    <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: info.color }}>
       <header className="item-head">
-        <span className="item-slot-icon"><SlotIcon slot={item.slot} color={info.color} /></span>
+        <RelicIcon item={item} />
         <div>
           <h3 className="item-name">{itemName(item, locale)}{item.forge > 0 ? <span className="item-forge"> +{item.forge}</span> : null}</h3>
-          <p className="item-meta">{g.rarities[item.rarity]} · {g.slots[item.slot]} · {t.common.level(item.level)}</p>
+          <p className="item-meta">{named ? `${t.windows.gear.named} · ` : ""}{g.rarities[item.rarity]} · {g.slots[item.slot]} · {t.common.level(item.level)}</p>
         </div>
         {item.locked ? <span className="item-lock" title={t.windows.gear.lockedTitle}><Picto name="lock" size={18} /></span> : null}
       </header>
@@ -71,7 +93,9 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
         {item.affixes.map((affix, index) => (
           <li key={affix.stat} className={index === 0 ? "main" : ""}>{formatAffix(affix.stat, affixValue(item, affix.stat), locale)}</li>
         ))}
+        {named ? <li className="named-effect">{g.namedEffects[named.effect.kind](named.effect.pct)}</li> : null}
       </ul>
+      {legend ? <p className="item-legend">{legend.legend}</p> : null}
       {delta !== null ? (
         <p className={`item-delta ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
           {delta > 0 ? "▲" : delta < 0 ? "▼" : "="} {formatAffix(main.stat, Math.abs(delta), locale).replace("+", "")} {t.windows.gear.versusEquipped}
@@ -101,7 +125,7 @@ function Equipped() {
               </div>
             );
           }
-          const cost = forgeCost(item.rarity, item.forge);
+          const cost = forgePrice(state, item);
           return (
             <ItemCard key={slot} item={item}>
               <button
@@ -119,6 +143,7 @@ function Equipped() {
             </ItemCard>
           );
         })}
+        {state.descents >= CROWN_DESCENTS ? <CrownSlot /> : null}
       </div>
       <aside className="gear-totals card">
         <h3>{text.totalsTitle}</h3>
@@ -137,8 +162,64 @@ function Equipped() {
             );
           })}
         </dl>
+        {wearsRegalia(state) ? (
+          <p className="regalia-line">
+            <strong>{t.sanctum.armory.regalia}</strong> {t.sanctum.armory.regaliaWorn(Math.round(REGALIA_KING_DAMAGE * 100))}
+          </p>
+        ) : null}
         <p className="modal-hint">{text.totalsHint}</p>
       </aside>
+    </div>
+  );
+}
+
+/**
+ * The Crown of Orvane (BIBLE 11.5): after the tenth Descent, a fifth slot that nothing fills.
+ * Pointed at, pressed or focused, it says what it is; held there long enough, it keeps you.
+ */
+function CrownSlot() {
+  const { store } = useGame();
+  const { t, g } = useI18n();
+  const hoverId = useId();
+  const [pointer, setPointer] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [shown, setShown] = useState(false);
+  const holding = pointer || focused;
+
+  useEffect(() => {
+    if (!holding) return;
+    const start = Date.now();
+    const timer = window.setTimeout(() => store.act((engine) => engine.holdCrown(Date.now() - start)), CROWN_HOLD_MS + 50);
+    return () => window.clearTimeout(timer);
+  }, [holding, store]);
+
+  const hold = () => {
+    setPointer(true);
+    setShown(true);
+  };
+  const release = () => setPointer(false);
+
+  return (
+    <div
+      className={`item-card empty crown-slot${holding ? " held" : ""}`}
+      role="img"
+      tabIndex={0}
+      aria-label={`${t.sanctum.armory.crownSlot}: ${g.crown.name}`}
+      aria-describedby={hoverId}
+      onPointerEnter={hold}
+      onPointerDown={hold}
+      onPointerLeave={release}
+      onPointerCancel={release}
+      onFocus={() => {
+        setFocused(true);
+        setShown(true);
+      }}
+      onBlur={() => setFocused(false)}
+      onContextMenu={(event) => event.preventDefault()}
+    >
+      <Picto name="crown" size={30} className="crown-silhouette" />
+      <p>{g.crown.name}</p>
+      <p id={hoverId} className={`crown-hover${holding || shown ? " visible" : ""}`}>{g.crown.hover}</p>
     </div>
   );
 }

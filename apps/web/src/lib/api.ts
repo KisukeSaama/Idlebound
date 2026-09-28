@@ -1,5 +1,8 @@
 import type { GameState } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
+import type { BoardId } from "./boards";
+
+export { BOARD_IDS, type BoardId } from "./boards";
 
 export interface AccountUser {
   id: string;
@@ -58,8 +61,8 @@ export interface CloudSave {
 }
 
 export interface LeaderboardData {
-  board: string;
-  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number }[];
+  board: BoardId;
+  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number }[];
   me: { rank: number; value: number } | null;
 }
 
@@ -78,5 +81,5 @@ export const api = {
   getSave: () => request<{ save: CloudSave | null }>("GET", "/save"),
   putSave: (state: GameState, baseRevision: number | null, replace = false, keepalive = false) =>
     request<{ revision: number; updatedAt: string }>("PUT", "/save", { state, baseRevision, replace }, { keepalive }),
-  leaderboard: (board: string) => request<LeaderboardData>("GET", `/leaderboard?board=${encodeURIComponent(board)}&limit=50`)
+  leaderboard: (board: BoardId) => request<LeaderboardData>("GET", `/leaderboard?board=${encodeURIComponent(board)}&limit=50`)
 };

@@ -34,6 +34,7 @@ export function CloudChoiceModal() {
 
   return (
     <Modal title={m.title} icon={<Picto name="swords" size={30} />} size="md">
+      <p className="ledger-voice">{t.account.ledger.conflict}</p>
       <p className="modal-text">{m.text}</p>
       <div className="save-compare">
         {card(m.current, local, localBetter)}

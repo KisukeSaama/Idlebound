@@ -1,0 +1,286 @@
+/* Pixel workshop: a catalogue of the engine's art, on the site's tokens. */
+
+.workshop-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2rem 16px 4rem;
+}
+
+.workshop-head h1 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+}
+
+.workshop-lead {
+  max-width: 60rem;
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.workshop-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0 0 1.2rem;
+  font-size: 0.9rem;
+}
+
+.workshop-controls,
+.workshop-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.6rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.workshop-controls label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.workshop-controls .input {
+  min-width: 11rem;
+}
+
+.workshop-controls .workshop-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 40px;
+}
+
+.workshop-buttons-label {
+  align-self: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.workshop-section {
+  padding-top: 2.4rem;
+  scroll-margin-top: 1rem;
+}
+
+.workshop-section h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  color: var(--gold-2);
+}
+
+.workshop-section h3 {
+  margin: 1.2rem 0 0.6rem;
+  font-size: 1rem;
+}
+
+/* The arena: the same renderer as the game, on a 16:9 stage. */
+.workshop-arena {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: 70vh;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  margin-bottom: 0.8rem;
+}
+
+.workshop-floor {
+  position: absolute;
+  inset: 22% 0 8%;
+  pointer-events: none;
+}
+
+.workshop-swatches {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workshop-swatches li {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  display: grid;
+  place-items: end start;
+  padding: 2px 3px;
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.workshop-swatches span {
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+.workshop-ramps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workshop-ramps li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+}
+
+.workshop-ramp {
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.workshop-ramp i {
+  width: 18px;
+  height: 18px;
+}
+
+/* Tiles take the size of their art: pixel art never shrinks below its whole scale. */
+.workshop-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.8rem;
+}
+
+.workshop-grid .workshop-tile {
+  min-width: 120px;
+}
+
+.workshop-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.8rem;
+}
+
+.workshop-scenes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.workshop-scenes .workshop-tile-art {
+  overflow: hidden;
+}
+
+/* The places of the story: wide banners that fill their tile at a whole scale. */
+.workshop-places {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.workshop-places .workshop-tile,
+.workshop-places .workshop-tile-art {
+  width: 100%;
+}
+
+.workshop-banner {
+  width: 100%;
+  aspect-ratio: 320 / 180;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.workshop-tile {
+  max-width: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+}
+
+.workshop-tile-art {
+  display: grid;
+  place-items: end center;
+  min-height: 60px;
+  max-width: 100%;
+}
+
+.workshop-tile figcaption {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Relics: one row per base, one column per rarity, so a base reads as it grows. */
+.workshop-relics {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, max-content) repeat(5, max-content);
+  justify-content: start;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.workshop-forge {
+  grid-template-columns: minmax(5.5rem, max-content) repeat(4, max-content);
+}
+
+.workshop-relics-head {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.workshop-relics-noun {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.workshop-relics-art {
+  display: grid;
+  place-items: center;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+}
+
+.workshop-pair {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+}
+
+.workshop-building {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.workshop-building code {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.workshop-age h3 {
+  color: var(--accent, var(--violet-2));
+}
+
+@media (max-width: 640px) {
+  .workshop-swatches {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  .workshop-controls .input {
+    min-width: 0;
+  }
+}

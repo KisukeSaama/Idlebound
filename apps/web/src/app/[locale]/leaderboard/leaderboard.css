@@ -72,3 +72,31 @@
     display: none;
   }
 }
+
+/* The Roll: each board's name on the Roll, its plain meaning beneath. */
+.board-subtitle {
+  margin-top: -0.4rem;
+  color: var(--faint) !important;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.board-tabs a {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+  border-radius: 14px;
+}
+
+.board-tab-meaning {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.board-th-meaning {
+  text-transform: none;
+  letter-spacing: 0;
+}

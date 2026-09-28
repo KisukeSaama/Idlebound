@@ -1,6 +1,6 @@
 "use client";
 
-import { GameEngine, createInitialState, type GameEvent, type GameState } from "@idlebound/game";
+import { GameEngine, createInitialState, type GameEvent, type GameState, type Locale } from "@idlebound/game";
 
 type Listener = () => void;
 export type FxListener = (event: GameEvent) => void;
@@ -31,6 +31,8 @@ export class GameStore {
   private lastRender = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private dirty = false;
+  /** The language the walker reads in, carried over to every new engine (Two Tongues). */
+  private locale: Locale = "fr";
 
   constructor(state: GameState = createInitialState()) {
     this.engine = this.createEngine(state);
@@ -121,6 +123,17 @@ export class GameStore {
   }
 
   /**
+   * Runs something on the engine that is not a player action (a date check, a notice):
+   * no input is marked (the autopilot keeps its own clock) and no early save is asked.
+   */
+  apply<T>(action: (engine: GameEngine, now: number) => T): T {
+    const result = action(this.engine, Date.now());
+    this.flushEvents();
+    this.notify(true);
+    return result;
+  }
+
+  /**
    * Replaces the whole game (server save, new game, logout). The game only runs while its
    * page is open: the time since the save was written is skipped, unless `creditAbsence`
    * (the browser discarded this very tab, which was still open).
@@ -142,11 +155,20 @@ export class GameStore {
   private createEngine(state: GameState) {
     const engine = new GameEngine(state);
     engine.afkAfterMs = AFK_AFTER_MS;
+    engine.locale = this.locale;
     engine.markInput(Date.now());
     return engine;
   }
 
+  /** The tab is watched again (or not): coming back after a long absence leaves one line. */
   setVisible(visible: boolean) {
-    this.engine.visible = visible;
+    this.engine.setVisible(visible, Date.now());
+    this.flushEvents();
+    this.notify(true);
+  }
+
+  setLocale(locale: Locale) {
+    this.locale = locale;
+    this.engine.locale = locale;
   }
 }

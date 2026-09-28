@@ -1,4 +1,4 @@
-import { ALTARS, BIOMES, CLICK_HERO_ID, HEROES, ACHIEVEMENTS, STAGES_PER_BIOME, formatNumber } from "@idlebound/game";
+import { AGE_COUNT, ALTARS, BESTIARY, BIOMES, CLICK_HERO_ID, ERA_COUNT, HEROES, MAX_STAGE, NAMED_RELICS, SECRETS, STAGES_PER_BIOME, WEAVES, formatNumber } from "@idlebound/game";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
@@ -6,6 +6,7 @@ import { href } from "@/i18n/routing";
 import { getI18n } from "@/i18n/server";
 import { fetchLeaderboard, fetchStats } from "@/lib/server-api";
 import { SITE_NAME, pageAlternates, siteUrl } from "@/lib/site";
+import { Art, type ArtSpec } from "@/game/pixel/Art";
 import "./landing.css";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -21,21 +22,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /** Aldric is the player, not a companion. */
 const COMPANION_COUNT = HEROES.filter((hero) => hero.id !== CLICK_HERO_ID).length;
 
-const FEATURE_ICONS = [
-  "/assets/icons/sidebar-zones-map.webp",
-  "/assets/icons/sidebar-equipment-helmet.webp",
-  "/assets/icons/sidebar-essences-crystals.webp",
-  "/assets/icons/sidebar-inventory-backpack.webp",
-  "/assets/icons/sidebar-shop-stall.webp",
-  "/assets/icons/sidebar-save-disk.webp"
+/** World art of each feature card, in the order of `landing.features.items`. */
+const FEATURE_ART: ArtSpec[] = [
+  { kind: "altar", id: "wanderer" },
+  { kind: "portrait", hero: "maelle" },
+  { kind: "crystal" },
+  { kind: "creature", id: "golden-rat", animated: false },
+  { kind: "relic", slot: "weapon", base: 2, rarity: "legendary", forge: 6, named: "oathcutter" },
+  { kind: "market", id: "hourglass" }
 ];
+
+/** One Remnant of each biome drawn beside its guardian on the biome cards. */
+const BIOME_REMNANT: Record<string, string> = {
+  "green-plains": "hollow-scarecrow",
+  "dark-forest": "mourning-owl",
+  "forgotten-caves": "rune-cart",
+  "corrupted-marsh": "drowned-courtier",
+  "fallen-king-ruins": "candle-maid"
+};
 
 export default async function LandingPage({ params }: Props) {
   const { locale, t, g } = await getI18n(params);
   const l = t.landing;
   const [stats, board] = await Promise.all([fetchStats(), fetchLeaderboard("stage", 10)]);
   const url = siteUrl();
-  const features = l.features.items({ biomes: BIOMES.length, heroes: COMPANION_COUNT, altars: ALTARS.length });
+  const stages = new Intl.NumberFormat(locale).format(MAX_STAGE);
+  const counts = {
+    stages,
+    eras: ERA_COUNT,
+    ages: AGE_COUNT,
+    heroes: COMPANION_COUNT,
+    altars: ALTARS.length,
+    creatures: BESTIARY.length,
+    relics: NAMED_RELICS.length,
+    weaves: WEAVES.length,
+    secrets: SECRETS.length
+  };
+  const features = l.features.items(counts);
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -43,7 +66,7 @@ export default async function LandingPage({ params }: Props) {
       name: SITE_NAME,
       url: `${url}${href(locale, "home")}`,
       description: t.site.meta.description,
-      image: `${url}/og.jpg`,
+      image: `${url}/og.png`,
       inLanguage: locale,
       genre: l.jsonLd.genre,
       gamePlatform: l.jsonLd.platform,
@@ -67,7 +90,9 @@ export default async function LandingPage({ params }: Props) {
 
       <main>
         <section className="hero">
-          <div className="hero-bg" aria-hidden="true" />
+          <div className="hero-bg" aria-hidden="true">
+            <Art spec={{ kind: "scene", biome: "fallen-king-ruins" }} size="parent" cover className="hero-scene" />
+          </div>
           <div className="hero-inner">
             <div className="hero-copy">
               <h1>{l.hero.titleLead}<span>{l.hero.titleAccent}</span></h1>
@@ -79,13 +104,16 @@ export default async function LandingPage({ params }: Props) {
               <p className="hero-note">{l.hero.note}</p>
               <ul className="hero-proof" aria-label={l.hero.proofLabel}>
                 <li><strong>{COMPANION_COUNT}</strong> {l.hero.companions}</li>
-                <li><strong>{ACHIEVEMENTS.length}</strong> {l.hero.achievements}</li>
-                {stats && stats.players > 0 ? <li><strong>{formatNumber(stats.players)}</strong> {l.hero.players}</li> : <li><strong>∞</strong> {l.hero.stages}</li>}
+                <li><strong>{BESTIARY.length}</strong> {l.hero.creatures}</li>
+                <li><strong>{stages}</strong> {l.hero.stages}</li>
+                {stats && stats.players > 0 ? <li><strong>{formatNumber(stats.players)}</strong> {l.hero.players(stats.players)}</li> : null}
               </ul>
             </div>
             <div className="hero-art" aria-hidden="true">
               <div className="hero-glow" />
-              <img src="/assets/enemies/ruined-king.webp" alt="" width={639} height={640} className="hero-boss" fetchPriority="high" />
+              <div className="hero-boss">
+                <Art spec={{ kind: "creature", id: "ruined-king" }} size="parent" />
+              </div>
               <span className="hero-dmg hero-dmg-1">1.2M</span>
               <span className="hero-dmg hero-dmg-2 crit">48.7M</span>
               <span className="hero-dmg hero-dmg-3">980K</span>
@@ -107,23 +135,39 @@ export default async function LandingPage({ params }: Props) {
           <div className="feature-grid">
             {features.map((feature, index) => (
               <article key={feature.title} className="feature card">
-                <img src={FEATURE_ICONS[index]} alt="" width={64} height={64} loading="lazy" />
+                <span className="feature-art"><Art spec={FEATURE_ART[index]} size={56} /></span>
                 <h3>{feature.title}</h3>
                 <p>{feature.text}</p>
               </article>
             ))}
+            <article className="feature feature-wide card">
+              <div className="feature-place" aria-hidden="true">
+                <Art spec={{ kind: "place", id: "loom" }} cover className="feature-place-art" />
+              </div>
+              <div className="feature-wide-body">
+                <h3>{l.features.descent.title}</h3>
+                <p>{l.features.descent.text(counts)}</p>
+              </div>
+            </article>
           </div>
         </section>
 
         <section className="section" aria-labelledby="biomes-title">
-          <h2 id="biomes-title" className="section-title">{l.biomes.title}</h2>
+          <h2 id="biomes-title" className="section-title">{l.biomes.title(ERA_COUNT)}</h2>
           <div className="biome-grid">
             {BIOMES.map((biome) => {
               const bossName = g.monsters[biome.boss.id];
+              const remnant = BIOME_REMNANT[biome.id] ?? biome.monsters[0].id;
               return (
                 <article key={biome.id} className="biome card" style={{ ["--accent" as string]: biome.accent }}>
-                  <div className="biome-img" style={{ backgroundImage: `url(${biome.background})` }}>
-                    <img src={biome.boss.image} alt={bossName} loading="lazy" />
+                  <div className="biome-img">
+                    <Art spec={{ kind: "scene", biome: biome.id }} size="parent" cover className="biome-scene" />
+                    <div className="biome-remnant-art">
+                      <Art spec={{ kind: "creature", id: remnant, animated: false }} size="parent" label={g.monsters[remnant]} />
+                    </div>
+                    <div className="biome-boss-art">
+                      <Art spec={{ kind: "creature", id: biome.boss.id, animated: false }} size="parent" label={bossName} />
+                    </div>
                   </div>
                   <div className="biome-body">
                     <p className="biome-stage">{l.biomes.stages(biome.index * STAGES_PER_BIOME + 1, (biome.index + 1) * STAGES_PER_BIOME)}</p>

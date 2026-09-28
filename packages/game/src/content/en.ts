@@ -1,53 +1,61 @@
+import { AGE_ECHOES_TEXT } from "./story/ages";
+import { BESTIARY_TEXT } from "./story/bestiary";
+import { BESTIARY_KEEP_TEXT } from "./story/bestiary-keep";
+import { COMPANY_TEXT } from "./story/company";
+import { COMPANY_LATE_TEXT } from "./story/company-late";
+import { PLACES_TEXT } from "./story/places";
+import { STRATA_TEXT } from "./story/strata";
+import { SYSTEMS_TEXT } from "./story/systems";
+import { VOICES_TEXT } from "./story/voices";
+import { roman } from "./roman";
 import type { GameText } from "./types";
 
 const n = (value: number) => value.toLocaleString("en-US");
 const exp = (value: number) => value.toExponential(0).replace("e+", "e");
 const s = (count: number, word: string, plural = `${word}s`) => (count > 1 ? plural : word);
 
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-
 const RARITY_ADJECTIVE = { common: "", rare: "Fine", epic: "Enchanted", legendary: "Legendary", mythic: "Mythic" } as const;
 
 const BIOME_SUFFIX = ["of the Plains", "of the Grove", "of the Depths", "of the Mire", "of the Crown"] as const;
 
 export const en: GameText = {
-  biomes: {
-    "green-plains": { name: "Verdant Plains", description: "Peaceful hills where every adventurer earns their first stripes." },
-    "dark-forest": { name: "Dark Forest", description: "A dense wood where the shadows are hungry and the brambles whisper." },
-    "forgotten-caves": { name: "Forgotten Caves", description: "Frozen tunnels where every echo seems alive." },
-    "corrupted-marsh": { name: "Corrupted Marsh", description: "A toxic mire that swallows roads and the reckless alike." },
-    "fallen-king-ruins": { name: "Fallen King's Ruins", description: "The last walls of a cursed kingdom still hum with magic." }
-  },
+  biomes: PLACES_TEXT.en.biomes,
   monsters: {
     "field-rat": "Field Rat",
     "wild-boar": "Jumpy Boar",
-    "rabid-rat": "Rabid Rat",
-    "tusk-king": "Greattusk",
+    "carrion-crow": "Carrion Crow",
+    "last-reaper": "Last Reaper",
     "moss-alpha": "Moss Alpha",
     "shade-wolf": "Shade Wolf",
     "briar-witch": "Briar Witch",
-    "blight-boar": "Blighted Boar",
-    "briar-matron": "Briar Matron",
+    "grove-spinner": "Grove Spinner",
+    "root-knight": "Root Knight",
     "old-grove": "Heart of the Old Grove",
     "blind-crawler": "Blind Crawler",
     "echo-bat": "Echo Bat",
-    "deep-wolf": "Deep Wolf",
-    "howling-swarm": "Howling Swarm",
+    "crystal-mite": "Crystal Mite",
+    "miner-shade": "Miner's Shade",
     "stone-devourer": "Stone Devourer",
     "bog-remnant": "Bog Remnant",
-    "putrid-crawler": "Putrid Crawler",
-    "marsh-hag": "Marsh Hag",
+    "rot-toad": "Rot Toad",
+    "will-o-wisp": "Will-o'-Wisp",
     "bog-colossus": "Mire Colossus",
     "rot-baron": "Baron of Rot",
-    "royal-hound": "Spectral Hound",
-    "crown-bat": "Crown Bat",
+    "hour-gargoyle": "Gargoyle of the Hours",
+    "banner-wraith": "Banner Wraith",
     "fallen-sentinel": "Fallen Sentinel",
     "stone-warden": "Stone Warden",
     "ruined-king": "Fallen King",
-    "golden-rat": "Golden Rat"
+    "golden-rat": "Golden Rat",
+    "hollow-scarecrow": "Hollow Scarecrow",
+    "lantern-moth": "Lantern Moth",
+    "dusk-hare": "Dusk Hare",
+    "lost-shepherd": "The Lost Shepherd",
+    "lantern-queen": "Lantern Queen",
+    ...BESTIARY_TEXT.en.monsters,
+    ...BESTIARY_KEEP_TEXT.en.monsters
   },
-  eraTags: ["", "Echo", "Ash", "Void", "Astral", "Primordial"],
-  eraName: (era) => `Era ${ROMAN[era] ?? era + 1}`,
+  eraName: (era) => `Era ${roman(era + 1)}`,
   heroes: {
     aldric: { name: "Aldric", title: "The Adventurer", lore: "That's you. Every click is a sword stroke. Every level, a lesson learned." },
     maelle: { name: "Maëlle", title: "Plains Huntress", lore: "She has tracked game across the plains since childhood and never misses twice." },
@@ -101,7 +109,8 @@ export const en: GameText = {
     hawkeye: { name: "Hawkeye", description: "+50% critical hit chance for 30 s." },
     goldrain: { name: "Golden Rain", description: "Triples gold earned for 30 s." },
     ritual: { name: "Resonance Ritual", description: "+5% DPS until your next ascension. Stacks." },
-    echo: { name: "Time Echo", description: "Resets the cooldown of the last power you used." }
+    echo: { name: "Time Echo", description: "Resets the cooldown of the last power you used." },
+    unweave: SYSTEMS_TEXT.en.unweave
   },
   altars: {
     might: { name: "Altar of Might", description: "Each level multiplies your DPS by 1.10." },
@@ -144,7 +153,8 @@ export const en: GameText = {
     mythic: ["Impossible!"],
     hit: ["Solid Hit", "Titanic Hit", "Cosmic Hit", "Big Bang"],
     time: ["An Hour Already", "Devoted", "Veteran"],
-    fails: ["Back to Square One", "Persistent"]
+    fails: ["Back to Square One", "Persistent"],
+    ...SYSTEMS_TEXT.en.achievementNames
   },
   achievementCategories: {
     progression: "Progression",
@@ -173,7 +183,8 @@ export const en: GameText = {
     mythic: (t) => `Find ${t} mythic ${s(t, "item")}.`,
     hit: (t) => `Deal a single hit of ${exp(t)} damage.`,
     time: (t) => `Play ${Math.round(t / 3600)} h in total.`,
-    fails: (t) => `Fail against a boss ${t} ${s(t, "time")}.`
+    fails: (t) => `Fail against a boss ${t} ${s(t, "time")}.`,
+    ...SYSTEMS_TEXT.en.achievementDescriptions
   },
   slots: { weapon: "Weapon", armor: "Armor", amulet: "Amulet", ring: "Ring" },
   rarities: { common: "Common", rare: "Rare", epic: "Epic", legendary: "Legendary", mythic: "Mythic" },
@@ -198,5 +209,135 @@ export const en: GameText = {
     amulet: [{ noun: "Amulet", gender: "m" }, { noun: "Talisman", gender: "m" }, { noun: "Pendant", gender: "m" }, { noun: "Medallion", gender: "m" }],
     ring: [{ noun: "Ring", gender: "m" }, { noun: "Seal", gender: "m" }, { noun: "Signet", gender: "m" }, { noun: "Band", gender: "m" }]
   },
-  itemName: ({ noun, rarity, biome }) => [RARITY_ADJECTIVE[rarity], noun, BIOME_SUFFIX[biome]].filter(Boolean).join(" ")
+  itemName: ({ noun, rarity, biome }) => [RARITY_ADJECTIVE[rarity], noun, BIOME_SUFFIX[biome]].filter(Boolean).join(" "),
+
+  openingLine: "Dusk again.",
+  bestiary: {
+    "field-rat": [
+      "Every rat that ever stole grain from Orvane, remembered as one very determined rat.",
+      "It always flees to the left. The Ledger has checked: the granary stood on the left.",
+      "Unmade a thousand times. It still stops to sniff the spot where the grain cart tipped over."
+    ],
+    "wild-boar": [
+      "Nervous because it has been killed before. It remembers, a little.",
+      "It flinches before the blow lands now. Once, it flinched at exactly the right moment.",
+      "It has stopped charging. It stands in the road and waits for you, like a chore."
+    ],
+    "carrion-crow": [
+      "It gleans what the harvest left. The harvest left everything.",
+      "It keeps the scarecrow company. They have agreed never to discuss the scarecrow's job.",
+      "Its nest, in the windmill, is lined with buttons. Every one is from the same coat."
+    ],
+    "hollow-scarecrow": [
+      "Stuffed with the last harvest. It guards fields no one will reap.",
+      "Its head turns to follow the walker. It turned the same way for the one before.",
+      "Under the straw, a child's ribbon, knotted twice. This field belonged to someone."
+    ],
+    "lantern-moth": [
+      "Drawn to the walker's light. Everything in the night is.",
+      "It dies facing the brightest thing in sight. Lately, that has been you.",
+      "The moths have a queen. She comes when the light is looked at very hard."
+    ],
+    "dusk-hare": [
+      "It is always running toward dusk. It never arrives.",
+      "Once a night it stops, ears up, and listens to the east. Then it runs again.",
+      "Maëlle has never shot one. She says a hare that fast deserves to get somewhere."
+    ],
+    "last-reaper": [
+      "It came to bring in the last harvest. It is waiting for first light to begin.",
+      "It whets its scythe every night. The edge is thinner than a shadow now.",
+      "Once it asked Maëlle the hour. She did not know. Nobody has known for a very long time."
+    ],
+    "moss-alpha": [
+      "Maëlle's oldest enemy. It lets her win. It always has.",
+      "Moss grows on it because it has not moved in a very long time, except to die.",
+      "Its left tusk is missing. Maëlle's horn is carved from a tusk. Neither will say more."
+    ],
+    "lost-shepherd": [
+      "Counts his sheep every night. The number goes up.",
+      "He has no sheep. He counts the walkers who pass, and gives them the names of lambs.",
+      "He once asked the Ledger for his own number. The Ledger did not answer. It was too large."
+    ],
+    "golden-rat": [
+      "The same in every stratum. The only one.",
+      "It is never where the others were. It is always where you are looking.",
+      "The Ledger keeps a single entry for Pip. It is in Pip's handwriting."
+    ],
+    "lantern-queen": [
+      "Queen of the moths. She follows the light to wherever someone is looking.",
+      "She never lands. The Ledger has never recorded where she rests, or whether.",
+      "Her wings are made of every lamp that was ever left burning for someone."
+    ],
+    ...BESTIARY_TEXT.en.lines,
+    ...BESTIARY_KEEP_TEXT.en.lines
+  },
+  bestiaryPages: BESTIARY_TEXT.en.pages,
+  echoes: {
+    "green-plains": [
+      { by: "Maëlle", text: "The wheat is still standing. Nobody has come to cut it for longer than I have been alive. Or I have been alive a long time." },
+      { by: "Brom", text: "My forge stands at the crossroads. Every night, the fire is already lit when I get there." },
+      { by: "The Ledger", text: "The windmill turns with no wind. It is grinding the same sack of flour it started on." },
+      { by: "A scarecrow", text: "You walk too loud. The last one walked softer. The one before, softer still." },
+      { by: "Maëlle", text: "I cut a notch in the fence post every night. The post is full. Someone has started on a second one." },
+      { by: "The Ledger", text: "In the farmhouse by the road, the table is laid for four. The soup is warm. The chairs are dusty." },
+      { by: "A field rat", text: "Grain. Grain. Grain. Then the walker. Then grain." },
+      { by: "Brom", text: "The King ordered a hammer from me, once. I am still working on it. Kings can wait." },
+      { by: "The Ledger", text: "The King's surveyors set the milestone stones. Each one lights when the road is cleared. None has ever stayed lit." },
+      { by: "The Ledger", text: "Before you came, the old boar lay down in the wheat and waited, the way a dog waits by a door." },
+      { by: "Maëlle", text: "The harvest festival was the next day. I had a ribbon. I think I had a ribbon." },
+      { by: "The Ledger", text: "In the Hearthfields, dusk lasts a little longer than anywhere else. As if the fields were asking for one more hour." }
+    ],
+    ...PLACES_TEXT.en.echoes
+  },
+  wanderers: {
+    "lost-shepherd": { by: "The Lost Shepherd", text: "Ninety-eight. Ninety-nine. A hundred. You. I counted you last night too." },
+    ...PLACES_TEXT.en.wanderers
+  },
+  memories: {
+    maelle: [
+      { by: "Maëlle", text: "Maëlle squints at you over her bow. \"Have we met? You have a face I keep almost remembering.\"" },
+      { by: "Maëlle", text: "She calls you by your name before you give it. Then she frowns, as if the word had walked in on its own." },
+      { by: "Maëlle", text: "She shows you the fence post by the road, covered in notches. \"Some of these are in my hand. I don't remember making them.\"" },
+      { by: "Maëlle", text: "When you reach the fire, a place is already kept for you, and a bowl, still warm. She does not look up." },
+      { by: "Maëlle", text: "\"Don't tell me. I'd rather meet you again. I like that part.\"" }
+    ],
+    brom: [
+      { by: "Brom", text: "He turns your relic over in his hands. \"This is my work. I'd know my own folds anywhere. When did I make this?\"" },
+      { by: "Brom", text: "\"Who taught you to hold a hammer like that? That's my grip. Nobody has my grip.\"" },
+      { by: "Brom", text: "At the back of the forge, a hammer with no handle, its head still glowing. \"For the King. He asked. I'll finish it.\"" },
+      { by: "Brom", text: "He strikes a new mark into his anvil, beside his own: yours. \"So the metal knows you, next time.\"" },
+      { by: "Brom", text: "He sets the hammer in your hands, finished at last. \"He stopped needing it. You still walk. It's yours.\"" }
+    ],
+    ...COMPANY_TEXT.en.memories,
+    ...COMPANY_LATE_TEXT.en.memories
+  },
+  hireLines: {
+    maelle: [
+      "You look like someone who needs a bow and a friend. I'm both.",
+      "You again? No. I'd remember. Wouldn't I?",
+      "There you are. I kept your seat."
+    ],
+    brom: [
+      "Bring it back in one piece. Or in several. I'm not fussy.",
+      "Your edge is dull in the same place as last time. What last time?",
+      "The fire's lit. Put your blade on the anvil."
+    ],
+    ...COMPANY_TEXT.en.hireLines,
+    ...COMPANY_LATE_TEXT.en.hireLines
+  },
+  relics: SYSTEMS_TEXT.en.relics,
+  namedEffects: SYSTEMS_TEXT.en.namedEffects,
+  secrets: SYSTEMS_TEXT.en.secrets,
+  events: SYSTEMS_TEXT.en.events,
+
+  strata: STRATA_TEXT.en,
+  voices: VOICES_TEXT.en,
+  ageEchoes: AGE_ECHOES_TEXT.en,
+  places: PLACES_TEXT.en.places,
+  lessons: COMPANY_LATE_TEXT.en.lessons,
+  altarLegends: SYSTEMS_TEXT.en.altarLegends,
+  weaves: SYSTEMS_TEXT.en.weaves,
+  caravan: SYSTEMS_TEXT.en.caravan,
+  crown: SYSTEMS_TEXT.en.crown,
+  speakers: { king: "The King", stallkeeper: "The Stallkeeper", ledger: "The Ledger" }
 };

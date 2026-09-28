@@ -35,13 +35,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: SITE_NAME,
       title,
       description: t.site.meta.description,
-      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: t.site.meta.ogImageAlt }]
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: t.site.meta.ogImageAlt }]
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: t.site.meta.description,
-      images: ["/og.jpg"]
+      images: ["/og.png"]
     },
     robots: isIndexable() ? { index: true, follow: true } : { index: false, follow: false },
     icons: {

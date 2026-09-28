@@ -10,8 +10,12 @@ interface Hint {
   position: "center" | "right" | "bottom";
 }
 
-/** Contextual tips for the first minutes; each one goes away once understood. */
-export function TutorialHint() {
+/**
+ * Contextual tips for the first minutes; each one goes away once understood. The scene renders
+ * it twice: over the arena on a computer, and under the powers on a phone, where the arena has
+ * no room beside the monster (CSS shows one of the two).
+ */
+export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
   const { state, store } = useGame();
   const { t, g } = useI18n();
   const m = t.hud.tutorial;
@@ -49,7 +53,7 @@ export function TutorialHint() {
 
   if (!hint) return null;
   return (
-    <div className={`tutorial-hint hint-${hint.position}`} role="note" onPointerDown={(event) => event.stopPropagation()}>
+    <div className={`tutorial-hint hint-${placement} hint-${hint.position}`} role="note" onPointerDown={(event) => event.stopPropagation()}>
       <span>{hint.text}</span>
       <button type="button" aria-label={m.okLabel} onClick={() => store.act((engine) => engine.completeTutorial(hint.id))}>{m.ok}</button>
     </div>

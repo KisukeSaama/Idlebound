@@ -1,0 +1,138 @@
+import { C } from "../palette";
+import type { CreatureGrid } from "../types";
+
+/**
+ * The Hollow Canary (BIBLE 8.3): the miners' canary; it stopped singing the day the air
+ * went bad, and it sings now for nobody. A big gaunt canary, hunched, wings mantled in
+ * threat, its dull yellow feathers falling out; the dented brass cage has grown into its
+ * body, a ring round the shoulders and one round the belly, the bars bowed over the bare
+ * dark chest like ribs and sunk into the flesh. A plucked neck craning forward, the beak
+ * gaping, and under the hard brow an empty socket with a cold point of light in it.
+ */
+export const HOLLOW_CANARY: CreatureGrid = {
+  rows: [
+    "...............................................................fff",
+    "..............................................................fffff",
+    ".............................................................ffffffff",
+    "............................................................fffffffff",
+    "............................................................ffffffx00",
+    "...........................................................gffffffx00",
+    "..........................................................ggfffffxx0",
+    ".........................................................fggfffffx00.....................tt",
+    ".........................................................ffffffffxxx..............ttttttttt",
+    "........................................................ffffffffffffggggx.....tttttttttt00",
+    "........................................................gffffffffffffff00...ttttttttttff0",
+    ".......................................................gggffffffffffff00..ttttttttttggff",
+    ".......................................................fgfffffffffffxx00ttttttttthhggghht",
+    "......................................................gfgffffffffffxxxtttttttttthhhhh..tttttt",
+    "......................................................gffffffffffffftttttttttthhhh.....hhtttttt",
+    ".....................................................ggffffffffffffttttttttthhhhhhh...xxxxxxxxx",
+    ".....................................................ggfffffffffffttttttthhhhhhhhhhgg.xxxxxx",
+    "....................................................ggffffffffffftttttthhhhhhhhhghhgxxxxx",
+    "....................................................ggffffffffftttttthhhhhhfhhggghxxxggh",
+    "....................tt.............................ggffffffffftttttthhhhhggfhhggxxgggghhhh",
+    "..................ttt......t.......................fffffffffffttttthhhhhhhhhhxxxgggggghhhhhh",
+    ".................hht...tttgf.......................ffffffffffffttthhhhhhhhhhxxxgggfffffffhhhg",
+    "...............hhhhttthhhg.........................fffffffttttttthhhhhhhhhxxxxggggffxfxxxxxxx",
+    "...............hhhhhhhgg..........................fffffffttttttthhhhhhhhhhfffhhggffxxxxx",
+    ".............thhhthhggttttttttthh.................fffffftttttthhhhhhhhhxxhhhhhhhffxx",
+    "...........tttttttttttthhhhhhhhff.................fffftttttttthhhhhhhxxhhhhhhxxxxxhhh",
+    ".........ttttgggggggggghggff.....................ffffttttttthhhhhhhxxhhhhhffxxxggghhhg",
+    ".........tgggggggggggggghhf......................fffttttttthhhhhhxxxhhhhhhxxxfffffffggg",
+    "........gggggghhhgxxggghfff......................ttttttttthhhhhhhxhhhhhhxxggffffffffxggg",
+    "........gggttxxxxxxxxgghhgffbbbb...........tthhhttttttttthhhhhhhhhhhhxxxxgggfxxxxxxxxxxx",
+    ".......PPPttxxxxxxxxxhhhggfbbbbbbb.......tttfffhttttttthhhhhhhhhhhxxxhhhgggggg",
+    "....PPPPPttxxxxxEExxhhhgggfababbbbbhhhhhhgttfffhtttttthhhhhhhhhhxxhgggggggghhxx",
+    "..PPPPPtttttxxxxxxxbhhhffffaaaabbbhhhhhhhgttffftttttthhhhhgghhxxhhhgggggggxxxhh",
+    ".PPPPtttttttbbbbbbbbhhgffffaaaaaabhhhhhhggfttfttttttffhhhhhhhhgghggggxxxxxffgghh",
+    "PPPtttttttxxxbbbbhhhgggffffaaaaaffffgggggfffttttttggghhhhhhhhhhghgxxxxxxffffffhh",
+    "PPttggggxxxxxgghhhhhgggfffaaaaaaggffggggfggttttttggghhhhhhhhhhhxxxggxxxx00xxx000",
+    "....xxxxxxxxxggghhhggfff0000aaaagffgggfffggtttthhhghhhhhhhhhxxxhhhgggg",
+    ".....xbbbbxxxggggggggffx0....aaaafhhggfffxxtffhhhhhhhhhhhhhhhhhhhhhggg",
+    ".....xxxxxxtxxggggggffxx......aaagggggfffx0bfhhhhhhhhhhhhhhggggggghggg",
+    ".....xPPPttttgggfffffxx........aaxxfgffffx0gghhhhhhhhhhhhhggggffxxxxxxx",
+    "....tttttttgggffffxxxx........taaaxfxxaaa00gghgghhhhhhhhhgffffffxxfffff",
+    "....tttggg...xx...............tGGaaaaaaaa00gggghhhhhhhhhggfffffxffxffff",
+    ".............................GGGGaaaaaaa00aggggggffggghggfffxxxxxxxxxxx",
+    "............................GGGGGGaa00000aaaggggfffgffgggffxxffffxx",
+    "............................GGgbGGbbaaGaaaaaffffggggfgggffxxgffffxff",
+    "............................gggbGGbaaGGaaaaafffffffggggffxxggfffffff",
+    "............................ggbbGgaaaGGaaaaaGaxxffffffffxxfhhgfffggf",
+    "............................GbbbGgaaaGGaaaaaGaaxxffffxxxxffGhgffffff",
+    "............................GbbbGaaaaGaaaaaGGaaxxffffffxfffGGgfffffx",
+    "...........................GGbbGgaaaaGaaaaaGGaaa0gggffggggggGggffffx",
+    "...........................GffbGgaaaaGaaaaaGhaaa0ggGgggggggbGffffxxx",
+    "..........................GggbbGbaaaGGaaaaaGhaaa0fgGggfggbbbGffffxxx",
+    "..........................GggbGGbaaaGGaaaaaGgaaa0ffGffffbbaGGaffffxx",
+    "..........................G.hbGGbaaaGaaaaaaGgaaa0fhGffxgaaaaGaafffxx",
+    "..........................GhhbGGbbaaGaaaaaaGGaaa00hGffxgaaaaGa0fffx0",
+    "..........................GhhbGGbaaaaaaaaaaGaaa00xgGhfxgvvvvGa0fffx0",
+    "...........................GggGGbaaaaaaaaaaGGaa00xgGhfxgvvvvaafffx00",
+    "...........................GGfaGhaaaaaaaaaaGGaa00ggGhfffvvvvaxxxxxxx",
+    "............................GfaGhaaaaaaaaaaGGaa00ggGhfgffff00xxx00xx",
+    "............................GffGGaaaaaaaaaaGGaa00ggGgfgffffxxxx00xx",
+    ".............................GGGGGaavbbaaaaaGha00ggGgggffxfxxxx00xx",
+    ".............................GGfGGavvbbaaaaaGh00ffabafffxxfxxxx00Gg",
+    ".............................GGffGaavvbaaaaaGh0xxx0baaffxxxGxxx0GGggg",
+    "..............................GGGGGaaabaaaaaGG00xf0bbffxxxxGhxxGGGggggg",
+    "..............................GGGGGaaaGGaaaaGG00xffbbxxxxxxGhGGGGfgggggg",
+    "...............................GGGGGaaGGaaaa0G00fxfGhxxx0xxGhGGGffgggggggg",
+    "................................GGGGGaaGaaa00Ghxfxxxhxxx0xxGGGGfffffgggggggg",
+    ".................................GGGGGGGGa000GhxxxxGG000xxGGGGffgggfffggggggg",
+    "...................................GGGGGG0000GhxxxxGG0GGGGGGGfx.gggggfffggggggg",
+    "....................................GGGGGGGGGGG00xxGGGGGGGGfffx..ggggggfffgggggg",
+    "......................................GGGGGGGGGGGGGGGGGGggffffx...ggggggfgfffggggg",
+    ".......................................hhgGGGGGGGGGGGGfffgffffx....gggggggggfffggg",
+    "........................................gggxxhfGGGxxxxggggfgffx.....ggggggggggffggg",
+    "........................................hgggggfxx.xx..ggggggffx......ggggggggggfgggg",
+    "........................................hhggggfx......ggggggffx......gggggggggggggggg",
+    ".......................................hhhggggfx.......gggggffx.......ggggggggggg.ggg",
+    ".......................................hhggggfx........ggggggfx........gggggfgggg..ggg",
+    ".......................................hgggggfx........ggggggfx.........ggggffgggf..ggg",
+    ".......................................gggggfx..........gggggfx..........gggf.gggf...ggg",
+    ".......................................bbbbffx..........ggbbbfx..........gggf.ggggf...gg",
+    ".......................................bbbafx...........gbbbaax...........ggf..gggf....gg",
+    ".......................................bbbaxx............bbbaa............gggf..ggf.....f",
+    ".......................................bba0x.............bba00............gggf..gggg",
+    "......................................00aa0.............00aa...............ggf...ggg",
+    "......................................bbb0..............bbb0...............ggf....ggf",
+    "......................................b00...............b00................ggf....ggf",
+    ".....................................bbb0..............bbb0.................ggf....gg",
+    ".....................................bb00..............bbaa.................ggf.....gg",
+    "....................................bbaa..............bbba..................ggf.....gg",
+    "....................................bbaa..............bb0a...................gg......gg",
+    "....................................bba...............bb0....................gg.......f",
+    "...................................bb00..............bb00.....................g.......f",
+    "...................................bb0...............aa0......................gx",
+    "..................................bbbb..............bbb0......................gf",
+    "...............................bbbbabb...........bbbbbaa",
+    "............................xaaxbaaaaaaxx.....xaabbaaaaaaxx",
+    "............................xxxxaa.....xx.....xaxxaa.....xx"
+  ],
+  legend: {
+    "0": { m: "shadow", step: 0 },
+    E: { pal: C.shardLight, glow: true },
+    G: { m: "feather", step: 3 },
+    P: { m: "bone", step: 3 },
+    a: { m: "skin", step: 0 },
+    b: { m: "skin", step: 1 },
+    f: { m: "feather", step: 0 },
+    g: { m: "feather", step: 1 },
+    h: { m: "feather", step: 2 },
+    t: { m: "beak", step: 3 },
+    v: { m: "shadow", step: 3 },
+    x: { pal: C.ink }
+  },
+  idle: {
+    // A shallow, laboured breath: the chest heaves against the bars.
+    waist: 67,
+    breath: [0, 0, 1, 1, 2, 2, 2, 1, 1, 0],
+    // Once in a cycle, the beak snaps, as if to sing.
+    twitch: {
+      frames: [7],
+      patches: [
+        { x: 4, y: 38, rows: ["..PPPtt", "ttttt", "_______"] }
+      ]
+    }
+  }
+};

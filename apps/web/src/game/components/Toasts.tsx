@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { ToastInput } from "../context";
 import { Picto } from "../icons";
+import { monsterOnPage } from "./SceneCanvas";
 
 export interface Toast extends ToastInput {
   id: number;
@@ -11,7 +12,64 @@ export interface Toast extends ToastInput {
 /** Space between the scene's top bar (stages, active effects) and the first toast. */
 const GAP = 8;
 
-export function Toasts({ toasts }: { toasts: Toast[] }) {
+/** A toast stack narrower than this does not fit beside the creature: it goes above it. */
+const MIN_SIDE = 250;
+const MAX_WIDTH = 360;
+
+/**
+ * On a desktop layout, toasts never cover anything that matters: they dock in the free space
+ * of the scene, beside the creature (the wider side) or in the sky above it, between the top
+ * bar (or a tutorial hint) and the monster's panel; the toasts that do not fit wait hidden
+ * until the others leave.
+ * Phones keep their own placement (CSS).
+ */
+function dock(container: HTMLElement, top: number) {
+  const desktop = window.matchMedia("(min-width: 901px) and (min-height: 561px)").matches;
+  const scene = document.querySelector(".scene")?.getBoundingClientRect();
+  const panel = document.querySelector(".monster-panel")?.getBoundingClientRect();
+  const monster = monsterOnPage();
+  const children = [...container.children] as HTMLElement[];
+  if (!desktop || !scene) {
+    container.classList.remove("docked");
+    for (const child of children) child.style.display = "";
+    return;
+  }
+  const bottom = (panel?.top ?? scene.bottom) - GAP;
+  let left = scene.right - GAP - MAX_WIDTH;
+  let width = MAX_WIDTH;
+  let limit = bottom;
+  if (monster) {
+    const leftSpace = monster.left - scene.left - 2 * GAP;
+    const rightSpace = scene.right - monster.right - 2 * GAP;
+    if (Math.max(leftSpace, rightSpace) >= MIN_SIDE) {
+      width = Math.min(MAX_WIDTH, Math.max(leftSpace, rightSpace));
+      left = rightSpace >= leftSpace ? scene.right - GAP - width : scene.left + GAP;
+    } else {
+      // Not enough room beside it: the band of sky above its head, the scene's full width.
+      width = Math.min(MAX_WIDTH * 1.4, scene.width - 2 * GAP);
+      left = scene.left + (scene.width - width) / 2;
+      limit = Math.min(bottom, monster.top - GAP);
+    }
+  }
+  // A tutorial hint stays readable: where the stack would cross it, it starts under it.
+  const hint = document.querySelector(".tutorial-hint.hint-arena")?.getBoundingClientRect();
+  const start = hint && hint.height > 0 && hint.left < left + width && hint.right > left ? Math.max(top, hint.bottom + GAP) : top;
+  container.classList.add("docked");
+  container.style.setProperty("--toast-top", `${start}px`);
+  container.style.setProperty("--toast-left", `${left}px`);
+  container.style.setProperty("--toast-width", `${width}px`);
+  // Only the toasts that fit are shown, the newest first; the others wait out of sight.
+  for (const child of children) child.style.display = "";
+  const heights = children.map((child) => child.offsetHeight + GAP);
+  let used = start;
+  for (let index = children.length - 1; index >= 0; index -= 1) {
+    const fits = used + heights[index] <= limit;
+    children[index].style.display = fits ? "" : "none";
+    if (fits) used += heights[index];
+  }
+}
+
+export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const reposition = useRef<() => void>(() => {});
 
@@ -35,17 +93,24 @@ export function Toasts({ toasts }: { toasts: Toast[] }) {
         observed = bar;
       }
       const floor = (header?.getBoundingClientRect().bottom ?? 0) + GAP;
-      container.style.setProperty("--toast-top", `${Math.max(floor, bar.getBoundingClientRect().bottom + GAP)}px`);
+      const top = Math.max(floor, bar.getBoundingClientRect().bottom + GAP);
+      container.style.setProperty("--toast-top", `${top}px`);
+      dock(container, top);
     };
     function schedule() {
       if (!frame) frame = requestAnimationFrame(place);
     }
     place();
     reposition.current = schedule;
+    // The creature changes with every kill: follow it while toasts are shown.
+    const follow = setInterval(() => {
+      if (root.current?.childElementCount) schedule();
+    }, 250);
     window.addEventListener("resize", schedule);
     window.addEventListener("scroll", schedule, { passive: true, capture: true });
     return () => {
       if (frame) cancelAnimationFrame(frame);
+      clearInterval(follow);
       observer.disconnect();
       window.removeEventListener("resize", schedule);
       window.removeEventListener("scroll", schedule, { capture: true });
@@ -56,13 +121,19 @@ export function Toasts({ toasts }: { toasts: Toast[] }) {
   useEffect(() => reposition.current(), [toasts]);
 
   return (
-    <div ref={root} className="toasts" role="status" aria-live="polite">
+    <div ref={root} className={`toasts ${held ? "held" : ""}`} role="status" aria-live="polite">
       {toasts.map((toast) => (
         <div key={toast.id} className={`toast toast-${toast.tone}`} style={toast.color ? { ["--toast-color" as string]: toast.color } : undefined}>
           {toast.icon ? <Picto name={toast.icon} size={28} className="toast-icon" /> : null}
           <div>
             <div className="toast-title">{toast.title}</div>
             {toast.text ? <div className="toast-text">{toast.text}</div> : null}
+            {toast.quote ? (
+              <figure className="toast-quote">
+                <blockquote>{toast.quote.text}</blockquote>
+                <figcaption>{toast.quote.by}</figcaption>
+              </figure>
+            ) : null}
           </div>
         </div>
       ))}

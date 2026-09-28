@@ -31,11 +31,13 @@ const itemSchema = z.object({
     value: positive
   })).min(1).max(6),
   forge: z.number().int().min(0).max(100),
-  locked: z.boolean().optional()
+  locked: z.boolean().optional(),
+  named: z.string().max(40).optional()
 });
 
 const skillState = z.object({ activeUntil: finite, readyAt: finite });
-const skillId = z.enum(["frenzy", "rally", "hawkeye", "goldrain", "ritual", "echo"]);
+const skillId = z.enum(["frenzy", "rally", "hawkeye", "goldrain", "ritual", "echo", "unweave"]);
+const counter = z.record(z.string().max(40), count);
 
 export const gameStateSchema = z.object({
   version: z.number().int(),
@@ -54,13 +56,13 @@ export const gameStateSchema = z.object({
   monster: z.object({
     id: z.string().max(60),
     name: z.string().max(120).optional(),
-    image: z.string().max(200),
-    filter: z.string().max(300).optional(),
-    scale: finite,
     hp: finite,
     maxHp: positive,
-    kind: z.enum(["normal", "treasure", "miniboss", "boss"]),
-    gold: positive
+    kind: z.enum(["normal", "treasure", "rare", "miniboss", "boss"]),
+    gold: positive,
+    event: z.enum(["seam", "quiet", "stray", "unfinished"]).optional(),
+    wager: z.object({ clicks: count, until: finite }).optional(),
+    eclipse: z.boolean().optional()
   }).nullable(),
   respawnIn: finite,
   bossTimeLeft: finite,
@@ -69,12 +71,12 @@ export const gameStateSchema = z.object({
   skills: z.partialRecord(skillId, skillState),
   lastSkill: skillId.optional(),
   ritualStacks: count,
-  buffs: z.array(z.object({ id: z.enum(["rage", "fortune", "autoclick", "overcharge", "sharpness"]), until: finite })).max(10),
+  buffs: z.array(z.object({ id: z.enum(["rage", "fortune", "autoclick", "overcharge", "sharpness", "walker", "cheese", "lantern", "reunion"]), until: finite })).max(12),
   altars: z.record(z.string().max(40), z.number().int().min(0).max(1_000_000)),
   achievements: z.array(z.string().max(40)).max(500),
   equipment: z.partialRecord(z.enum(["weapon", "armor", "amulet", "ring"]), itemSchema),
   inventory: z.array(itemSchema).max(200),
-  crystal: z.object({ id: z.string().max(40), expiresAt: finite, x: finite, y: finite }).nullable(),
+  crystal: z.object({ id: z.string().max(40), expiresAt: finite, x: finite, y: finite, storm: z.number().int().min(0).max(10).optional() }).nullable(),
   nextCrystalAt: finite,
   run: statBlock,
   lifetime: statBlock.extend({
@@ -88,9 +90,12 @@ export const gameStateSchema = z.object({
     offlineSeconds: positive,
     hourglasses: count,
     bestLevelSum: count,
-    bestHired: count
+    bestHired: count,
+    kings: count,
+    seams: count,
+    threads: count
   }),
-  ascensions: z.array(z.object({ at: finite, maxStage: z.number().int().min(1), essences: positive })).max(200),
+  ascensions: z.array(z.object({ at: finite, maxStage: z.number().int().min(1), essences: positive, threads: count.optional() })).max(200),
   settings: z.object({
     notation: z.enum(["letters", "scientific", "engineering"]),
     sound: z.boolean(),
@@ -99,9 +104,47 @@ export const gameStateSchema = z.object({
     reducedMotion: z.boolean(),
     confirmAscension: z.boolean(),
     buyMode: z.union([z.literal(1), z.literal(10), z.literal(25), z.literal(100), z.literal("max")]),
-    offlineSpending: z.boolean()
+    offlineSpending: z.boolean(),
+    darkNight: z.boolean()
   }),
-  tutorial: z.object({ done: z.array(z.string().max(40)).max(50) })
+  tutorial: z.object({ done: z.array(z.string().max(40)).max(50) }),
+  bestiary: z.record(z.string().max(40), count),
+  lore: z.object({
+    echoes: z.record(z.string().max(40), z.number().int().min(0).max(1_000_000)),
+    ages: z.record(z.string().max(4), z.number().int().min(0).max(1_000_000)),
+    regalia: count,
+    songs: count,
+    dreams: count,
+    sayings: count,
+    lessons: z.array(z.string().max(40)).max(20),
+    nightSeconds: positive,
+    lastSeconds: count,
+    biscuit: count,
+    tongues: z.object({ fr: positive, en: positive }),
+    readings: z.array(z.number().int().min(0).max(60)).max(1_000),
+    events: z.array(z.string().max(20)).max(20),
+    altars: z.array(z.string().max(20)).max(20),
+    seen: z.record(z.string().max(20), count)
+  }),
+  recognition: counter,
+  named: z.array(z.string().max(40)).max(100),
+  secrets: z.array(z.string().max(40)).max(100),
+  trail: z.object({
+    wanderers: z.array(z.string().max(40)).max(20),
+    fieldKills: count,
+    rest: count,
+    evenRats: count,
+    offered: positive,
+    listen: positive,
+    migration: z.object({ stage: z.number().int().min(1), biome: z.string().max(40) }).optional(),
+    wound: z.object({ stage: z.number().int().min(1), share: z.number().min(0).max(1) }).optional(),
+    eclipse: z.boolean().optional()
+  }),
+  descents: count,
+  threads: count,
+  weaves: counter,
+  descentMark: positive,
+  caravanWeek: z.string().max(10)
 });
 
 /** Fills a save with the fields added since it was written. */
@@ -114,6 +157,9 @@ export function migrateState(raw: unknown): unknown {
   merged.lifetime = { ...base.lifetime, ...(input.lifetime as object | undefined) };
   merged.run = { ...base.run, ...(input.run as object | undefined) };
   merged.tutorial = { ...base.tutorial, ...(input.tutorial as object | undefined) };
+  merged.lore = { ...base.lore, ...(input.lore as object | undefined) };
+  (merged.lore as Record<string, unknown>).tongues = { ...base.lore.tongues, ...((input.lore as { tongues?: object } | undefined)?.tongues) };
+  merged.trail = { ...base.trail, ...(input.trail as object | undefined) };
   const version = typeof input.version === "number" ? input.version : 0;
   if (version < 4) {
     refundLegacyAltars(merged);
@@ -121,8 +167,65 @@ export function migrateState(raw: unknown): unknown {
     const tutorial = merged.tutorial as { done?: unknown };
     if (Array.isArray(tutorial.done)) merged.tutorial = { ...tutorial, done: tutorial.done.filter((id) => id !== ALTAR_REWORK_NOTICE) };
   }
+  if (version < 5 && merged.monster && typeof merged.monster === "object") {
+    // Version 5 draws monsters from their art recipe: the painted image, its CSS filter and
+    // its scale are no longer part of the state.
+    const { image: _image, filter: _filter, scale: _scale, ...monster } = merged.monster as Record<string, unknown>;
+    merged.monster = monster;
+  }
+  // Version 6 added the Chronicle (Bestiary, echoes, Recognition, named relics, secrets):
+  // an older save starts it empty from the defaults above, and fills it by playing.
+  if (version < 7) renameCreatures(merged);
+  // Version 8 told the whole story (strata, the King's Words and forms, fragments, events,
+  // secrets, the Descent): the new counters start from the defaults above. Kings beaten
+  // before it are the King stages already cleared (one each at least), so the deed of the
+  // first King is not lost; the Chronicle rebuilds the rest from the counters it has.
+  if (version < 8) {
+    const lifetime = merged.lifetime as Record<string, unknown>;
+    const deepest = typeof merged.maxStageEver === "number" ? merged.maxStageEver : 1;
+    const bestiary = merged.bestiary as Record<string, unknown> | undefined;
+    const met = bestiary && typeof bestiary["ruined-king"] === "number" ? (bestiary["ruined-king"] as number) : 0;
+    if (typeof lifetime.kings !== "number" || lifetime.kings === 0) lifetime.kings = Math.max(met, Math.floor((Math.max(1, deepest) - 1) / 50));
+  }
   merged.version = SAVE_VERSION;
   return merged;
+}
+
+/**
+ * Version 7 redrew the bestiary by hand, and some creatures became others in the same place
+ * of the road. Their Bestiary kills carry over to the creature that took their place (a
+ * completed page stays complete), and a monster on the road becomes its successor.
+ */
+export const RENAMED_CREATURES: Readonly<Record<string, string>> = {
+  "rabid-rat": "carrion-crow",
+  "tusk-king": "last-reaper",
+  "blight-boar": "grove-spinner",
+  "briar-matron": "root-knight",
+  "deep-wolf": "crystal-mite",
+  "howling-swarm": "miner-shade",
+  "putrid-crawler": "rot-toad",
+  "marsh-hag": "will-o-wisp",
+  "royal-hound": "hour-gargoyle",
+  "crown-bat": "banner-wraith"
+};
+
+function renameCreatures(merged: Record<string, unknown>) {
+  const bestiary = merged.bestiary;
+  if (bestiary && typeof bestiary === "object") {
+    const counts = { ...(bestiary as Record<string, unknown>) };
+    for (const [from, to] of Object.entries(RENAMED_CREATURES)) {
+      if (!Object.hasOwn(counts, from)) continue;
+      const moved = counts[from];
+      delete counts[from];
+      if (typeof moved === "number") counts[to] = (typeof counts[to] === "number" ? (counts[to] as number) : 0) + moved;
+    }
+    merged.bestiary = counts;
+  }
+  const monster = merged.monster as Record<string, unknown> | null | undefined;
+  if (monster && typeof monster === "object" && typeof monster.id === "string" && Object.hasOwn(RENAMED_CREATURES, monster.id)) {
+    const { name: _name, ...rest } = monster;
+    merged.monster = { ...rest, id: RENAMED_CREATURES[monster.id] };
+  }
 }
 
 /**
