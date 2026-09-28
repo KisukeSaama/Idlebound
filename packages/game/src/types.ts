@@ -202,8 +202,6 @@ export interface Settings {
   sound: boolean;
   /** Volume of the sound effects, 0 to 1. */
   volume: number;
-  /** Volume of the ambient drone of each place, 0 to 1 (0 stops it). */
-  ambience: number;
   damageNumbers: boolean;
   reducedMotion: boolean;
   confirmAscension: boolean;

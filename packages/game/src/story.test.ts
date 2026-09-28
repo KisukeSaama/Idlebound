@@ -610,11 +610,12 @@ describe("save version 8", () => {
     legacy.lore = { echoes: lore.echoes, nightSeconds: lore.nightSeconds, read: 3 };
     legacy.trail = { wanderers: [], fieldKills: 0 };
     delete (legacy.settings as Record<string, unknown>).darkNight;
-    delete (legacy.settings as Record<string, unknown>).ambience;
+    // A setting since removed (the ambient drone) is dropped, not refused.
+    (legacy.settings as Record<string, unknown>).ambience = 0.5;
     const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
     expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.trail).toEqual(emptyTrail());
-    expect(migrated.settings.ambience).toBe(0.5);
+    expect(migrated.settings).not.toHaveProperty("ambience");
     expect(migrated.descents).toBe(0);
     // The Kings of an older save: every fall the Bestiary counted, one per stratum at least.
     expect(migrated.lifetime.kings).toBe(Math.max(migrated.bestiary["ruined-king"] ?? 0, Math.floor((migrated.maxStageEver - 1) / 50)));

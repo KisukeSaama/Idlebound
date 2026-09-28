@@ -714,21 +714,12 @@ absence (a slow chord without attack), the Quiet (every other sound ducks for 2 
 (a squeak and a coin). Unlocked on the first
 pointer or key press.
 
-Under the effects, an **ambient drone** follows the place (`dronePlan(stage)`): each biome
-its own root, wave and colour (the Hearthfields warm on D, the Wychwood a minor third on A,
-the Deepvaults hollow octaves, the Mire a tritone, the Keep a low minor second on a
-filtered sawtooth); each era its own path for a wandering voice (seeded from the place with
-the engine RNG, one glide every 14 s) and its own slow breaths (two LFOs on the cutoff and
-on that voice, run by the audio thread). Each Age detunes it further: the root's twin beats
-wider (1.5 cents, then 4 more per Age) and the fifth and wandering voice go sour (3.5 cents
-per Age). In Age X every sound, effects included, arrives late (220 ms) and muffled (a
-520 Hz low-pass). At the Dawn the effects fall silent and only a held pure note (A3) is
-left. A change of biome, era or Age crossfades over 3 s; the Quiet ducks the drone with the
-rest. Six oscillators at most, none while the ambience is at zero; the context sleeps while
-sound is off or the page hidden.
+No ambient layer: between two events, the game is silent. In Age X every sound arrives
+late (220 ms) and muffled (a 520 Hz low-pass). At the Dawn every sound falls silent. The
+context sleeps while sound is off or the page hidden.
 
-Settings: a sound switch (everything), an **Effects** slider and an **Ambience** slider
-(`settings.volume`, `settings.ambience`, default 0.6 and 0.5), saved with the other settings.
+Settings: a sound switch (everything) and an **Effects** slider (`settings.volume`,
+default 0.6), saved with the other settings.
 
 ## Voice and copy
 

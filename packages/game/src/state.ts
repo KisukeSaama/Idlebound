@@ -74,7 +74,6 @@ export function createInitialState(now = Date.now()): GameState {
       notation: "letters",
       sound: true,
       volume: 0.6,
-      ambience: 0.5,
       damageNumbers: true,
       reducedMotion: false,
       confirmAscension: true,

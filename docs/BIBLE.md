@@ -1670,19 +1670,16 @@ their own scenes.
 
 ## 19. Sound
 
-> **Shipped**: the eight cues, and the ambient layer: a drone per biome and era that
-> detunes Age after Age, late and muffled sound in Age X, a single held note at the Dawn,
-> crossfades between places, separate effects and ambience volumes. The rules now live in
-> DESIGN.md (Sound). Choice made while building it: guardians and Kings leave the drone as
-> it is (nothing here asks for it); their own cues carry the fight.
+> **Shipped**: the eight cues, late and muffled sound in Age X, silence at the Dawn. The
+> rules now live in DESIGN.md (Sound). Choice made after building it: the ambient drone
+> was removed; between two events the game is silent.
 
 Still synthesized in `audio.ts`, no files. The pixel direction pulls it toward square and
 triangle waves, short envelopes, a little noise. New cues: **fragment** (two soft bell
 notes), **recognition** (a rising third), **seam** (a tearing noise, closing chord),
 **descent** (a long falling glissando), **King's Word** (one low note), **dream** (a slow
 chord, no attack), **quiet** (everything else ducks for 2 s), **pip** (a squeak, a coin).
-Each Age detunes the ambient drone a little further; in Age X sounds arrive late and
-muffled; at the Dawn the only sound is a held note.
+In Age X sounds arrive late and muffled; at the Dawn nothing sounds.
 
 ---
 

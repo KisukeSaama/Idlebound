@@ -465,7 +465,7 @@ rejects real play.
   account and settings. Badges (`!`, `+` or a count) flag an available ascension or altar,
   a nearly full inventory, enough shards for the market, an unconfirmed e-mail and the
   number of unread Chronicle fragments.
-- Settings: language, number notation (letters, scientific, engineering), sound, effects and ambience volumes,
+- Settings: language, number notation (letters, scientific, engineering), sound and its volume,
   damage numbers, reduced motion, ascension confirmation.
 - One-time tutorial hints guide the first minutes; saves that had ascended before version 4
   get a one-time notice about the altar rework.

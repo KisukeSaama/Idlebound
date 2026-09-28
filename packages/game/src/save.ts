@@ -113,7 +113,6 @@ export const gameStateSchema = z.object({
     notation: z.enum(["letters", "scientific", "engineering"]),
     sound: z.boolean(),
     volume: z.number().min(0).max(1),
-    ambience: z.number().min(0).max(1),
     damageNumbers: z.boolean(),
     reducedMotion: z.boolean(),
     confirmAscension: z.boolean(),

@@ -242,13 +242,12 @@ export default function GameApp() {
     };
   }, [ready, store, toast, fresh]);
 
-  // Audio settings, and the place the drone follows.
+  // Audio settings, and the place that colours every sound.
   useEffect(() => {
     const sync = () => {
       audio.setEnabled(store.state.settings.sound);
       audio.setVolume(store.state.settings.volume);
       audio.setStage(store.state.stage);
-      audio.setAmbience(store.state.settings.ambience);
       document.documentElement.classList.toggle("reduced-motion", store.state.settings.reducedMotion);
     };
     sync();
