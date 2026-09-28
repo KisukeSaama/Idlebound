@@ -15,12 +15,13 @@ import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTAR_BY_ID, altarTotalCost } from "./data/altars";
 import { BIOMES, KING_FORMS, GUARDIAN_IDS, isBossStage, isKingStage } from "./data/biomes";
 import { DESCENT_HERO, DESCENT_MIN_STAGE, WEAVE_BY_ID, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
-import { EVENTS, UNFINISHED_ODDS, WAGER_GOLD, WALKER_DPS } from "./data/events";
+import { EVENTS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_GOLD, WALKER_DPS } from "./data/events";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
-import { BUFF_MAX_SECONDS } from "./data/market";
-import { crystalEssenceReward } from "./engine";
-import { MONSTERS_PER_STAGE, REUNION_DPS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, wandererSkip, weaveLevel } from "./formulas";
+import { CARAVAN_WARES } from "./data/caravan";
+import { BUFF_MAX_SECONDS, MARKET_BY_ID } from "./data/market";
+import { CRYSTAL_SHARDS_MAX } from "./engine";
+import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, wandererSkip, weaveLevel } from "./formulas";
 import { maxAffixValue } from "./loot";
 import {
   BESTIARY_BY_ID,
@@ -40,9 +41,10 @@ import {
   recognitionTier,
   type SecretId
 } from "./data/lore";
-import { NAMED_BY_ID, namedSourceReached } from "./data/relics";
+import { NAMED_BY_ID, NAMED_RELICS, namedSourceReached, type NamedEffect } from "./data/relics";
 import { AGE_COUNT, keystonesFound } from "./data/strata";
-import type { AltarId, GameState } from "./types";
+import { SAVE_VERSION } from "./state";
+import type { AltarId, GameState, Item } from "./types";
 
 export interface Violation {
   code: string;
@@ -66,9 +68,70 @@ function maxSkipKills(state: GameState): number {
 /** Slack granted to client/server clocks. */
 const CLOCK_SLACK_SECONDS = 120;
 /** A device clock may run ahead of the server's, but not by more than this. */
-const FUTURE_TICK_SLACK_MS = 6 * 3600_000;
+const FUTURE_TICK_SLACK_MS = 10 * 60_000;
+/** Seconds a single ascension or Descent takes at the very least (a whole night walked). */
+const MIN_RUN_SECONDS = 30;
 /** Launch date: no save can be older. */
 export const GAME_EPOCH = Date.UTC(2026, 0, 1);
+
+/** The strongest effect of a kind that named relics could ever add up to. */
+function namedMax(kind: NamedEffect["kind"]): number {
+  return NAMED_RELICS.reduce((total, relic) => total + (relic.effect.kind === kind ? relic.effect.pct : 0), 0);
+}
+
+/**
+ * Seconds between two wandering crystals at the very least: the Lantern's pace, the
+ * Lodestone and a whole Humming Loom at once. A Crystal Storm brings five in one call.
+ */
+const HUMMING_LOOM = WEAVE_BY_ID["humming-loom"];
+const MIN_CRYSTAL_SECONDS = 90 * LANTERN_CRYSTAL_WAIT * (1 - namedMax("crystalSooner")) * (1 - HUMMING_LOOM.maxLevel * HUMMING_LOOM.valuePerLevel);
+/** Crystals that can have fallen in so many seconds (each wake of the tab may call one at once). */
+function maxCrystals(seconds: number, wakes: number): number {
+  return STORM_CRYSTALS * (Math.max(0, seconds) / MIN_CRYSTAL_SECONDS + wakes + 2);
+}
+
+/** Cheapest hour of bottled time, in shards: the stall's hourglass or the Caravan's night, every discount worn. */
+const MIN_HOURGLASS_SHARDS = (() => {
+  const discount = 1 - namedMax("marketDiscount");
+  const night = CARAVAN_WARES.find((ware) => ware.id === "bottled-night")!;
+  return Math.min(Math.max(1, Math.ceil(MARKET_BY_ID.hourglass.cost * discount)), Math.max(1, Math.ceil(night.cost * discount)) / 2);
+})();
+
+/** Most shards salvaging one item returns before its forge levels (a mythic). */
+const MAX_SALVAGE_SHARDS = Math.max(...Object.values(RARITY_INFO).map((info) => info.shards));
+/**
+ * Salvage gives back half an item's shards per forge level, and each level cost at least
+ * twice its shards (less the Unfinished Hammer): the share of forge spending that returns.
+ */
+const FORGE_REFUND_SHARE = 0.5 / (2 * (1 - namedMax("forgeDiscount")));
+/** Shards a guardian of this depth drops at most. */
+function guardianShards(maxStageEver: number): number {
+  return 1 + Math.floor(maxStageEver / 25) + namedMax("guardianShards");
+}
+/** Shards deeds could have yielded before forge refunds: guardians, Seams, crystals, salvage. */
+function shardsFound(bosses: number, seams: number, crystals: number, items: number, maxStageEver: number): number {
+  return bosses * guardianShards(maxStageEver) + seams + crystals * CRYSTAL_SHARDS_MAX + items * MAX_SALVAGE_SHARDS;
+}
+/** Shards the forge levels of a save's items would give back if salvaged. */
+function forgeRefunds(state: GameState): number {
+  const items: (Item | undefined)[] = [...Object.values(state.equipment), ...state.inventory];
+  return items.reduce((total, item) => total + (item ? Math.floor(item.forge * RARITY_INFO[item.rarity].shards * 0.5) : 0), 0);
+}
+
+/**
+ * Highest essence multiplier an ascension of this walker ever had. The Altar of the Harvest
+ * falls with each Descent, so it is taken at the highest level every essence ever gathered
+ * could have bought.
+ */
+function maxEssenceMultiplier(state: GameState): number {
+  let harvest = state.altars.harvest ?? 0;
+  while (harvest < 100_000 && altarTotalCost("harvest", harvest + 1) <= state.lifetime.essencesEarned + 1) harvest += 1;
+  return (1 + harvest * ALTAR_BY_ID.harvest.valuePerLevel) * (1 + AFFIX_CAP.essence! * 4) * Math.pow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty"));
+}
+/** Most essences one ascension of this walker can grant. */
+function maxAscensionEssences(state: GameState): number {
+  return essencesForStage(state.maxStageEver - 1) * maxEssenceMultiplier(state) + 1;
+}
 
 const HERO_BY_ID_COUNT = Object.keys(HERO_BY_ID).length;
 const le = (a: number, b: number) => a <= b * (1 + EPSILON) + EPSILON;
@@ -105,17 +168,21 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
 
   // Kills and gold bounded by total time and the best reachable loot.
   const totalSeconds = state.lifetime.playTime + state.lifetime.offlineSeconds;
-  if (state.lifetime.kills > totalSeconds * MAX_KILLS_PER_SECOND + 10 + state.lifetime.ascensions * maxSkipKills(state)) fail("kills", "Too many kills for the play time.");
+  // An hourglass pours an hour of kills at once.
+  const pouredSeconds = state.lifetime.hourglasses * 3600;
+  if (state.lifetime.kills > (totalSeconds + pouredSeconds) * MAX_KILLS_PER_SECOND + 10 + state.lifetime.ascensions * maxSkipKills(state)) fail("kills", "Too many kills for the play time.");
   if (state.lifetime.clicks > state.lifetime.playTime * MAX_CLICKS_PER_SECOND + 10) fail("clicks", "Impossible click rate.");
-  // A rebirth takes at least half a minute, and every stage is left by a kill (the Wanderer's
-  // skip counts its kills) or by Unweave, a power.
-  const wallSeconds = Math.max(0, age);
-  if (state.lifetime.ascensions > wallSeconds / 30 + 1) fail("ascension", "More ascensions than time allows.");
-  if (state.descents > wallSeconds / 30 + 1) fail("descent", "More Descents than time allows.");
+  // A rebirth takes at least half a minute of the game running (online or caught up), and
+  // every stage is left by a kill (the Wanderer's skip counts its kills) or by Unweave, a power.
+  const creditedSeconds = Math.min(Math.max(0, age), totalSeconds + CLOCK_SLACK_SECONDS);
+  if (state.lifetime.ascensions > creditedSeconds / MIN_RUN_SECONDS + 1) fail("ascension", "More ascensions than time allows.");
+  if (state.descents > creditedSeconds / MIN_RUN_SECONDS + 1) fail("descent", "More Descents than time allows.");
   if (state.lifetime.bosses > state.lifetime.kills) fail("kills", "More guardians than kills.");
   if (state.maxStageEver - 1 > state.lifetime.kills + state.lifetime.skillsUsed) fail("stage", "Stages cleared without fighting.");
   // Boons are measured from the last tick: it cannot lie far in the server's future.
   if (state.lastTickAt > serverNow + FUTURE_TICK_SLACK_MS) fail("time", "Last tick in the future.");
+  // Crystals fall at a bounded pace, while the game has existed on the server's clock.
+  if (state.lifetime.crystals > maxCrystals(Math.max(0, age), state.lore.dreams)) fail("crystals", "More crystals than time allows.");
   const bestGold = bestGoldPerKill(state);
   const goldBound = (state.lifetime.kills + state.lifetime.crystals * 15 + state.lifetime.hourglasses * 12_000 + 1) * bestGold;
   if (!le(state.lifetime.goldEarned, goldBound)) fail("gold", "Too much gold earned.");
@@ -164,14 +231,24 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     if (record.maxStage > state.maxStageEver) fail("ascension", "Ascension from a stage never reached.");
     if (!le(record.essences, essencesForStage(record.maxStage - 1) * essenceCap + 1)) fail("ascension", "Ascension too generous.");
   }
+  // Every essence came from an ascension or a crystal. The history keeps only the last
+  // ascensions: the ledger of all of them holds at least its sum, and each ascension at most
+  // what the deepest stage pays.
   const crystalEssences = state.lifetime.crystals * crystalEssenceReward(state.maxStageEver);
-  if (state.ascensions.length >= state.lifetime.ascensions && !le(state.lifetime.essencesEarned, ascensionTotal + crystalEssences)) {
-    fail("essence-source", "Essences of unknown origin.");
+  const fromAscensions = state.lifetime.ascensionEssences;
+  if (!le(ascensionTotal, fromAscensions + 1) || !le(fromAscensions, state.lifetime.ascensions * maxAscensionEssences(state))) {
+    fail("essence-source", "Ascension essences outside their ledger.");
   }
+  if (!le(state.lifetime.essencesEarned, fromAscensions + crystalEssences + 1)) fail("essence-source", "Essences of unknown origin.");
   if (state.ascensions.length > state.lifetime.ascensions) fail("ascension", "Inconsistent ascension history.");
 
-  // Shards.
+  // Shards: owned ≤ earned ≤ what guardians, Seams, crystals and salvage yield (forge refunds
+  // give back a share of what the forge took, itself paid with shards earned).
   if (state.shards > state.lifetime.shardsEarned) fail("shards", "More shards owned than earned.");
+  const found = shardsFound(state.lifetime.bosses, state.lifetime.seams, state.lifetime.crystals, state.lifetime.itemsFound, state.maxStageEver);
+  if (!le(state.lifetime.shardsEarned, found / (1 - FORGE_REFUND_SHARE) + 1)) fail("shards-earned", "More shards earned than deeds yield.");
+  // Bottled hours are bought with shards.
+  if (state.lifetime.hourglasses * MIN_HOURGLASS_SHARDS > state.lifetime.shardsEarned) fail("hourglasses", "More hourglasses than shards could buy.");
 
   // Items. Named relics always find room, even in a full pack.
   const items = [...Object.values(state.equipment), ...state.inventory].filter((item) => item !== undefined);
@@ -180,6 +257,7 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   for (const item of items) {
     if (uids.has(item.uid)) fail("item", "Duplicate item.");
     uids.add(item.uid);
+    // The level is also the relic's stratum, so it bounds its density (a damage multiplier).
     if (item.level > state.maxStageEver) fail("item", "Item from a stage never reached.");
     if (item.forge > FORGE_MAX) fail("item", "Forge level above maximum.");
     if (item.base !== undefined && item.base >= SLOT_BASE_COUNT[item.slot]) fail("item", "Unknown item base.");
@@ -217,9 +295,9 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   // Altar of the Wanderer skipped were not fought).
   const lastBoss = lastBossCleared(state.maxStage);
   if (lastBoss >= state.runStartStage) {
-    // Idle forced: the boss may have been beaten by companions alone, with the idle bonus
-    // (clicks never include it, so the click bound is unaffected).
-    const derived = derive(state, serverNow, { ignoreTimed: true, forceIdle: true });
+    // Companions with their whole Patience bonus plus every strike on top: strikes only
+    // ever take that bonus's place, so the sum bounds what was dealt.
+    const derived = derive(state, serverNow, { ignoreTimed: true });
     // Every click a crit at maximum rate, ×10 for the crystals' "sharpness" bonus.
     const burstClick = derived.click * Math.max(1, derived.critMultiplier) * MAX_CLICKS_PER_SECOND * 10;
     const maxDps = (derived.dps * MAX_TIMED_DPS + burstClick) * derived.bossDamage * (isKingStage(lastBoss) ? derived.kingDamage : 1) * derived.baronDamage;
@@ -399,7 +477,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
 
   if (next.createdAt !== previous.createdAt) fail("identity", "This save does not continue the previous one.");
 
-  const monotonic = ["clicks", "kills", "bosses", "goldEarned", "essencesEarned", "shardsEarned", "ascensions", "playTime", "offlineSeconds", "crystals", "itemsFound", "kings", "seams", "threads"] as const;
+  const monotonic = ["clicks", "kills", "bosses", "goldEarned", "essencesEarned", "ascensionEssences", "shardsEarned", "ascensions", "playTime", "offlineSeconds", "crystals", "hourglasses", "itemsFound", "kings", "seams", "threads"] as const;
   for (const key of monotonic) {
     if (b[key] + EPSILON < a[key]) fail("rollback", `Statistic "${key}" went down.`);
   }
@@ -422,20 +500,69 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   const activeSeconds = Math.max(0, played) + 1;
   if (b.clicks - a.clicks > activeSeconds * MAX_CLICKS_PER_SECOND) fail("clicks", "Impossible click rate.");
   const kills = b.kills - a.kills;
-  const skipKills = Math.max(0, b.ascensions - a.ascensions) * maxSkipKills(next);
-  if (kills > (activeSeconds + Math.max(0, offline)) * MAX_KILLS_PER_SECOND + 10 + skipKills) fail("kills", "Too many kills for the elapsed time.");
+  const ascensions = Math.max(0, b.ascensions - a.ascensions);
+  const skipKills = ascensions * maxSkipKills(next);
+  // An hourglass pours an hour of kills at once (the Caravan's night, two).
+  const hourglasses = Math.max(0, b.hourglasses - a.hourglasses);
+  if (kills > (activeSeconds + Math.max(0, offline) + hourglasses * 3600) * MAX_KILLS_PER_SECOND + 10 + skipKills) fail("kills", "Too many kills for the elapsed time.");
   if (next.maxStageEver - previous.maxStageEver > kills + 1) fail("stage", "Stages cleared without fighting.");
   if (b.ascensions - a.ascensions > elapsed / 30 + 1) fail("ascension", "Too many ascensions.");
   if (next.descents - previous.descents > elapsed / 30 + 1) fail("descent", "Too many Descents.");
 
+  // Crystals fall at a bounded pace (each wake of the tab may call one at once).
+  const crystals = Math.max(0, b.crystals - a.crystals);
+  if (crystals > maxCrystals(elapsed, Math.max(0, next.lore.dreams - previous.lore.dreams))) fail("crystals", "Crystals gathered too fast.");
+
   // Gold earned ≤ kills × best possible loot (+ crystals and hourglasses).
   const bestGold = bestGoldPerKill(next);
-  const crystals = b.crystals - a.crystals;
-  const hourglasses = b.hourglasses - a.hourglasses;
   const goldBound = (kills + crystals * 15 + hourglasses * 12_000 + 1) * bestGold;
   if (!le(b.goldEarned - a.goldEarned, goldBound)) fail("gold", "Gold earned too fast.");
 
+  // Essences: each ascension at most what the deepest stage pays, each crystal its share.
+  const perAscension = maxAscensionEssences(next);
+  const fromAscensions = b.ascensionEssences - a.ascensionEssences;
+  if (!le(fromAscensions, ascensions * perAscension)) fail("essence-source", "Ascensions too generous.");
+  if (!le(b.essencesEarned - a.essencesEarned, Math.min(ascensions * perAscension, Math.max(0, fromAscensions)) + crystals * crystalEssenceReward(next.maxStageEver) + 1)) {
+    fail("essence-source", "Essences gathered too fast.");
+  }
+
+  // Shards: what the deeds since the last save yield, plus forge refunds (of items already
+  // forged, or forged since with shards owned or earned).
+  const found = shardsFound(b.bosses - a.bosses, b.seams - a.seams, crystals, b.itemsFound - a.itemsFound, next.maxStageEver);
+  const shardBound = (found + forgeRefunds(previous) + FORGE_REFUND_SHARE * previous.shards) / (1 - FORGE_REFUND_SHARE) + 1;
+  const shardsEarned = b.shardsEarned - a.shardsEarned;
+  if (!le(shardsEarned, shardBound)) fail("shards-earned", "Shards earned too fast.");
+  // Bottled hours paid with shards owned or earned since.
+  if (hourglasses * MIN_HOURGLASS_SHARDS > previous.shards + Math.max(0, shardsEarned)) fail("hourglasses", "More hourglasses than shards could buy.");
+
   return violations;
+}
+
+/** The version a raw save declares (0 when it has none): read before any migration. */
+export function saveVersionOf(raw: unknown): number {
+  const version = raw && typeof raw === "object" ? (raw as { version?: unknown }).version : undefined;
+  return typeof version === "number" && Number.isFinite(version) ? version : 0;
+}
+
+/**
+ * A save never goes back to an older version than the one stored: migrations (the altar
+ * refund of version 4) run once, never again on a relabelled save.
+ */
+export function verifySaveVersion(storedRaw: unknown, nextRaw: unknown): Violation[] {
+  const stored = Math.min(saveVersionOf(storedRaw), SAVE_VERSION);
+  if (saveVersionOf(nextRaw) < stored) return [{ code: "version", message: "This save is older than the one it replaces." }];
+  return [];
+}
+
+/**
+ * Another game replacing the account's: it may not claim more time than the replaced one had
+ * been credited, plus the time the server saw pass since that save.
+ */
+export function verifyNewLineage(previous: GameState, next: GameState, elapsedMs: number): Violation[] {
+  const credited = previous.lifetime.playTime + previous.lifetime.offlineSeconds;
+  const allowed = credited + Math.max(0, elapsedMs / 1000) + CLOCK_SLACK_SECONDS;
+  if (next.lifetime.playTime + next.lifetime.offlineSeconds > allowed) return [{ code: "lineage-time", message: "This game claims more time than the account has lived." }];
+  return [];
 }
 
 /** Summary used by the leaderboard. */

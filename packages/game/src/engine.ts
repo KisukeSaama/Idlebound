@@ -94,6 +94,7 @@ import {
   wandererSkip,
   bossHp,
   bossHpMultiplier,
+  crystalEssenceReward,
   derive,
   forgePrice,
   heroCost,
@@ -104,6 +105,8 @@ import {
   offlineCapSeconds,
   REUNION_MIN_AWAY_SECONDS,
   REUNION_SHARE,
+  STRIKE_FILL_SECONDS,
+  strikeFillShare,
   shardPrice,
   skillCooldownMultiplier,
   skillDuration,
@@ -114,7 +117,7 @@ import {
   weaveValue
 } from "./formulas";
 import { generateItem } from "./loot";
-import { pick, randomInt, uid, type Rng } from "./rng";
+import { pick, randomInt, storedRng, uid, type Rng } from "./rng";
 import { emptyStats, emptyTrail } from "./state";
 import type { AbsenceAccount, AltarId, BuffId, BuyMode, ChronicleEntry, Derived, GameEvent, GameState, Item, ItemSlot, MonsterDef, MonsterKind, MonsterState, OfflineSummary, Rarity, SkillId } from "./types";
 
@@ -131,6 +134,8 @@ const CHEAP_TALENT_SHARE = 0.1;
 /** While the player is away from an open tab, the autopilot acts this often (like an offline slice). */
 const AUTOPILOT_INTERVAL_SECONDS = OFFLINE_SLICE_SECONDS;
 const MAX_ASCENSION_HISTORY = 100;
+/** Most shards a wandering crystal can hold. */
+export const CRYSTAL_SHARDS_MAX = 6;
 /** Seconds the Stray Armor takes to walk across the road and out of sight. */
 const STRAY_SECONDS = 30;
 
@@ -141,7 +146,7 @@ export function isSkillUnlocked(state: GameState, id: SkillId): boolean {
 }
 
 export function offlineGains(state: GameState, seconds: number, now: number): { kills: number; gold: number } {
-  const derived = derive(state, now, { ignoreTimed: true, forceIdle: true });
+  const derived = derive(state, now, { ignoreTimed: true });
   if (derived.dps <= 0 || seconds <= 0) return { kills: 0, gold: 0 };
   const farmStage = isBossStage(state.stage) ? Math.max(1, state.stage - 1) : state.stage;
   const timePerKill = stageHp(farmStage) / derived.dps + RESPAWN_SECONDS;
@@ -237,6 +242,13 @@ export class GameEngine {
   /** Companion damage dealt since the last "dps" event (one per second, for the UI). */
   private companionDamage = 0;
   private companionTimer = 0;
+  /** Strike damage waiting to take the Patience bonus's place (at most a few seconds of it). */
+  private strikeFill = 0;
+  /** Patience bonus due and taken by strikes since the last "dps" event. */
+  private patienceDue = 0;
+  private patienceTaken = 0;
+  /** Share of the Patience bonus the company dealt over the last second (the rest, the walker's strikes did). */
+  patienceShare = 1;
   private unlockedAchievements: Set<string>;
   /** Whether the local clock reads the dead of night, rechecked once a minute (Night Owl). */
   private night = false;
@@ -252,9 +264,13 @@ export class GameEngine {
   /** When Nyx's portrait was touched lately (Faceless). */
   private touches: number[] = [];
 
-  constructor(state: GameState, rng: Rng = Math.random, now = Date.now()) {
+  /**
+   * Without `rng` (the game itself), fates are drawn from the generator the save carries:
+   * reloading a save cannot draw a crystal or a relic again. Tests and simulations pass one.
+   */
+  constructor(state: GameState, rng?: Rng, now = Date.now()) {
     this.state = state;
-    this.rng = rng;
+    this.rng = rng ?? storedRng(() => this.state.rngState, (next) => { this.state.rngState = next; });
     this.unlockedAchievements = new Set(state.achievements);
     this.derived = derive(state, now);
     this.lastInputAt = now;
@@ -523,7 +539,14 @@ export class GameEngine {
           }
         }
         if (s.monster && d.dps > 0) {
-          const amount = d.dps * dt * this.targetFactor(s.monster);
+          const factor = this.targetFactor(s.monster);
+          // The walker's strikes took the place of this much of the Patience bonus.
+          const bonus = d.patienceDps * dt * factor;
+          const taken = Math.min(this.strikeFill, bonus);
+          this.strikeFill -= taken;
+          this.patienceDue += bonus;
+          this.patienceTaken += taken;
+          const amount = d.dps * dt * factor - taken;
           this.companionDamage += amount;
           this.damage(amount, now);
         }
@@ -540,8 +563,11 @@ export class GameEngine {
     this.companionTimer += dt;
     if (this.companionTimer >= 1) {
       if (this.companionDamage > 0) this.emit({ type: "dps", damage: this.companionDamage });
+      if (this.patienceDue > 0) this.patienceShare = 1 - this.patienceTaken / this.patienceDue;
       this.companionTimer = 0;
       this.companionDamage = 0;
+      this.patienceDue = 0;
+      this.patienceTaken = 0;
     }
 
     if (this.afkAfterMs !== null && now - this.lastInputAt >= this.afkAfterMs) {
@@ -674,7 +700,7 @@ export class GameEngine {
   private canBeatNextBoss(now: number): boolean {
     const s = this.state;
     if (!isBossStage(s.maxStage)) return true;
-    const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+    const d = derive(s, now, { ignoreTimed: true });
     return d.dps > 0 && this.bossLeft(s.maxStage) <= d.dps * this.stageFactor(s.maxStage, d) * d.bossTimer;
   }
 
@@ -741,7 +767,7 @@ export class GameEngine {
 
     while (remaining > 0) {
       if (spending) spent += this.autoSpend(now);
-      const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+      const d = derive(s, now, { ignoreTimed: true });
       if (d.dps <= 0) break;
       // Without spending the power never changes: one slice is enough.
       const slice = spending ? Math.min(remaining, OFFLINE_SLICE_SECONDS) : remaining;
@@ -874,7 +900,7 @@ export class GameEngine {
       const best = bestValue(valued);
       if (!best) break;
       if (best.cost > s.gold) {
-        const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+        const d = derive(s, now, { ignoreTimed: true });
         if (best.cost - s.gold <= this.goldRate(d) * SAVING_SECONDS) break;
       }
       const choice = best.cost <= s.gold ? best : bestValue(valued.filter((option) => option.cost <= s.gold));
@@ -888,12 +914,12 @@ export class GameEngine {
   private purchaseOptions(now: number): Purchase[] {
     const s = this.state;
     const multiplier = heroCostMultiplier(s);
-    const base = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps;
+    const base = derive(s, now, { ignoreTimed: true }).dps;
     const gain = (heroId: string, level: number, talents: string[]) => {
       const before = s.heroLevels[heroId] ?? 0;
       s.heroLevels[heroId] = level;
       s.heroUpgrades.push(...talents);
-      const dps = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps;
+      const dps = derive(s, now, { ignoreTimed: true }).dps;
       s.heroLevels[heroId] = before;
       s.heroUpgrades.length -= talents.length;
       return dps - base;
@@ -1029,10 +1055,8 @@ export class GameEngine {
 
   click(now: number) {
     const s = this.state;
-    const hadIdleBonus = this.derived.idleRatio > 0;
     s.lastClickAt = now;
     s.trail.listen = 0;
-    if (hadIdleBonus) this.refresh(now);
     const monster = s.monster;
     if (!monster) return;
     this.clickedThisFight = true;
@@ -1058,10 +1082,13 @@ export class GameEngine {
     const d = this.derived;
     if (!s.monster || s.monster.wager) return;
     const crit = this.rng() < d.critChance;
-    const damage = d.click * (crit ? d.critMultiplier : 1) * this.targetFactor(s.monster);
+    const factor = this.targetFactor(s.monster);
+    const damage = d.click * (crit ? d.critMultiplier : 1) * factor;
     if (source === "click") {
       s.run.clicks += 1;
       s.lifetime.clicks += 1;
+      // The walker's own blow takes the place of as much of the company's Patience bonus.
+      this.strikeFill = Math.min(this.strikeFill + damage * strikeFillShare(s), d.patienceDps * factor * STRIKE_FILL_SECONDS);
     }
     if (crit) {
       s.run.crits += 1;
@@ -1504,7 +1531,7 @@ export class GameEngine {
       this.addBuff("sharpness", 20, now);
       this.emit({ type: "crystal", reward: "sharpness", amount: 20 });
     } else if (roll < 0.97 || s.lifetime.ascensions === 0) {
-      const shards = randomInt(this.rng, 2, 6);
+      const shards = randomInt(this.rng, 2, CRYSTAL_SHARDS_MAX);
       this.earnShards(shards);
       this.emit({ type: "crystal", reward: "shards", amount: shards });
     } else {
@@ -1543,6 +1570,7 @@ export class GameEngine {
     const offered = s.trail.offered;
     s.essences += gain;
     s.lifetime.essencesEarned += gain;
+    s.lifetime.ascensionEssences += gain;
     s.lifetime.ascensions += 1;
     s.ascensions.push({ at: now, maxStage: s.maxStage, essences: gain });
     if (s.ascensions.length > MAX_ASCENSION_HISTORY) s.ascensions.splice(0, s.ascensions.length - MAX_ASCENSION_HISTORY);
@@ -1944,8 +1972,4 @@ export class GameEngine {
 
 export function salvageValue(item: Item): number {
   return RARITY_INFO[item.rarity].shards + Math.floor(item.forge * RARITY_INFO[item.rarity].shards * 0.5);
-}
-
-export function crystalEssenceReward(maxStageEver: number): number {
-  return 1 + Math.floor(maxStageEver / 100);
 }

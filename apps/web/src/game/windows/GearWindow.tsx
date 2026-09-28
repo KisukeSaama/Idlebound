@@ -13,6 +13,9 @@ import {
   affixValue,
   NAMED_BY_ID,
   equipmentBonus,
+  equipmentDensity,
+  relicDensity,
+  relicStratum,
   forgePrice,
   itemName,
   salvageValue,
@@ -25,7 +28,7 @@ import {
 } from "@idlebound/game";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useI18n } from "@/i18n/client";
-import { useFormat, useGame, useUi } from "../context";
+import { useFormat, useGame, useReveals, useUi } from "../context";
 import { Picto, ShardIcon, SlotIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PixelSprite } from "../pixel/PixelSprite";
@@ -42,9 +45,16 @@ function percent(pct: number, locale: Locale): string {
   return `${trimmed(pct, 1)}${locale === "fr" ? " %" : "%"}`;
 }
 
+/** A damage multiplier: two decimals while small, then the game's notation. */
+function useMultiplier() {
+  const fmt = useFormat();
+  return (value: number) => (value < 100 ? trimmed(value, 2) : fmt(value));
+}
+
 export function GearWindow({ onClose, initialTab }: { onClose: () => void; initialTab: "equipped" | "bag" }) {
   const [tab, setTab] = useState<string>(initialTab);
   const { state } = useGame();
+  const { shown } = useReveals();
   const { t } = useI18n();
   const id = tab === "equipped" ? "gear" : "inventory";
   return (
@@ -53,12 +63,36 @@ export function GearWindow({ onClose, initialTab }: { onClose: () => void; initi
       icon={<WindowIcon id={id} />}
       onClose={onClose}
       size="lg"
+      aside={shown.shards ? <ShardBalance /> : null}
       tabs={[{ id: "equipped", label: t.windows.gear.equippedTab }, { id: "bag", label: t.windows.gear.bagTab(state.inventory.length, INVENTORY_LIMIT) }]}
       activeTab={tab}
       onTab={setTab}
     >
       {tab === "equipped" ? <Equipped /> : <Bag />}
     </Modal>
+  );
+}
+
+/**
+ * The purse the forge draws from and salvage fills, in sight on both tabs (the header's is
+ * under the veil). It swells a moment each time it moves, so a strike of the hammer shows.
+ */
+function ShardBalance() {
+  const { state } = useGame();
+  const { t } = useI18n();
+  const fmt = useFormat();
+  const [seen, setSeen] = useState(state.shards);
+  const [moves, setMoves] = useState(0);
+  if (seen !== state.shards) {
+    setSeen(state.shards);
+    setMoves(moves + 1);
+  }
+  return (
+    <span className="resource resource-shard modal-balance" title={t.windows.gear.shardsTitle}>
+      <ShardIcon />
+      <span key={moves} className={`resource-value${moves > 0 ? " balance-moved" : ""}`}>{fmt(state.shards)}</span>
+      <span className="visually-hidden">{t.windows.market.shards}</span>
+    </span>
   );
 }
 
@@ -82,6 +116,8 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
   const named = item.named ? NAMED_BY_ID[item.named] : undefined;
   const legend = item.named ? g.relics[item.named] : undefined;
   const delta = compareTo ? affixValue(item, main.stat) - affixValue(compareTo, main.stat) : null;
+  const density = relicDensity(item);
+  const mult = useMultiplier();
   return (
     <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: info.color }}>
       <header className="item-head">
@@ -96,6 +132,7 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
         {item.affixes.map((affix, index) => (
           <li key={affix.stat} className={index === 0 ? "main" : ""}>{formatAffix(affix.stat, affixValue(item, affix.stat), locale)}</li>
         ))}
+        {density > 1 ? <li className="density" title={t.windows.gear.densityTitle(relicStratum(item))}>{t.windows.gear.density(mult(density))}</li> : null}
         {named ? <li className="named-effect">{g.namedEffects[named.effect.kind](named.effect.pct)}</li> : null}
       </ul>
       {legend ? <p className="item-legend">{legend.legend}</p> : null}
@@ -114,6 +151,8 @@ function Equipped() {
   const { t, g, locale } = useI18n();
   const text = t.windows.gear;
   const fmt = useFormat();
+  const mult = useMultiplier();
+  const density = equipmentDensity(state);
   return (
     <div className="gear-layout">
       <div className="gear-slots">
@@ -164,6 +203,12 @@ function Equipped() {
               </div>
             );
           })}
+          {density > 1 ? (
+            <div>
+              <dt>{text.densityLabel}</dt>
+              <dd>×{mult(density)}</dd>
+            </div>
+          ) : null}
         </dl>
         {wearsRegalia(state) ? (
           <p className="regalia-line">

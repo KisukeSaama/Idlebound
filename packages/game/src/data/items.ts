@@ -1,4 +1,5 @@
-import type { AffixStat, ItemSlot, Rarity } from "../types";
+import type { AffixStat, Item, ItemSlot, Rarity } from "../types";
+import { eraForStage } from "./biomes";
 
 export const SLOTS: ItemSlot[] = ["weapon", "armor", "amulet", "ring"];
 
@@ -63,4 +64,22 @@ export function forgeCost(rarity: Rarity, forge: number): number {
 /** Power scaling by item level (= the stage it dropped at). */
 export function levelScale(level: number): number {
   return 1 + Math.log2(1 + level / 10) * 0.9;
+}
+
+/**
+ * Density: older memories are denser, and so are the objects they held. A relic worn
+ * multiplies all companion damage (and the strike's share of it) by this much per stratum
+ * below the present night it came from. Its stratum is its level's, so it needs no field
+ * of its own and the Ledger bounds it with the level (never deeper than the walker went).
+ */
+export const DENSITY_PER_STRATUM = 0.03;
+
+/** The stratum a relic was remembered in (0: the present night). */
+export function relicStratum(item: Item): number {
+  return eraForStage(item.level);
+}
+
+/** A relic's density: its damage multiplier while worn. */
+export function relicDensity(item: Item): number {
+  return Math.pow(1 + DENSITY_PER_STRATUM, relicStratum(item));
 }

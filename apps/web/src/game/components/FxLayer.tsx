@@ -5,6 +5,7 @@ import { useEffect, useRef, type RefObject } from "react";
 import { currentMessages } from "@/i18n/client";
 import { useFormat, useStoreRef } from "../context";
 import type { ArenaRenderer } from "../pixel/arena";
+import { hash2 } from "../pixel/pixels";
 import { pageRect } from "../pixel/surface";
 
 export interface PointerMemo {
@@ -47,6 +48,10 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
       }, ms);
       timers.add(id);
     };
+    // Cosmetic spread (drift, offsets, which companion fires) from an integer hash of a
+    // running count, never Math.random: the same sequence of events looks the same.
+    let draws = 0;
+    const roll = () => hash2(draws++, store.state.lifetime.kills, 0x5f1a);
     const reducedMotion = () => store.state.settings.reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const spawn = (className: string, text: string, x: number, y: number, duration: number, label?: string) => {
@@ -59,7 +64,7 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
       if (label) node.dataset.label = label;
       node.style.left = `${x}px`;
       node.style.top = `${y}px`;
-      node.style.setProperty("--drift", `${(Math.random() - 0.5) * 60}px`);
+      node.style.setProperty("--drift", `${(roll() - 0.5) * 60}px`);
       root.appendChild(node);
       setTimeout(() => node.remove(), duration);
     };
@@ -75,16 +80,16 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
       return { x: box.x - offset.x, y: box.y - offset.y, width: box.width, height: box.height };
     };
 
-    /** A companion drawn at random, weighted by the damage each one deals. */
+    /** A companion drawn by the hash, weighted by the damage each one deals. */
     const pickCompanion = (): string | null => {
       const heroDps = store.derived.heroDps;
       let total = 0;
       for (const value of Object.values(heroDps)) total += value;
       if (!(total > 0)) return null;
-      let roll = Math.random() * total;
+      let left = roll() * total;
       for (const [id, value] of Object.entries(heroDps)) {
-        roll -= value;
-        if (value > 0 && roll <= 0 && HERO_BY_ID[id]) return id;
+        left -= value;
+        if (value > 0 && left <= 0 && HERO_BY_ID[id]) return id;
       }
       return null;
     };
@@ -137,21 +142,21 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
         renderer.current?.hit(event.crit, recent && offset ? offset.x + pointer.current.x : undefined);
         if (!settings.damageNumbers) return;
         const origin = recent ? { x: pointer.current.x, y: pointer.current.y } : center();
-        const x = origin.x + (recent ? 0 : (Math.random() - 0.5) * 120);
-        const y = origin.y + (recent ? -10 : (Math.random() - 0.5) * 60);
+        const x = origin.x + (recent ? 0 : (roll() - 0.5) * 120);
+        const y = origin.y + (recent ? -10 : (roll() - 0.5) * 60);
         spawn(`fx-damage ${event.crit ? "crit" : ""} ${event.source === "auto" ? "auto" : ""}`, fmtRef.current(event.damage), x, y, 900, event.crit ? currentMessages().hud.fx.crit : undefined);
       } else if (event.type === "dps") {
         // Companion strikes spread over the next second, then their total damage beside the
         // monster so it never hides clicks.
         for (let index = 0; index < COMPANION_STRIKES; index += 1) {
-          later(companionStrike, (index * 1000) / COMPANION_STRIKES + Math.random() * 120);
+          later(companionStrike, (index * 1000) / COMPANION_STRIKES + roll() * 120);
         }
         if (!settings.damageNumbers) return;
         const box = spriteBox();
-        const side = Math.random() < 0.5 ? -1 : 1;
+        const side = roll() < 0.5 ? -1 : 1;
         const { x: cx, y: cy } = center();
         const x = box ? box.x + box.width * (side < 0 ? 0.1 : 0.9) : cx + side * 85;
-        const y = box ? box.y + box.height * (0.3 + Math.random() * 0.1) : cy - 45;
+        const y = box ? box.y + box.height * (0.3 + roll() * 0.1) : cy - 45;
         spawn("fx-damage companions", fmtRef.current(event.damage), Math.min(size.width - 60, Math.max(60, x)), y, 1000, currentMessages().hud.fx.companions);
       } else if (event.type === "kill") {
         renderer.current?.kill(goldCounter());

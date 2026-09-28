@@ -1,4 +1,4 @@
-import type { MaterialId, Pal, RampId } from "./palette";
+import type { Material, MaterialId, Pal } from "./palette";
 
 /**
  * Shapes (relics, portraits, scene props) are drawn in a 64 × 64 design space, whatever the
@@ -85,17 +85,19 @@ export interface PixelMask {
   legend: Readonly<Record<string, number | { pal: Pal }>>;
 }
 
-/** Companion portrait recipe (32 × 32, head and shoulders). */
-export interface PortraitRecipe {
-  skin: "light" | "tan" | "dark" | "ash" | "bone" | "scale" | "shade";
-  head: "round" | "long" | "square" | "narrow";
-  hair: "none" | "short" | "long" | "bun" | "braid" | "wild" | "tonsure" | "mane";
-  hairRamp: RampId;
-  headgear: "none" | "hood" | "helm" | "crown" | "circlet" | "hat" | "horns" | "cowl" | "veil" | "star-hood";
-  clothing: "tunic" | "robe" | "plate" | "leather" | "apron" | "cloak";
-  accessory: "none" | "beard" | "scar" | "quiver" | "earring" | "stubble" | "runes" | "pipe" | "gem";
-  /** Light of the eyes of faces that glow (shades, skulls, a hood full of sky); others are ink. */
-  eyes: Pal;
-  seed: number;
+/**
+ * A companion's portrait (BIBLE 18.8): a 64 × 64 bust painted at a higher resolution and
+ * traced into clusters, one character per pixel, `.` empty, turned three-quarters toward
+ * the monsters (to the right). The face stays in the middle, so the small frames that crop
+ * the edges keep it. No outline in the rows: the generator adds it.
+ */
+export interface PortraitGrid {
+  rows: readonly string[];
+  legend: Readonly<Record<string, GridInk>>;
 }
 
+/** A portrait: its grid and the material of each slot; `hero` is the ramp of the companion's color. */
+export interface PortraitRecipe {
+  grid: PortraitGrid;
+  materials: Readonly<Record<string, MaterialId | Material | "hero">>;
+}

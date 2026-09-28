@@ -31,7 +31,7 @@ import {
 } from "@idlebound/game";
 import { currentLocale, currentMessages, useI18n } from "@/i18n/client";
 import { api } from "@/lib/api";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { audio } from "./audio";
 import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
@@ -43,6 +43,7 @@ import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
 import { ReunionModal } from "./components/ReunionModal";
 import { GameHeader } from "./components/GameHeader";
 import { HeroPanel } from "./components/HeroPanel";
+import { LedgerAway } from "./components/LedgerAway";
 import { NavRail } from "./components/NavRail";
 import { Scene } from "./components/Scene";
 import { Toasts, type Toast } from "./components/Toasts";
@@ -62,6 +63,14 @@ const OWN_TOAST: ReadonlySet<ChronicleEntry["source"]> = new Set(["memory", "rel
 const QUIET_EVENTS: ReadonlySet<string> = new Set(["caravan"]);
 /** How long a newly earned element of the shell glows. */
 const FRESH_MS = 4_000;
+/**
+ * Toasts on screen at once: on a phone's layout two (the same test as the CSS), elsewhere
+ * four. The others wait their turn in line, none dropped; a long line moves faster.
+ */
+const PHONE_TOASTS_QUERY = "(max-width: 900px) and (min-height: 561px), (max-width: 599px)";
+const TOASTS_ON_PHONE = 2;
+const TOASTS_ON_DESKTOP = 4;
+const RUSHED_TOAST_MS = 2_600;
 /** Remembrance Nights are checked against the walker's own calendar this often. */
 const REMEMBER_EVERY_MS = 60_000;
 /** Icon of each announced element's first-appearance toast. */
@@ -92,29 +101,46 @@ export default function GameApp() {
   const roll = useRef<Promise<string[]> | null>(null);
   const { t, locale } = useI18n();
 
-  /** While a window or a dialog is open, toasts wait (they would cover it) and come after. */
+  /**
+   * Toasts wait in line: while a window or a dialog is open (they would cover it), and while
+   * the room on screen is full. Each one is shown, and so read aloud, in its turn.
+   */
   const holding = useRef(false);
-  const waiting = useRef<Toast[]>([]);
-  const show = useCallback((entry: Toast) => {
-    setToasts((current) => [...current.slice(-4), entry]);
-    const duration = entry.quote ? 8000 : entry.tone === "danger" ? 4500 : 3800;
-    setTimeout(() => setToasts((current) => current.filter((item) => item.id !== entry.id)), duration);
+  const pump = useMemo(() => {
+    const line: Toast[] = [];
+    let onScreen: Toast[] = [];
+    const next = () => {
+      if (holding.current) return;
+      const room = window.matchMedia(PHONE_TOASTS_QUERY).matches ? TOASTS_ON_PHONE : TOASTS_ON_DESKTOP;
+      let changed = false;
+      while (onScreen.length < room && line.length > 0) {
+        const entry = line.shift() as Toast;
+        onScreen = [...onScreen, entry];
+        changed = true;
+        const duration = entry.quote ? 8000 : entry.tone === "danger" ? 4500 : 3800;
+        setTimeout(() => {
+          onScreen = onScreen.filter((item) => item.id !== entry.id);
+          setToasts(onScreen);
+          next();
+        }, line.length > room ? Math.min(duration, RUSHED_TOAST_MS) : duration);
+      }
+      if (changed) setToasts(onScreen);
+    };
+    return { add: (entry: Toast) => { line.push(entry); next(); }, next };
   }, []);
   const toast = useCallback((input: ToastInput) => {
     toastId.current += 1;
-    const entry: Toast = { ...input, id: toastId.current };
-    if (holding.current) waiting.current = [...waiting.current.slice(-4), entry];
-    else show(entry);
-  }, [show]);
+    pump.add({ ...input, id: toastId.current });
+  }, [pump]);
 
   const covered = openWindow !== null || confirmRequest !== null || reunion !== null;
   useEffect(() => {
     holding.current = covered;
-    if (covered) return;
-    const queued = waiting.current;
-    waiting.current = [];
-    for (const entry of queued) show(entry);
-  }, [covered, show]);
+    if (!covered) pump.next();
+  }, [covered, pump]);
+
+  // The loading screen follows the server's answer (or its silence).
+  useSyncExternalStore(cloud.subscribe, cloud.getVersion, () => 0);
 
   const ui = useMemo<GameUi>(() => ({
     openWindow: (id, tab) => setOpenWindow({ id, tab }),
@@ -142,6 +168,8 @@ export default function GameApp() {
     };
     const onLeave = (event: BeforeUnloadEvent) => {
       if (!cloud.user && store.state.lifetime.playTime > GUEST_WARNING_SECONDS) event.preventDefault();
+      // Signed in, but the last uploads failed (server away): what was played since is only here.
+      else if (cloud.user && cloud.status === "error") event.preventDefault();
     };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("beforeunload", onLeave);
@@ -214,11 +242,13 @@ export default function GameApp() {
     };
   }, [ready, store, toast, fresh]);
 
-  // Audio settings.
+  // Audio settings, and the place the drone follows.
   useEffect(() => {
     const sync = () => {
       audio.setEnabled(store.state.settings.sound);
       audio.setVolume(store.state.settings.volume);
+      audio.setStage(store.state.stage);
+      audio.setAmbience(store.state.settings.ambience);
       document.documentElement.classList.toggle("reduced-motion", store.state.settings.reducedMotion);
     };
     sync();
@@ -438,6 +468,7 @@ export default function GameApp() {
   const context = useMemo(() => ({ store, cloud, ui, fresh }), [store, cloud, ui, fresh]);
 
   if (!ready) {
+    if (cloud.reaching) return <LedgerAway reaching={cloud.reaching} onRetry={cloud.retryNow} />;
     return (
       <div className="game-loading" role="status">
         <img src="/assets/brand/idlebound-logo.webp" alt="Idlebound" width={900} height={341} />
@@ -459,8 +490,8 @@ export default function GameApp() {
           <HeroPanel />
         </div>
         <nav className="mobile-tabs" aria-label={t.hud.mobileTabs.label}>
-          <button type="button" className={mobileTab === "heroes" ? "active" : ""} onClick={() => setMobileTab("heroes")}>{t.hud.mobileTabs.heroes}</button>
-          <button type="button" className={mobileTab === "scene" ? "active" : ""} onClick={() => setMobileTab("scene")}>{t.hud.mobileTabs.scene}</button>
+          <button type="button" aria-pressed={mobileTab === "heroes"} className={mobileTab === "heroes" ? "active" : ""} onClick={() => setMobileTab("heroes")}>{t.hud.mobileTabs.heroes}</button>
+          <button type="button" aria-pressed={mobileTab === "scene"} className={mobileTab === "scene" ? "active" : ""} onClick={() => setMobileTab("scene")}>{t.hud.mobileTabs.scene}</button>
         </nav>
         {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
         <CloudChoiceModal />

@@ -33,7 +33,7 @@ export const site = defineMessages({
     play: {
       title: "Jouer à Idlebound, clicker fantasy",
       description:
-        "Lance Idlebound dans ton navigateur : clique, recrute des compagnons, affronte les boss et fais ton ascension. Sans téléchargement, sauvegarde automatique.",
+        "Lance Idlebound dans ton navigateur : frappe, recrute des compagnons, affronte les boss et fais ton ascension. Sans téléchargement, ta partie te suit partout.",
       noscript: "Idlebound a besoin de JavaScript pour fonctionner.",
       loading: "Réveil des compagnons…"
     }
@@ -69,7 +69,7 @@ export const site = defineMessages({
     play: {
       title: "Play Idlebound, the fantasy clicker",
       description:
-        "Launch Idlebound in your browser: click, hire companions, battle bosses and ascend. No download, automatic saving.",
+        "Launch Idlebound in your browser: strike, hire companions, battle bosses and ascend. No download, and your game follows you everywhere.",
       noscript: "Idlebound needs JavaScript to run.",
       loading: "Waking the companions…"
     }

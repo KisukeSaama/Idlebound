@@ -4,7 +4,7 @@ import { WAGER_CLICKS, WAGER_SECONDS, biomeForStage, biomeName, chronicleText, e
 import { useEffect, useRef, useState } from "react";
 import type { ArenaRenderer } from "../pixel/arena";
 import { uiZoom } from "../pixel/surface";
-import { useI18n } from "@/i18n/client";
+import { currentMessages, useI18n } from "@/i18n/client";
 import { useFormat, useGame, useReveals } from "../context";
 import { stratumLabel } from "../shell";
 import { BuffChips } from "./BuffChips";
@@ -20,6 +20,8 @@ import { TutorialHint } from "./TutorialHint";
 const OPENING_SECONDS = 7;
 /** What stays after a long absence shows this long over the scene (BIBLE 12.8). */
 const DREAM_MS = 6_000;
+/** Screen readers hear the fight at this pace at most; a burst keeps its latest line. */
+const TELL_GAP_MS = 1_500;
 
 export function Scene() {
   const { state, derived, store } = useGame();
@@ -69,6 +71,37 @@ export function Scene() {
     };
   }, [store, locale]);
 
+  // The fight in words for screen readers, never every tick: a new stage, and the notable
+  // creatures (guardians, elites, treasures, wanderers) as they come and as they fall.
+  const [told, setTold] = useState("");
+  const fmtRef = useRef(fmt);
+  fmtRef.current = fmt;
+  useEffect(() => {
+    let lastAt = -Infinity;
+    let pending: ReturnType<typeof setTimeout> | undefined;
+    const tell = (text: string) => {
+      clearTimeout(pending);
+      const wait = lastAt + TELL_GAP_MS - performance.now();
+      const say = () => {
+        lastAt = performance.now();
+        setTold(text);
+      };
+      if (wait <= 0) say();
+      else pending = setTimeout(say, wait);
+    };
+    const unsubscribe = store.onFx((event) => {
+      const words = currentMessages().hud;
+      const stage = store.state.stage;
+      if (event.type === "stage") tell(words.stageBar.stage(event.stage, isBossStage(event.stage)));
+      else if (event.type === "spawn" && event.monster.kind !== "normal") tell(words.scene.appears(monsterName(event.monster, stage, locale), fmtRef.current(event.monster.maxHp)));
+      else if (event.type === "kill" && event.monster.kind !== "normal") tell(words.scene.falls(monsterName(event.monster, stage, locale)));
+    });
+    return () => {
+      unsubscribe();
+      clearTimeout(pending);
+    };
+  }, [store, locale]);
+
   // Viewport pixels to the arena's page pixels (the interface is zoomed on large screens).
   const strike = (clientX: number, clientY: number, rect: DOMRect) => {
     const zoom = uiZoom();
@@ -95,6 +128,7 @@ export function Scene() {
         fullMoon={state.secrets.includes("night-owl")}
         darkNight={state.settings.darkNight}
       />
+      <p className="visually-hidden" role="status" aria-live="polite">{told}</p>
       {opening ? <p className="scene-opening" aria-live="polite">{g.openingLine}</p> : null}
       {dream && !opening ? <p key={dream.key} className="scene-opening scene-dream" aria-live="polite">{dream.text}</p> : null}
       <header className="scene-top">
@@ -118,7 +152,10 @@ export function Scene() {
           strike(event.clientX, event.clientY, event.currentTarget.getBoundingClientRect());
         }}
         onKeyDown={(event) => {
-          if (event.key !== "Enter" || event.repeat) return;
+          if (event.key !== "Enter" && event.key !== " ") return;
+          // Space would scroll the page: it strikes, like Enter.
+          event.preventDefault();
+          if (event.repeat) return;
           const rect = event.currentTarget.getBoundingClientRect();
           strike(rect.left + rect.width / 2, rect.top + rect.height / 2, rect);
         }}

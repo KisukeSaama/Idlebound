@@ -6,7 +6,7 @@ import { AGE_COUNT, ERAS_PER_AGE, ageOf } from "./eras";
 import { renderEmblem } from "./mask";
 import { forgeRunes, RELIC_SIZE, renderCrystal, renderIcon, renderRelic } from "./objects";
 import { EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pixels";
-import { awakenedRecipe, renderPortrait } from "./portrait";
+import { awakenedRecipe, PORTRAIT_SIZE, renderPortrait } from "./portrait";
 import { gradeForNight } from "./night";
 import { structureView } from "./props";
 import { compositeLayers, flattenScene, MAX_SCENE_COLORS, PLACE_IDS, renderScene, type Scene } from "./scene";
@@ -75,6 +75,21 @@ describe("pixel art recipes", () => {
     for (const skill of SKILLS) expect(POWER_ICONS[skill.id]).toBeDefined();
     for (const offer of MARKET_OFFERS) expect(MARKET_ICONS[offer.id]).toBeDefined();
     for (const ware of CARAVAN_WARES) expect(CARAVAN_ICONS[ware.id]).toBeDefined();
+  });
+
+  it("draws every companion at 64 x 64: every key in its legend, every slot with a material", () => {
+    for (const hero of HEROES) {
+      const { grid, materials } = PORTRAITS[hero.id];
+      expect(grid.rows.length, hero.id).toBeLessThanOrEqual(PORTRAIT_SIZE);
+      for (const row of grid.rows) {
+        expect(row.length, hero.id).toBeLessThanOrEqual(PORTRAIT_SIZE);
+        for (const key of row) if (key !== ".") expect(grid.legend[key], `${hero.id} key ${key}`).toBeDefined();
+      }
+      for (const ink of Object.values(grid.legend)) if ("m" in ink) expect(materials[ink.m], `${hero.id} slot ${ink.m}`).toBeDefined();
+    }
+    // The Awakened's skin and hair are the slots its seed swaps.
+    expect(PORTRAITS.awakened.materials.skin).toBeDefined();
+    expect(PORTRAITS.awakened.materials.hair).toBeDefined();
   });
 
   it("gives every altar, power and stall ware a silhouette of its own, in solid pixels", () => {
@@ -174,15 +189,47 @@ describe("pixel generator", () => {
     }
   });
 
-  it("uses 4 to 12 colors per sprite, at every era", () => {
+  it("draws every creature in solid pixels and 4 to 12 colors, at every era", () => {
     for (const id of Object.keys(CREATURE_RECIPES)) {
-      for (const era of [0, 2, 5, 10, 25, 40]) {
-        const count = colors(renderCreature(id, { era }).pixels);
-        expect(count, `${id} era ${era}`).toBeLessThanOrEqual(MAX_COLORS);
-        expect(count, `${id} era ${era}`).toBeGreaterThanOrEqual(4);
+      for (let era = 0; era < AGE_COUNT * ERAS_PER_AGE; era += 1) {
+        for (const options of [{ era }, { era, frame: 1 }, { era, blink: true }]) {
+          const pixels = renderCreature(id, options).pixels;
+          const label = `${id} era ${era}${options.frame ? " frame 1" : ""}${options.blink ? " blink" : ""}`;
+          let translucent = 0;
+          const used = new Set<number>();
+          for (let at = 0; at < pixels.idx.length; at += 1) {
+            if (pixels.idx[at] === EMPTY) continue;
+            used.add(pixels.idx[at]);
+            if (pixels.alpha[at] !== 255) translucent += 1;
+          }
+          expect(translucent, `${label} solid`).toBe(0);
+          const count = used.size;
+          expect(count, label).toBeLessThanOrEqual(MAX_COLORS);
+          // A blink closes the eyes: their color may leave with them.
+          if (!options.blink) expect(count, label).toBeGreaterThanOrEqual(4);
+        }
       }
     }
     for (const hero of HEROES) expect(colors(renderPortrait(hero.id)), hero.id).toBeLessThanOrEqual(MAX_COLORS);
+  }, 60_000);
+
+  it("renders a creature frame well inside its budget (2 ms on a mid phone)", () => {
+    // The median of many renders, across Ages (the First Mark reshapes the whole body), so one slow run does not fail it.
+    const ids = ["field-rat", "ruined-king", "moss-alpha"];
+    const eras = [0, 3, 17, 30, 57];
+    for (const id of ids) for (const era of eras) renderCreature(id, { era });
+    const times: number[] = [];
+    for (let round = 0; round < 12; round += 1) {
+      for (const id of ids) {
+        for (const era of eras) {
+          const start = performance.now();
+          renderCreature(id, { era, frame: 1 + (round % 3) });
+          times.push(performance.now() - start);
+        }
+      }
+    }
+    times.sort((a, b) => a - b);
+    expect(times[Math.floor(times.length / 2)]).toBeLessThan(1);
   });
 
   it("outlines with ink where a creature meets the ground", () => {
@@ -445,8 +492,9 @@ describe("pixel generator", () => {
   });
 
   it("gives the Awakened a portrait that follows the walker's settings", () => {
-    const seen = new Set([1, 2, 3, 4, 5, 6].map((seed) => hash(renderPortrait("awakened", awakenedRecipe(seed * 7919)))));
-    expect(seen.size).toBeGreaterThan(1);
+    const portraits = [1, 2, 3, 4, 5, 6].map((seed) => renderPortrait("awakened", awakenedRecipe(seed * 7919)));
+    expect(new Set(portraits.map(hash)).size).toBeGreaterThan(1);
+    for (const pixels of portraits) expect(colors(pixels)).toBeLessThanOrEqual(MAX_COLORS);
   });
 
   it("matches the recorded snapshots of every sprite (an accidental change shows here)", () => {

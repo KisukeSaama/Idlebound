@@ -11,7 +11,7 @@ import { C, RAMPS, rampFor, resolveCreature, SCENE_HEIGHT, type Pal } from "@idl
 import { eclipseRing, greyPixels, remembrancePixels, SEAM_MARGIN, seamPixels, seamSpan, unfinishedOrder, unfinishedPixels, unfinishedShare, UNFINISHED_STEPS } from "./events";
 import { companionRamp, drawMotes, drawShot, Particles, shotBackAngle, shotDuration, type Mote, type Shot } from "./fx";
 import type { NightGrade } from "./night";
-import { hash2 } from "./pixels";
+import { fadeStep, FADE_STEPS, hash2 } from "./pixels";
 import { sceneRecipe, type SceneOptions } from "./scene";
 import { creatureSheet, css, flashPixels, sceneSheet, type CreatureSheet, type SceneSheet, type Tone } from "./sprites";
 import { effectCache, pixelRatio, toSurface, whenIdle, type Surface } from "./surface";
@@ -249,17 +249,23 @@ export class ArenaRenderer {
       return;
     }
     const sheet = queen.sheet;
-    const w = sheet.pixels.w * sheet.unit;
-    const h = sheet.pixels.h * sheet.unit;
+    const w = sheet.pixels.w;
+    const h = sheet.pixels.h;
     const fade = Math.min(1, k * 8, (1 - k) * 8);
     const still = this.reducedMotion;
     const x = still ? Math.floor(this.width * 0.7 - w / 2) : Math.floor(-w + (this.width + w) * k);
     // Just under the scene's top bar (stages, chips), above the fight.
     const y = this.toGrid(0, this.arena.y).y + 2 + (still ? 0 : Math.round(Math.sin(now * 1.6) * 4));
-    const frame = still ? 0 : Math.floor(now / IDLE_FRAME_SECONDS) % sheet.frames.length;
-    this.ctx.globalAlpha = fade;
-    this.ctx.drawImage(sheet.frames[frame], x, y, w, h);
-    this.ctx.globalAlpha = 1;
+    if (still) {
+      // Reduced motion: she holds a single frame and fades.
+      this.ctx.globalAlpha = fade;
+      this.ctx.drawImage(sheet.frames[0], x, y, w, h);
+      this.ctx.globalAlpha = 1;
+      return;
+    }
+    // In motion she comes and goes pixel by pixel, in whole steps of an ordered mask.
+    const step = fadeStep(fade);
+    if (step > 0) this.ctx.drawImage(sheet.veiled(Math.floor(now / IDLE_FRAME_SECONDS) % sheet.frames.length, step), x, y, w, h);
   }
 
   /**
@@ -295,12 +301,12 @@ export class ArenaRenderer {
     if (monster.event === "seam") {
       // The crack stands behind the Warden, from the ground to well above its head.
       const place = this.placement(sheet);
-      const span = seamSpan(sheet.feet * sheet.unit);
-      this.seam = { x: place.x + Math.round((sheet.pixels.w * sheet.unit) / 2), y: place.y + span.middle, length: span.length, at: now, closing: null };
+      const span = seamSpan(sheet.feet);
+      this.seam = { x: place.x + Math.round(sheet.pixels.w / 2), y: place.y + span.middle, length: span.length, at: now, closing: null };
     }
     if (!this.reducedMotion) {
       const place = this.placement(sheet);
-      this.particles.gather(sheet.pixels, place.x, place.y, sheet.unit, now, SPAWN_SECONDS);
+      this.particles.gather(sheet.pixels, place.x, place.y, now, SPAWN_SECONDS);
     }
     this.kick();
   }
@@ -346,8 +352,7 @@ export class ArenaRenderer {
   /** Top left of the sprite on the grid: centered, feet on the scene's floor. */
   private placement(sheet: CreatureSheet) {
     const floor = this.sceneTop() + (this.scene?.scene.ground ?? SCENE_HEIGHT - 40);
-    const w = sheet.pixels.w * sheet.unit;
-    return { x: Math.floor(this.width / 2) - Math.round(w / 2), y: floor - sheet.feet * sheet.unit };
+    return { x: Math.floor(this.width / 2) - Math.round(sheet.pixels.w / 2), y: floor - sheet.feet };
   }
 
   /** The whole box the monster's sprite may draw in, in CSS pixels relative to the canvas. */
@@ -356,7 +361,7 @@ export class ArenaRenderer {
     if (!monster) return null;
     const place = this.placement(monster.sheet);
     const topLeft = this.toCss(place.x, place.y);
-    const size = this.toCss(monster.sheet.pixels.w * monster.sheet.unit, monster.sheet.feet * monster.sheet.unit);
+    const size = this.toCss(monster.sheet.pixels.w, monster.sheet.feet);
     return { x: topLeft.x, y: topLeft.y, width: size.x, height: size.y };
   }
 
@@ -366,7 +371,7 @@ export class ArenaRenderer {
     if (!monster) return null;
     const place = this.placement(monster.sheet);
     const topLeft = this.toCss(place.x, place.y);
-    const size = this.toCss(monster.sheet.pixels.w * monster.sheet.unit, monster.sheet.feet * monster.sheet.unit);
+    const size = this.toCss(monster.sheet.pixels.w, monster.sheet.feet);
     // Sprites fill about 70% of their box: aim inside it.
     return { x: topLeft.x + size.x * 0.15, y: topLeft.y + size.y * 0.3, width: size.x * 0.7, height: size.y * 0.7 };
   }
@@ -409,7 +414,7 @@ export class ArenaRenderer {
     } else {
       const target = goldAt ? this.toGrid(goldAt.x, goldAt.y) : { x: place.x, y: 0 };
       const guardian = monster.kind === "boss" || monster.kind === "miniboss";
-      this.particles.scatter(monster.sheet.pixels, place.x, place.y, monster.sheet.unit, now, target, guardian);
+      this.particles.scatter(monster.sheet.pixels, place.x, place.y, now, target, guardian);
     }
     this.monster = null;
     this.flash = null;
@@ -463,20 +468,23 @@ export class ArenaRenderer {
       return;
     }
     const sheet = creatureSheet("walker-echo", walker.era, this.night(), this.tone());
-    const unit = sheet.unit;
     const floor = this.sceneTop() + (this.scene?.scene.ground ?? SCENE_HEIGHT - 40);
     // Just right of the company's column of portraits (narrower on small screens).
     const narrow = (this.narrowQuery ??= window.matchMedia("(max-width: 900px), (max-height: 560px)")).matches;
     const x = this.toGrid(this.arena.x + (narrow ? 46 : 64), 0).x;
     const still = this.reducedMotion;
     const bob = still ? 0 : WALKER_BOB[Math.floor(now / WALKER_BOB_SECONDS) % WALKER_BOB.length];
-    const top = floor - sheet.feet * unit;
+    const top = floor - sheet.feet;
     const source = this.scene?.scene.source ?? null;
-    const shadow = sheet.shadow(source ? Math.sign(source.x - 160) || 1 : 1, this.scene?.scene.shadow ?? C.ink);
-    const frame = still ? 0 : Math.floor(now / IDLE_FRAME_SECONDS) % sheet.frames.length;
-    this.ctx.globalAlpha = Math.max(0, Math.min(fadeIn, fadeOut));
-    this.ctx.drawImage(shadow.surface, x + shadow.dx * unit, top + shadow.dy * unit, shadow.surface.width * unit, shadow.surface.height * unit);
-    this.ctx.drawImage(sheet.frames[frame], x, top - bob, sheet.pixels.w * unit, sheet.pixels.h * unit);
+    const fade = Math.max(0, Math.min(fadeIn, fadeOut));
+    // In motion it comes and goes pixel by pixel; with reduced motion, a single frame that fades.
+    const step = still ? FADE_STEPS : fadeStep(fade);
+    if (step === 0) return;
+    const shadow = sheet.shadow(source ? Math.sign(source.x - 160) || 1 : 1, this.scene?.scene.shadow ?? C.ink, step);
+    const surface = still ? sheet.frames[0] : sheet.veiled(Math.floor(now / IDLE_FRAME_SECONDS) % sheet.frames.length, step);
+    if (still) this.ctx.globalAlpha = fade;
+    this.ctx.drawImage(shadow.surface, x + shadow.dx, top + shadow.dy);
+    this.ctx.drawImage(surface, x, top - bob);
     this.ctx.globalAlpha = 1;
   }
 
@@ -636,8 +644,9 @@ export class ArenaRenderer {
       const k = (now - this.dying.at) / 0.4;
       if (k >= 1) this.dying = null;
       else {
+        // Only with reduced motion (in motion the monster comes apart into its pixels): a still frame fading out.
         ctx.globalAlpha = 1 - k;
-        ctx.drawImage(this.dying.sheet.frames[0], this.dying.x, this.dying.y, this.dying.sheet.pixels.w * this.dying.sheet.unit, this.dying.sheet.pixels.h * this.dying.sheet.unit);
+        ctx.drawImage(this.dying.sheet.frames[0], this.dying.x, this.dying.y);
         ctx.globalAlpha = 1;
       }
     }
@@ -645,38 +654,38 @@ export class ArenaRenderer {
     const sheet = monster.sheet;
     const age = now - monster.spawnedAt;
     const place = this.placement(sheet);
-    const unit = sheet.unit;
-    const w = sheet.pixels.w * unit;
-    const h = sheet.pixels.h * unit;
+    const w = sheet.pixels.w;
+    const h = sheet.pixels.h;
     // Its shadow: its own silhouette laid on the ground, away from the moon.
     const source = this.scene?.scene.source ?? null;
     const shadow = sheet.shadow(source ? Math.sign(source.x - 160) || 1 : 1, this.scene?.scene.shadow ?? C.ink);
-    ctx.drawImage(shadow.surface, place.x + shadow.dx * unit, place.y + shadow.dy * unit, shadow.surface.width * unit, shadow.surface.height * unit);
+    ctx.drawImage(shadow.surface, place.x + shadow.dx, place.y + shadow.dy);
     if (age < SPAWN_SECONDS && !this.reducedMotion) return;
+    // Reduced motion: the monster fades in instead of gathering (the only translucency, and a fade).
     const alpha = this.reducedMotion ? Math.min(1, age / SPAWN_SECONDS) : 1;
-    const flicker = sheet.treatment.flicker && hash2(Math.floor(now * 10), 0, 3) < 0.15 ? 0.7 : 1;
-    ctx.globalAlpha = alpha * flicker;
+    ctx.globalAlpha = alpha;
     let x = place.x;
     if (this.knock && now < this.knock.until) x += this.knock.dx;
     if (monster.eclipse) {
       // The King's Eclipse: a dark ring behind him, still.
-      const radius = Math.round(Math.min(w, sheet.feet * unit) * 0.42);
+      const radius = Math.round(Math.min(w, sheet.feet) * 0.42);
       const halo = effectCache.get(`eclipse-ring:${radius}`, () => toSurface(eclipseRing(radius)));
-      ctx.drawImage(halo, x + Math.round(w / 2) - Math.floor(halo.width / 2), place.y + Math.round(sheet.feet * unit * 0.45) - Math.floor(halo.height / 2));
+      ctx.drawImage(halo, x + Math.round(w / 2) - Math.floor(halo.width / 2), place.y + Math.round(sheet.feet * 0.45) - Math.floor(halo.height / 2));
     }
     const ring = monster.kind === "boss" || monster.kind === "miniboss" ? this.accent : monster.kind === "treasure" ? C.gold : null;
     if (ring !== null) {
+      // The ring breathes by thinning to a dotted line and filling again, in whole steps.
       const pulse = this.reducedMotion ? 0.6 : 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(now * 4));
-      ctx.globalAlpha = alpha * pulse;
-      ctx.drawImage(sheet.ring(ring), x - unit, place.y - unit, w + 2 * unit, h + 2 * unit);
-      ctx.globalAlpha = alpha * flicker;
+      ctx.drawImage(sheet.ring(ring, fadeStep(pulse)), x - 1, place.y - 1);
     }
     const speed = sheet.treatment.speed;
     // Pip holding still for his dare, and the Unfinished, keep their first frame.
     const still = this.reducedMotion || monster.still || monster.event === "unfinished";
     const idle = still ? 0 : Math.floor((now * speed) / IDLE_FRAME_SECONDS) % sheet.frames.length;
     const blinkPhase = (now * speed + hash2(monster.key.length, 0, 1) * 4) % 4.2;
-    let surface = blinkPhase < 0.14 && !still ? sheet.blink : sheet.frames[idle];
+    // The Loom's weave wavers now and then: a quarter of its pixels drop out for a tenth of a second.
+    const flicker = sheet.treatment.flicker && !this.reducedMotion && hash2(Math.floor(now * 10), 0, 3) < 0.15;
+    let surface = blinkPhase < 0.14 && !still ? sheet.blink : flicker ? sheet.veiled(idle, fadeStep(0.75)) : sheet.frames[idle];
     const flashing = this.flash !== null && now < this.flash.until;
     if (monster.event === "unfinished") surface = this.unfinishedSurface(monster, flashing ? this.flash!.color : null);
     else if (flashing) surface = sheet.flash(this.flash!.color);

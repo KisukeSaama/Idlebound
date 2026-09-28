@@ -29,7 +29,7 @@ export function Party() {
     <ul className="party" aria-hidden="true">
       {members.map((hero) => (
         <li key={hero.id} className="party-member" data-hero={hero.id} style={{ "--hero": hero.color } as CSSProperties}>
-          <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, hero.id === "awakened" ? seed : undefined)} size={34} cover /></span>
+          <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, hero.id === "awakened" ? seed : undefined)} size={42} nearest /></span>
         </li>
       ))}
     </ul>

@@ -25,10 +25,10 @@ const start = Date.UTC(2026, 0, 1);
 const time = (now: number) => formatDuration((now - start) / 1000).padStart(12);
 const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 
-/** Damage of `clicksPerSecond` average clicks (crits included) relative to the active DPS. */
+/** Damage of `clicksPerSecond` average clicks (crits included) relative to companion DPS without the Patience bonus. */
 function clickRatio(engine: GameEngine, now: number, clicksPerSecond: number): number {
   const d = derive(engine.state, now, { ignoreTimed: true });
-  const activeDps = d.dps / (1 + d.idleBonus * d.idleRatio);
+  const activeDps = d.dps - d.patienceDps;
   if (activeDps <= 0) return Number.POSITIVE_INFINITY;
   return (clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1))) / activeDps;
 }
@@ -53,7 +53,7 @@ function playOccasional(engine: GameEngine, from: number, seconds: number): numb
     if (phase === 0) {
       if (engine.canAscend() && !s.autoAdvance) {
         engine.ascend(now);
-        buyAltars(engine, now, IDLE_ALTARS);
+        buyAltars(engine, now, IDLE_ALTARS, false);
       }
       engine.markInput(now);
     }

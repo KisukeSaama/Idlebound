@@ -6,7 +6,7 @@
  * Everything here is pure and deterministic: integer hashing and plain arithmetic, no
  * Math.random, no trigonometry, so the same recipe gives the same pixels on every engine.
  */
-import { palRgb, type Pal } from "@idlebound/game/art";
+import { ORVANE_64, palRgb, type Pal } from "@idlebound/game/art";
 
 export const EMPTY = 255;
 
@@ -118,6 +118,32 @@ export function bayer(x: number, y: number): number {
   return (BAYER[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
 }
 
+/** Steps of a fade: a sprite comes and goes by eighths of its pixels, never by translucency. */
+export const FADE_STEPS = 8;
+
+/** A share from 0 to 1 rounded to a whole fade step. */
+export function fadeStep(share: number): number {
+  return Math.max(0, Math.min(FADE_STEPS, Math.round(share * FADE_STEPS)));
+}
+
+/** The pixels of `source` left at fade step `step`: an ordered 4 × 4 mask, the same pixels every time. */
+export function veil(source: Pixels, step: number): Pixels {
+  if (step >= FADE_STEPS) return source;
+  const out = clonePixels(source);
+  const level = step / FADE_STEPS;
+  for (let y = 0; y < source.h; y += 1) {
+    for (let x = 0; x < source.w; x += 1) {
+      const at = y * source.w + x;
+      if (out.idx[at] !== EMPTY && bayer(x, y) >= level) {
+        out.idx[at] = EMPTY;
+        out.alpha[at] = 0;
+        out.emit[at] = 0;
+      }
+    }
+  }
+  return out;
+}
+
 /** FNV-1a hash of the colors of a bitmap: the snapshot of a sprite in tests. */
 export function hashBitmap(bitmap: Bitmap): string {
   let h = 0x811c9dc5;
@@ -175,6 +201,35 @@ export function reduceColors(source: Pixels, max = MAX_COLORS): Uint8Array {
     for (let index = 0; index < 256; index += 1) if (table[index] === weakest) table[index] = nearest;
   }
   return table;
+}
+
+/**
+ * Closes a reduction over the colors `source` does not use: each goes to the nearest color
+ * the reduction kept. The other frames of an animation (a twitch, a blink's lid) then stay in
+ * the palette of the still frame, never one color over it.
+ */
+export function closeColors(table: Uint8Array, source: Pixels): Uint8Array {
+  const used = new Set<number>();
+  for (let at = 0; at < source.idx.length; at += 1) if (source.idx[at] !== EMPTY && !source.emit[at]) used.add(source.idx[at]);
+  const kept = [...new Set([...used].map((pal) => table[pal]))];
+  if (!kept.length) return table;
+  const out = table.slice();
+  for (let index = 0; index < ORVANE_64.length; index += 1) {
+    if (used.has(index)) continue;
+    const [r, g, b] = palRgb(index);
+    let nearest = kept[0];
+    let best = Infinity;
+    for (const pal of kept) {
+      const [pr, pg, pb] = palRgb(pal);
+      const distance = 2 * (pr - r) ** 2 + 4 * (pg - g) ** 2 + 3 * (pb - b) ** 2;
+      if (distance < best || (distance === best && pal < nearest)) {
+        nearest = pal;
+        best = distance;
+      }
+    }
+    out[index] = nearest;
+  }
+  return out;
 }
 
 /** Applies a color table to every drawn pixel but the light-giving ones. */

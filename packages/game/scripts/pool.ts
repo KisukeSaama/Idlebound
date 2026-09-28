@@ -38,6 +38,8 @@ export function pool<J, R>(script: string, jobs: J[]): Promise<R[]> {
         else if (next < jobs.length) launch();
       });
     };
-    for (let slot = 0; slot < Math.min(availableParallelism(), jobs.length); slot += 1) launch();
+    // BALANCE_WORKERS caps the workers, to leave the machine usable during a run.
+    const workers = Number(process.env.BALANCE_WORKERS) || availableParallelism();
+    for (let slot = 0; slot < Math.min(workers, jobs.length); slot += 1) launch();
   });
 }

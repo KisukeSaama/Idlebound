@@ -41,7 +41,7 @@ Defined once on `:root` in `globals.css`. Never hardcode a color that has a toke
 | `--panel` | `rgba(22,20,30,.96)` | Framed panels over the background |
 | `--panel-solid`, `--panel-2`, `--panel-3` | `#16141e`, `#1d1a27`, `#28253a` | Windows / raised keys and inputs / hover |
 | `--border` / `--border-strong` | `#2c2938` / `#3e3a50` | Hairlines / emphasized frames |
-| `--text` / `--muted` / `--faint` | `#ece8f3` / `#a8a2b8` / `#767089` | Body text / secondary / hints |
+| `--text` / `--muted` / `--faint` | `#ece8f3` / `#a8a2b8` / `#8c86a0` | Body text / secondary / hints |
 | `--gold`, `--gold-2`, `--gold-deep` | `#e8b949`, `#f7d98b`, `#8f6a20` | Gold currency, primary actions, focus ring, links / bevel light / frame thread |
 | `--violet`, `--violet-2` | `#9b6bff`, `#c9a6ff` | Magic only: essences, ascension, talents to buy |
 | `--essence` | `#c38bff` | Essences and ascension |
@@ -57,8 +57,9 @@ Content colors live with the game data, not in CSS:
   `#5aa9ff`, epic `#b86bff`, legendary `#ffb347`, mythic `#ff5c7a`. Item cards take a
   thread of `--rarity` around a black line; legendary and mythic wear a second thread.
 - **Biome accent** (`BIOMES[].accent`): passed as `--accent` to the scene and biome cards.
-- **Hero color** (`HEROES[].color`): the thread of each companion's portrait frame, and
-  the clothing ramp of their pixel portrait and the ramp of their emblem.
+- **Hero color** (`HEROES[].color`): the thread of each companion's portrait frame, an
+  accent of their pixel portrait (its `hero` slot, used sparingly under the moonlight) and
+  the ramp of their emblem.
 
 ## Typography
 
@@ -108,6 +109,10 @@ Content colors live with the game data, not in CSS:
   trapped, Escape and backdrop click close, focus returns to the opener. It opens in 140 ms
   (a short rise, no bounce).
   A tabbed modal always takes its maximum height, so switching tabs never resizes it.
+  A window that spends a currency repeats its header counter beside the title, since the veil
+  dims the header: the equipment and inventory window shows the shards (once revealed) on
+  both tabs; the number swells 1.25x for 420 ms each time it moves (still with reduced
+  motion). The market keeps its larger balance line in the body.
   Sizes `sm` (settings, confirmations), `md` (account, market, cloud save choice, Reunion), `lg`
   (map, equipment and inventory, ascension, achievements).
 - **The Hall**: achievements, then Chronicle and Bestiary once they have a first entry,
@@ -140,8 +145,9 @@ Content colors live with the game data, not in CSS:
   italics. Recognition draws one to five thin gold rings around a companion's portrait
   frame, brighter with each tier.
 - **Toasts**: on the right of the scene, next to the companions panel, under the scene's top
-  bar (placement details under Motion), at most 5, auto-dismiss 3.8 s (4.5 s for
-  danger). Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
+  bar (placement details under Motion), at most 4 at once (2 on phones), auto-dismiss 3.8 s
+  (4.5 s for danger). The others wait in line and none is dropped; while more than a
+  screenful waits, each goes after 2.6 s. Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
   in the item's rarity color), success, info, danger.
 - **Forms**: `.field` + `.input` (a field sunk into the page), gold focus border,
   `aria-invalid` turns the border red,
@@ -241,7 +247,7 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
   stage pips, powers and HP bar, so the monster keeps most of the scene.
 - **Portrait mobile** (≤ 900px wide and taller than 560px, or any width under 600px):
   single column. Scene on top (at least 290px, 58%), companions below; a floating switch
-  toggles "Companions" / "Full-screen combat" (in full-screen the scene stops above it).
+  toggles "Companions" / "Full combat view" (in full view the scene stops above it).
   The rail becomes a fixed bottom bar that respects the safe-area insets. Logo hidden,
   toasts centered, windows open as bottom sheets.
 - **Short landscape** (≤ 560px tall, at least 600px wide, i.e. phones held sideways): the
@@ -251,7 +257,7 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
 - **≤ 480px**: the bottom bar shows icons only (eight labels do not fit; each button keeps
   its `aria-label` and `title`).
 - The whole scene area is the click target (pointer down, not click, for responsiveness);
-  Enter attacks when the arena has focus.
+  Enter or Space attacks when the arena has focus.
 
 ## Public pages
 
@@ -343,14 +349,21 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   guardians about 110, the Fallen King 125 × 124, Pip 36 × 39. Each keeps to 12
   colors, 24 with its scene.
 - **Eras and Ages** (`eras.ts`): five eras make an Age (twelve Ages, eras 0 to 59). Age I:
-  none, then Echo (a ghost copy at 30%), Ash (warm ramps, embers), Void (missing pieces),
-  Astral (stars in the body); the places wear with them (see Wear of the world). Then one treatment per Age, a little stronger from one era to
-  the next: heavier stone, bone and ice bodies; gilded highlights, a halo and a column
-  of light behind the great ones; half transparent bodies full of stars with a pale blue
-  outline; vertical threads, some hanging loose, and a flicker; paper and charcoal
-  hatching; bodies written in runes; soft 2-step ramps, half closed eyes, slower breathing;
-  warm lamp light from one side; colors draining to grey; outline only; fewer and fewer
-  pixels. Pip never changes.
+  none, then Echo (a ghost copy one pixel up and right, a checker of cold dusk where it
+  shows), Ash (warm ramps, embers every fifth pixel of the upper edges), Void (missing
+  pieces), Astral (stars in the body); the places wear with them (see Wear of the world).
+  Then one treatment per Age, a little stronger from one era to the next: heavier stone,
+  bone and ice bodies; gilded highlights, a halo and a dithered column of light behind the
+  great ones; bodies of night glass (two deep blues in a checker) full of stars with a pale
+  blue outline; vertical threads at a steady spacing, some hanging loose, and a flicker;
+  paper and charcoal hatching with thumb smudges; bodies written in runes; soft 2-step
+  ramps (a body of one material keeps its ramp), half closed eyes, slower breathing; warm
+  lamp light from one side; colors draining to grey; outline only (lighter along the top,
+  deeper underneath); fewer and fewer pixels at the same size (thin parts fall away era by
+  era, the masses merge into two or three flat tones in a fresh outline, the eyes stay; a
+  drawing already down to lines, like the Dawn, keeps them). Every treatment is solid
+  pixels: stars sit on a hand-laid tile of sky, smudges and threads on regular grids, never
+  scattered noise or a translucent pixel. Pip never changes.
 - **Scenes** (`scenes.ts`, `scene.ts`, `backdrop.ts`, `ground.ts`, `props.ts`,
   `foreground.ts`): pixel art in the manner of a calm night scene, built by the method of
   the creatures (volumes lit from the moon's side, material ramps laid in clusters, an ink
@@ -476,11 +489,21 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   temples and shafts of light, the sky pouring, warp threads, line art on paper, walls of
   runes, mist and a low moon, a lamp and a window, grey, the world in outline, then a
   single point of light and a line).
-- **Companions**: 32 × 32 portraits built in layers (headgear behind, hair behind,
-  clothing in the companion's ramp, neck, head, hair, headgear, accessory); Nyx's hood
-  holds a starfield, the Nameless's helmet is dark inside; the Awakened's portrait is seeded
-  by the walker's notation, sound and language. 12 × 12 emblems (hand-authored masks)
-  replace the old Unicode glyphs, before each name in the companions panel.
+- **Companions** (`grids/companions/`): 64 × 64 busts made like the creatures: painted at a
+  higher resolution (volumes lit by the moon from the top left, strands of hair, folds of
+  cloth, grain of leather), traced into pixel clusters, then the eyes, mouths and small
+  details placed by hand. Every human face stands on the same construction (eye line, nose
+  base, mouth and chin on fixed lines, both eyes the same size) so no face turns into a
+  caricature; age, jaw, gaze and expression make the person. Three-quarters toward the
+  monsters, desaturated and moonlit, deep shadows, 12 colors, the night ink outline. Each
+  carries a signature of its dossier (Maëlle's copper braid and bow, Nyx's hood holding only
+  sky and stars, the Nameless's helm with a void for a visor, Biscuit's pale eyes over Vorn's
+  shoulder, Eldra's threads of light, Aurelion's dragon head, the Awakened's halo). The face
+  stays in the middle: the companions panel holds the whole bust (64 px inside its frame),
+  the scene medallions and the reunion list crop the edges around it, each at the whole
+  scale nearest its frame. The Awakened's skin and hair are seeded by the walker's notation,
+  sound and language. 12 × 12 emblems (hand-authored masks) replace the old Unicode glyphs,
+  before each name in the companions panel.
 - **Relics** (`relics.ts`, `objects.ts`): 32 × 32 icons. Each of the 20 base shapes of
   `SLOT_BASE_COUNT` is one object drawn five times, its parts gated by rarity, so rarity
   reads from silhouette, matter and light before color: common is short, plain and worn
@@ -497,7 +520,10 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   Cinzel "+7" badge on the icon's corner (gold-filled at +20); relic icons in item cards
   are shown at twice their pixels. Named relics have their own recipe
   (`NAMED_RELIC_SHAPES`) with the same light; the Crown is dull gold, its sockets empty,
-  no light and no halo.
+  no light and no halo. A relic from below the present night lists its **Density**
+  ("Density: damage ×1.35", pale violet `--violet-2`, after the affixes; its tooltip names
+  the stratum it was remembered in), and the equipment totals add a Density row once one
+  is worn; a relic of the present night shows neither.
 - **In-world icons**: 16 × 16 pixel icons for the 13 altars, the 7 powers, the 6 stall
   offers and the 8 Caravan wares, for places of the world (the landing page uses some),
   drawn by hand one character per pixel (`ICON_INK`), outlined by the generator. Each tells
@@ -588,10 +614,13 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   only their knockback. On death they come apart
   into their own pixels, which drift up and turn into gold motes flying to the gold counter
   (guardians shed violet ones too). Elites and guardians pulse a 1 px outline in the biome's
-  accent, Pip in gold.
+  accent, Pip in gold: it thins to a dotted line and fills again in whole dither steps.
+  Nothing in motion is ever translucent: what comes, goes or wavers (the Lantern Queen,
+  the Echo of a Walker, the Loom's flicker) drops or regains its pixels by eighths through
+  an ordered 4 x 4 mask, each step cached. Only reduced motion fades, on a single frame.
 - **The Lantern Queen** crosses the sky from left to right during a Crystal Storm, just
-  under the scene's top bar, fading in and out over 15 s; with reduced motion she holds
-  still and only fades. Storm crystals glow gold instead of violet.
+  under the scene's top bar, over 15 s, coming and going pixel by pixel; with reduced
+  motion she holds still and only fades. Storm crystals glow gold instead of violet.
 - **Events of the Long Night in the arena** (`pixel/events.ts`, solid pixels, cached): the
   Seam is a zigzag crack of pale light behind its Warden (white heart, pale sides, rings of
   lilac and haze dithered sparser outward, flickering on 2 frames), opening in 0.4 s and
@@ -602,7 +631,7 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   (share drawn = 0.5 + 0.5 x damage taken, in 48 steps). An eclipsed King is drawn in the
   four darkest night steps, eyes still lit, over a still dark ring with a dotted dusk rim.
   While the `walker` buff lasts, the Echo of a Walker stands just right of the party,
-  facing the monster, bobbing a pixel as it fights; it fades in and out over 0.6 s. On a
+  facing the monster, bobbing a pixel as it fights; it comes and goes pixel by pixel over 0.6 s. On a
   Remembrance Night, strings sag from both upper corners to the outer thirds with four
   lit lanterns in dotted gold halos, never over the middle. Pip holds still (no breath, no
   blink) while he dares the walker. With reduced motion each holds a single frame, and the
@@ -640,9 +669,11 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   "Back on the road" (*Reprendre la route*). Toasts wait while it is open. Without an account
   to tell, a gold toast with the campfire picto says the welcome instead. A campfire chip keeps the countdown while companion damage
   is ×3.
-- The Patience chip shows the idle bonus in effect. While it builds up after a click it
-  fills with violet from left to right (`--fill`, a registered custom property), its
-  tooltip telling the full value and the time left; it is a plain chip once full.
+- The Patience chip shows the idle bonus the company deals. While the walker's strikes
+  stand in for part of it, the chip shows the company's share and fills with violet from
+  left to right (`--fill`, a registered custom property, the share of the last second), its
+  tooltip telling the full value and how much the strikes took; it is a plain chip again
+  within seconds of the last strike.
 - Toasts never cover the stages or the effect chips: they sit right under the scene's top
   bar, whose bottom edge is measured (it grows with the chips and moves when the page
   scrolls). On a computer they never cover the monster, its HP bar, the powers or a
@@ -650,9 +681,10 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   they dock beside the monster when a side has room (250 px at least, 360 px wide at most),
   else in the sky band above its drawn box, and a toast that does not fit is hidden, newest
   first; the dock follows the monster every 250 ms. While a window or a confirmation is
-  open, new toasts wait and the shown ones are hidden; they come back when it closes. On
-  portrait phones two toasts at most are shown: above the companions / combat
-  tabs while the companions are visible, under the top bar in full-screen combat.
+  open, new toasts wait and the shown ones are hidden; the waiting ones come when it closes.
+  On portrait phones two toasts at most are shown (the rest wait their turn): above the
+  companions / combat tabs while the companions are visible, under the top bar in
+  full-screen combat.
 - Capped equipment totals carry a small gold "MAX" pill whose tooltip explains that relic
   bonuses above the cap do not count.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%.
@@ -680,7 +712,23 @@ bell notes), recognition (a rising third), seam (a tearing noise, then a closing
 descent (a long falling glissando), the King's Word (one low note), what stays after an
 absence (a slow chord without attack), the Quiet (every other sound ducks for 2 s) and Pip
 (a squeak and a coin). Unlocked on the first
-pointer or key press, with an on/off switch and a volume slider in Settings.
+pointer or key press.
+
+Under the effects, an **ambient drone** follows the place (`dronePlan(stage)`): each biome
+its own root, wave and colour (the Hearthfields warm on D, the Wychwood a minor third on A,
+the Deepvaults hollow octaves, the Mire a tritone, the Keep a low minor second on a
+filtered sawtooth); each era its own path for a wandering voice (seeded from the place with
+the engine RNG, one glide every 14 s) and its own slow breaths (two LFOs on the cutoff and
+on that voice, run by the audio thread). Each Age detunes it further: the root's twin beats
+wider (1.5 cents, then 4 more per Age) and the fifth and wandering voice go sour (3.5 cents
+per Age). In Age X every sound, effects included, arrives late (220 ms) and muffled (a
+520 Hz low-pass). At the Dawn the effects fall silent and only a held pure note (A3) is
+left. A change of biome, era or Age crossfades over 3 s; the Quiet ducks the drone with the
+rest. Six oscillators at most, none while the ambience is at zero; the context sleeps while
+sound is off or the page hidden.
+
+Settings: a sound switch (everything), an **Effects** slider and an **Ambience** slider
+(`settings.volume`, `settings.ambience`, default 0.6 and 0.5), saved with the other settings.
 
 ## Voice and copy
 
@@ -705,8 +753,26 @@ pointer or key press, with an on/off switch and a volume slider in Settings.
 
 - Visible focus ring everywhere (`2px solid var(--gold)`, offset 2px).
 - Modals are real dialogs (`role="dialog"`, `aria-modal`, labelled title, trapped focus).
-- Icon-only buttons carry `aria-label`; decorative images use `alt=""`.
-- Keyboard: 1 to 6 for powers, Enter to attack the focused arena, Escape to close.
-- Text keeps the `--text` / `--muted` contrast on panel backgrounds; `--faint` is only for
-  non-essential labels.
+  Window tabs are a `tablist`: roving tabindex, arrow keys, Home and End, each tab
+  `aria-controls` the body (`role="tabpanel"`). The close button is the `close` picto with
+  its `aria-label`. The phone's companions / combat switch uses `aria-pressed`.
+- Icon-only buttons carry `aria-label`; decorative images use `alt=""`. No glyph stands in
+  for an icon (no "✓", no "✕"): the `check`, `close` and `warning` pictos do.
+- Keyboard: 1 to 6 for powers, Enter or Space to attack the focused arena, Escape to close.
+- Screen readers hear the fight through a polite live region in the scene, at most one line
+  every 1.5 s: a new stage, and guardians, elites, treasures and wanderers as they appear
+  (with their health) and as they fall. Never every hit.
+- The Ledger's state is never colour alone: when it fails (server away, refused, address
+  to confirm) the account chip replaces its dot with a bordered badge, the `warning` picto
+  and the status word (the word visually hidden under 900 px, still in the button's name),
+  and a polite live region reads it once.
+- Text keeps the `--text` / `--muted` contrast on panel backgrounds. `--faint` (#8c86a0)
+  holds 4.5:1 on every background it sits on: 5.65 on `--bg`, 5.23 on `--panel-solid`,
+  4.91 on `--panel-2`, 5.29 on the bestiary and fragment cards (#151126), 5.80 on the
+  talent chips (#07060c). It stays for secondary labels.
+- **Ledger out of reach**: when the server does not answer at load, the game does not
+  start blank. The loading screen becomes the gate: logo, a Cinzel title ("The Ledger does
+  not answer"), the Ledger's voice in gold, the plain line with the next attempt's
+  countdown (or "offline" while the device has no network), and a gold "Try now" button.
+  The countdown is not read aloud; the state is.
 - `<html lang>` follows the current locale.

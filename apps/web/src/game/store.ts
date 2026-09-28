@@ -138,12 +138,12 @@ export class GameStore {
   }
 
   /**
-   * Replaces the whole game (server save, new game, logout). The game only runs while its
-   * page is open: the time since the save was written is skipped, unless `creditAbsence`
-   * (the browser discarded this very tab, which was still open).
+   * Replaces the whole game (server save, new game, logout). `awayMs` of the time since the
+   * save was written are caught up at once (the company walked on while the game was
+   * closed, within the catch-up cap); the rest is skipped.
    */
-  replaceState(state: GameState, { creditAbsence = false }: { creditAbsence?: boolean } = {}) {
-    if (!creditAbsence) state.lastTickAt = Math.max(state.lastTickAt, Date.now());
+  replaceState(state: GameState, { awayMs = 0 }: { awayMs?: number } = {}) {
+    state.lastTickAt = Math.max(state.lastTickAt, Date.now() - Math.max(0, awayMs));
     const visible = this.engine.visible;
     this.engine = this.createEngine(state);
     this.engine.visible = visible;

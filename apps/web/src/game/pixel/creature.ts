@@ -6,7 +6,7 @@
  */
 import { C, resolveCreature, type CreatureGrid, type ResolvedRecipe } from "@idlebound/game/art";
 import { ERAS_PER_AGE, treatment, type Treatment } from "./eras";
-import { applyColors, bounds, clonePixels, createPixels, EMPTY, reduceColors, type Pixels } from "./pixels";
+import { applyColors, bounds, clonePixels, closeColors, createPixels, EMPTY, reduceColors, type Pixels } from "./pixels";
 import { materialOf, outline, type ShadeOptions } from "./shade";
 
 /** Idle frames of a creature: its own breath cycle. */
@@ -59,7 +59,7 @@ export function renderRecipe(recipe: ResolvedRecipe, options: CreatureOptions = 
   let table = REDUCTIONS.get(key);
   if (!table) {
     const still = options.frame || options.blink ? renderGrid(recipe, recipe.grid, { ...options, frame: 0, blink: false }) : sprite;
-    table = reduceColors(still.pixels);
+    table = closeColors(reduceColors(still.pixels), still.pixels);
     if (REDUCTIONS.size > 256) REDUCTIONS.clear();
     REDUCTIONS.set(key, table);
   }
@@ -104,25 +104,36 @@ function renderGrid(recipe: ResolvedRecipe, grid: CreatureGrid, options: Creatur
   let pixels = createPixels(w, h);
   let over = createPixels(w, h);
   const shadeOptions: ShadeOptions = { materials: recipe.materials, seed, swap: treat.swap };
-  rows.forEach((row, y) => {
-    row.forEach((key, x) => {
-      const ink = grid.legend[key];
-      if (!ink) return;
-      const at = (y + HEADROOM) * w + x + PAD;
-      if ("pal" in ink) {
-        pixels.idx[at] = ink.pal;
-        pixels.alpha[at] = 255;
-        // 1: an eye (it blinks); 2: a source of light (it never goes out).
-        pixels.emit[at] = ink.glow ? (ink.light ? 2 : 1) : 0;
-        return;
-      }
-      const target = ink.over ? over : pixels;
-      target.alpha[at] = 255;
+  const single = Object.keys(recipe.materials).length < 2;
+  // Each key of the legend is resolved once: its color, whether it lies over the outline, its light.
+  const inks = new Map<string, { pal: number; over: boolean; emit: number } | null>();
+  const inkOf = (key: string) => {
+    let resolved = inks.get(key);
+    if (resolved !== undefined) return resolved;
+    const ink = grid.legend[key];
+    if (!ink) resolved = null;
+    // 1: an eye (it blinks); 2: a source of light (it never goes out).
+    else if ("pal" in ink) resolved = { pal: ink.pal, over: false, emit: ink.glow ? (ink.light ? 2 : 1) : 0 };
+    else {
       const ramp = materialOf(ink.m, shadeOptions).ramp;
       const top = ramp.length - 1;
       let step = Math.round(ink.step + (treat.bias ?? 0));
-      if (treat.steps && treat.steps < ramp.length) step = step >= top / 2 ? top - 1 : 1;
-      target.idx[at] = ramp[step < 0 ? 0 : step > top ? top : step];
+      // Soft ramps flatten a body of several materials; one drawn in a single material keeps its ramp.
+      if (treat.steps && treat.steps < ramp.length && !single) step = step >= top / 2 ? top - 1 : 1;
+      resolved = { pal: ramp[step < 0 ? 0 : step > top ? top : step], over: Boolean(ink.over), emit: 0 };
+    }
+    inks.set(key, resolved);
+    return resolved;
+  };
+  rows.forEach((row, y) => {
+    row.forEach((key, x) => {
+      const ink = inkOf(key);
+      if (!ink) return;
+      const at = (y + HEADROOM) * w + x + PAD;
+      const target = ink.over ? over : pixels;
+      target.idx[at] = ink.pal;
+      target.alpha[at] = 255;
+      target.emit[at] = ink.emit;
     });
   });
   closeEyes(pixels, options.blink ?? false, treat.halfClosed ?? false);

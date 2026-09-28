@@ -10,7 +10,8 @@
   --border-strong: #3e3a50;
   --text: #ece8f3;
   --muted: #a8a2b8;
-  --faint: #767089;
+  /* Small print: at least 4.5:1 on every panel it sits on (#1d1a27 is the lightest, 4.91:1). */
+  --faint: #8c86a0;
   --gold: #e8b949;
   --gold-2: #f7d98b;
   --gold-deep: #8f6a20;
@@ -483,6 +484,30 @@ button {
   height: 100%;
   background: var(--gold);
   animation: loading-slide 1.1s steps(12) infinite;
+}
+
+/* The server did not answer at load: the gate waits, says so, and offers to knock again. */
+.ledger-away {
+  padding: 16px;
+  gap: 12px;
+  text-align: center;
+}
+
+.ledger-away-title {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--text);
+}
+
+.ledger-away .ledger-voice {
+  max-width: 34ch;
+  margin: 0;
+}
+
+.ledger-away-text {
+  max-width: 42ch;
+  margin: 0 0 6px;
 }
 
 @keyframes loading-slide {

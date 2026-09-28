@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
 import { chronicleCount, chronicleEntries, milestoneReached, sourceCount, unreadChronicle } from "./chronicle";
 import { chronicleText, gameText, kingWord, monsterName, regaliaWord } from "./content";
+import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
 import { KING_FORMS, guardianForStage } from "./data/biomes";
 import { CARAVAN_WARES, caravanWare, isoWeek } from "./data/caravan";
 import { WEAVES, threadsFor, weaveCost } from "./data/descent";
@@ -159,15 +160,14 @@ describe("the King's Words", () => {
 
 describe("the Chronicle", () => {
   it("has every written line in both languages, short, without em dash, emoji or a forbidden word before the Edge of Sleep", () => {
-    const FORBIDDEN = /\b(dream|dreamer|dreamed|player|screen|tab|click|save|rêve|rêveur|rêvé|joueur|écran|onglet|clic|sauvegarde)\b/i;
     for (const locale of LOCALES) {
       const text = gameText(locale);
       const check = (line: string, max: number, where: string, deep = false) => {
         expect(line.length, `${locale} ${where}`).toBeGreaterThan(2);
         expect(line.length, `${locale} ${where}: ${line}`).toBeLessThanOrEqual(max);
-        expect(line, `${locale} ${where}`).not.toMatch(/[—–]/);
-        expect(line, `${locale} ${where}`).not.toMatch(/\p{Extended_Pictographic}/u);
-        if (!deep) expect(line, `${locale} ${where}`).not.toMatch(FORBIDDEN);
+        expect(line, `${locale} ${where}`).not.toMatch(DASH);
+        expect(line, `${locale} ${where}`).not.toMatch(EMOJI);
+        if (!deep) expect(line, `${locale} ${where}`).not.toMatch(FORBIDDEN_WORDS);
       };
       text.strata.keystones.forEach((line, era) => check(line.text, 140, `keystone ${era}`, era >= 35));
       for (const id of MILESTONES) check(text.strata.milestones[id].text, 140, `milestone ${id}`);
@@ -465,6 +465,7 @@ describe("the Descent", () => {
     state.maxStage = 1_200;
     state.stage = 1_200;
     state.lifetime.essencesEarned = 1e9;
+    state.lifetime.ascensionEssences = 1e9;
     state.essences = 5e8;
     state.altars = { might: 20, wanderer: 4 };
     return state;
@@ -502,9 +503,12 @@ describe("the Descent", () => {
     const engine = engineWith(atTheLoom());
     engine.descend(T0);
     const s = engine.state;
+    // Four Descents' worth of threads, from essences the ascensions can have paid.
+    s.descents = 4;
     s.threads = 60;
     s.lifetime.threads = 68;
-    s.lifetime.essencesEarned = 1e40;
+    s.lifetime.essencesEarned = 1e15;
+    s.lifetime.ascensionEssences = 1e15;
     const before = derive(s, T0).essenceMultiplier;
     expect(engine.buyWeave("plenty", T0)).toBe(true);
     expect(derive(s, T0).essenceMultiplier).toBeCloseTo(before * 1.25);
@@ -606,9 +610,11 @@ describe("save version 8", () => {
     legacy.lore = { echoes: lore.echoes, nightSeconds: lore.nightSeconds, read: 3 };
     legacy.trail = { wanderers: [], fieldKills: 0 };
     delete (legacy.settings as Record<string, unknown>).darkNight;
+    delete (legacy.settings as Record<string, unknown>).ambience;
     const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
     expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.trail).toEqual(emptyTrail());
+    expect(migrated.settings.ambience).toBe(0.5);
     expect(migrated.descents).toBe(0);
     // The Kings of an older save: every fall the Bestiary counted, one per stratum at least.
     expect(migrated.lifetime.kings).toBe(Math.max(migrated.bestiary["ruined-king"] ?? 0, Math.floor((migrated.maxStageEver - 1) / 50)));

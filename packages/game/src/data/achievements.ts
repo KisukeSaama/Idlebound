@@ -27,6 +27,10 @@ export const SECRET_SERIES = "secret";
 const heroLevelSum = (state: GameState) => state.lifetime.bestLevelSum;
 const heroesHired = (state: GameState) => state.lifetime.bestHired;
 
+/**
+ * A series of tiers. Thresholds are listed in the order of their ids, which never change:
+ * a tier added later between two others gets the next id and takes its place by threshold.
+ */
 function series(
   prefix: string,
   category: AchievementCategory,
@@ -34,19 +38,23 @@ function series(
   thresholds: number[],
   bonus = 0.02
 ): AchievementDef[] {
-  return thresholds.map((threshold, index) => ({
-    id: `${prefix}-${index + 1}`,
-    series: prefix,
-    category,
-    metric,
-    threshold,
-    // The last two tiers of every series are worth 2.5× more.
-    bonus: index >= thresholds.length - 2 ? bonus * 2.5 : bonus
-  }));
+  const deeper = (threshold: number) => thresholds.filter((other) => other > threshold).length;
+  return thresholds
+    .map((threshold, index) => ({
+      id: `${prefix}-${index + 1}`,
+      series: prefix,
+      category,
+      metric,
+      threshold,
+      // The two highest tiers of every series are worth 2.5× more.
+      bonus: deeper(threshold) < 2 ? bonus * 2.5 : bonus
+    }))
+    .sort((a, b) => a.threshold - b.threshold);
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
-  ...series("stage", "progression", (s) => s.maxStageEver, [10, 25, 50, 75, 100, 150, 200, 300, 500, 1_000, 2_000, 3_000], 0.03),
+  // The end of every Age from the third on (tiers 13 to 19 came later, between the others).
+  ...series("stage", "progression", (s) => s.maxStageEver, [10, 25, 50, 75, 100, 150, 200, 300, 500, 1_000, 2_000, 3_000, 750, 1_250, 1_500, 1_750, 2_250, 2_500, 2_750], 0.03),
   // Strata reached: the era of the deepest stage, counted from one.
   ...series("strata", "progression", (s) => eraForStage(s.maxStageEver) + 1, [10, 20, 30, 40, 50, 60]),
   ...series("clicks", "combat", (s) => s.lifetime.clicks, [100, 1_000, 10_000, 100_000, 1_000_000]),
@@ -55,7 +63,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   ...series("bosses", "combat", (s) => s.lifetime.bosses, [10, 100, 1_000, 10_000]),
   ...series("kings", "combat", (s) => s.lifetime.kings, [1, 10, 100, 1_000]),
   ...series("seams", "combat", (s) => s.lifetime.seams, [1, 25, 100]),
-  ...series("gold", "wealth", (s) => s.lifetime.goldEarned, [1e3, 1e6, 1e9, 1e12, 1e18, 1e24, 1e36]),
+  // Then about what a walker has earned by the end of each Age, down to the last one.
+  ...series("gold", "wealth", (s) => s.lifetime.goldEarned, [1e3, 1e6, 1e9, 1e12, 1e18, 1e24, 1e36, 1e45, 1e65, 1e80, 1e100, 1e115, 1e135, 1e155, 1e170, 1e190, 1e205, 1e225]),
   ...series("treasure", "wealth", (s) => s.lifetime.treasures, [1, 25, 250]),
   ...series("crystal", "wealth", (s) => s.lifetime.crystals, [1, 10, 50, 250]),
   ...series("levels", "companions", heroLevelSum, [100, 500, 1_500, 4_000, 10_000]),

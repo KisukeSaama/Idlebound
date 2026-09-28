@@ -70,7 +70,7 @@ const ALDRIC: HeroDef = {
     { id: "aldric-75", level: 75, costMult: 5_000, effect: { kind: "click", mult: 3 } },
     { id: "aldric-100", level: 100, costMult: 80_000, effect: { kind: "clickDps", pct: 0.01 } },
     { id: "aldric-150", level: 150, costMult: 5_000_000, effect: { kind: "click", mult: 5 } },
-    { id: "aldric-200", level: 200, costMult: 1e9, effect: { kind: "clickDps", pct: 0.01 } }
+    { id: "aldric-200", level: 200, costMult: 1e9, effect: { kind: "clickDps", pct: 0.004 } }
   ]
 };
 

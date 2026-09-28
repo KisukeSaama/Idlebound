@@ -1,5 +1,5 @@
 import { migrateState, type GameState } from "@idlebound/game";
-import { leaderboardSummary, safeParseState, verifyState, verifyTransition, type Violation } from "@idlebound/game/server";
+import { leaderboardSummary, safeParseState, verifyNewLineage, verifySaveVersion, verifyState, verifyTransition, type Violation } from "@idlebound/game/server";
 import { eq, sql as raw } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -47,7 +47,10 @@ export const saveRoutes = new Hono()
     if (!user) return c.json({ error: t(c).loginRequired }, 401);
     const [row] = await db.select().from(saves).where(eq(saves.userId, user.id)).limit(1);
     if (!row) return c.json({ save: null });
-    return c.json({ save: { state: row.state, revision: row.revision, updatedAt: row.updatedAt.toISOString() } });
+    // The time the server saw pass since this save: the most a closed game may be credited
+    // when it opens again, whatever the device's clock says.
+    const elapsedMs = Math.max(0, Date.now() - row.updatedAt.getTime());
+    return c.json({ save: { state: row.state, revision: row.revision, updatedAt: row.updatedAt.toISOString(), elapsedMs } });
   })
 
   .put("/", async (c) => {
@@ -91,9 +94,15 @@ export const saveRoutes = new Hono()
       }
 
       const violations: Violation[] = [...stateViolations];
+      // Never back to an older version: a relabelled save would run the migrations again.
+      if (existing) violations.push(...verifySaveVersion(existing.state, parsedBody.data.state));
       const sameLineage = existing && previous && previous.createdAt === next.createdAt;
       if (existing && previous && sameLineage) {
         violations.push(...verifyTransition(previous, next, now - existing.updatedAt.getTime()));
+      } else if (existing && previous) {
+        // Another game replaces the account's: it gets no more time than the stored game had
+        // been credited, plus the time the server saw pass since, whatever its creation date.
+        violations.push(...verifyNewLineage(previous, next, now - existing.updatedAt.getTime()));
       } else if (next.createdAt < user.createdAt.getTime() - MAX_GUEST_AGE_MS) {
         // New game (played as a guest before sign-up): its age is bounded, otherwise an
         // invented creation date would grant months of "plausible" play time.
@@ -107,9 +116,17 @@ export const saveRoutes = new Hono()
       }
 
       const revision = (existing?.revision ?? 0) + 1;
-      await tx.insert(saves)
-        .values({ userId: user.id, state: next, revision, gameCreatedAt: next.createdAt, updatedAt: new Date(now) })
-        .onConflictDoUpdate({ target: saves.userId, set: { state: next, revision, gameCreatedAt: next.createdAt, updatedAt: new Date(now) } });
+      if (existing) {
+        await tx.update(saves).set({ state: next, revision, gameCreatedAt: next.createdAt, updatedAt: new Date(now) }).where(eq(saves.userId, user.id));
+      } else {
+        // Two first saves at once (two tabs): the first one written wins, the other is a
+        // conflict the player resolves, never a silent overwrite.
+        const inserted = await tx.insert(saves)
+          .values({ userId: user.id, state: next, revision, gameCreatedAt: next.createdAt, updatedAt: new Date(now) })
+          .onConflictDoNothing({ target: saves.userId })
+          .returning({ userId: saves.userId });
+        if (inserted.length === 0) return { status: 409 as const, body: { error: t(c).saveConflict } };
+      }
 
       const board = leaderboardSummary(next);
       await tx.insert(leaderboard)

@@ -7,12 +7,12 @@ import { defineMessages } from "../define";
  */
 export const leaderboard = defineMessages({
   fr: {
-    metaTitle: "Classement des joueurs",
+    metaTitle: "Classement des marcheurs",
     metaDescription:
       "Le classement public d'Idlebound : étape maximale, ascensions, essences récoltées, succès et descentes des meilleurs aventuriers. Chaque score est vérifié par le serveur.",
     title: "Le Registre des Liés",
     subtitle: "Classement",
-    intro: "Le Grand Livre n'écrit que ce qui est vraiment arrivé : chaque score est vérifié par le serveur à chaque sauvegarde. ",
+    intro: "Le Grand Livre n'écrit que ce qui est vraiment arrivé : chaque score est vérifié par le serveur à chaque envoi. ",
     introCta: "Crée un compte en jeu",
     introEnd: " pour y inscrire ton nom.",
     tabsLabel: "Type de classement",
@@ -38,12 +38,12 @@ export const leaderboard = defineMessages({
     columns: { rank: "#", player: "Aventurier", stage: "Étape", ascensions: "Ascensions" }
   },
   en: {
-    metaTitle: "Player leaderboard",
+    metaTitle: "Leaderboard of walkers",
     metaDescription:
       "Idlebound's public leaderboard: highest stage, ascensions, essences collected, achievements and Descents of the best adventurers. Every score is verified by the server.",
     title: "The Roll of the Bound",
     subtitle: "Leaderboard",
-    intro: "The Ledger only writes what truly happened: every score is verified by the server on every save. ",
+    intro: "The Ledger only writes what truly happened: every score is verified by the server on every update. ",
     introCta: "Create an account in the game",
     introEnd: " to inscribe your name.",
     tabsLabel: "Leaderboard type",

@@ -194,6 +194,23 @@ button.resource:hover .resource-label {
 .sync-idle { background: var(--gold); }
 .sync-unverified { background: var(--gold); box-shadow: 0 0 0 2px var(--gold-deep); }
 
+/* The Ledger in trouble (server away, refused, address to confirm): a sign and a word, not a dot. */
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid currentColor;
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+  color: var(--danger);
+  background: color-mix(in srgb, currentColor 12%, var(--panel-solid));
+}
+
+.sync-badge-unverified { color: var(--gold); }
+
 @keyframes blink {
   50% { opacity: 0.3; }
 }
@@ -1122,6 +1139,12 @@ button.resource:hover .resource-label {
   animation: nudge 2s ease-in-out infinite;
 }
 
+/* Nothing affordable: the slot stays, empty, so the list below never moves. */
+.talents-all.idle {
+  visibility: hidden;
+  animation: none;
+}
+
 .hero-list {
   flex: 1;
   min-height: 0;
@@ -1139,7 +1162,7 @@ button.resource:hover .resource-label {
 .hero-row {
   --hero: var(--gold);
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-columns: 66px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   padding: 9px 12px;
@@ -1158,8 +1181,8 @@ button.resource:hover .resource-label {
 /* The portrait's frame: the world object frame, its thread in the companion's color. */
 .hero-medallion {
   position: relative;
-  width: 52px;
-  height: 52px;
+  width: 66px;
+  height: 66px;
   border-radius: 0;
   display: grid;
   place-items: center;
@@ -1177,7 +1200,7 @@ button.resource:hover .resource-label {
 .hero-medallion.recognition-4 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold); }
 .hero-medallion.recognition-5 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold-2), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold); }
 
-/* Portraits are drawn a little larger than their frame; the frame crops them. */
+/* Portraits are 64 px busts at the nearest whole scale: a frame crops their edges or holds them whole. */
 .medallion-clip {
   position: absolute;
   inset: 0;
@@ -1456,6 +1479,32 @@ button.resource:hover .resource-label {
   background: var(--panel-3);
 }
 
+/* A purse from the header, repeated in the window that spends it. */
+.modal-balance {
+  height: 34px;
+  padding: 0 10px;
+}
+
+.balance-moved {
+  display: inline-block;
+  animation: balance-moved 420ms ease-out;
+}
+
+@keyframes balance-moved {
+  0% { transform: scale(1.25); color: var(--text); }
+  100% { transform: scale(1); }
+}
+
+.reduced-motion .balance-moved {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balance-moved {
+    animation: none;
+  }
+}
+
 /* Folder tabs: the open one joins the page under it. */
 .modal-tabs {
   display: flex;
@@ -1685,6 +1734,11 @@ button.resource:hover .resource-label {
   color: var(--muted);
 }
 
+.map-card-check {
+  margin-right: 4px;
+  color: var(--success);
+}
+
 .map-travel {
   display: flex;
   flex-wrap: wrap;
@@ -1898,6 +1952,11 @@ button.resource:hover .resource-label {
 .item-affixes li.main {
   color: var(--text);
   font-weight: 700;
+}
+
+/* Density: the weight of the stratum a relic was remembered in. */
+.item-affixes li.density {
+  color: var(--violet-2);
 }
 
 .item-delta {
@@ -3101,6 +3160,18 @@ kbd {
   .account-cta {
     display: none;
   }
+  /* A narrow header keeps the Ledger's sign; its word is still read aloud. */
+  .sync-badge {
+    padding: 2px 3px;
+  }
+  .sync-badge-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
   .gear-layout,
   .stats-layout,
   .ascension-hero {
@@ -3399,9 +3470,6 @@ kbd {
   .game-body[data-mobile-tab="scene"] ~ .toasts {
     top: var(--toast-top, calc(var(--header-height) + 8px));
     bottom: auto;
-  }
-  .toast:nth-last-child(n + 3) {
-    display: none;
   }
   .mobile-tabs {
     position: fixed;

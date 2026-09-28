@@ -160,6 +160,8 @@ export interface StatBlock {
 export interface LifetimeStats extends StatBlock {
   ascensions: number;
   essencesEarned: number;
+  /** Essences every ascension ever granted (the history keeps only the last ones). */
+  ascensionEssences: number;
   shardsEarned: number;
   itemsFound: number;
   legendaries: number;
@@ -198,7 +200,10 @@ export type BuyMode = 1 | 10 | 25 | 100 | "max";
 export interface Settings {
   notation: Notation;
   sound: boolean;
+  /** Volume of the sound effects, 0 to 1. */
   volume: number;
+  /** Volume of the ambient drone of each place, 0 to 1 (0 stops it). */
+  ambience: number;
   damageNumbers: boolean;
   reducedMotion: boolean;
   confirmAscension: boolean;
@@ -334,6 +339,8 @@ export interface GameState {
   descentMark: number;
   /** ISO week of the last Caravan purchase (one ware a week). */
   caravanWeek: string;
+  /** The engine's random generator, carried by the save: a reload draws the same fates again. */
+  rngState: number;
 }
 
 export interface Derived {
@@ -350,12 +357,10 @@ export interface Derived {
   treasureChance: number;
   dpsMultiplier: number;
   essenceMultiplier: number;
-  /** The full idle bonus applies (no attack click for 30 s). */
-  idle: boolean;
-  /** Share of the idle bonus in effect, from 0 right after a click to 1. */
-  idleRatio: number;
-  /** Full DPS bonus granted while idle (Altar of Patience + idle talents), active or not. */
+  /** The Patience bonus (Altar of Patience + idle talents), a share of companion DPS. */
   idleBonus: number;
+  /** Companion damage per second that bonus adds, included in `dps`: the walker's strikes take its place. */
+  patienceDps: number;
   /** Share of companion DPS added to each click. */
   clickDpsShare: number;
   autoClicksPerSecond: number;

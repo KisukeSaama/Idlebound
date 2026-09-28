@@ -94,6 +94,7 @@ export const gameStateSchema = z.object({
   lifetime: statBlock.extend({
     ascensions: count,
     essencesEarned: positive,
+    ascensionEssences: positive,
     shardsEarned: count,
     itemsFound: count,
     legendaries: count,
@@ -112,6 +113,7 @@ export const gameStateSchema = z.object({
     notation: z.enum(["letters", "scientific", "engineering"]),
     sound: z.boolean(),
     volume: z.number().min(0).max(1),
+    ambience: z.number().min(0).max(1),
     damageNumbers: z.boolean(),
     reducedMotion: z.boolean(),
     confirmAscension: z.boolean(),
@@ -156,7 +158,8 @@ export const gameStateSchema = z.object({
   threads: count,
   weaves: idRecord(z.number().int().min(0).max(WEAVE_LEVEL_MAX), 20),
   descentMark: positive,
-  caravanWeek: z.string().max(10)
+  caravanWeek: z.string().max(10),
+  rngState: z.number().int().min(0).max(0xffffffff)
 });
 
 export function parseState(raw: unknown): GameState {

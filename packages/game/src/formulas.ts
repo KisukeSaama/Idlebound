@@ -3,7 +3,7 @@ import { ALTAR_BY_ID, altarCost, altarEffect } from "./data/altars";
 import { WEAVE_BY_ID, type WeaveId } from "./data/descent";
 import { REMEMBRANCE_FRAGMENTS, WALKER_DPS, remembranceNight } from "./data/events";
 import { CLICK_HERO_ID, HEROES, UPGRADE_BY_ID } from "./data/heroes";
-import { EQUIPMENT_CAP, FORGE_STEP, forgeCost } from "./data/items";
+import { EQUIPMENT_CAP, FORGE_STEP, forgeCost, relicDensity } from "./data/items";
 import { RECOGNITION_DPS, bestiaryGoldBonus, recognitionTier, rememberedCompanions } from "./data/lore";
 import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia } from "./data/relics";
 import type { AffixStat, AltarId, BuffId, Derived, GameState, HeroDef, Item } from "./types";
@@ -14,13 +14,13 @@ export const MAX_STAGE = 3000;
 export const BASE_BOSS_TIMER = 30;
 export const BASE_CRIT_MULTIPLIER = 10;
 export const BASE_TREASURE_CHANCE = 0.01;
-/** The idle bonus starts this long after the last attack click… */
-export const IDLE_GRACE_MS = 3_000;
-/** …and reaches its full value this long after it (it grows linearly in between). */
-export const IDLE_FULL_MS = 30_000;
-/** Altar of the Blade: extra share of the click's DPS part per level, and its maximum. */
-export const BLADE_DPS_SHARE_PER_LEVEL = 0.05;
-export const BLADE_DPS_SHARE_MAX = 0.5;
+/**
+ * The Patience bonus is the company's rhythm when the walker steps back. The walker's own
+ * strikes take its place, blow for blow: each strike's damage is taken off the bonus the
+ * company deals next, and only strikes beyond it add. So a light hand costs nothing, and a
+ * strike that goes unused waits this many seconds of the bonus at most.
+ */
+export const STRIKE_FILL_SECONDS = 3;
 export const RESPAWN_SECONDS = 0.35;
 export const BOSS_RESPAWN_SECONDS = 0.8;
 export const ASCENSION_MIN_STAGE = 51;
@@ -112,21 +112,9 @@ export function altarPrice(state: GameState, id: AltarId): number {
   return altarCost(id, altarLevel(state, id), altarMaxLevel(state, id));
 }
 
-/** Seconds after an attack click the idle bonus needs to come back in full (Quietus shortens it). */
-export function idleFullMs(state: GameState): number {
-  const quietus = namedEffect(state, "idleRamp");
-  return quietus > 0 ? quietus * 1000 : IDLE_FULL_MS;
-}
-
-/** Share of the idle bonus in effect, from 0 (just clicked) to 1 (idle for 30 s). */
-export function idleRatio(state: GameState, now: number): number {
-  const elapsed = now - state.lastClickAt - IDLE_GRACE_MS;
-  return Math.min(1, Math.max(0, elapsed / (idleFullMs(state) - IDLE_GRACE_MS)));
-}
-
-/** Extra share of the click's DPS part granted by the Altar of the Blade. */
-export function bladeDpsShare(state: GameState): number {
-  return Math.min(BLADE_DPS_SHARE_MAX, altarLevel(state, "blade") * BLADE_DPS_SHARE_PER_LEVEL);
+/** Share of a strike's damage that takes the Patience bonus's place (Quietus halves it). */
+export function strikeFillShare(state: GameState): number {
+  return 1 - namedEffect(state, "quietStrike");
 }
 
 /** Seconds Golden Rain lasts (the Vestment of Cinders makes it longer). */
@@ -221,6 +209,13 @@ export function equipmentBonus(state: GameState, stat: AffixStat): number {
   return cap === undefined ? total : Math.min(total, cap);
 }
 
+/** The density of every relic worn, multiplied together (1 with none from below the present night). */
+export function equipmentDensity(state: GameState): number {
+  let total = 1;
+  for (const item of Object.values(state.equipment)) if (item) total *= relicDensity(item);
+  return total;
+}
+
 export function achievementBonus(state: GameState): number {
   let total = 0;
   for (const id of state.achievements) total += ACHIEVEMENT_BY_ID[id]?.bonus ?? 0;
@@ -239,8 +234,6 @@ export function skillActive(state: GameState, id: keyof GameState["skills"], now
 export interface DeriveOptions {
   /** Ignore timed bonuses (powers, potions, crystals); used offline. */
   ignoreTimed?: boolean;
-  /** Force the "idle" state (offline). */
-  forceIdle?: boolean;
 }
 
 export function derive(state: GameState, now: number, options: DeriveOptions = {}): Derived {
@@ -280,7 +273,6 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     }
   }
 
-  const ratio = options.forceIdle ? 1 : idleRatio(state, now);
   // The Briar Mantle and Morgrath's Phylactery deepen the rhythm companions find alone.
   const idleBonus = (altarValue(state, "patience") + idleDps) * (1 + namedEffect(state, "idleBonus")) * (1 + namedEffect(state, "phylactery"));
   let dpsMultiplier = globalDps
@@ -288,6 +280,7 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     * (1 + state.essences * ESSENCE_DPS_BONUS)
     * (1 + altarValue(state, "might"))
     * (1 + equipmentBonus(state, "dps"))
+    * equipmentDensity(state)
     * (1 + state.ritualStacks * 0.05);
   if (timed) {
     if (skillActive(state, "rally", now)) dpsMultiplier *= 2;
@@ -300,8 +293,9 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     if (state.monster?.event === "seam") dpsMultiplier *= 1 + namedEffect(state, "seamDps");
   }
 
-  // Clicking resets the idle bonus, so clicks draw on the DPS without it.
-  const idleFactor = 1 + idleBonus * ratio;
+  // The company's rhythm (the walker's strikes take its place, see STRIKE_FILL_SECONDS);
+  // strikes draw on the DPS without it.
+  const idleFactor = 1 + idleBonus;
   const heroDps: Record<string, number> = {};
   let activeDps = 0;
   for (const hero of HEROES) {
@@ -314,12 +308,13 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
 
   // Aldric's own damage carries the early game; the share of companion DPS takes over later.
   const aldricLevel = state.heroLevels[CLICK_HERO_ID] ?? 0;
-  const clickFlatMult = clickMult * (1 + altarValue(state, "blade")) * (1 + equipmentBonus(state, "click")) * (1 + achievementBonus(state) * 0.5);
+  const clickFlatMult = clickMult * (1 + equipmentBonus(state, "click")) * (1 + achievementBonus(state) * 0.5);
   const sharpness = timed && buffActive(state, "sharpness", now) ? 10 : 1;
   // The Seed of the Old Grove grows with every companion who remembers; the Phylactery takes half.
   const seed = namedEffect(state, "clickPerRemembered");
   const relicClick = (1 + Math.min(GROVE_SEED_MAX, seed * rememberedCompanions(state))) * (1 - namedEffect(state, "phylactery"));
-  const click = ((1 + aldricLevel * heroMult[CLICK_HERO_ID]) * clickFlatMult + activeDps * clickDps * (1 + bladeDpsShare(state))) * sharpness * relicClick;
+  // The Altar of the Blade sharpens the whole strike, the companions' share included.
+  const click = ((1 + aldricLevel * heroMult[CLICK_HERO_ID]) * clickFlatMult + activeDps * clickDps) * (1 + altarValue(state, "blade")) * sharpness * relicClick;
 
   critChance += altarValue(state, "precision") + equipmentBonus(state, "critChance");
   if (timed && skillActive(state, "hawkeye", now)) critChance += 0.5;
@@ -351,9 +346,8 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     guardianGold: 1 + namedEffect(state, "guardianGold"),
     treasureChance: Math.min(0.25, (treasure + altarValue(state, "treasure") + namedEffect(state, "treasure")) * cheese),
     dpsMultiplier: dpsMultiplier * idleFactor,
+    patienceDps: activeDps * idleBonus,
     essenceMultiplier: (1 + altarValue(state, "harvest")) * (1 + equipmentBonus(state, "essence")) * Math.pow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty")),
-    idle: ratio >= 1,
-    idleRatio: ratio,
     idleBonus,
     clickDpsShare: clickDps,
     autoClicksPerSecond,
@@ -361,7 +355,7 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     baronDamage: wearing(state, "mirelle-ring") ? 1 + MIRELLE_BARON_DAMAGE : 1,
     crystalStay: Math.max(13, namedEffect(state, "crystalStay")),
     // The Lantern calls them every 45 to 90 s instead of 90 to 240 s; the Lodestone and the Loom sooner still.
-    crystalWait: (lantern ? 0.4 : 1) * (1 - namedEffect(state, "crystalSooner")) * (1 - weaveValue(state, "humming-loom")),
+    crystalWait: (lantern ? LANTERN_CRYSTAL_WAIT : 1) * (1 - namedEffect(state, "crystalSooner")) * (1 - weaveValue(state, "humming-loom")),
     fragmentChance: fragmentMultiplier(state, now)
   };
 }
@@ -385,6 +379,14 @@ export function wandererSkip(state: GameState): number {
   // The Ring of the Second Morning walks a few stages more, inside the same caps.
   const skip = Math.min(altarValue(state, "wanderer") + namedEffect(state, "wandererStages"), Math.floor(state.maxStageEver / 2));
   return Math.floor(skip / 5) * 5;
+}
+
+/** Share of the usual wait between wandering crystals while the Moth Lantern burns. */
+export const LANTERN_CRYSTAL_WAIT = 0.4;
+
+/** Essences a crystal grants when it carries some (more the deeper the walker has been). */
+export function crystalEssenceReward(maxStageEver: number): number {
+  return 1 + Math.floor(maxStageEver / 100);
 }
 
 /** Starting gold after an ascension (Altar of Memory). */

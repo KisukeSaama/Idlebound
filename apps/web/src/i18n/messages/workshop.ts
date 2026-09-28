@@ -82,7 +82,7 @@ export const workshop = defineMessages({
     },
     companions: {
       title: "Compagnons",
-      text: "Portraits en couches et emblèmes de 12 pixels. La couleur du compagnon donne la rampe de ses vêtements.",
+      text: "Bustes de 64 pixels peints puis décalqués et emblèmes de 12 pixels. La couleur du compagnon teinte son étoffe ou sa lumière.",
       awakened: "L'Éveillé change avec les réglages de chacun"
     },
     relics: {
@@ -187,7 +187,7 @@ export const workshop = defineMessages({
     },
     companions: {
       title: "Companions",
-      text: "Layered portraits and 12-pixel emblems. The companion's color gives the ramp of their clothes.",
+      text: "Painted and traced 64-pixel busts and 12-pixel emblems. The companion's color tints their signature cloth or light.",
       awakened: "The Awakened changes with everyone's settings"
     },
     relics: {

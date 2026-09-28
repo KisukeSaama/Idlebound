@@ -412,7 +412,16 @@ const PICTOS = {
     </>
   ),
   fastForward: <path d="M2.5 4.5l7 5.5-7 5.5zM10.5 4.5l7 5.5-7 5.5z" fill="currentColor" />,
-  pause: <path d="M5 4h3.5v12H5zM11.5 4H15v12h-3.5z" fill="currentColor" />
+  pause: <path d="M5 4h3.5v12H5zM11.5 4H15v12h-3.5z" fill="currentColor" />,
+  close: <path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />,
+  check: <path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />,
+  warning: (
+    <>
+      <path d="M10 2.5l8 14.5H2z" fill="currentColor" stroke="#0b0a14" strokeWidth="1.1" strokeLinejoin="round" />
+      <path d="M10 7.5v4.5" stroke="#0b0a14" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="10" cy="14.6" r="1.1" fill="#0b0a14" />
+    </>
+  )
 } satisfies Record<string, ReactNode>;
 
 export type PictoName = keyof typeof PICTOS;

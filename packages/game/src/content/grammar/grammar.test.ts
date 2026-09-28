@@ -5,13 +5,9 @@ import { EN_BIOMES, EN_KING, EN_SONGS, EN_STRATA } from "./lexicon-en";
 import { FR_BIOMES, FR_KING, FR_SONGS, FR_STRATA } from "./lexicon-fr";
 import { BIOME_COMPANIONS, COMPANION_BY_ID, REMNANTS } from "./names";
 import { EN_TEMPLATES, FR_TEMPLATES, type TemplateId } from "./templates";
+import { DASH, EMOJI, FORBIDDEN_WORDS } from "../writing";
 
 const BIOME_IDS = ["green-plains", "dark-forest", "forgotten-caves", "corrupted-marsh", "fallen-king-ruins"];
-/** The words of the Truth, in every form (BIBLE 20). */
-const FORBIDDEN =
-  /(?<![\p{L}])(dreams?|dreamers?|dreamed|dreamt|dreaming|players?|screens?|tabs?|clicks?|clicked|clicking|saves?|saved|saving|rêves?|rêver|rêveurs?|rêveuses?|rêvée?s?|rêvait|joueurs?|joueuses?|écrans?|onglets?|clics?|cliquer|cliqué|sauvegardes?|sauvegarder|sauvegardée?s?)(?![\p{L}])/iu;
-const DASH = /[‒–—―]/;
-const EMOJI = /\p{Extended_Pictographic}/u;
 /** Broken French elision or contraction: "le arbre", "de le", "à les", "que il", "l' arbre". */
 const FR_BROKEN = /(?<![\p{L}'])(le|la|de|je|que|ne|se|me|te) [aeiouyàâäéèêëîïôöùûüœ]|(?<![\p{L}])(de|à) les? |(?<![\p{L}])si il|l' /iu;
 const EN_BROKEN = /(?<![\p{L}])a [aeiou]|(?<![\p{L}])an [b-df-hj-np-tv-z]/iu;
@@ -53,7 +49,7 @@ function checkLine(text: string, by: string, locale: Locale, deep: boolean): str
   if (EMOJI.test(text)) problems.push("emoji");
   if (/undefined|NaN|null|[{}]/.test(text) || /undefined|NaN/.test(by)) problems.push("hole");
   if (/ {2}| [.,:;?!]| $|^ /.test(text.replace(/ :/g, ":"))) problems.push("spacing");
-  if (!deep && FORBIDDEN.test(text)) problems.push("forbidden word");
+  if (!deep && FORBIDDEN_WORDS.test(text)) problems.push("forbidden word");
   if (locale === "fr" && FR_BROKEN.test(text)) problems.push("elision");
   if (locale === "en" && EN_BROKEN.test(text)) problems.push("article");
   if (!/^[\p{Lu}0-9]/u.test(text)) problems.push("capital");
@@ -145,7 +141,7 @@ describe("fragment grammar", () => {
       ...lexicon.verbs
     ];
     const shallow = [...EN_STRATA.slice(0, 35), ...FR_STRATA.slice(0, 35), ...Object.values(EN_BIOMES), ...Object.values(FR_BIOMES), EN_KING, FR_KING, ...EN_SONGS, ...FR_SONGS];
-    for (const lexicon of shallow) for (const word of words(lexicon)) expect(FORBIDDEN.test(word), word).toBe(false);
+    for (const lexicon of shallow) for (const word of words(lexicon)) expect(FORBIDDEN_WORDS.test(word), word).toBe(false);
     for (const lexicon of [...EN_STRATA, ...FR_STRATA, ...Object.values(EN_BIOMES), ...Object.values(FR_BIOMES)]) {
       expect(lexicon.objects).toHaveLength(4);
       expect(lexicon.places).toHaveLength(4);

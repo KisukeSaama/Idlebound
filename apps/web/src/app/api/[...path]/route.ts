@@ -5,6 +5,7 @@
  */
 import { LOCALE_COOKIE, resolveLocale } from "@idlebound/game";
 import type { NextRequest } from "next/server";
+import { messages } from "@/i18n/messages";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +16,8 @@ const MAX_BODY_BYTES = 600 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15_000;
 
 /** The few errors produced by the proxy itself, in the language of the request. */
-const ERRORS = {
-  fr: { tooLarge: "Requête trop volumineuse.", unreachable: "Serveur de jeu injoignable. Réessaie dans un instant." },
-  en: { tooLarge: "Request too large.", unreachable: "Game server unreachable. Try again in a moment." }
-} as const;
-
 function errors(request: NextRequest) {
-  return ERRORS[resolveLocale(request.cookies.get(LOCALE_COOKIE)?.value, request.headers.get("accept-language"))];
+  return messages(resolveLocale(request.cookies.get(LOCALE_COOKIE)?.value, request.headers.get("accept-language"))).hud.errors;
 }
 
 /** Reads the body, stopping as soon as the limit is exceeded (missing or lying Content-Length). */

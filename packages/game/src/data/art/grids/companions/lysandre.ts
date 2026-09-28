@@ -1,0 +1,107 @@
+import { C } from "../../palette";
+import type { PortraitRecipe } from "../../types";
+
+/**
+ * Lysandre, Archmage (BIBLE 10.3): long pale hair parted like curtains, a lean face with the
+ * chin raised and a smug half-lidded look, a gold monocle on its chain, a tall violet collar
+ * stitched with gold. Beside him an open grimoire floats, burning violet: he reads it
+ * backwards.
+ */
+export const LYSANDRE: PortraitRecipe = {
+  materials: {
+    skin: { ramp: [C.flesh0, C.flesh1, C.flesh2, C.paper], texture: "smooth" },
+    hair: { ramp: [C.dusk, C.lilac, C.paper], texture: "fur" },
+    collar: { ramp: [C.night2, C.keepStone, C.royal], texture: "cloth" },
+    gold: { ramp: [C.goldDark], texture: "metal" },
+    page: { ramp: [C.lilac, C.paper], texture: "smooth" }
+  },
+  grid: {
+    rows: [
+      ".........P",
+      "..........P",
+      "........PP",
+      ".........PP",
+      "........PQ...................ggggg",
+      "........PQP...............gggggggggggggg",
+      ".yy.....PQP....xx......gghhhggggggggggggggf",
+      ".yyyyy...Q..xxxxx...ggghhhhggggggggggggggggg",
+      ".yxxyyyyyxxxxxxxx..gghghhhhgggggggggggggggfgf",
+      ".yyyxxyyyxxxxxxxx.ggghghhhhhggggggggggggggffff",
+      ".yxxyyxxyxxxxxxxxggghhhhhghhggggggggggggggfffff",
+      ".yyyxxyyyxxxxxxxxggghhhhhghggggggggggggggfffffff",
+      "kkkkyyxxyxxxxxkkgggghhhhgggggggggggggggffffffffff",
+      "..kkkkkyyxxkkkkgggggghhggggggggggggggggffffffffff",
+      "......kkkkkk...gghgggghggggggggggggggggffffffffff",
+      "..............ggghgggggggccccgggggggggggfffffffff",
+      ".............gggggggggggcccccccccccccgggffffffffff",
+      ".............gggggggggggcccccccccccccccgffffffffff",
+      ".............gggggggggggcccdccccccccccccbfffffffff",
+      ".............ggggggggggccddccccccccccfffbbffffffff",
+      ".............ggggghggggccfffccccccccfccbbbbfffffff",
+      ".............ggggghggggcffffgccccccccccbbbbfffffff",
+      ".............ggggggggggccccccccccccsssssbbbfffffff",
+      ".............gggggggggcccEEEEEbccccsEEEWsbbbfffffff",
+      "............ggggggggggcccbEEEbbccccsbEEbsbbafffffff",
+      "............ggggggggggcccccHKcccccbscHKbsbbafffffff",
+      "............ffggggggggccccccccccccbcsssssbbafffffff",
+      "............ffffggggggccccccccccccbcccbbsbbafffffff",
+      "............ffffggggggccccccccccccbccbbbbsbafffffff",
+      "............ffffggggggcccccccccccccccbbbbsaafffffff",
+      "............ffffgggggfcccccccccccccbbbbbbsaafffffff",
+      "............fffffggggccbccccccccbabbbbbbbsaafffffff",
+      "............fffffggggcccbccccccccccbbbbbbasafffffff",
+      "............ffffffgff.ccbcccccccccbbbbbbbasafffffff",
+      "............fffffffff.cccbcccccccbbabbbbaasafffffff",
+      "............fffffffff..ccccccbaaaaabbbbbaaasfffffff",
+      "............fffffffff..ccccccccbccbbbbbaaaa.fffffff",
+      "............fffffffff...ccccccbbbbbbbbaaaa..ffffffff",
+      "............fffffffffs....ccbbbbbccbbbaaa...ffffffff",
+      "............fffffffffms.....bbbbbbbbbaaa...ssfffffff",
+      "............ffffsfffmmls....aaaaaaaaaaa...sksfffsfff",
+      "............ffffmfffmmlls...aaaaaaaaa....skkfffkkfff",
+      "...........fffffmfffllllls..aaaaaaaaa...skkkfffkkfff",
+      "...........ffffflffllllllls.aaaaaaaaa..skkkkkffkkfff",
+      "...........ffffflflllllllls.aaaaaaaaa..skkkkkkfkkfff",
+      "...........ffffflllllllllllsbaaaaaaaa.skkkkkkkkkkfff",
+      "...........fffffflllllllllksbaaaaaaaa.skkkkkkkkkkfff",
+      "...........ffffffllllllkkkkkaaaaaaaaakkkkkkkkkkkkfff",
+      "...........fffmmlllklllkkkkkkkkkkkkkkkkkkkkkkkkkllff",
+      "..........mmmmmmlkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllll",
+      ".......mmmmmmmmmmkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllk",
+      "......mmmmmmmmmmmkkkkkkkkkkkkkkkkskkkkkkkkkkkkkkllllllllkk",
+      ".....mmmmmmmmmmmmkkkkkkkkkkkkkkkkskkkkkkkkkkkkkkllllllllkkl",
+      "...mmmmmmmmmmmmmmkkkkkkkkkkkkkkkkskkkkkkkkkkkkkkllllllllkllkk",
+      "..mmmmmmmmmmmmmmmmmmllkkkkkkkkkkkskkkkkkkkklllllllllllllkllkkk",
+      ".mmmmmmmmmmmmmmmmmmmmmmmmmllllkkkskkllllmlllllllllllllllkllkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmsllllllmlllllllllllllllklkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmsllllllmlllllllllllllllkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmsllllllllllllllllllllllkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmsmlllllllllllllllllllklkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmllllmmsmlllllllllllllllllllkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmlllllmmsmllllllllllllllllkklkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmllllllmslllllllllllllllllkklkkkkkkkkkk",
+      "mmmmmmmmmmlmmmmmmmmmmmmmmmlllllllslllllllllllllllllkklkkkkkkkkkk"
+    ],
+    legend: {
+      a: { m: "skin", step: 0 },
+      b: { m: "skin", step: 1 },
+      c: { m: "skin", step: 2 },
+      d: { m: "skin", step: 3 },
+      E: { pal: C.ink },
+      f: { m: "hair", step: 0 },
+      g: { m: "hair", step: 1 },
+      H: { pal: C.lilac },
+      h: { m: "hair", step: 2 },
+      K: { pal: C.ink },
+      k: { m: "collar", step: 0 },
+      l: { m: "collar", step: 1 },
+      m: { m: "collar", step: 2 },
+      P: { pal: C.royal, glow: true },
+      Q: { pal: C.violetFire, glow: true },
+      s: { m: "gold", step: 0 },
+      W: { pal: C.paper },
+      x: { m: "page", step: 0 },
+      y: { m: "page", step: 1 }
+    }
+  }
+};

@@ -74,8 +74,9 @@ epic and playful in *tutoiement*; the English copy has the same energy.
   again, every night, as strangers. Recognition (section 12.2) lets them slowly, painfully
   remember.
 - **Presence.** The world only moves while it is watched. Crystals only appear when the
-  tab is visible. A closed tab stops everything. The player's attention, even distracted,
-  is literally what keeps the night going. The game never says so. It simply behaves that way.
+  tab is visible. A closed game runs on for one night at most, carried by the company, then
+  holds its breath. The player's attention, even distracted, is literally what keeps the
+  night going. The game never says so. It simply behaves that way.
 - **Fairness.** The Ledger records only what truly happened. That is why the Roll (the
   leaderboard) can be trusted, and why no one can buy their way into it.
 
@@ -214,7 +215,8 @@ dreams ended before.
 
 **Layer 6: the watcher (never confirmed).** The dreamer sits behind the Glass. When the
 dreamer's eyes are on the world, even half-closed, the night goes on (tab open, idle).
-When the dreamer looks away completely, the world holds its breath (tab closed). The
+When the dreamer sleeps (the game closed), the dream runs on for one night, no longer, and
+then the world holds its breath. The
 crystals come only when someone is watching (they only spawn in a visible tab). The
 Awakened is "you, perhaps, in another life". Aldric is "you". **The player is the
 dreamer.** This is never written anywhere. Age IX strata (Lantern, Hearth, Lullaby,
@@ -286,7 +288,7 @@ Every existing system, what it is in the world, and the word the UI can lean on.
 | Hero glyph and color | Their sigil, painted on their medallion. |
 | Party medallions, shots to the monster | Companions visibly fighting. Each strike family (arrow, blade, claw, blunt, spell) is their fighting style. |
 | Idle bonus (Patience, Kaelen 50, Morgrath 50) | When the walker steps back, the companions find their rhythm. Kaelen's **Sentinel's Vigil** and Morgrath's **Silent Legion** are disciplines that only work when no one interrupts. In the Truth: when the dreamer's eyes half-close, the dream deepens. |
-| An attack click resets the idle bonus | Touch the fight and they wait for your lead again. |
+| The walker's strikes stand in for the idle bonus, blow for blow (shipped): a strike takes the place of as much of the bonus, only strikes beyond it add, so a light hand never costs | The Vigil and the Legion keep a rhythm. The walker's blade does not break it; it takes its place in it. Strike harder than the rhythm and the walker leads. |
 | Autopilot after 60 s away | Left alone, the company spends its coin and goes back to the boss that stopped it. They have done this before. |
 | Spending while away | The company levels itself up: they know what they need. |
 
@@ -346,6 +348,7 @@ road only as far as the heart has already been, and never the whole way.*
 | 4 slots (weapon DPS, armor boss damage, amulet click, ring gold) | Weapon: strength of the company. Armor: standing against guardians. Amulet: the walker's own hand. Ring: coin sticks to it. |
 | 5 rarities | How clearly the object is remembered: common (a blur), rare, epic, legendary (a story), mythic (a myth, more real than the night itself). |
 | Legendary and mythic essence affix | Objects remembered this well carry memory in them. |
+| Density (shipped): a worn relic multiplies companion damage per stratum below the present night it came from | Older memories are denser (6.1), and so are the objects they held: a blade remembered in the Void weighs more than one from the Hearthfields. |
 | Forge up to +20 (Brom) | Brom re-forges a relic with sky-shards; each fold of the metal adds a remembered detail. |
 | Salvage for shards | Unmaking an object gives back the sky-glass that held it together. |
 | Inventory 48, full salvages | The walker's pack. Brom's rule: "If you can't carry it, it was never yours." |
@@ -373,11 +376,11 @@ one).
 | Mechanic | In the world |
 |---|---|
 | Open tab, player away, full progress | The dreamer dozes; the dream holds. The company walks on. |
-| Hidden tab catch-up, capped at 8 h | One night's sleep. The dream cannot run longer than a night without being looked at again. |
+| Hidden tab or closed game catch-up, capped at 8 h | One night's sleep. The dream cannot run longer than a night without being looked at again. |
 | Reunion (shipped): back from 30 min or more away, companion damage ×3 for a sixth of the absence (capped at an hour: a night gives the full hour), counted from the walker's return, never during it | The company held the road without the walker. When the walker comes back, they fight with a lighter heart. The UI says **Reunion** (FR: *Retrouvailles*). |
 | The company's account (shipped): at the Reunion, what changed while away (road, gold, walls, guardians, who joined, techniques remembered, levels) | Around the fire, the company tells the walker the road it held: who joined, who remembered what, which guardian stood in the way and gave. They walked it; the walker did not. It is their story, plainly told, not a dream's. |
 | Spending while away by breakpoints (shipped): the next companion first, then levels up to a talent or a milestone, saving for one within reach | Companions spend as soldiers do: a friend met on the road is welcomed first, then the coin goes to what makes them stronger at once, never a coin at a time. For a technique almost within reach, they wait a little. |
-| Closed tab: nothing | The dreamer looked away. The world holds its breath and waits, perfectly still. |
+| Closed game (shipped): the time since the last save is caught up when it opens again, like a hidden tab (8 h at most, the Long Thread's hours included), never more than the server saw pass | The company does not wait for the walker. They keep the road for a night and tell it at the Reunion. Past a night, the world holds its breath and waits, perfectly still. |
 | The dream leaves no inventory | Dreams leave only a feeling that you were somewhere: one line (**Dreams on return**, section 12.8). The inventory is the company's to tell, at the Reunion. |
 | Guest play, not kept | An **unnamed walker**. The night forgets the unnamed. |
 | Account creation | **Inscribing your name on the Roll.** |
@@ -1173,7 +1176,7 @@ deepest act.
   |---|---|---|
   | Warp of Plenty / Chaîne d'abondance | Essences ×1.25 (multiplies) | none |
   | Knot of Dusk / Nœud du crépuscule | Altar of the Wanderer +10 levels of cap | 5 |
-  | The Long Thread / Le Long Fil | Background catch-up cap +1 h | 4 |
+  | The Long Thread / Le Long Fil | Catch-up cap +1 h (background tab or closed game) | 4 |
   | Humming Loom / Métier bourdonnant | Crystals come 10% sooner | 5 |
   | Kinship / Parenté | Recognition tier thresholds -1 run | 3 |
   | Remembered Stones / Pierres mémoires | Keep 5% of each altar level through a Descent | 5 |
@@ -1238,11 +1241,15 @@ checks that the id exists).
 
 | Series | New thresholds | Names EN / FR |
 |---|---|---|
-| stage | 1,000 · 2,000 · 3,000 | Thousand Nights / Mille nuits · Deep Dreamer / Rêveur profond · Not Yet / Pas encore |
+| stage | 1,000 · 2,000 · 3,000 | A Thousand Stones / Mille bornes · Below the Words / Sous les mots · Not Yet / Pas encore |
+| stage (shipped, the end of every Age, tiers 13 to 19) | 750 · 1,250 · 1,500 · 1,750 · 2,250 · 2,500 · 2,750 | Past the Last Chapel / Après la dernière chapelle · Loose Threads / Fils défaits · Erased Twice / Deux fois effacé · Unspoken / Ce qui ne se dit pas · A Lamp Left On / Une lampe restée allumée · What Was Undone / Ce qui fut défait · White on White / Blanc sur blanc |
+| gold (shipped, about the gold of each Age, tiers 8 to 18) | 1e45 · 1e65 · 1e80 · 1e100 · 1e115 · 1e135 · 1e155 · 1e170 · 1e190 · 1e205 · 1e225 | Coin of the Elder Kings / La monnaie des anciens rois · Tithes of the Hallowed / La dîme des consacrés · Gold That Fell from the Sky / L'or tombé du ciel · Spun Gold / L'or filé · Sketched Coin / Pièces esquissées · A Word for Gold / Un mot pour dire l'or · Heavy Eyes, Heavy Purse / Paupières lourdes, bourse lourde · Coins Under the Pillow / Des pièces sous l'oreiller · Unminted / Jamais frappé · A Blank Coin / Un flan vierge · Pip Stops Counting / Pip ne compte plus |
 | ascend | 100 · 250 | Night After Night / Nuit après nuit · Keeper of the Long Night / Gardien de la longue nuit |
 | essences | 1e10 · 1e15 | Constellation / Constellation · Galaxy of Memory / Galaxie de souvenirs |
 
-(Extending a series moves its ×2.5 tiers to the new last two; rerun `npm run balance`.)
+(Extending a series moves its ×2.5 tiers to the two highest thresholds; ids never change,
+so a tier added between two others takes the next id and its place by threshold; rerun
+`npm run balance`.)
 
 ### 14.2 New series (+34)
 
@@ -1581,10 +1588,10 @@ half of the story: **the deeper, the less finished the world looks**, until Dawn
 
 | Age | Treatment | Background |
 |---|---|---|
-| I Kingdom | Echo: a 1 px ghost offset copy at 30%. Ash: ember pixels rising, warm ramps. Void: random missing pixels (holes show the sky). Astral: star specks inside the body. | Full painterly pixel scenes |
+| I Kingdom | Echo: a 1 px ghost offset copy in a dusk checker. Ash: ember pixels rising, warm ramps. Void: round missing pieces (holes show the dark beneath). Astral: stars inside the body, on a regular field. | Full painterly pixel scenes |
 | II Elder World | Larger, heavier ramps; stone and ice materials; scale ×1.1. | Giant bones, frozen seas on the horizon |
 | III Hallowed | Gold highlights, halos, veils (a light column above guardians). | Temples, light shafts |
-| IV Stars | Bodies half transparent, filled with star fields; outline in pale blue. | The sky pours, liquid glass |
+| IV Stars | Bodies of night glass (a checker of deep blues), filled with star fields; outline in pale blue. | The sky pours, liquid glass |
 | V Loom | Threads: vertical 1 px lines through everything, some loose; sprites flicker as if woven. | Warp threads from ground to sky |
 | VI Draft | Unshaded: 2 colors plus outline, cross-hatching instead of ramps, charcoal smudges. | Line art on warm paper tones |
 | VII Words | Silhouettes filled with tiny glyph patterns (3 × 5 px letters). | Walls of runes |
@@ -1592,7 +1599,7 @@ half of the story: **the deeper, the less finished the world looks**, until Dawn
 | IX Dreamer's Room | Warm lamp light from one side (orange ramp), domestic props in the backgrounds: a lamp, a hearth, a window. The window shows a pale rectangle. | Enormous, blurred, familiar shapes |
 | X Unmaking | Colors drain toward grey; the outline stays. | Sounds muffle too (section 19) |
 | XI Blank | Pale on pale: sprites are drawn in outline only on a sky that has turned off-white lilac. | The night is almost gone |
-| XII First Mark | Fewer and fewer pixels: at era 58 the King is about 30 pixels; the Dawn is a single horizontal line that widens. | A single point of light, then a line |
+| XII First Mark | Fewer and fewer pixels, at the same size (never a coarser pixel): thin parts fall away era by era, the masses merge into flat tones; the Dawn is a single horizontal line that widens. | A single point of light, then a line |
 
 The scene's **sky brightens by Age**, from the night purple of Age I to the pale lilac of
 Age XI. The HUD never changes: tokens and contrast stay the same everywhere. A setting
@@ -1623,11 +1630,12 @@ their own scenes.
 
 ### 18.8 Companions, relics, effects
 
-- **Portraits:** layered generator (head shape, skin ramp, hair, headgear, clothing,
-  accessory) from a per-hero recipe; the hero's `color` drives the clothing ramp. Nyx's
-  hood holds a starfield. The Nameless's helmet is dark inside. The Awakened's portrait
-  uses the player's current settings as a seed (notation, sound, language), so it is
-  slightly different for everyone.
+- **Portraits** (**shipped**): 64 × 64 busts from each dossier (section 10.3), painted at
+  a higher resolution and traced into clusters like the creatures, moonlit, three-quarters
+  toward the monsters, one signature each; human faces share one construction so none
+  becomes a caricature; the hero's `color` is an accent. Nyx's hood holds only sky and stars. The
+  Nameless's visor is a void. The Awakened's skin and hair use the player's current
+  settings as a seed (notation, sound, language), so it is slightly different for everyone.
 - **Emblems:** 12 × 12 pixel sigils replace the Unicode glyphs (no more emoji risk).
 - **Relic icons** (**shipped**): 20 base shapes (7 weapons, 5 armors, 4 amulets, 4 rings,
   matching `SLOT_BASE_COUNT`), each redrawn per rarity (plain and worn, fitted, engraved
@@ -1662,6 +1670,12 @@ their own scenes.
 
 ## 19. Sound
 
+> **Shipped**: the eight cues, and the ambient layer: a drone per biome and era that
+> detunes Age after Age, late and muffled sound in Age X, a single held note at the Dawn,
+> crossfades between places, separate effects and ambience volumes. The rules now live in
+> DESIGN.md (Sound). Choice made while building it: guardians and Kings leave the drone as
+> it is (nothing here asks for it); their own cues carry the fight.
+
 Still synthesized in `audio.ts`, no files. The pixel direction pulls it toward square and
 triangle waves, short envelopes, a little noise. New cues: **fragment** (two soft bell
 notes), **recognition** (a rising third), **seam** (a tearing noise, closing chord),
@@ -1673,6 +1687,11 @@ muffled; at the Dawn the only sound is a held note.
 ---
 
 ## 20. Writing guide
+
+> **Shipped**: `packages/game/src/content/writing.test.ts` holds every string of the game
+> content and of the UI messages to the forbidden words, the dash and emoji rules; the few
+> lines of Age VIII and deeper are listed there by hand. The UI says **strike** (FR:
+> *frappe*) for the walker's own blow, and the **Ledger** keeps the walker's road.
 
 - **Length:** fragments 140 characters at most, bestiary lines 120, recognition memories
   180, relic and altar legends 200. One image per line.

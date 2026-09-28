@@ -52,6 +52,10 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
           <input id="volume" type="range" min={0} max={1} step={0.05} value={settings.volume} disabled={!settings.sound} onChange={(event) => update({ volume: Number(event.target.value) })} onPointerUp={() => audio.play("hit")} />
         </div>
         <div className="setting-row">
+          <label htmlFor="ambience">{text.ambience}</label>
+          <input id="ambience" type="range" min={0} max={1} step={0.05} value={settings.ambience} disabled={!settings.sound} onChange={(event) => update({ ambience: Number(event.target.value) })} />
+        </div>
+        <div className="setting-row">
           <span id="notation-label">{text.notation}</span>
           <div className="segmented" role="radiogroup" aria-labelledby="notation-label">
             {NOTATIONS.map((notation) => (
@@ -76,6 +80,7 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
           <li key={skill.id}><kbd>{skill.hotkey}</kbd> {g.skills[skill.id].name}</li>
         ))}
         <li><kbd>{text.enterKey}</kbd> {text.enterAction}</li>
+        <li><kbd>{text.spaceKey}</kbd> {text.enterAction}</li>
         <li><kbd>{text.escapeKey}</kbd> {text.escapeAction}</li>
       </ul>
       <p className="modal-hint">{text.footer}</p>

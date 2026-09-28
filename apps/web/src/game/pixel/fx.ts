@@ -60,7 +60,7 @@ export class Particles {
    * A sprite comes apart into its own pixels, which drift up, then turn into gold motes that
    * fly to the gold counter. Guardians shed some violet pixels too.
    */
-  scatter(pixels: Pixels, left: number, top: number, unit: number, now: number, target: { x: number; y: number }, violet: boolean) {
+  scatter(pixels: Pixels, left: number, top: number, now: number, target: { x: number; y: number }, violet: boolean) {
     const step = pixels.w * pixels.h > 5000 ? 2 : 1;
     for (let y = 0; y < pixels.h; y += step) {
       for (let x = 0; x < pixels.w; x += step) {
@@ -68,8 +68,8 @@ export class Particles {
         if (pixels.idx[at] === EMPTY || pixels.alpha[at] < 100) continue;
         const r = this.rng();
         this.add({
-          x: left + x * unit,
-          y: top + y * unit,
+          x: left + x,
+          y: top + y,
           vx: (this.rng() - 0.5) * 30,
           vy: -12 - this.rng() * 36,
           ay: -10,
@@ -87,7 +87,7 @@ export class Particles {
   }
 
   /** The reverse: pixels gather from the dark into the silhouette. */
-  gather(pixels: Pixels, left: number, top: number, unit: number, now: number, duration: number) {
+  gather(pixels: Pixels, left: number, top: number, now: number, duration: number) {
     const step = pixels.w * pixels.h > 5000 ? 2 : 1;
     for (let y = 0; y < pixels.h; y += step) {
       for (let x = 0; x < pixels.w; x += step) {
@@ -95,13 +95,13 @@ export class Particles {
         if (pixels.idx[at] === EMPTY || pixels.alpha[at] < 100) continue;
         const angle = this.rng() * 6.283;
         const distance = 10 + this.rng() * 26;
-        const fx = left + x * unit + Math.cos(angle) * distance;
-        const fy = top + y * unit + Math.sin(angle) * distance;
+        const fx = left + x + Math.cos(angle) * distance;
+        const fy = top + y + Math.sin(angle) * distance;
         this.add({
           x: fx,
           y: fy,
-          vx: (left + x * unit - fx) / duration,
-          vy: (top + y * unit - fy) / duration,
+          vx: (left + x - fx) / duration,
+          vy: (top + y - fy) / duration,
           ay: 0,
           color: css(pixels.idx[at]),
           born: now,

@@ -44,15 +44,12 @@ export function stageFrame(biomeId: string, era: number, frame: number, guardian
   if (guardian && boss) {
     const render = renderCreature(boss, { era, frame: frame % idleFrames(boss) });
     const pixels = scene.night ? gradeForNight(render.pixels, scene.night) : render.pixels;
-    const unit = render.treatment.unit ?? 1;
-    // The deepest strata draw their creatures with fewer, bigger pixels.
-    const sprite = unit === 1 ? pixels : upscale(pixels, unit);
-    const left = Math.floor(width / 2) - Math.round(sprite.w / 2);
-    const top = scene.ground - render.feet * unit;
+    const left = Math.floor(width / 2) - Math.round(pixels.w / 2);
+    const top = scene.ground - render.feet;
     const still = renderCreature(boss, { era });
     const shadow = castShadow(still.pixels, still.feet, scene.source ? Math.sign(scene.source.x - SCENE_WIDTH / 2) || 1 : 1, scene.shadow);
-    blit(out, unit === 1 ? shadow.pixels : upscale(shadow.pixels, unit), left + shadow.dx * unit, top + shadow.dy * unit);
-    blit(out, sprite, left, top);
+    blit(out, shadow.pixels, left + shadow.dx, top + shadow.dy);
+    blit(out, pixels, left, top);
   }
   return compositeLayers(scene.layers.slice(front), width, frame, out, origin);
 }
@@ -65,19 +62,6 @@ export function depthFrame(biomeId: string, era: number, frame: number, depth: D
   const scene = sceneOf(biomeId, era);
   const origin = Math.floor(width / 2) - SCENE_WIDTH / 2;
   return compositeLayers(scene.layers.filter((layer) => depthOf(layer) === depth), width, frame, createPixels(width, SCENE_HEIGHT), origin);
-}
-
-function upscale(source: Pixels, unit: number): Pixels {
-  const out = createPixels(source.w * unit, source.h * unit);
-  for (let y = 0; y < out.h; y += 1) {
-    for (let x = 0; x < out.w; x += 1) {
-      const from = Math.floor(y / unit) * source.w + Math.floor(x / unit);
-      out.idx[y * out.w + x] = source.idx[from];
-      out.alpha[y * out.w + x] = source.alpha[from];
-      out.emit[y * out.w + x] = source.emit[from];
-    }
-  }
-  return out;
 }
 
 /** Frames per second of a place's banner, and the length of its loop. */

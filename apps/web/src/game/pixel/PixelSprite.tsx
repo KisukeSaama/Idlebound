@@ -43,13 +43,16 @@ function reducedMotion(): boolean {
  * `size` is the box the sprite must fit, in CSS pixels (its longest side), or `"parent"` to
  * fit the element it sits in (followed as it resizes). The sprite takes the largest whole
  * scale of device pixels that fits; `cover` takes the smallest whole scale that fills the
- * box instead (the container crops the edges). `scale` fixes the size instead.
+ * box instead (the container crops the edges); `nearest` takes the whole scale closest to
+ * the box, cropping a little or leaving a thin margin (portraits: never half a face). `scale`
+ * fixes the size instead.
  */
 export function PixelSprite({
   source,
   size,
   scale: fixedScale,
   cover = false,
+  nearest = false,
   className,
   style,
   label
@@ -59,6 +62,7 @@ export function PixelSprite({
   /** CSS pixels per art pixel instead of a box (rounded to whole device pixels). */
   scale?: number;
   cover?: boolean;
+  nearest?: boolean;
   className?: string;
   style?: CSSProperties;
   label?: string;
@@ -94,7 +98,7 @@ export function PixelSprite({
         } else {
           fitScale = ((size ?? first.width) * ratio) / Math.max(first.width, first.height);
         }
-        const scale = Math.max(1, cover ? Math.ceil(fitScale) : Math.floor(fitScale));
+        const scale = Math.max(1, nearest ? Math.round(fitScale) : cover ? Math.ceil(fitScale) : Math.floor(fitScale));
         element.style.width = `${(first.width * scale) / ratio}px`;
         element.style.height = `${(first.height * scale) / ratio}px`;
       };
@@ -120,7 +124,7 @@ export function PixelSprite({
       cancel();
       cleanup?.();
     };
-  }, [key, size, fixedScale, cover]);
+  }, [key, size, fixedScale, cover, nearest]);
 
   return <canvas ref={canvas} width={0} height={0} className={className ? `pixel-sprite ${className}` : "pixel-sprite"} style={style} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true} />;
 }

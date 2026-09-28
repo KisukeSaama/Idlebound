@@ -3,7 +3,7 @@
  * They run when TEST_DATABASE_URL is set (CI job, or locally with compose.dev.yml):
  *   TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test
  */
-import { GameEngine, SAVE_VERSION, createInitialState, seededRng, validateUsername, type GameState } from "@idlebound/game";
+import { GameEngine, SAVE_VERSION, createInitialState, migrateState, seededRng, validateUsername, type GameState } from "@idlebound/game";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
 
@@ -14,6 +14,7 @@ type App = { request: (path: string, init?: RequestInit) => Response | Promise<R
 
 let app: App;
 let closeDb: () => Promise<void>;
+let sql: typeof import("./db/client").sql;
 
 async function ensureDatabase(target: string) {
   const parsed = new URL(target);
@@ -63,8 +64,8 @@ function freshName(prefix: string, length = 6): string {
   }
 }
 
-function playedState(minutes: number): GameState {
-  const start = Date.now() - minutes * 60_000 - 5_000;
+function playedState(minutes: number, before = 0): GameState {
+  const start = Date.now() - before - minutes * 60_000 - 5_000;
   const engine = new GameEngine(createInitialState(start), seededRng(9), start);
   let now = start;
   for (let step = 0; step < minutes * 600; step += 1) {
@@ -88,7 +89,7 @@ suite("API (real Postgres)", () => {
     const { runMigrations } = await import("./migrate");
     await runMigrations(3);
     const { createApp } = await import("./app");
-    const { sql } = await import("./db/client");
+    ({ sql } = await import("./db/client"));
     app = createApp();
     closeDb = () => sql.end();
   }, 60_000);
@@ -180,33 +181,93 @@ suite("API (real Postgres)", () => {
     expect((await client.call("GET", "/auth/me")).json.user).toBeNull();
   }, 60_000);
 
-  it("refunds the altars of a version 3 save, including from an outdated client", async () => {
+  it("refunds the altars of a version 3 save once, and never for a save relabelled older", async () => {
     const client = new Client("10.0.0.9");
     const register = await client.call("POST", "/auth/register", { email: `fate${unique}@idlebound.test`, username: freshName("Fate"), password: "Un-Mot-De-Passe-Solide" });
     expect(register.status).toBe(201);
 
-    // A save from before the altar rework (version 3): 12 levels of the Altar of Fate bought
-    // at the old linear price (2 + 4 + … + 24 = 156 essences), above its later cap of 5.
-    const legacy = playedState(3);
+    // A save from before the altar rework (version 3): 4 levels of the Altar of Fate bought
+    // at the old linear price (2 + 4 + 6 + 8 = 20 essences), paid by thirty crystals.
+    const legacy: Record<string, any> = playedState(3);
     legacy.version = 3;
-    legacy.lifetime.ascensions = 1;
-    legacy.lifetime.essencesEarned = 1_000;
-    legacy.altars.fate = 12;
-    legacy.essences = 1_000 - 156;
+    legacy.lifetime.crystals = 30;
+    legacy.lifetime.essencesEarned = 30;
+    delete legacy.lifetime.ascensionEssences;
+    legacy.altars.fate = 4;
+    legacy.essences = 30 - 20;
 
     const first = await client.call("PUT", "/save", { state: legacy, baseRevision: null });
     expect(first.status, JSON.stringify(first.json)).toBe(200);
     const cloud = await client.call("GET", "/save");
     expect(cloud.json.save.state.version).toBe(SAVE_VERSION);
     expect(cloud.json.save.state.altars).toEqual({});
-    expect(cloud.json.save.state.essences).toBe(1_000);
+    expect(cloud.json.save.state.essences).toBe(30);
 
-    // A tab still running the old version sends the same outdated state: accepted, same result.
-    const again = await client.call("PUT", "/save", { state: legacy, baseRevision: first.json.revision });
-    expect(again.status, JSON.stringify(again.json)).toBe(200);
+    // The same game relabelled older, altars bought again: the refund must not run twice.
+    const relabelled = { ...cloud.json.save.state, version: 3, altars: { fate: 2 }, essences: 30 - 6 };
+    const again = await client.call("PUT", "/save", { state: relabelled, baseRevision: first.json.revision });
+    expect(again.status, JSON.stringify(again.json)).toBe(422);
+    expect(again.json.violations.map((violation: { code: string }) => violation.code)).toContain("version");
     const after = await client.call("GET", "/save");
-    expect(after.json.save.state.altars).toEqual({});
-    expect(after.json.save.state.essences).toBe(1_000);
+    expect(after.json.save.revision).toBe(first.json.revision);
+    expect(after.json.save.state.essences).toBe(30);
+  }, 60_000);
+
+  it("bounds a game replacing the account's by the time the account really lived", async () => {
+    const client = new Client("10.0.0.30");
+    expect((await client.call("POST", "/auth/register", { email: `lineage-${unique}@idlebound.test`, username: freshName("Lin"), password: "Un-Mot-De-Passe-Solide" })).status).toBe(201);
+    const first = await client.call("PUT", "/save", { state: playedState(2), baseRevision: null });
+    expect(first.status, JSON.stringify(first.json)).toBe(200);
+
+    // Another game, dated three weeks back, claims twenty days away: the account lived minutes.
+    const forged = createInitialState(Date.now() - 21 * 86_400_000);
+    forged.lifetime.offlineSeconds = 20 * 86_400;
+    const replaced = await client.call("PUT", "/save", { state: forged, baseRevision: first.json.revision, replace: true });
+    expect(replaced.status, JSON.stringify(replaced.json)).toBe(422);
+    expect(replaced.json.violations.map((violation: { code: string }) => violation.code)).toContain("lineage-time");
+
+    // A game no older than the account's own is welcome.
+    const honest = await client.call("PUT", "/save", { state: playedState(1), baseRevision: first.json.revision, replace: true });
+    expect(honest.status, JSON.stringify(honest.json)).toBe(200);
+  }, 60_000);
+
+  it("credits a closed game the time the server saw pass since its save, never more", async () => {
+    const client = new Client("10.0.0.32");
+    const username = freshName("Clo");
+    expect((await client.call("POST", "/auth/register", { email: `closed-${unique}@idlebound.test`, username, password: "Un-Mot-De-Passe-Solide" })).status).toBe(201);
+    // Two minutes played, eight hours ago; the game was closed since.
+    const first = await client.call("PUT", "/save", { state: playedState(2, 8 * 3_600_000), baseRevision: null });
+    expect(first.status, JSON.stringify(first.json)).toBe(200);
+    await sql`update saves set updated_at = updated_at - interval '8 hours' where user_id = (select id from users where username = ${username})`;
+
+    // Opened again: the server tells how long it saw pass, the game catches it up and saves.
+    const cloud = await client.call("GET", "/save");
+    expect(cloud.json.save.elapsedMs).toBeGreaterThanOrEqual(8 * 3_600_000);
+    const engine = new GameEngine(migrateState(cloud.json.save.state) as GameState, seededRng(4));
+    const now = Date.now();
+    engine.state.lastTickAt = Math.max(engine.state.lastTickAt, now - cloud.json.save.elapsedMs);
+    expect(engine.tick(now)?.seconds).toBe(8 * 3600);
+    const honest = await client.call("PUT", "/save", { state: engine.state, baseRevision: first.json.revision });
+    expect(honest.status, JSON.stringify(honest.json)).toBe(200);
+
+    // Right after, the same game claims another hour away: the server saw seconds pass.
+    const greedy = structuredClone(engine.state);
+    greedy.lifetime.offlineSeconds += 3600;
+    const refused = await client.call("PUT", "/save", { state: greedy, baseRevision: honest.json.revision });
+    expect(refused.status, JSON.stringify(refused.json)).toBe(422);
+    expect(refused.json.violations.map((violation: { code: string }) => violation.code)).toContain("time");
+  }, 60_000);
+
+  it("keeps the first of two first saves sent at once, the other a conflict", async () => {
+    const client = new Client("10.0.0.31");
+    expect((await client.call("POST", "/auth/register", { email: `race-${unique}@idlebound.test`, username: freshName("Rac"), password: "Un-Mot-De-Passe-Solide" })).status).toBe(201);
+    const [a, b] = await Promise.all([
+      client.call("PUT", "/save", { state: playedState(1), baseRevision: null }),
+      client.call("PUT", "/save", { state: playedState(2), baseRevision: null })
+    ]);
+    expect([a.status, b.status].sort()).toEqual([200, 409]);
+    const cloud = await client.call("GET", "/save");
+    expect(cloud.json.save.revision).toBe(1);
   }, 60_000);
 
   it("rate-limits login attempts", async () => {
@@ -216,6 +277,21 @@ suite("API (real Postgres)", () => {
       last = (await client.call("POST", "/auth/login", { email: `bruteforce-${unique}@test.fr`, password: `essai-${attempt}` })).status;
     }
     expect(last).toBe(429);
+  }, 60_000);
+
+  it("never lets a stranger's guesses lock the player out of their account", async () => {
+    const email = `lockout-${unique}@idlebound.test`;
+    const password = "Un-Mot-De-Passe-Solide";
+    const owner = new Client("10.0.0.40");
+    expect((await owner.call("POST", "/auth/register", { email, username: freshName("Own"), password })).status).toBe(201);
+    await owner.call("POST", "/auth/logout");
+
+    const stranger = new Client("10.0.0.41");
+    let last = 0;
+    for (let attempt = 0; attempt < 12; attempt += 1) last = (await stranger.call("POST", "/auth/login", { email, password: `essai-${attempt}` })).status;
+    expect(last).toBe(429);
+    // The player, from their own address, still gets in.
+    expect((await owner.call("POST", "/auth/login", { email, password })).status).toBe(200);
   }, 60_000);
 
   it("refuses leaderboards inherited from the prototype", async () => {

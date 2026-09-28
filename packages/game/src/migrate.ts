@@ -2,6 +2,8 @@
  * Migration of older saves, without the schema: the client runs it on every cloud load, so it
  * stays free of zod and of the server's checks (see save.ts and validation.ts).
  */
+import { crystalEssenceReward } from "./formulas";
+import { seedFrom } from "./rng";
 import { ALTAR_REWORK_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 
 /** Fills a save with the fields added since it was written. */
@@ -44,8 +46,32 @@ export function migrateState(raw: unknown): unknown {
     const met = bestiary && typeof bestiary["ruined-king"] === "number" ? (bestiary["ruined-king"] as number) : 0;
     if (typeof lifetime.kings !== "number" || lifetime.kings === 0) lifetime.kings = Math.max(met, Math.floor((Math.max(1, deepest) - 1) / 50));
   }
+  // Version 9 keeps every ascension's essences in one ledger (the history holds only the
+  // last hundred). An older save gets the most its data proves: its history, or what its
+  // crystals cannot explain. The engine's generator is seeded once from the save itself.
+  if (version < 9) {
+    (merged.lifetime as Record<string, unknown>).ascensionEssences = legacyAscensionEssences(merged);
+  }
+  if (typeof input.rngState !== "number") merged.rngState = seedFrom(typeof merged.createdAt === "number" ? merged.createdAt : 0);
   merged.version = SAVE_VERSION;
   return merged;
+}
+
+/** Essences the ascensions of a save written before version 9 granted, at least. */
+function legacyAscensionEssences(merged: Record<string, unknown>): number {
+  const lifetime = merged.lifetime as Record<string, unknown>;
+  const history = Array.isArray(merged.ascensions) ? merged.ascensions : [];
+  const recorded = history.reduce((total: number, record: unknown) => {
+    const essences = record && typeof record === "object" ? (record as { essences?: unknown }).essences : undefined;
+    return total + (typeof essences === "number" && Number.isFinite(essences) ? essences : 0);
+  }, 0);
+  const earned = typeof lifetime.essencesEarned === "number" ? lifetime.essencesEarned : 0;
+  const crystals = typeof lifetime.crystals === "number" ? lifetime.crystals : 0;
+  const deepest = typeof merged.maxStageEver === "number" ? merged.maxStageEver : 1;
+  // Every crystal paid at most what one pays at the deepest stage: the rest came from ascensions.
+  const unexplained = earned - crystals * crystalEssenceReward(deepest);
+  const value = Math.max(recorded, unexplained, 0);
+  return Number.isFinite(value) ? value : 0;
 }
 
 /**

@@ -4,7 +4,7 @@ import { BIOMES, STAGES_PER_BIOME, STAGES_PER_ERA, ageForEra, biomeForStage, era
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
-import { WindowIcon } from "../icons";
+import { Picto, WindowIcon } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { creatureSource, sceneSource } from "../pixel/sources";
 import { stratumLabelOf } from "../shell";
@@ -80,7 +80,7 @@ export function MapWindow({ onClose }: { onClose: () => void }) {
               <span className="map-card-body">
                 <span className="map-card-stages">{text.stageRange(start, end)}</span>
                 <span className="map-card-name">{g.biomes[biome.id].name}</span>
-                <span className="map-card-state">{cleared ? text.bossDefeated(g.monsters[guardian] ?? g.monsters[biome.boss.id]) : current ? text.youAreHere : text.inProgress}</span>
+                <span className="map-card-state">{cleared ? <Picto name="check" size={14} className="map-card-check" /> : null}{cleared ? text.bossDefeated(g.monsters[guardian] ?? g.monsters[biome.boss.id]) : current ? text.youAreHere : text.inProgress}</span>
               </span>
             </button>
           );

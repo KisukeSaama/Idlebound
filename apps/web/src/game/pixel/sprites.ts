@@ -8,7 +8,7 @@ import { palRgb, type IconRecipe, type Pal } from "@idlebound/game/art";
 import { idleFrames, renderCreature } from "./creature";
 import { renderEmblem } from "./mask";
 import { renderCrystal, renderIcon, renderRelic } from "./objects";
-import { clonePixels, createPixels, EMPTY, type Pixels } from "./pixels";
+import { clonePixels, createPixels, EMPTY, FADE_STEPS, veil, type Pixels } from "./pixels";
 import { renderPortrait, awakenedRecipe } from "./portrait";
 import { eclipsePixels, greyPixels, greyScene } from "./events";
 import { castShadow, gradeForNight, type NightGrade } from "./night";
@@ -25,12 +25,13 @@ export interface CreatureSheet {
   pixels: Pixels;
   feet: number;
   treatment: Treatment;
-  /** World pixels per sprite pixel (1, or more in the First Mark). */
-  unit: number;
   flash: (color: Pal) => Surface;
-  ring: (color: Pal) => Surface;
-  /** Its shadow on the ground, away from the moon's side, and its offset from the sprite. */
-  shadow: (side: number, color: Pal) => { surface: Surface; dx: number; dy: number };
+  /** The boss outline, thinned to fade step `step` (FADE_STEPS: whole). */
+  ring: (color: Pal, step?: number) => Surface;
+  /** Its shadow on the ground, away from the moon's side, and its offset from the sprite; thinned to fade step `step`. */
+  shadow: (side: number, color: Pal, step?: number) => { surface: Surface; dx: number; dy: number };
+  /** An idle frame thinned to fade step `step`: how a creature comes, goes or wavers without translucency. */
+  veiled: (frame: number, step: number) => Surface;
 }
 
 /** How an event tones a creature: the Quiet's greys, the King's Eclipse. */
@@ -86,33 +87,42 @@ export function creatureSheet(id: string, era: number, night?: { key: string; gr
     const base = renders[0];
     const flashes = new Map<Pal, Surface>();
     const shadows = new Map<string, { surface: Surface; dx: number; dy: number }>();
-    const rings = new Map<Pal, Surface>();
+    const rings = new Map<string, Surface>();
+    const veils = new Map<string, Surface>();
+    const frames = renders.map((render) => toSurface(render.pixels));
     return {
       id,
       era,
-      frames: renders.map((render) => toSurface(render.pixels)),
+      frames,
       blink: toSurface(grade(renderCreature(id, { era, blink: true }).pixels)),
       pixels: base.pixels,
       feet: base.feet,
       treatment: base.treatment,
-      unit: base.treatment.unit ?? 1,
       flash: (color) => {
         let surface = flashes.get(color);
         if (!surface) flashes.set(color, (surface = toSurface(flashPixels(base.pixels, color))));
         return surface;
       },
-      shadow: (side, color) => {
-        const key = `${side}:${color}`;
+      shadow: (side, color, step = FADE_STEPS) => {
+        const key = `${side}:${color}:${step}`;
         let shadow = shadows.get(key);
         if (!shadow) {
           const cast = castShadow(base.pixels, base.feet, side, color);
-          shadows.set(key, (shadow = { surface: toSurface(cast.pixels), dx: cast.dx, dy: cast.dy }));
+          shadows.set(key, (shadow = { surface: toSurface(veil(cast.pixels, step)), dx: cast.dx, dy: cast.dy }));
         }
         return shadow;
       },
-      ring: (color) => {
-        let surface = rings.get(color);
-        if (!surface) rings.set(color, (surface = toSurface(ringPixels(base.pixels, color))));
+      ring: (color, step = FADE_STEPS) => {
+        const key = `${color}:${step}`;
+        let surface = rings.get(key);
+        if (!surface) rings.set(key, (surface = toSurface(veil(ringPixels(base.pixels, color), step))));
+        return surface;
+      },
+      veiled: (frame, step) => {
+        if (step >= FADE_STEPS) return frames[frame];
+        const key = `${frame}:${step}`;
+        let surface = veils.get(key);
+        if (!surface) veils.set(key, (surface = toSurface(veil(renders[frame].pixels, step))));
         return surface;
       }
     };

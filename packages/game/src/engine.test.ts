@@ -17,8 +17,7 @@ import {
   WOUND_LAST_STAGE,
   ascensionPreview,
   wandererSkip,
-  IDLE_FULL_MS,
-  IDLE_GRACE_MS,
+  STRIKE_FILL_SECONDS,
   altarValue,
   bossHp,
   derive,
@@ -194,7 +193,7 @@ function lateGame(): GameState {
 /** Average damage per second of `clicksPerSecond` clicks (crits included) over the active DPS. */
 function clickRatio(state: GameState, now: number, clicksPerSecond: number): number {
   const d = derive(state, now, { ignoreTimed: true });
-  const activeDps = d.dps / (1 + d.idleBonus * d.idleRatio);
+  const activeDps = d.dps - d.patienceDps;
   return (clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1))) / activeDps;
 }
 
@@ -209,33 +208,81 @@ describe("idle and active balance", () => {
 
   it("keeps sustained clicking around companion DPS in the late game", () => {
     const state = lateGame();
-    state.lastClickAt = T0;
     const ratio = clickRatio(state, T0, 5);
     expect(ratio).toBeGreaterThan(0.1);
     expect(ratio).toBeLessThan(1);
     // Mashing at 10 clicks/s beats an idle player by a modest margin at most.
-    const idle = derive(state, T0 + IDLE_FULL_MS, { ignoreTimed: true });
-    const active = derive(state, T0, { ignoreTimed: true });
-    expect(active.dps * (1 + clickRatio(state, T0, 10))).toBeLessThan(idle.dps * 1.5);
+    const d = derive(state, T0, { ignoreTimed: true });
+    const active = d.dps - d.patienceDps + Math.max(d.patienceDps, clickRatio(state, T0, 10) * (d.dps - d.patienceDps));
+    expect(active).toBeLessThan(d.dps * 1.5);
   });
 
-  it("gives the idle bonus to companions only, never to clicks", () => {
+  it("gives the Patience bonus to companions only, never to strikes", () => {
     const state = lateGame();
     state.altars.patience = 5;
-    state.lastClickAt = T0;
-    const active = derive(state, T0);
-    const idle = derive(state, T0 + IDLE_FULL_MS);
-    expect(active.idle).toBe(false);
-    expect(idle.idle).toBe(true);
+    const d = derive(state, T0);
     // Sentinel's Vigil (+50%), Silent Legion (+100%), Altar of Patience at level 5.
     const bonus = 1.5 + altarValue(state, "patience");
     expect(altarValue(state, "patience")).toBeGreaterThan(0);
-    expect(idle.idleBonus).toBeCloseTo(bonus);
-    expect(active.idleBonus).toBeCloseTo(bonus);
-    expect(idle.dps).toBeCloseTo(active.dps * (1 + bonus));
-    expect(idle.heroDps.maelle).toBeCloseTo(active.heroDps.maelle * (1 + bonus));
-    expect(idle.click).toBeCloseTo(active.click);
-    expect(derive(state, T0, { forceIdle: true }).dps).toBeCloseTo(idle.dps);
+    expect(d.idleBonus).toBeCloseTo(bonus);
+    expect(d.patienceDps / ((d.dps / (1 + bonus)) * bonus)).toBeCloseTo(1);
+    state.altars.patience = 0;
+    expect(derive(state, T0).click).toBeCloseTo(d.click);
+  });
+
+  /** Plays `seconds` against a Remnant too dense to fall, striking `clicksPerSecond`; returns the damage dealt. */
+  function strike(engine: GameEngine, from: number, seconds: number, clicksPerSecond: number): number {
+    let total = 0;
+    let debt = 0;
+    let now = from;
+    for (let step = 0; step < seconds * 10; step += 1) {
+      now += 100;
+      debt += clicksPerSecond / 10;
+      while (debt >= 1) {
+        debt -= 1;
+        engine.click(now);
+      }
+      engine.tick(now);
+      for (const event of engine.drainEvents()) if (event.type === "hit" || event.type === "dps") total += event.damage;
+    }
+    return total;
+  }
+
+  function wall(patience: number) {
+    const state = lateGame();
+    state.altars.patience = patience;
+    state.stage = state.maxStage = state.maxStageEver = 401;
+    return new GameEngine(state, seededRng(1), T0);
+  }
+
+  const dealt = (clicksPerSecond: number, patience = 5) => strike(wall(patience), T0, 60, clicksPerSecond);
+
+  it("never lets a strike cost the company: strikes take the Patience bonus's place, and add past it", () => {
+    const idle = dealt(0);
+    // A light hand takes the bonus's place blow for blow.
+    const engine = wall(5);
+    expect(strike(engine, T0, 60, 1)).toBeGreaterThanOrEqual(idle * 0.999);
+    expect(engine.patienceShare).toBeLessThan(1);
+    for (const pace of [0.5, 2, 5, 10, 20]) expect(dealt(pace)).toBeGreaterThanOrEqual(idle * 0.999);
+    // Striking hard, the walker deals more than the bonus they replace.
+    expect(dealt(40, 0)).toBeGreaterThan(dealt(0, 0) * 1.05);
+  });
+
+  it("lets a strike wait a few seconds of the Patience bonus at most", () => {
+    const engine = wall(5);
+    const now = T0 + 1000;
+    strike(engine, T0, 1, 0);
+    // One strike far above the bonus: once it has taken its place, the bonus comes back whole.
+    engine.state.buffs.push({ id: "sharpness", until: now + 100 });
+    engine.refresh(now);
+    engine.click(now);
+    engine.state.buffs = [];
+    engine.refresh(now);
+    engine.drainEvents();
+    const d = engine.derived;
+    const companions = strike(engine, now, STRIKE_FILL_SECONDS + 2, 0);
+    expect(companions).toBeGreaterThan(d.dps * (STRIKE_FILL_SECONDS + 2) - d.patienceDps * STRIKE_FILL_SECONDS * 1.01);
+    expect(engine.patienceShare).toBe(1);
   });
 
   it("applies sharpness to the whole click, DPS share included", () => {
@@ -256,8 +303,7 @@ describe("idle and active balance", () => {
 
   it("bounds a click build with every crit investment maxed", () => {
     const state = lateGame();
-    state.lastClickAt = T0;
-    Object.assign(state.altars, { precision: 25, fate: 5, blade: 10 });
+    Object.assign(state.altars, { precision: 25, fate: 5 });
     state.lifetime.essencesEarned = 1e6;
     for (const slot of SLOTS) {
       state.equipment[slot] = { ...generateItem(seededRng(3), 100, { slot }), affixes: [{ stat: "critChance", value: 0.08 }, { stat: "critDamage", value: 5 }] };
@@ -267,49 +313,11 @@ describe("idle and active balance", () => {
     expect(ratio).toBeLessThan(6);
   });
 
-  it("grows the idle bonus from 3 s to 30 s after the last click", () => {
+  it("lets the Altar of the Blade sharpen the whole strike, companions' share included", () => {
     const state = lateGame();
-    state.lastClickAt = T0;
-    const at = (ms: number) => derive(state, T0 + ms).idleRatio;
-    expect(at(0)).toBe(0);
-    expect(at(IDLE_GRACE_MS)).toBe(0);
-    expect(at((IDLE_GRACE_MS + IDLE_FULL_MS) / 2)).toBeCloseTo(0.5);
-    expect(at(IDLE_FULL_MS)).toBe(1);
-    expect(derive(state, T0 + IDLE_FULL_MS).idle).toBe(true);
-    expect(derive(state, T0 + IDLE_FULL_MS - 1).idle).toBe(false);
-    const half = derive(state, T0 + (IDLE_GRACE_MS + IDLE_FULL_MS) / 2);
-    const none = derive(state, T0);
-    expect(half.dps).toBeCloseTo(none.dps * (1 + half.idleBonus / 2));
-  });
-
-  it("makes an isolated click cheap for an idle player", () => {
-    const engine = new GameEngine(lateGame(), seededRng(1), T0);
-    let now = run(engine, T0, 60);
-    engine.click(now);
-    expect(engine.derived.idleRatio).toBe(0);
-    // Average idle bonus kept over the two minutes that follow one click.
-    let kept = 0;
-    for (let step = 0; step < 1200; step += 1) {
-      now += 100;
-      engine.tick(now);
-      kept += engine.derived.idleRatio / 1200;
-    }
-    expect(kept).toBeGreaterThan(0.85);
-  });
-
-  it("lets the Altar of the Blade raise the DPS share of clicks, up to +50%", () => {
-    const state = lateGame();
-    const base = derive(state, T0);
-    const share = (blade: number) => {
-      state.altars.blade = blade;
-      const d = derive(state, T0);
-      const flat = (base.click - base.dps * base.clickDpsShare) * (1 + blade * 0.25);
-      return (d.click - flat) / (d.dps * d.clickDpsShare);
-    };
-    expect(share(0)).toBeCloseTo(1);
-    expect(share(4)).toBeCloseTo(1.2);
-    expect(share(10)).toBeCloseTo(1.5);
-    expect(share(40)).toBeCloseTo(1.5);
+    const base = derive(state, T0).click;
+    state.altars.blade = 4;
+    expect(derive(state, T0).click).toBeCloseTo(base * Math.pow(1 + ALTAR_BY_ID.blade.valuePerLevel, 4));
   });
 
   it("caps altars and prices their levels exponentially", () => {
@@ -426,8 +434,7 @@ describe("idle and active balance", () => {
     // of crits, ×10 slack), so only the idle bonus itself can explain the boss.
     state.altars.patience = 100_000;
     state.lifetime.essencesEarned = 1e10;
-    state.lastClickAt = T0;
-    const idle = derive(state, T0 + IDLE_FULL_MS, { ignoreTimed: true });
+    const idle = derive(state, T0, { ignoreTimed: true });
     // The highest boss the idle companions alone beat in half the timer.
     let stage = 10;
     while (bossHp(stage + 5) < (idle.dps * idle.bossTimer) / 2) stage += 5;
@@ -551,7 +558,7 @@ describe("anti-cheat", () => {
     expect(summary.stages).toBeGreaterThan(0);
     expect(s.maxStage).toBe(before.maxStage + summary.stages);
     expect(summary.blockedAt).toBe(s.maxStage);
-    const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+    const d = derive(s, now, { ignoreTimed: true });
     expect(bossHp(s.maxStage)).toBeGreaterThan(d.dps * d.bossDamage * d.bossTimer);
     expect(s.stage).toBe(s.maxStage - 1);
     expect(s.autoAdvance).toBe(false);
@@ -812,7 +819,21 @@ describe("anti-cheat", () => {
     expect(verifyState(cheated, T0).map((v) => v.code)).toContain("achievement");
   });
 
-  it("detects an achievement listed twice", () => {
+  it("keeps every deed's id and adds tiers to the end of the last Age", () => {
+    const threshold = (id: string) => ACHIEVEMENTS.find((achievement) => achievement.id === id)!.threshold;
+    expect([threshold("stage-10"), threshold("stage-11"), threshold("stage-12"), threshold("gold-7")]).toEqual([1_000, 2_000, 3_000, 1e36]);
+    for (const series of ["stage", "gold"]) {
+      const tiers = ACHIEVEMENTS.filter((achievement) => achievement.series === series).map((achievement) => achievement.threshold);
+      expect(tiers).toEqual([...tiers].sort((a, b) => a - b));
+    }
+    // A stage deed at the end of every Age from the third, gold earned to the end of the last.
+    for (let age = 3; age <= 12; age += 1) expect(ACHIEVEMENTS.some((achievement) => achievement.series === "stage" && achievement.threshold === age * 250)).toBe(true);
+    expect(Math.max(...ACHIEVEMENTS.filter((achievement) => achievement.series === "gold").map((achievement) => achievement.threshold))).toBeGreaterThanOrEqual(1e225);
+    // The two deepest tiers weigh more, whatever the order of their ids.
+    expect(ACHIEVEMENTS.filter((achievement) => achievement.series === "stage" && achievement.bonus > 0.03).map((achievement) => achievement.id)).toEqual(["stage-19", "stage-12"]);
+  });
+
+  it("detects an unearned achievement", () => {
     const engine = newGame();
     const now = run(engine, T0, 60, 5);
     const cheated = structuredClone(engine.state);

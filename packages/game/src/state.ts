@@ -1,6 +1,7 @@
+import { seedFrom } from "./rng";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 
@@ -13,6 +14,7 @@ export function emptyLifetime(): LifetimeStats {
     ...emptyStats(),
     ascensions: 0,
     essencesEarned: 0,
+    ascensionEssences: 0,
     shardsEarned: 0,
     itemsFound: 0,
     legendaries: 0,
@@ -72,6 +74,7 @@ export function createInitialState(now = Date.now()): GameState {
       notation: "letters",
       sound: true,
       volume: 0.6,
+      ambience: 0.5,
       damageNumbers: true,
       reducedMotion: false,
       confirmAscension: true,
@@ -91,6 +94,7 @@ export function createInitialState(now = Date.now()): GameState {
     threads: 0,
     weaves: {},
     descentMark: 0,
-    caravanWeek: ""
+    caravanWeek: "",
+    rngState: seedFrom(now)
   };
 }

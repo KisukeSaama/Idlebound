@@ -2,7 +2,7 @@
 
 import { createInitialState, migrateState, type GameState } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
-import { api, type AccountUser, type CloudSave } from "@/lib/api";
+import { api, isUnreachable, type AccountUser, type CloudSave } from "@/lib/api";
 import type { GameStore } from "./store";
 
 export type CloudStatus = "offline" | "idle" | "syncing" | "synced" | "error" | "rejected" | "unverified";
@@ -26,8 +26,6 @@ export function summarize(state: GameState): SaveSummary {
 /** The save only lives on the server: sync often so nothing is lost. */
 const SYNC_INTERVAL_MS = 30_000;
 const SYNC_CHECK_MS = 5_000;
-/** sessionStorage key: this tab has run the game (see `tabWasRunning`). */
-const TAB_MARKER = "ib_tab";
 /** A player action or a milestone saves soon after, grouping bursts of actions. */
 const SAVE_DEBOUNCE_MS = 3_000;
 /** Keeps uploads under the API limit (6 per minute), with room for page-hide saves. */
@@ -35,45 +33,36 @@ const MIN_UPLOAD_GAP_MS = 15_000;
 const RETRY_AFTER_REJECT_MS = 10 * 60_000;
 /** Under the browsers' 64 KB keepalive limit, with room for the request's other fields. */
 const KEEPALIVE_MAX_BYTES = 60_000;
+/** Reaching the server at load: first retry after this long, doubling up to the cap. */
+const REACH_FIRST_MS = 2_000;
+const REACH_MAX_MS = 60_000;
+
+/** The server did not answer at load: the game waits for it rather than starting blank. */
+export interface Reaching {
+  attempts: number;
+  /** When the next attempt starts (ms since epoch). */
+  nextAt: number;
+}
 
 /**
  * Server save, the game's only persistence. Each upload carries the revision it builds on;
  * a conflict (another device, another game) triggers an explicit choice. Without an
  * account, the game is not kept.
  */
-/**
- * Whether this very tab was already running the game before this load: the browser
- * discarded it to save memory (Page Lifecycle API in Chromium, a per-tab sessionStorage
- * marker elsewhere) or the player reloaded it. A new tab starts without the marker, so a
- * closed game never earns the time it was closed. The marker is set for the next load.
- * Only a presence flag: no game state lives in browser storage.
- */
-let tabWasRunningCache: boolean | undefined;
-
-function tabWasRunning(): boolean {
-  if (typeof document === "undefined") return false;
-  // Read once per page load: React may build the sync twice in development.
-  if (tabWasRunningCache !== undefined) return tabWasRunningCache;
-  let marked = false;
-  try {
-    marked = window.sessionStorage.getItem(TAB_MARKER) === "1";
-    window.sessionStorage.setItem(TAB_MARKER, "1");
-  } catch {
-    // Storage blocked: only the Page Lifecycle API remains.
-  }
-  tabWasRunningCache = marked || (document as Document & { wasDiscarded?: boolean }).wasDiscarded === true;
-  return tabWasRunningCache;
-}
-
 export class CloudSync {
   user: AccountUser | null = null;
   status: CloudStatus = "offline";
-  /** This load restores a tab that was already running the game (see `tabWasRunning`). */
-  private tabWasDiscarded = tabWasRunning();
   message: string | null = null;
   lastSyncAt: number | null = null;
   revision: number | null = null;
   pendingChoice: CloudSave | null = null;
+  /** Set while the server cannot be reached at load; null once it answered. */
+  reaching: Reaching | null = null;
+  /** Signed in, but the account's game was never read: nothing is uploaded over it. */
+  private unread = false;
+  /** Each init() and dispose() starts a new generation: an older retry loop stops. */
+  private generation = 0;
+  private wake: (() => void) | null = null;
   private listeners = new Set<() => void>();
   private version = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -99,52 +88,118 @@ export class CloudSync {
     for (const listener of this.listeners) listener();
   }
 
-  private set(patch: Partial<Pick<CloudSync, "status" | "message" | "user" | "lastSyncAt" | "revision" | "pendingChoice">>) {
+  private set(patch: Partial<Pick<CloudSync, "status" | "message" | "user" | "lastSyncAt" | "revision" | "pendingChoice" | "reaching">>) {
     Object.assign(this, patch);
     this.emit();
   }
 
-  /** On start: existing session → load the server game. */
+  /**
+   * On start: existing session → load the server game. Resolves once the server answered:
+   * a network failure never starts a blank guest game over an account's, it waits and tries
+   * again (doubling delays, at once when the network comes back or on request).
+   */
   async init() {
+    const run = ++this.generation;
     if (this.unsubscribes.length === 0) {
       this.unsubscribes = [
         this.store.onAction(() => this.requestSave()),
         this.store.onFx((event) => {
           if (event.type === "achievement" || event.type === "loot" || (event.type === "stage" && event.biomeChanged)) this.requestSave();
         }),
-        this.watchReturn()
+        this.watchReturn(),
+        this.watchNetwork()
       ];
     }
     this.timer ??= setInterval(() => {
       if (Date.now() - this.lastUploadAt >= SYNC_INTERVAL_MS) void this.sync();
     }, SYNC_CHECK_MS);
-    const result = await api.me();
-    if (result.ok && result.data.user) await this.connect(result.data.user);
-    else this.set({ status: result.ok ? "offline" : "error", message: result.ok ? null : result.error });
+    for (let attempt = 0; ; attempt += 1) {
+      const answered = await this.load();
+      if (run !== this.generation) return;
+      if (answered) {
+        if (this.reaching) this.set({ reaching: null });
+        return;
+      }
+      const delay = Math.min(REACH_MAX_MS, REACH_FIRST_MS * 2 ** attempt);
+      this.set({ reaching: { attempts: attempt + 1, nextAt: Date.now() + delay } });
+      await this.pause(delay);
+      if (run !== this.generation) return;
+    }
   }
 
-  /** After login, sign-up, or on start. */
-  async connect(user: AccountUser) {
+  /** One attempt to read the session and its game; false when the server did not answer. */
+  private async load(): Promise<boolean> {
+    const result = await api.me();
+    if (!result.ok) {
+      if (isUnreachable(result)) return false;
+      // The server answered but refused: the game runs unsigned, the reason shown.
+      this.set({ status: "error", message: result.error });
+      return true;
+    }
+    if (!result.data.user) {
+      this.set({ status: "offline", message: null });
+      return true;
+    }
+    return this.connect(result.data.user);
+  }
+
+  /** Waits `ms`, or less if `retryNow()` is called. */
+  private pause(ms: number) {
+    return new Promise<void>((resolve) => {
+      const done = () => {
+        clearTimeout(timer);
+        if (this.wake === done) this.wake = null;
+        resolve();
+      };
+      const timer = setTimeout(done, ms);
+      this.wake = done;
+    });
+  }
+
+  /** Tries the server again at once: at load, or when uploads were failing. */
+  retryNow = () => {
+    if (this.wake) {
+      this.wake();
+      return;
+    }
+    if (this.user && this.status === "error") void this.sync();
+  };
+
+  /** The network came back: whatever waited on it goes now. */
+  private watchNetwork() {
+    const onOnline = () => this.retryNow();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }
+
+  /**
+   * After login, sign-up, or on start. False when the server did not answer: the account's
+   * game is then still unread, and later syncs read it before writing anything.
+   */
+  async connect(user: AccountUser): Promise<boolean> {
     this.set({ user, status: "syncing", message: null, revision: null });
     const result = await api.getSave();
     if (!result.ok) {
+      this.unread = true;
       this.set({ status: "error", message: result.error });
-      return;
+      return !isUnreachable(result);
     }
+    this.unread = false;
     const cloud = result.data.save;
     const local = this.store.state;
     if (!cloud) {
       // First save of the account: the game played as a guest becomes the account's game.
       await this.upload(null, false);
-      return;
+      return true;
     }
     const guestIsFresh = local.lifetime.playTime < 90 && local.lifetime.ascensions === 0 && local.maxStageEver <= 3;
     if (guestIsFresh || local.createdAt === cloud.state.createdAt) {
       this.adopt(cloud);
-      return;
+      return true;
     }
     // The guest game differs from the account's game: the player chooses.
     this.set({ pendingChoice: cloud, status: "idle" });
+    return true;
   }
 
   /** Back on the tab after clicking the confirmation link elsewhere: pick up the new account state. */
@@ -175,14 +230,13 @@ export class CloudSync {
 
   adopt(cloud: CloudSave) {
     // A save written by an older version gets the same migration as on the server
-    // (new fields, refunded altar levels) before it runs. The time since it was written
-    // only counts if the browser discarded this tab while it was open.
-    const creditAbsence = this.tabWasDiscarded;
-    this.tabWasDiscarded = false;
+    // (new fields, refunded altar levels) before it runs.
     const state = migrateState(cloud.state) as GameState;
     // How long the walker was gone, read before the load moves the clock (Welcome Back).
     const awayMs = Date.now() - state.lastTickAt;
-    this.store.replaceState(state, { creditAbsence });
+    // The company walked on while the game was closed: the first tick catches that time up,
+    // never more than the server saw pass since the save (a device clock can be wrong).
+    this.store.replaceState(state, { awayMs: Math.min(awayMs, cloud.elapsedMs) });
     this.store.apply((engine) => engine.welcomeBack(awayMs));
     this.lastUploadAt = Date.now();
     this.set({ pendingChoice: null, status: this.saveBlocked() ? "unverified" : "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
@@ -268,6 +322,12 @@ export class CloudSync {
   /** Periodic sync, after a player action, on page hide, or on logout. */
   async sync(options: { force?: boolean; keepalive?: boolean } = {}) {
     if (!this.user || this.pendingChoice) return;
+    // The account's game was never read (server away at sign-in): read it first, never
+    // write over it blind. A page-hide save has no time for that.
+    if (this.unread) {
+      if (!options.keepalive && !this.inFlight) await this.connect(this.user);
+      return;
+    }
     if (this.status === "rejected" && !options.force && Date.now() - this.rejectedAt < RETRY_AFTER_REJECT_MS) return;
     // Refused until the address is confirmed: setUser() resumes saving.
     if (this.status === "unverified" && !options.force) return;
@@ -283,6 +343,7 @@ export class CloudSync {
   async logout() {
     await this.sync({ force: true });
     await api.logout();
+    this.unread = false;
     this.set({ user: null, status: "offline", revision: null, lastSyncAt: null, message: null, pendingChoice: null });
     // The game belongs to the account: the next guest starts from scratch.
     this.store.replaceState(createInitialState());
@@ -290,11 +351,15 @@ export class CloudSync {
 
   /** After the account was deleted. */
   forget() {
+    this.unread = false;
     this.set({ user: null, status: "offline", revision: null, lastSyncAt: null, message: null, pendingChoice: null });
     this.store.replaceState(createInitialState());
   }
 
   dispose() {
+    // An init() still trying to reach the server stops there.
+    this.generation += 1;
+    this.wake?.();
     if (this.timer) clearInterval(this.timer);
     if (this.saveTimer) clearTimeout(this.saveTimer);
     this.timer = null;

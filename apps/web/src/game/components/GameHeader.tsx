@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { useI18n } from "@/i18n/client";
 import { href } from "@/i18n/routing";
+import type { CloudStatus } from "../cloud";
 import { useCloud, useFormat, useGame, useReveals, useUi } from "../context";
-import { ClickIcon, EssenceIcon, GoldIcon, ShardIcon, SwordIcon } from "../icons";
+import { ClickIcon, EssenceIcon, GoldIcon, Picto, ShardIcon, SwordIcon } from "../icons";
+
+/** States of the Ledger worth more than a dot: a word and a sign, read aloud when they come. */
+const TROUBLE: ReadonlySet<CloudStatus> = new Set<CloudStatus>(["error", "rejected", "unverified"]);
 
 export function GameHeader() {
   const { state, derived } = useGame();
@@ -14,6 +18,7 @@ export function GameHeader() {
   const { shown, freshClass } = useReveals();
   const { t, locale } = useI18n();
   const m = t.hud.header;
+  const trouble = cloud.user && TROUBLE.has(cloud.status) ? t.account.status[cloud.status] : null;
 
   return (
     <header className="game-header">
@@ -28,7 +33,7 @@ export function GameHeader() {
         {shown.dps ? (
           <div className={`resource${freshClass("dps")}`} title={m.dpsTitle}>
             <SwordIcon />
-            <span className="resource-label">DPS</span>
+            <span className="resource-label">{m.dpsLabel}</span>
             <span className="resource-value resource-value-fixed">{fmt(derived.dps)}</span>
           </div>
         ) : null}
@@ -58,10 +63,17 @@ export function GameHeader() {
         title={cloud.user ? undefined : t.account.ledger.guestPlain}
         onClick={() => ui.openWindow("account")}
       >
-        <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />
+        {trouble ? null : <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />}
         <span className="account-name">{cloud.user ? cloud.user.username : t.account.ledger.guest}</span>
         {!cloud.user ? <span className="account-cta">{m.notSaved}</span> : null}
+        {trouble ? (
+          <span className={`sync-badge sync-badge-${cloud.status}`}>
+            <Picto name="warning" size={14} />
+            <span className="sync-badge-text">{trouble}</span>
+          </span>
+        ) : null}
       </button>
+      <span className="visually-hidden" role="status" aria-live="polite">{trouble ?? ""}</span>
     </header>
   );
 }

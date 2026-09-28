@@ -43,7 +43,7 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
   const seed = awakenedSeed(state.settings.notation, state.settings.sound, locale);
   const portrait = (heroId: string, size: number) => (
     <span className="account-portrait" style={{ "--hero": HERO_BY_ID[heroId].color } as CSSProperties} aria-hidden="true">
-      <span className="medallion-clip"><PixelSprite source={portraitSource(heroId, heroId === "awakened" ? seed : undefined)} size={size} cover /></span>
+      <span className="medallion-clip"><PixelSprite source={portraitSource(heroId, heroId === "awakened" ? seed : undefined)} size={size} nearest /></span>
     </span>
   );
   const boss = (stage: number) => monsterName({ id: bossForStage(stage).id, kind: "boss" }, stage, locale);

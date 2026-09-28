@@ -5,7 +5,7 @@
  * (eyes, flames) are never touched: a Remnant's eyes are always its own.
  */
 import { C, palLuma, type CreatureRank, type MaterialId, type Pal, type ResolvedRecipe } from "@idlebound/game/art";
-import { bayer, clonePixels, createPixels, EMPTY, hash2, valueNoise, type Pixels } from "./pixels";
+import { bayer, clonePixels, createPixels, EMPTY, hash2, type Pixels } from "./pixels";
 import { GILDED_TABLE, GREY_TABLE, WARM_TABLE } from "./tables";
 
 export const AGE_COUNT = 12;
@@ -32,8 +32,6 @@ export interface Treatment {
   /** Color of the whole outline. */
   line?: Pal;
   halfClosed?: boolean;
-  /** World pixels per sprite pixel (Age XII: fewer and fewer pixels). */
-  unit?: number;
   /** Animation speed factor (Age VIII: slower). */
   speed: number;
   /** Embers rise from the sprite (Ash). */
@@ -63,50 +61,44 @@ function remap(source: Pixels, table: readonly Pal[], when: (x: number, y: numbe
 /** Pixels that belong to the body (not its outline): at least 3 drawn neighbors. */
 function interior(source: Pixels, x: number, y: number): boolean {
   const { w, h, idx } = source;
-  let count = 0;
-  for (const [dx, dy] of [[0, -1], [-1, 0], [1, 0], [0, 1]] as const) {
-    const nx = x + dx;
-    const ny = y + dy;
-    if (nx >= 0 && ny >= 0 && nx < w && ny < h && idx[ny * w + nx] !== EMPTY) count += 1;
-  }
-  return count === 4;
+  if (x < 1 || y < 1 || x >= w - 1 || y >= h - 1) return false;
+  const at = y * w + x;
+  return idx[at - w] !== EMPTY && idx[at - 1] !== EMPTY && idx[at + 1] !== EMPTY && idx[at + w] !== EMPTY;
 }
 
-/** Echo: a ghost copy, one pixel behind, at 30%. */
+/**
+ * Echo: a ghost copy one pixel behind, up and to the right. Where it shows past the body it
+ * is a checker of cold dusk, never a translucent pixel: the eye mixes it with the night.
+ */
 function echo(source: Pixels): Pixels {
-  const out = createPixels(source.w, source.h);
-  for (let y = 0; y < source.h; y += 1) {
-    for (let x = 0; x < source.w; x += 1) {
-      const from = y * source.w + x;
-      if (source.idx[from] === EMPTY) continue;
+  const out = clonePixels(source);
+  const { w, h } = source;
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      const from = y * w + x;
       const tx = x + 1;
       const ty = y - 1;
-      if (tx >= source.w || ty < 0) continue;
-      const to = ty * source.w + tx;
-      out.idx[to] = source.idx[from];
-      out.alpha[to] = 77;
+      if (source.idx[from] === EMPTY || tx >= w || ty < 0) continue;
+      const to = ty * w + tx;
+      if (source.idx[to] !== EMPTY || ((tx + ty) & 1) === 1) continue;
+      out.idx[to] = palLuma(source.idx[from]) > 70 ? C.amethyst : C.dusk;
+      out.alpha[to] = 255;
     }
-  }
-  for (let at = 0; at < source.idx.length; at += 1) {
-    if (source.idx[at] === EMPTY) continue;
-    out.idx[at] = source.idx[at];
-    out.alpha[at] = source.alpha[at];
-    out.emit[at] = source.emit[at];
   }
   return out;
 }
 
-/** Ash: warm ramps and a few embers caught on the upper edges. */
+/** Ash: warm ramps, and embers caught on the upper edges at a steady step, ember and amber in turn. */
 function ash(source: Pixels, { seed }: TreatContext): Pixels {
   const out = remap(source, WARM);
+  const gap = 5;
+  const phase = seed % gap;
   for (let y = 1; y < source.h; y += 1) {
     for (let x = 0; x < source.w; x += 1) {
       const at = y * source.w + x;
-      if (source.idx[at] === EMPTY || source.idx[at - source.w] !== EMPTY) continue;
-      if (hash2(x, y, seed + 11) < 0.12) {
-        out.idx[at] = hash2(x, y, seed) < 0.5 ? C.ember : C.amber;
-        out.emit[at] = 1;
-      }
+      if (source.idx[at] === EMPTY || source.idx[at - source.w] !== EMPTY || (x + phase) % gap !== 0) continue;
+      out.idx[at] = Math.floor((x + phase) / gap) % 2 === 0 ? C.ember : C.amber;
+      out.emit[at] = 1;
     }
   }
   return out;
@@ -146,18 +138,56 @@ function voidHoles(source: Pixels, { seed }: TreatContext): Pixels {
   return out;
 }
 
-/** Astral: star specks inside the body. */
+/**
+ * A patch of sky, laid like tiles (each row of tiles shifted by half): `O` a bright star,
+ * a digit a small star that shows from that era of its Age on. The deeper the stratum,
+ * the fuller the field; the same stars every time.
+ */
+const STAR_TILE = [
+  "................",
+  "..0........3....",
+  "........1.......",
+  "....O...........",
+  "............0...",
+  "..2.......4.....",
+  "......0.........",
+  "...........O....",
+  ".1..............",
+  "........2...3...",
+  "...4..0.........",
+  "................"
+];
+const TILE_W = STAR_TILE[0].length;
+const TILE_H = STAR_TILE.length;
+/** The tile as numbers: 0 nothing, 9 a bright star, 1 + n a small star from era n of the Age. */
+const STAR_CELLS = Uint8Array.from(STAR_TILE.join(""), (key) => (key === "O" ? 9 : key === "." ? 0 : 1 + Number(key)));
+
+function starCell(x: number, y: number, seed: number): number {
+  const ty = y + TILE_H + (seed % TILE_H);
+  const row = (ty / TILE_H) | 0;
+  const tx = x + TILE_W + ((seed >> 4) % TILE_W) + (row & 1 ? TILE_W >> 1 : 0);
+  return STAR_CELLS[(ty % TILE_H) * TILE_W + (tx % TILE_W)];
+}
+
+/** The star at `x`, `y`: 0 none, 1 a small star, 2 a bright one, 3 a point of a bright star's cross. */
+function starAt(x: number, y: number, step: number, seed: number): 0 | 1 | 2 | 3 {
+  const here = starCell(x, y, seed);
+  if (here === 9) return 2;
+  if (here !== 0 && here - 1 <= step) return 1;
+  return starCell(x + 1, y, seed) === 9 || starCell(x - 1, y, seed) === 9 || starCell(x, y + 1, seed) === 9 || starCell(x, y - 1, seed) === 9 ? 3 : 0;
+}
+
+/** Astral: small stars inside the body, set in a regular field. */
 function astral(source: Pixels, { seed }: TreatContext): Pixels {
   const out = clonePixels(source);
   for (let y = 0; y < source.h; y += 1) {
     for (let x = 0; x < source.w; x += 1) {
       const at = y * source.w + x;
       if (source.idx[at] === EMPTY || source.emit[at] || !interior(source, x, y)) continue;
-      const n = hash2(x, y, seed + 21);
-      if (n < 0.035) {
-        out.idx[at] = n < 0.012 ? C.moon : C.shardLight;
-        out.emit[at] = 1;
-      }
+      const star = starAt(x, y, 0, seed + 21);
+      if (star === 0 || star === 3) continue;
+      out.idx[at] = star === 2 ? C.moon : C.shardLight;
+      out.emit[at] = 1;
     }
   }
   return out;
@@ -184,8 +214,8 @@ function hallowed(source: Pixels, { rank, step }: TreatContext): Pixels {
       for (let x = center - half; x <= center + half; x += 1) {
         if (x < 0 || x >= source.w || bayer(x, y) > 0.35 - (y / source.h) * 0.2) continue;
         const at = y * source.w + x;
-        out.idx[at] = C.goldLight;
-        out.alpha[at] = 70;
+        out.idx[at] = C.goldDark;
+        out.alpha[at] = 255;
       }
     }
   }
@@ -213,28 +243,39 @@ function hallowed(source: Pixels, { rank, step }: TreatContext): Pixels {
   return out;
 }
 
-/** Stars: the body turns half transparent and fills with a star field. */
+/**
+ * Stars: the body turns to night glass (two deep blues woven in a checker, the lighter pair
+ * where the body was light) and fills with a star field that thickens era by era.
+ */
 function starry(source: Pixels, { seed, step }: TreatContext): Pixels {
   const out = clonePixels(source);
   for (let y = 0; y < source.h; y += 1) {
     for (let x = 0; x < source.w; x += 1) {
       const at = y * source.w + x;
       if (source.idx[at] === EMPTY || source.emit[at] || !interior(source, x, y)) continue;
-      const n = hash2(x, y, seed + 31);
-      if (n < 0.03 + step * 0.012) {
-        out.idx[at] = n < 0.015 ? C.moon : C.shardLight;
-        out.alpha[at] = 255;
+      const star = starAt(x, y, step, seed + 31);
+      out.alpha[at] = 255;
+      if (star === 1 || star === 2) {
+        out.idx[at] = star === 2 ? C.moon : C.shardLight;
         out.emit[at] = 1;
+      } else if (star === 3) {
+        out.idx[at] = C.shard;
       } else {
-        out.idx[at] = palLuma(source.idx[at]) > 90 ? C.vault3 : C.vault1;
-        out.alpha[at] = 140;
+        const odd = ((x + y) & 1) === 1;
+        out.idx[at] = palLuma(source.idx[at]) > 90 ? (odd ? C.vault3 : C.vault2) : odd ? C.vault1 : C.vaultNight;
       }
     }
   }
   return out;
 }
 
-/** Loom: vertical threads through everything, some hanging loose. */
+/** Lengths of the loose ends, thread after thread: some hang, some do not. */
+const LOOSE = [0, 4, 2, 0, 6, 3, 0, 5];
+
+/**
+ * Loom: vertical threads through everything at a steady spacing, closer era by era, some
+ * hanging loose below the body and rising above it, the upper ends dotted where they fray.
+ */
 function woven(source: Pixels, { seed, step }: TreatContext): Pixels {
   const out = clonePixels(source);
   let top = source.h;
@@ -245,9 +286,11 @@ function woven(source: Pixels, { seed, step }: TreatContext): Pixels {
     top = Math.min(top, y);
     bottom = Math.max(bottom, y);
   }
+  const gap = 14 - step * 2;
+  const phase = seed % gap;
   for (let x = 0; x < source.w; x += 1) {
-    if (hash2(x, 0, seed + 41) > 0.12 + step * 0.05) continue;
-    const loose = hash2(x, 1, seed + 41) < 0.4 ? 2 + Math.floor(hash2(x, 2, seed) * 5) : 0;
+    if ((x + phase) % gap !== 0) continue;
+    const loose = LOOSE[(Math.floor((x + phase) / gap) + seed) % LOOSE.length];
     let touched = false;
     for (let y = 0; y < source.h; y += 1) {
       const at = y * source.w + x;
@@ -260,18 +303,32 @@ function woven(source: Pixels, { seed, step }: TreatContext): Pixels {
     for (let y = bottom + 1; y <= Math.min(source.h - 1, bottom + loose); y += 1) {
       const at = y * source.w + x;
       out.idx[at] = C.lilac;
-      out.alpha[at] = 160;
+      out.alpha[at] = 255;
     }
     for (let y = Math.max(0, top - loose); y < top; y += 1) {
+      if (((top - y) & 1) === 0) continue;
       const at = y * source.w + x;
       out.idx[at] = C.lilac;
-      out.alpha[at] = 120;
+      out.alpha[at] = 255;
     }
   }
   return out;
 }
 
-/** Draft: paper and charcoal, cross-hatching where the shading was. */
+/** A charcoal smudge: a short stroke of the thumb, down and to the right. */
+const SMUDGE = ["##..", ".###", "..##"];
+
+/** True where a smudge falls: one per cell of a staggered grid, the cells smaller era by era. */
+function smudged(x: number, y: number, step: number, seed: number): boolean {
+  const cw = 16 - step * 2;
+  const ch = 10 - step;
+  const row = Math.floor((y + (seed % ch)) / ch);
+  const sx = (x + (row & 1 ? cw >> 1 : 0) + (seed % cw)) % cw;
+  const sy = (y + (seed % ch)) % ch;
+  return sy < SMUDGE.length && sx < SMUDGE[0].length && SMUDGE[sy][sx] === "#";
+}
+
+/** Draft: paper and charcoal, cross-hatching where the shading was, a few lilac smudges. */
 function sketched(source: Pixels, { seed, step }: TreatContext): Pixels {
   const out = clonePixels(source);
   for (let y = 0; y < source.h; y += 1) {
@@ -287,7 +344,7 @@ function sketched(source: Pixels, { seed, step }: TreatContext): Pixels {
       let color: Pal = C.paper;
       if (luma < 110 && (x + y) % 3 === 0) color = C.haze;
       if (luma < 60 && (x - y + 300) % 3 === 0) color = C.haze;
-      if (valueNoise(x, y, 4, seed + 51) > 0.86 - step * 0.04) color = C.lilac;
+      if (smudged(x, y, step, seed + 51)) color = C.lilac;
       out.idx[at] = color;
     }
   }
@@ -337,7 +394,7 @@ function drained(amount: number) {
   return (source: Pixels): Pixels => remap(source, GREY, (x, y) => bayer(x, y) < amount);
 }
 
-/** Blank: only the outline is left, pale on a pale sky. */
+/** Blank: only the outline is left, pale on a pale sky: lighter along the top, deeper underneath. */
 function blank(source: Pixels): Pixels {
   const out = createPixels(source.w, source.h);
   for (let y = 0; y < source.h; y += 1) {
@@ -349,7 +406,12 @@ function blank(source: Pixels): Pixels {
         out.alpha[at] = 255;
         out.emit[at] = 1;
       } else if (!interior(source, x, y)) {
-        out.idx[at] = C.haze;
+        const open = (dx: number, dy: number) => {
+          const nx = x + dx;
+          const ny = y + dy;
+          return nx < 0 || ny < 0 || nx >= source.w || ny >= source.h || source.idx[ny * source.w + nx] === EMPTY;
+        };
+        out.idx[at] = open(0, -1) ? C.lilac : open(0, 1) ? C.amethyst : C.haze;
         out.alpha[at] = 255;
       }
     }
@@ -357,44 +419,138 @@ function blank(source: Pixels): Pixels {
   return out;
 }
 
-/** First Mark: fewer and fewer pixels, each one standing for a block of the old ones. */
-function fewer(unit: number) {
-  return (source: Pixels): Pixels => {
-    const w = Math.ceil(source.w / unit);
-    const h = Math.ceil(source.h / unit);
-    const out = createPixels(w, h);
-    for (let by = 0; by < h; by += 1) {
-      for (let bx = 0; bx < w; bx += 1) {
-        const counts = new Map<number, number>();
-        let drawn = 0;
-        let emissive: number = EMPTY;
-        for (let y = by * unit; y < Math.min(source.h, (by + 1) * unit); y += 1) {
-          for (let x = bx * unit; x < Math.min(source.w, (bx + 1) * unit); x += 1) {
-            const at = y * source.w + x;
-            const pal = source.idx[at];
-            if (pal === EMPTY) continue;
-            drawn += 1;
-            if (source.emit[at]) emissive = pal;
-            counts.set(pal, (counts.get(pal) ?? 0) + 1);
-          }
-        }
-        if (drawn * 2 < unit * unit) continue;
-        let best: number = EMPTY;
-        let most = 0;
-        for (const [pal, count] of counts) {
-          if (count > most || (count === most && pal < best)) {
-            best = pal;
-            most = count;
-          }
-        }
-        const at = by * w + bx;
-        out.idx[at] = emissive !== EMPTY ? emissive : best;
-        out.alpha[at] = 255;
-        out.emit[at] = emissive !== EMPTY ? 1 : 0;
+/** One pass of erosion (`grow` false) or dilation of a mask, by a cross or by a 3 x 3 square. */
+function morph(mask: Uint8Array, w: number, h: number, grow: boolean, square: boolean): Uint8Array {
+  const out = new Uint8Array(mask.length);
+  const want = grow ? 1 : 0;
+  for (let y = 0; y < h; y += 1) {
+    const up = y > 0;
+    const down = y < h - 1;
+    for (let x = 0; x < w; x += 1) {
+      const at = y * w + x;
+      const left = x > 0;
+      const right = x < w - 1;
+      // Past the edge counts as empty: it erodes, it never grows.
+      let hit =
+        mask[at] === want ||
+        (left ? mask[at - 1] === want : !grow) ||
+        (right ? mask[at + 1] === want : !grow) ||
+        (up ? mask[at - w] === want : !grow) ||
+        (down ? mask[at + w] === want : !grow);
+      if (!hit && square) {
+        hit =
+          (up && left ? mask[at - w - 1] === want : !grow) ||
+          (up && right ? mask[at - w + 1] === want : !grow) ||
+          (down && left ? mask[at + w - 1] === want : !grow) ||
+          (down && right ? mask[at + w + 1] === want : !grow);
+      }
+      out[at] = hit ? want : 1 - want;
+    }
+  }
+  return out;
+}
+
+/** Clears the crumbs an opening leaves behind: pieces under a twentieth of the largest one. */
+function dropCrumbs(mask: Uint8Array, w: number, h: number) {
+  const label = new Int32Array(mask.length);
+  const sizes = [0];
+  const stack: number[] = [];
+  for (let start = 0; start < mask.length; start += 1) {
+    if (!mask[start] || label[start]) continue;
+    const id = sizes.length;
+    let size = 0;
+    label[start] = id;
+    stack.push(start);
+    while (stack.length) {
+      const at = stack.pop()!;
+      size += 1;
+      const x = at % w;
+      for (const next of [x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, at >= w ? at - w : -1, at + w < w * h ? at + w : -1]) {
+        if (next < 0 || !mask[next] || label[next]) continue;
+        label[next] = id;
+        stack.push(next);
       }
     }
-    return out;
-  };
+    sizes.push(size);
+  }
+  const largest = Math.max(...sizes);
+  for (let at = 0; at < mask.length; at += 1) if (mask[at] && sizes[label[at]] * 20 < largest) mask[at] = 0;
+}
+
+/**
+ * The flat tones of a sprite: its body colors ordered by lightness and cut into `count`
+ * groups of about as many pixels, each group taking its most used color.
+ */
+function flatTones(source: Pixels, count: number): Map<number, number> {
+  const counts = new Map<number, number>();
+  let total = 0;
+  for (let at = 0; at < source.idx.length; at += 1) {
+    const pal = source.idx[at];
+    if (pal === EMPTY || pal === C.ink || source.emit[at]) continue;
+    counts.set(pal, (counts.get(pal) ?? 0) + 1);
+    total += 1;
+  }
+  const colors = [...counts.keys()].sort((a, b) => palLuma(a) - palLuma(b) || a - b);
+  const groups: number[][] = Array.from({ length: count }, () => []);
+  let seen = 0;
+  for (const pal of colors) {
+    const n = counts.get(pal)!;
+    groups[Math.min(count - 1, Math.floor(((seen + n / 2) / total) * count))].push(pal);
+    seen += n;
+  }
+  const tones = new Map<number, number>();
+  for (const group of groups) {
+    if (!group.length) continue;
+    let best = group[0];
+    for (const pal of group) if (counts.get(pal)! > counts.get(best)!) best = pal;
+    for (const pal of group) tones.set(pal, best);
+  }
+  return tones;
+}
+
+/**
+ * First Mark: fewer and fewer pixels, at the same size. Thin parts fall away era by era
+ * (whiskers, then tails and claws, then limbs), the masses merge into a few flat tones inside
+ * a fresh outline; the eyes stay, even where the body has gone from around them.
+ */
+function fewer(source: Pixels, { step }: TreatContext): Pixels {
+  const { w, h } = source;
+  const drawn: Uint8Array = new Uint8Array(w * h);
+  let total = 0;
+  for (let at = 0; at < drawn.length; at += 1) {
+    drawn[at] = source.idx[at] === EMPTY ? 0 : 1;
+    total += drawn[at];
+  }
+  // At least half the drawing stays: a thin one loses less, one already down to lines and dots nothing.
+  let mask: Uint8Array | null = null;
+  for (let passes = 1 + step; passes > 0 && !mask; passes -= 1) {
+    let open = drawn;
+    for (let pass = 0; pass < passes; pass += 1) open = morph(open, w, h, false, (pass & 1) === 1);
+    for (let pass = passes - 1; pass >= 0; pass -= 1) open = morph(open, w, h, true, (pass & 1) === 1);
+    let kept = 0;
+    for (let at = 0; at < open.length; at += 1) kept += open[at];
+    if (kept * 2 >= total) mask = open;
+  }
+  if (!mask) return source;
+  dropCrumbs(mask, w, h);
+  const tones = flatTones(source, step < 2 ? 3 : 2);
+  const out = createPixels(w, h);
+  const shape = mask;
+  const inside = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && shape[y * w + x] === 1;
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      const at = y * w + x;
+      const pal = source.idx[at];
+      if (pal !== EMPTY && source.emit[at]) {
+        out.idx[at] = pal;
+        out.emit[at] = source.emit[at];
+      } else if (!shape[at]) continue;
+      else if (!inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)) out.idx[at] = C.ink;
+      else out.idx[at] = tones.get(pal) ?? C.ink;
+      out.alpha[at] = 255;
+    }
+  }
+  return out;
 }
 
 const SOFT_MATERIALS = new Set<MaterialId>(["fur-grey", "fur-brown", "fur-rust", "fur-shadow", "hide", "flesh", "moss", "leaf", "bark", "mud", "slime", "feather"]);
@@ -433,9 +589,7 @@ export function treatment(era: number, recipe: Pick<ResolvedRecipe, "rank">): Tr
       return { ...base, post: drained(0.25 + step * 0.18) };
     case 10:
       return { ...base, post: blank };
-    default: {
-      const unit = 2 + step;
-      return { ...base, unit, post: fewer(unit) };
-    }
+    default:
+      return { ...base, post: fewer };
   }
 }

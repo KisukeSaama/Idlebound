@@ -18,7 +18,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
 import { useFormat, useGame, useReveals } from "../context";
-import { GoldIcon } from "../icons";
+import { GoldIcon, Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { awakenedSeed, emblemSource, portraitSource } from "../pixel/sources";
 import { describeEffect } from "../text";
@@ -146,9 +146,17 @@ export function HeroPanel() {
           <span id="autospend-hint" className="visually-hidden">{m.autoSpendHint}</span>
         </>
       ) : null}
-      {affordableTalents > 0 ? (
-        <button type="button" className="btn btn-violet btn-sm talents-all" onClick={() => store.act((engine, now) => engine.buyAllUpgrades(now))}>
-          {m.buyAllTalents(affordableTalents)}
+      {/* Once talents exist, the button keeps its place, hidden while none is affordable: the
+          gold rising and falling must not shift the list under the walker's eyes. */}
+      {ownedCount > 0 || reachable.length > 0 ? (
+        <button
+          type="button"
+          className={`btn btn-violet btn-sm talents-all${affordableTalents > 0 ? "" : " idle"}`}
+          disabled={affordableTalents === 0}
+          aria-hidden={affordableTalents === 0}
+          onClick={() => store.act((engine, now) => engine.buyAllUpgrades(now))}
+        >
+          {m.buyAllTalents(Math.max(1, affordableTalents))}
         </button>
       ) : null}
       <ol className="hero-list">
@@ -241,7 +249,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
         aria-hidden="true"
         onPointerDown={onPortrait ? () => onPortrait(hero.id) : undefined}
       >
-        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size={44} cover /></span>
+        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size={64} nearest /></span>
         {starfield ? <span className="medallion-stars" /> : null}
         {hired ? <span className="hero-level">{level}</span> : null}
       </div>
@@ -274,7 +282,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
                   onClick={() => onTalent(talent.id)}
                   aria-label={m.talentLabel(talent.name, talent.text, status)}
                 >
-                  {talent.owned ? "✓" : talent.level}
+                  {talent.owned ? <Picto name="check" size={14} /> : talent.level}
                   <span className="talent-tip" role="tooltip">
                     <strong>{talent.name}</strong>
                     <span>{talent.text}</span>
