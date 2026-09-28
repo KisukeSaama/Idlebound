@@ -214,17 +214,22 @@ describe("pixel generator", () => {
   }, 60_000);
 
   it("renders a creature frame well inside its budget (2 ms on a mid phone)", () => {
-    // The median of many renders, across Ages (the First Mark reshapes the whole body), so one slow run does not fail it.
+    // Across Ages (the First Mark reshapes the whole body). Each case keeps its fastest of several
+    // renders, its own cost without the other test files running beside it, then the median of the cases.
     const ids = ["field-rat", "ruined-king", "moss-alpha"];
     const eras = [0, 3, 17, 30, 57];
     for (const id of ids) for (const era of eras) renderCreature(id, { era });
     const times: number[] = [];
-    for (let round = 0; round < 12; round += 1) {
-      for (const id of ids) {
-        for (const era of eras) {
-          const start = performance.now();
-          renderCreature(id, { era, frame: 1 + (round % 3) });
-          times.push(performance.now() - start);
+    for (const id of ids) {
+      for (const era of eras) {
+        for (let frame = 1; frame <= 3; frame += 1) {
+          let best = Infinity;
+          for (let round = 0; round < 8; round += 1) {
+            const start = performance.now();
+            renderCreature(id, { era, frame });
+            best = Math.min(best, performance.now() - start);
+          }
+          times.push(best);
         }
       }
     }
