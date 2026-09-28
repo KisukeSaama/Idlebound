@@ -1,0 +1,100 @@
+import { C } from "../../palette";
+import type { PortraitRecipe } from "../../types";
+
+/**
+ * Eldra, Timeweaver (BIBLE 10.3): an old woman with ashen skin and heavy lids under a deep
+ * grey cowl, white hair at her temples. Her raised hands hold threads of golden light strung
+ * like a loom's warp; one thread rises into the dark, toward what she will not say.
+ */
+export const ELDRA: PortraitRecipe = {
+  materials: {
+    skin: { ramp: [C.flesh0, C.flesh1, C.haze, C.paper], texture: "smooth" },
+    hair: { ramp: [C.lilac, C.paper], texture: "fur" },
+    cowl: { ramp: [C.night2, C.night3, C.dusk, C.haze], texture: "cloth" }
+  },
+  grid: {
+    rows: [
+      "......................................................Q",
+      ".............................nnmm.....................P",
+      "...........................nnnnmmmmmmmm...............P",
+      ".........................nnnnnnmmmmmmmmmmmm...........P",
+      ".......................nnnnnnmmmmmmmmmmlllll..........P",
+      ".....................nnnnnnnnnmmmmmmmmmllllll........P",
+      "...................nnnnnnnmnnmmmmmmmmmmlllllll.......P",
+      "..................nnnnnnnnmmnmmkkklllllllllkkkk......Q",
+      ".................nnnnnnmmmmmllkkkkkkkkkklllllllk.....P",
+      ".................nnmmmmmmllkkkgggggkkkkkkkkklllll....P",
+      "................nnnmmmmlggggggggggggggfkkkkkklklll...P",
+      "................nnmmmmmggggggggggggggggffkkkkkkkkkl..P",
+      "...............nnmmmmmgggggggggffggfffffffkkkkkllkk..P",
+      "..............nnmmmmmgggggggggggfffffffffffkkkkkllk..P",
+      "..............nnmlmlgggggggggggkkkkfffffffffkkkkllkkQ",
+      ".............mnnlllgggggggggdkkkkkkkkkkffffffkkkkkkkP",
+      ".............mnmlllgggggggdddddddcccckkkffffffkkklkkP",
+      "............nnnmlllgffgggddddddddcccccckkfffffkkklkkP",
+      "............nnnlkkkfffffddddddddccccccccckffffkkklkkP",
+      "...........mnnmlkkkfffffddddddddcccccccccckfffkkkkkkP",
+      "...........mnnmkkkkffffdddddddddccccccccccckffkkkkkkP",
+      "...........nnnlkkkkfffddggggdddcccccgggcccccfffkkkkkQk",
+      "...........nnmlklkkfffdddcccccddcccccccccccckffkkkkkPk",
+      "...........nnmmllkffffdddEEEEEbccccbEEEEcccbkffkkkkPkk",
+      "..........mnnmmmkkffffdddbEEEbbccccbbEEbccbbkkfkkkkPkkk",
+      "..........mnnmmmkkffffddddcHKcccccbccHKbccbbbkfkkkkPkkk",
+      "..........mnmmmmkkffffddddbbbcccccbccbbcccbbbkkkkkkPkkk",
+      "..........mnmmmmkkfffddddcccccccccbcccccccbbbkkkkkkPkkk",
+      "..........mmmmmmkkfffdccdcccccccccbccccccbbbbkkkkkkQkkk",
+      "..........mmmmmmkkkffccccccccccccccccccccbbbbkkkkkkPkkk",
+      "..........mmmmmmkkkkfccccccccccccccbcccccbbbakkkkkkPkkk",
+      "..........mmmmmmkkkkkkccccccccccbabcccccbbbbakkkkkkPkkk",
+      "..........mmmmmmkkkkkkkcccccccbccccccccbbbbakkkkkkPkkkkk",
+      "..........mmmmmmkkkkkkkccccccbcccccccbbbbbbkkkkkkkPkkkkk",
+      ".........mmmmmmmkkkkkkkkcccccbcccccccbbbbbakkkkkkkPkkkkk",
+      ".........mmmmmmmkkkkkkkkcccccbaaaaaabbbbbbkkkkkkkkQkkkkk",
+      ".........mmmmmmmkkkkkkkkkcccccccccccbbbbbakkkkkkkkPkkkkk",
+      ".........mmmlmmmkkkkkkkkkkccccccbbbcbbbbakkkkkkkkkPkkkkk",
+      ".........mmllmmmkkkkkkkkkkcccccccccbbbbbakkkkkkkkkPkkkkk",
+      ".........mmllmmlkkkkkkkkkkkkcccccbbbbbbakkkkkkkkkkPkkkkk",
+      ".........lmllmmlkkkkkkkkkkkkaaaaaaababakkkkkkkkkkkPkkkkk",
+      "........llllllllkkkkkkkkkkkkaaaaaaaaakkkkkkkkkkkkPkkkkkk",
+      ".......lllllllllkkkkkkkkkkkkaaaaaaaaakkkkkkkkkkkkQkkkkkk",
+      ".......lllllllllllllllllllllaaaaaaaaakkkkkkkkkkkkPkkkkkkk",
+      "......lllllllllllllPPllllllkaaaaaaaaakkkkkkkkPPkkPkkkkkkkk",
+      "......lllllllPPcllclPPPllllkaaaaaaaaakkkkkPPPPckbPkPPkkkkk",
+      ".....kklllllclPPPPcllckPPPlkkkkkkkkkkkkkPPPckbckPPPbckkkkkk",
+      ".....kkllllkcllckPPPlckkkPPPkkkkkkkkkPPPkkbckPPPPckbckkkkkk",
+      "....kkkklklkclcckcckPPPkkkkkPPPkkkPPPkkkkkPPPPckbckbckkkkkkk",
+      "...kkkkklkkcckcckcckcckPPPkkkkQPPPkkkkPPPPbckbckbckbckkkkkkkk",
+      "...kkkkkkkkcckcckcckcckkkkQPQQQkkQQQQPPkkkbckbckbckbckkkkkkkk",
+      "..kkkkkkkkkcckcckcckccPPPPPkkQPPPPQkkPPPPPbckbckbckbckkkkkkkkk",
+      "..kkkkkkkkkcckccPPPPPPPPPPPPPPkkkkPPPPPPkPPPPPPkbckbckkkkkkkkk",
+      "..kkkkkkkkkccPPPPccPPPPPkkkkkkkkkkkkkkkkPPPPkbPPPPkbckkkkkkkkk",
+      "..kkkkkkkkkcckcckcckcckkkkkkkkkkkkkkkkkkkkbckbckbckbckkkkkkkkk",
+      ".kkkkkkkkkkbckbckbckbckkkkkkkkkkkkkkkkkkkkbckbckbckbckkkkkkkkkk",
+      ".kkkkkkkkkkbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkkaaaaaaaaaaakkkkkkkkkk",
+      ".kkkkkkkkkkbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkkaaaaaaaaaaakkkkkkkkkk",
+      ".kkkkkkkkkkbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkkaaaaaaaaaaakkkkkkkkkk",
+      ".kkkkkkkkkkbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkkaaaaaaaaaaakkkkkkkkkk",
+      ".kkkkkkkkkkbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkkaaaaaaaaaaakkkkkkkkkk",
+      "kkkkkkkkkkkbbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkaaaaaaaaaaaakkkkkkklkk",
+      "kkkkkkkkkkkbbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkaaaaaaaaaaaakkkkkkklkk",
+      "kkkkkkkkkkkbbbbbbbbbbbbkkkkkkkkkkkkkkkkkkkaaaaaaaaaaaakkkkkkkkkk"
+    ],
+    legend: {
+      a: { m: "skin", step: 0 },
+      b: { m: "skin", step: 1 },
+      c: { m: "skin", step: 2 },
+      d: { m: "skin", step: 3 },
+      E: { pal: C.ink },
+      f: { m: "hair", step: 0 },
+      g: { m: "hair", step: 1 },
+      H: { pal: C.gold },
+      K: { pal: C.ink },
+      k: { m: "cowl", step: 0 },
+      l: { m: "cowl", step: 1 },
+      m: { m: "cowl", step: 2 },
+      n: { m: "cowl", step: 3 },
+      P: { pal: C.gold, glow: true },
+      Q: { pal: C.goldLight, glow: true }
+    }
+  }
+};

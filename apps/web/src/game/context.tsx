@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useSyncExternalStore } from "re
 import { currentMessages } from "@/i18n/client";
 import type { CloudSync } from "./cloud";
 import type { PictoName } from "./icons";
+import { reveals, type RevealId, type Reveals } from "./shell";
 import type { GameStore } from "./store";
 
 export type WindowId = "map" | "gear" | "inventory" | "market" | "ascension" | "hall" | "account" | "settings";
@@ -13,6 +14,8 @@ export interface ToastInput {
   tone: "gold" | "violet" | "loot" | "danger" | "info" | "success";
   title: string;
   text?: string;
+  /** A line spoken by someone, set apart under the text (the King's Word). */
+  quote?: { by: string; text: string };
   icon?: PictoName;
   color?: string;
 }
@@ -28,6 +31,8 @@ interface GameContextValue {
   store: GameStore;
   cloud: CloudSync;
   ui: GameUi;
+  /** Elements of the shell that appeared during this session's play (they glow a moment). */
+  fresh: ReadonlySet<RevealId>;
 }
 
 export const GameContext = createContext<GameContextValue | null>(null);
@@ -49,6 +54,38 @@ export function useCloud() {
   const { cloud } = useGameContext();
   useSyncExternalStore(cloud.subscribe, cloud.getVersion, cloud.getVersion);
   return cloud;
+}
+
+/**
+ * Which elements of the shell the walker has earned (the progressive interface), and which
+ * of them just appeared.
+ */
+export function useReveals() {
+  const { store, fresh } = useGameContext();
+  useSyncExternalStore(store.subscribe, store.getVersion, store.getVersion);
+  const shown = revealsOf(store);
+  return { shown, freshClass: (id: RevealId) => (fresh.has(id) ? " is-fresh" : "") };
+}
+
+/** What the shell shows, computed once per store publish. */
+export function revealsOf(store: GameStore): Reveals {
+  return perPublish(store, "reveals", () => reveals(store.state));
+}
+
+const published = new WeakMap<GameStore, { version: number; values: Map<string, unknown> }>();
+
+/**
+ * A value read from the state, computed once per store publish however many components
+ * (and listeners) ask for it: `key` names it among the others.
+ */
+export function perPublish<T>(store: GameStore, key: string, compute: () => T): T {
+  const version = store.getVersion();
+  let entry = published.get(store);
+  if (!entry || entry.version !== version) published.set(store, (entry = { version, values: new Map() }));
+  if (entry.values.has(key)) return entry.values.get(key) as T;
+  const value = compute();
+  entry.values.set(key, value);
+  return value;
 }
 
 export function useUi() {

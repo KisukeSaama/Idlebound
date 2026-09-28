@@ -29,6 +29,13 @@
       "when": 1790449048820,
       "tag": "0003_email_verification",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790554866708,
+      "tag": "0004_leaderboard_descents",
+      "breakpoints": true
     }
   ]
 }

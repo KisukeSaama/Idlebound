@@ -1,6 +1,7 @@
-import type { GameState, LifetimeStats, StatBlock } from "./types";
+import { seedFrom } from "./rng";
+import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 9;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 
@@ -13,6 +14,7 @@ export function emptyLifetime(): LifetimeStats {
     ...emptyStats(),
     ascensions: 0,
     essencesEarned: 0,
+    ascensionEssences: 0,
     shardsEarned: 0,
     itemsFound: 0,
     legendaries: 0,
@@ -21,8 +23,19 @@ export function emptyLifetime(): LifetimeStats {
     offlineSeconds: 0,
     hourglasses: 0,
     bestLevelSum: 0,
-    bestHired: 0
+    bestHired: 0,
+    kings: 0,
+    seams: 0,
+    threads: 0
   };
+}
+
+export function emptyTrail(): RunTrail {
+  return { wanderers: [], fieldKills: 0, rest: 0, evenRats: 0, offered: 0, listen: 0 };
+}
+
+export function emptyLore(): LoreState {
+  return { echoes: {}, ages: {}, regalia: 0, songs: 0, dreams: 0, sayings: 0, lessons: [], nightSeconds: 0, lastSeconds: 0, biscuit: 0, tongues: { fr: 0, en: 0 }, readings: [], events: [], altars: [], seen: {} };
 }
 
 export function createInitialState(now = Date.now()): GameState {
@@ -65,9 +78,22 @@ export function createInitialState(now = Date.now()): GameState {
       reducedMotion: false,
       confirmAscension: true,
       buyMode: 1,
-      offlineSpending: true
+      offlineSpending: true,
+      darkNight: false
     },
     // A new game never needs the notice of the altar rework (save version 4).
-    tutorial: { done: [ALTAR_REWORK_NOTICE] }
+    tutorial: { done: [ALTAR_REWORK_NOTICE] },
+    bestiary: {},
+    lore: emptyLore(),
+    recognition: {},
+    named: [],
+    secrets: [],
+    trail: emptyTrail(),
+    descents: 0,
+    threads: 0,
+    weaves: {},
+    descentMark: 0,
+    caravanWeek: "",
+    rngState: seedFrom(now)
   };
 }

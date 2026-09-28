@@ -1,29 +1,42 @@
 "use client";
 
 import {
+  CROWN_DESCENTS,
+  CROWN_HOLD_MS,
   EQUIPMENT_CAP,
   FORGE_MAX,
   FORGE_STEP,
   INVENTORY_LIMIT,
   RARITY_INFO,
+  REGALIA_KING_DAMAGE,
   SLOTS,
   affixValue,
+  NAMED_BY_ID,
   equipmentBonus,
-  forgeCost,
+  equipmentDensity,
+  relicDensity,
+  relicStratum,
+  forgePrice,
   itemName,
   salvageValue,
   trimmed,
+  wearsRegalia,
   type AffixStat,
   type Item,
   type Locale,
   type Rarity
 } from "@idlebound/game";
-import { useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useI18n } from "@/i18n/client";
-import { useFormat, useGame, useUi } from "../context";
-import { Picto, ShardIcon, SlotIcon, WINDOW_META } from "../icons";
+import { useFormat, useGame, useReveals, useUi } from "../context";
+import { Picto, ShardIcon, SlotIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
+import { PixelSprite } from "../pixel/PixelSprite";
+import { relicSource } from "../pixel/sources";
 import { formatAffix } from "../text";
+
+/** Rarities from the rarest down: the Bag sorts by it, and bulk salvage counts up to one. */
+const RARITY_ORDER: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
 
 const STATS: AffixStat[] = ["dps", "click", "gold", "bossDamage", "critChance", "critDamage", "essence"];
 
@@ -32,17 +45,25 @@ function percent(pct: number, locale: Locale): string {
   return `${trimmed(pct, 1)}${locale === "fr" ? " %" : "%"}`;
 }
 
+/** A damage multiplier: two decimals while small, then the game's notation. */
+function useMultiplier() {
+  const fmt = useFormat();
+  return (value: number) => (value < 100 ? trimmed(value, 2) : fmt(value));
+}
+
 export function GearWindow({ onClose, initialTab }: { onClose: () => void; initialTab: "equipped" | "bag" }) {
   const [tab, setTab] = useState<string>(initialTab);
   const { state } = useGame();
+  const { shown } = useReveals();
   const { t } = useI18n();
   const id = tab === "equipped" ? "gear" : "inventory";
   return (
     <Modal
       title={t.hud.windowTitles[id].label}
-      icon={<img src={WINDOW_META[id].icon!} alt="" width={34} height={34} />}
+      icon={<WindowIcon id={id} />}
       onClose={onClose}
       size="lg"
+      aside={shown.shards ? <ShardBalance /> : null}
       tabs={[{ id: "equipped", label: t.windows.gear.equippedTab }, { id: "bag", label: t.windows.gear.bagTab(state.inventory.length, INVENTORY_LIMIT) }]}
       activeTab={tab}
       onTab={setTab}
@@ -52,18 +73,58 @@ export function GearWindow({ onClose, initialTab }: { onClose: () => void; initi
   );
 }
 
+/**
+ * The purse the forge draws from and salvage fills, in sight on both tabs (the header's is
+ * under the veil). It swells a moment each time it moves, so a strike of the hammer shows.
+ */
+function ShardBalance() {
+  const { state } = useGame();
+  const { t } = useI18n();
+  const fmt = useFormat();
+  const [seen, setSeen] = useState(state.shards);
+  const [moves, setMoves] = useState(0);
+  if (seen !== state.shards) {
+    setSeen(state.shards);
+    setMoves(moves + 1);
+  }
+  return (
+    <span className="resource resource-shard modal-balance" title={t.windows.gear.shardsTitle}>
+      <ShardIcon />
+      <span key={moves} className={`resource-value${moves > 0 ? " balance-moved" : ""}`}>{fmt(state.shards)}</span>
+      <span className="visually-hidden">{t.windows.market.shards}</span>
+    </span>
+  );
+}
+
+/**
+ * A relic as the world draws it (twice its pixels, so its rarity reads at a glance) and,
+ * once forged, its level in the Ledger's ink on its corner.
+ */
+export function RelicIcon({ item }: { item: Item }) {
+  return (
+    <span className="item-slot-icon">
+      <PixelSprite source={relicSource(item)} size={64} />
+      {item.forge > 0 ? <span className={`relic-forge${item.forge >= FORGE_MAX ? " max" : ""}`} aria-hidden="true">+{item.forge}</span> : null}
+    </span>
+  );
+}
+
 export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?: Item; children?: React.ReactNode }) {
   const { t, g, locale } = useI18n();
   const info = RARITY_INFO[item.rarity];
   const main = item.affixes[0];
+  const named = item.named ? NAMED_BY_ID[item.named] : undefined;
+  const legend = item.named ? g.relics[item.named] : undefined;
   const delta = compareTo ? affixValue(item, main.stat) - affixValue(compareTo, main.stat) : null;
+  const density = relicDensity(item);
+  const mult = useMultiplier();
   return (
-    <article className={`item-card rarity-${item.rarity}`} style={{ ["--rarity" as string]: info.color }}>
+    <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: info.color }}>
       <header className="item-head">
-        <span className="item-slot-icon"><SlotIcon slot={item.slot} color={info.color} /></span>
+        <RelicIcon item={item} />
         <div>
           <h3 className="item-name">{itemName(item, locale)}{item.forge > 0 ? <span className="item-forge"> +{item.forge}</span> : null}</h3>
-          <p className="item-meta">{g.rarities[item.rarity]} · {g.slots[item.slot]} · {t.common.level(item.level)}</p>
+          <p className="item-meta">{named ? `${t.windows.gear.named} · ` : ""}{g.rarities[item.rarity]} · {g.slots[item.slot]} · {t.common.level(item.level)}</p>
         </div>
         {item.locked ? <span className="item-lock" title={t.windows.gear.lockedTitle}><Picto name="lock" size={18} /></span> : null}
       </header>
@@ -71,7 +132,10 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
         {item.affixes.map((affix, index) => (
           <li key={affix.stat} className={index === 0 ? "main" : ""}>{formatAffix(affix.stat, affixValue(item, affix.stat), locale)}</li>
         ))}
+        {density > 1 ? <li className="density" title={t.windows.gear.densityTitle(relicStratum(item))}>{t.windows.gear.density(mult(density))}</li> : null}
+        {named ? <li className="named-effect">{g.namedEffects[named.effect.kind](named.effect.pct)}</li> : null}
       </ul>
+      {legend ? <p className="item-legend">{legend.legend}</p> : null}
       {delta !== null ? (
         <p className={`item-delta ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
           {delta > 0 ? "▲" : delta < 0 ? "▼" : "="} {formatAffix(main.stat, Math.abs(delta), locale).replace("+", "")} {t.windows.gear.versusEquipped}
@@ -87,6 +151,8 @@ function Equipped() {
   const { t, g, locale } = useI18n();
   const text = t.windows.gear;
   const fmt = useFormat();
+  const mult = useMultiplier();
+  const density = equipmentDensity(state);
   return (
     <div className="gear-layout">
       <div className="gear-slots">
@@ -101,7 +167,7 @@ function Equipped() {
               </div>
             );
           }
-          const cost = forgeCost(item.rarity, item.forge);
+          const cost = forgePrice(state, item);
           return (
             <ItemCard key={slot} item={item}>
               <button
@@ -119,6 +185,7 @@ function Equipped() {
             </ItemCard>
           );
         })}
+        {state.descents >= CROWN_DESCENTS ? <CrownSlot /> : null}
       </div>
       <aside className="gear-totals card">
         <h3>{text.totalsTitle}</h3>
@@ -136,9 +203,71 @@ function Equipped() {
               </div>
             );
           })}
+          {density > 1 ? (
+            <div>
+              <dt>{text.densityLabel}</dt>
+              <dd>×{mult(density)}</dd>
+            </div>
+          ) : null}
         </dl>
+        {wearsRegalia(state) ? (
+          <p className="regalia-line">
+            <strong>{t.sanctum.armory.regalia}</strong> {t.sanctum.armory.regaliaWorn(Math.round(REGALIA_KING_DAMAGE * 100))}
+          </p>
+        ) : null}
         <p className="modal-hint">{text.totalsHint}</p>
       </aside>
+    </div>
+  );
+}
+
+/**
+ * The Crown of Orvane (BIBLE 11.5): after the tenth Descent, a fifth slot that nothing fills.
+ * Pointed at, pressed or focused, it says what it is; held there long enough, it keeps you.
+ */
+function CrownSlot() {
+  const { store } = useGame();
+  const { t, g } = useI18n();
+  const hoverId = useId();
+  const [pointer, setPointer] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [shown, setShown] = useState(false);
+  const holding = pointer || focused;
+
+  useEffect(() => {
+    if (!holding) return;
+    const start = Date.now();
+    const timer = window.setTimeout(() => store.act((engine) => engine.holdCrown(Date.now() - start)), CROWN_HOLD_MS + 50);
+    return () => window.clearTimeout(timer);
+  }, [holding, store]);
+
+  const hold = () => {
+    setPointer(true);
+    setShown(true);
+  };
+  const release = () => setPointer(false);
+
+  return (
+    <div
+      className={`item-card empty crown-slot${holding ? " held" : ""}`}
+      role="img"
+      tabIndex={0}
+      aria-label={`${t.sanctum.armory.crownSlot}: ${g.crown.name}`}
+      aria-describedby={hoverId}
+      onPointerEnter={hold}
+      onPointerDown={hold}
+      onPointerLeave={release}
+      onPointerCancel={release}
+      onFocus={() => {
+        setFocused(true);
+        setShown(true);
+      }}
+      onBlur={() => setFocused(false)}
+      onContextMenu={(event) => event.preventDefault()}
+    >
+      <Picto name="crown" size={30} className="crown-silhouette" />
+      <p>{g.crown.name}</p>
+      <p id={hoverId} className={`crown-hover${holding || shown ? " visible" : ""}`}>{g.crown.hover}</p>
     </div>
   );
 }
@@ -150,14 +279,19 @@ function Bag() {
   const ui = useUi();
   const fmt = useFormat();
   const [sort, setSort] = useState<"recent" | "rarity" | "slot">("recent");
-  const order: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
-  const items = [...state.inventory];
-  if (sort === "rarity") items.sort((a, b) => order.indexOf(a.rarity) - order.indexOf(b.rarity) || b.level - a.level);
-  if (sort === "slot") items.sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || order.indexOf(a.rarity) - order.indexOf(b.rarity));
-  if (sort === "recent") items.reverse();
+  // The relics carried, by their ids: the sorted Bag is only built again when they change.
+  const carried = state.inventory.map((item) => item.uid).join(",");
+  const items = useMemo(() => {
+    const sorted = [...store.state.inventory];
+    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || b.level - a.level);
+    if (sort === "slot") sorted.sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
+    if (sort === "recent") sorted.reverse();
+    return sorted;
+    // `carried` stands for the inventory: the same relics in the same order sort the same.
+  }, [store, sort, carried]);
 
   const bulk = async (rarity: Rarity, label: (count: number) => string) => {
-    const count = state.inventory.filter((item) => !item.locked && order.indexOf(item.rarity) >= order.indexOf(rarity)).length;
+    const count = state.inventory.filter((item) => !item.locked && RARITY_ORDER.indexOf(item.rarity) >= RARITY_ORDER.indexOf(rarity)).length;
     if (count === 0) return;
     const ok = await ui.confirm({ title: text.bulkTitle, text: text.bulkText(count, label(count)), confirmLabel: text.bulkConfirm, danger: true });
     if (!ok) return;

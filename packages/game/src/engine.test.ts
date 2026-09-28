@@ -3,8 +3,8 @@ import { playBot } from "../scripts/bot";
 import { achievementText, gameText, itemName, monsterName } from "./content";
 import { ACHIEVEMENTS } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarCost, altarTotalCost } from "./data/altars";
-import { BIOMES, TREASURE_MONSTER } from "./data/biomes";
-import { HEROES } from "./data/heroes";
+import { BIOMES, TREASURE_MONSTER, isKingStage } from "./data/biomes";
+import { HEROES, HERO_BY_ID } from "./data/heroes";
 import { SLOTS, SLOT_BASE_COUNT } from "./data/items";
 import { MARKET_OFFERS } from "./data/market";
 import { SKILLS } from "./data/skills";
@@ -12,16 +12,20 @@ import { GameEngine } from "./engine";
 import {
   ASCENSION_MIN_STAGE,
   MONSTERS_PER_STAGE,
+  REUNION_DPS,
+  REUNION_MIN_AWAY_SECONDS,
+  WOUND_LAST_STAGE,
   ascensionPreview,
   wandererSkip,
-  IDLE_FULL_MS,
-  IDLE_GRACE_MS,
+  STRIKE_FILL_SECONDS,
   altarValue,
   bossHp,
   derive,
   essencesForStage,
   heroCost,
   maxAffordableLevels,
+  milestoneMultiplier,
+  nextBreakpoint,
   stageGold,
   stageHp
 } from "./formulas";
@@ -31,7 +35,7 @@ import { LOCALES, negotiateLocale, resolveLocale } from "./i18n";
 import { formatDuration, formatNumber, formatPercent } from "./numbers";
 import { seededRng } from "./rng";
 import { migrateState, parseState } from "./save";
-import { ALTAR_REWORK_NOTICE, createInitialState } from "./state";
+import { ALTAR_REWORK_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 import { verifyState, verifyTransition } from "./validation";
 import type { GameState } from "./types";
 
@@ -189,7 +193,7 @@ function lateGame(): GameState {
 /** Average damage per second of `clicksPerSecond` clicks (crits included) over the active DPS. */
 function clickRatio(state: GameState, now: number, clicksPerSecond: number): number {
   const d = derive(state, now, { ignoreTimed: true });
-  const activeDps = d.dps / (1 + d.idleBonus * d.idleRatio);
+  const activeDps = d.dps - d.patienceDps;
   return (clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1))) / activeDps;
 }
 
@@ -204,33 +208,81 @@ describe("idle and active balance", () => {
 
   it("keeps sustained clicking around companion DPS in the late game", () => {
     const state = lateGame();
-    state.lastClickAt = T0;
     const ratio = clickRatio(state, T0, 5);
     expect(ratio).toBeGreaterThan(0.1);
     expect(ratio).toBeLessThan(1);
     // Mashing at 10 clicks/s beats an idle player by a modest margin at most.
-    const idle = derive(state, T0 + IDLE_FULL_MS, { ignoreTimed: true });
-    const active = derive(state, T0, { ignoreTimed: true });
-    expect(active.dps * (1 + clickRatio(state, T0, 10))).toBeLessThan(idle.dps * 1.5);
+    const d = derive(state, T0, { ignoreTimed: true });
+    const active = d.dps - d.patienceDps + Math.max(d.patienceDps, clickRatio(state, T0, 10) * (d.dps - d.patienceDps));
+    expect(active).toBeLessThan(d.dps * 1.5);
   });
 
-  it("gives the idle bonus to companions only, never to clicks", () => {
+  it("gives the Patience bonus to companions only, never to strikes", () => {
     const state = lateGame();
     state.altars.patience = 5;
-    state.lastClickAt = T0;
-    const active = derive(state, T0);
-    const idle = derive(state, T0 + IDLE_FULL_MS);
-    expect(active.idle).toBe(false);
-    expect(idle.idle).toBe(true);
+    const d = derive(state, T0);
     // Sentinel's Vigil (+50%), Silent Legion (+100%), Altar of Patience at level 5.
     const bonus = 1.5 + altarValue(state, "patience");
     expect(altarValue(state, "patience")).toBeGreaterThan(0);
-    expect(idle.idleBonus).toBeCloseTo(bonus);
-    expect(active.idleBonus).toBeCloseTo(bonus);
-    expect(idle.dps).toBeCloseTo(active.dps * (1 + bonus));
-    expect(idle.heroDps.maelle).toBeCloseTo(active.heroDps.maelle * (1 + bonus));
-    expect(idle.click).toBeCloseTo(active.click);
-    expect(derive(state, T0, { forceIdle: true }).dps).toBeCloseTo(idle.dps);
+    expect(d.idleBonus).toBeCloseTo(bonus);
+    expect(d.patienceDps / ((d.dps / (1 + bonus)) * bonus)).toBeCloseTo(1);
+    state.altars.patience = 0;
+    expect(derive(state, T0).click).toBeCloseTo(d.click);
+  });
+
+  /** Plays `seconds` against a Remnant too dense to fall, striking `clicksPerSecond`; returns the damage dealt. */
+  function strike(engine: GameEngine, from: number, seconds: number, clicksPerSecond: number): number {
+    let total = 0;
+    let debt = 0;
+    let now = from;
+    for (let step = 0; step < seconds * 10; step += 1) {
+      now += 100;
+      debt += clicksPerSecond / 10;
+      while (debt >= 1) {
+        debt -= 1;
+        engine.click(now);
+      }
+      engine.tick(now);
+      for (const event of engine.drainEvents()) if (event.type === "hit" || event.type === "dps") total += event.damage;
+    }
+    return total;
+  }
+
+  function wall(patience: number) {
+    const state = lateGame();
+    state.altars.patience = patience;
+    state.stage = state.maxStage = state.maxStageEver = 401;
+    return new GameEngine(state, seededRng(1), T0);
+  }
+
+  const dealt = (clicksPerSecond: number, patience = 5) => strike(wall(patience), T0, 60, clicksPerSecond);
+
+  it("never lets a strike cost the company: strikes take the Patience bonus's place, and add past it", () => {
+    const idle = dealt(0);
+    // A light hand takes the bonus's place blow for blow.
+    const engine = wall(5);
+    expect(strike(engine, T0, 60, 1)).toBeGreaterThanOrEqual(idle * 0.999);
+    expect(engine.patienceShare).toBeLessThan(1);
+    for (const pace of [0.5, 2, 5, 10, 20]) expect(dealt(pace)).toBeGreaterThanOrEqual(idle * 0.999);
+    // Striking hard, the walker deals more than the bonus they replace.
+    expect(dealt(40, 0)).toBeGreaterThan(dealt(0, 0) * 1.05);
+  });
+
+  it("lets a strike wait a few seconds of the Patience bonus at most", () => {
+    const engine = wall(5);
+    const now = T0 + 1000;
+    strike(engine, T0, 1, 0);
+    // One strike far above the bonus: once it has taken its place, the bonus comes back whole.
+    engine.state.buffs.push({ id: "sharpness", until: now + 100 });
+    engine.refresh(now);
+    engine.click(now);
+    engine.state.buffs = [];
+    engine.refresh(now);
+    engine.drainEvents();
+    const d = engine.derived;
+    const companions = strike(engine, now, STRIKE_FILL_SECONDS + 2, 0);
+    expect(companions).toBeGreaterThan(d.dps * (STRIKE_FILL_SECONDS + 2) - d.patienceDps * STRIKE_FILL_SECONDS * 1.01);
+    expect(engine.patienceShare).toBe(1);
   });
 
   it("applies sharpness to the whole click, DPS share included", () => {
@@ -251,8 +303,7 @@ describe("idle and active balance", () => {
 
   it("bounds a click build with every crit investment maxed", () => {
     const state = lateGame();
-    state.lastClickAt = T0;
-    Object.assign(state.altars, { precision: 25, fate: 5, blade: 10 });
+    Object.assign(state.altars, { precision: 25, fate: 5 });
     state.lifetime.essencesEarned = 1e6;
     for (const slot of SLOTS) {
       state.equipment[slot] = { ...generateItem(seededRng(3), 100, { slot }), affixes: [{ stat: "critChance", value: 0.08 }, { stat: "critDamage", value: 5 }] };
@@ -262,49 +313,11 @@ describe("idle and active balance", () => {
     expect(ratio).toBeLessThan(6);
   });
 
-  it("grows the idle bonus from 3 s to 30 s after the last click", () => {
+  it("lets the Altar of the Blade sharpen the whole strike, companions' share included", () => {
     const state = lateGame();
-    state.lastClickAt = T0;
-    const at = (ms: number) => derive(state, T0 + ms).idleRatio;
-    expect(at(0)).toBe(0);
-    expect(at(IDLE_GRACE_MS)).toBe(0);
-    expect(at((IDLE_GRACE_MS + IDLE_FULL_MS) / 2)).toBeCloseTo(0.5);
-    expect(at(IDLE_FULL_MS)).toBe(1);
-    expect(derive(state, T0 + IDLE_FULL_MS).idle).toBe(true);
-    expect(derive(state, T0 + IDLE_FULL_MS - 1).idle).toBe(false);
-    const half = derive(state, T0 + (IDLE_GRACE_MS + IDLE_FULL_MS) / 2);
-    const none = derive(state, T0);
-    expect(half.dps).toBeCloseTo(none.dps * (1 + half.idleBonus / 2));
-  });
-
-  it("makes an isolated click cheap for an idle player", () => {
-    const engine = new GameEngine(lateGame(), seededRng(1), T0);
-    let now = run(engine, T0, 60);
-    engine.click(now);
-    expect(engine.derived.idleRatio).toBe(0);
-    // Average idle bonus kept over the two minutes that follow one click.
-    let kept = 0;
-    for (let step = 0; step < 1200; step += 1) {
-      now += 100;
-      engine.tick(now);
-      kept += engine.derived.idleRatio / 1200;
-    }
-    expect(kept).toBeGreaterThan(0.85);
-  });
-
-  it("lets the Altar of the Blade raise the DPS share of clicks, up to +50%", () => {
-    const state = lateGame();
-    const base = derive(state, T0);
-    const share = (blade: number) => {
-      state.altars.blade = blade;
-      const d = derive(state, T0);
-      const flat = (base.click - base.dps * base.clickDpsShare) * (1 + blade * 0.25);
-      return (d.click - flat) / (d.dps * d.clickDpsShare);
-    };
-    expect(share(0)).toBeCloseTo(1);
-    expect(share(4)).toBeCloseTo(1.2);
-    expect(share(10)).toBeCloseTo(1.5);
-    expect(share(40)).toBeCloseTo(1.5);
+    const base = derive(state, T0).click;
+    state.altars.blade = 4;
+    expect(derive(state, T0).click).toBeCloseTo(base * Math.pow(1 + ALTAR_BY_ID.blade.valuePerLevel, 4));
   });
 
   it("caps altars and prices their levels exponentially", () => {
@@ -373,13 +386,34 @@ describe("idle and active balance", () => {
     legacy.essences = 10_000 - 55 - 156 - 9;
     const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
     expect(migrated.altars).toEqual({});
-    expect(migrated.version).toBe(4);
+    expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.essences).toBeGreaterThan(10_000 - 1);
     expect(migrated.essences).toBeLessThanOrEqual(10_000);
     expect(verifyState(migrated, T0).map((violation) => violation.code)).not.toContain("essence-ledger");
     // Idempotent: a version 4 save keeps its altars.
     migrated.altars = { might: 2 };
     expect(parseState(JSON.parse(JSON.stringify(migrated))).altars).toEqual({ might: 2 });
+  });
+
+  it("loads a version 4 save whose monster still carries its painted image, and plays it", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 10 * 60, { clicksPerSecond: 6, stagnationMs: 10 * 60_000 });
+    // Between two monsters the state holds none: step until one stands.
+    while (!engine.state.monster) now = run(engine, now, 0.1);
+    const legacy = structuredClone(engine.state) as GameState & { monster: Record<string, unknown> };
+    legacy.version = 4;
+    legacy.monster = { ...legacy.monster, image: "/assets/enemies/field-rat.webp", filter: "hue-rotate(160deg)", scale: 1.12 };
+    const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(migrated.monster).not.toHaveProperty("image");
+    expect(migrated.monster).not.toHaveProperty("filter");
+    expect(migrated.monster).not.toHaveProperty("scale");
+    expect(verifyState(migrated, now)).toEqual([]);
+    expect(verifyTransition(engine.state, migrated, 1000)).toEqual([]);
+    const resumed = new GameEngine(migrated, seededRng(5), now);
+    const kills = resumed.state.lifetime.kills;
+    run(resumed, now, 120, 5);
+    expect(resumed.state.lifetime.kills).toBeGreaterThan(kills);
   });
 
   it("reports companion damage once per second", () => {
@@ -400,8 +434,7 @@ describe("idle and active balance", () => {
     // of crits, ×10 slack), so only the idle bonus itself can explain the boss.
     state.altars.patience = 100_000;
     state.lifetime.essencesEarned = 1e10;
-    state.lastClickAt = T0;
-    const idle = derive(state, T0 + IDLE_FULL_MS, { ignoreTimed: true });
+    const idle = derive(state, T0, { ignoreTimed: true });
     // The highest boss the idle companions alone beat in half the timer.
     let stage = 10;
     while (bossHp(stage + 5) < (idle.dps * idle.bossTimer) / 2) stage += 5;
@@ -525,12 +558,51 @@ describe("anti-cheat", () => {
     expect(summary.stages).toBeGreaterThan(0);
     expect(s.maxStage).toBe(before.maxStage + summary.stages);
     expect(summary.blockedAt).toBe(s.maxStage);
-    const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+    const d = derive(s, now, { ignoreTimed: true });
     expect(bossHp(s.maxStage)).toBeGreaterThan(d.dps * d.bossDamage * d.bossTimer);
     expect(s.stage).toBe(s.maxStage - 1);
     expect(s.autoAdvance).toBe(false);
     expect(verifyTransition(before, s, 8 * 3600_000 + 1000)).toEqual([]);
     expect(verifyState(s, now)).toEqual([]);
+  });
+
+  it("spends while away by breakpoints: hires first, then talent levels and milestones, never a level at a time", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    const before = structuredClone(engine.state.heroLevels);
+    now += 8 * 3600_000;
+    engine.tick(now);
+    const s = engine.state;
+    const breakpoints = new Set([1, 10, 25, 50, 100, 150]);
+    for (const hero of HEROES.slice(1)) {
+      const level = s.heroLevels[hero.id] ?? 0;
+      if (level === (before[hero.id] ?? 0)) continue;
+      expect(breakpoints.has(level) || (level >= 200 && level % 25 === 0), `${hero.id} at ${level}`).toBe(true);
+    }
+    expect(s.heroUpgrades.length).toBeGreaterThan(0);
+    // Companions join in order, none skipped.
+    const hired = HEROES.slice(1).map((hero) => (s.heroLevels[hero.id] ?? 0) > 0);
+    expect(hired.indexOf(false) === -1 || !hired.slice(hired.indexOf(false)).includes(true)).toBe(true);
+  });
+
+  it("hires the next companion at once, and buys no level short of a breakpoint", () => {
+    const state = createInitialState(T0);
+    state.heroLevels.maelle = 10;
+    state.heroUpgrades.push("maelle-10");
+    state.gold = 990;
+    state.lastTickAt = T0;
+    const engine = new GameEngine(state, seededRng(1), T0);
+    engine.tick(T0 + 6_000);
+    // Brom joins (250 gold); Maëlle's way to level 25 (about 2,500) is out of reach: kept.
+    expect(engine.state.heroLevels.brom).toBe(1);
+    expect(engine.state.heroLevels.maelle).toBe(10);
+    expect(engine.state.gold).toBeGreaterThanOrEqual(740);
+  });
+
+  it("finds each companion's next breakpoint", () => {
+    const maelle = HERO_BY_ID.maelle;
+    expect([0, 9, 10, 49, 100, 150, 199, 200, 224, 225].map((level) => nextBreakpoint(maelle, level))).toEqual([10, 10, 25, 50, 150, 200, 200, 225, 225, 250]);
+    expect([199, 200, 224, 225].map(milestoneMultiplier)).toEqual([1, 3.5, 3.5, 12.25]);
   });
 
   it("keeps the gold earned while away when offline spending is off", () => {
@@ -547,6 +619,82 @@ describe("anti-cheat", () => {
     expect(engine.state.gold).toBeCloseTo(gold + summary.gold);
   });
 
+  it("welcomes the walker back with the Reunion, a sixth of the time away, never during it", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.markInput(now);
+    const before = structuredClone(engine.state);
+    now += 8 * 3600_000;
+    engine.tick(now);
+    // A background tab caught up: nothing while away, the Reunion when the player is back.
+    expect(engine.state.buffs.some((buff) => buff.id === "reunion")).toBe(false);
+    engine.drainEvents();
+    engine.markInput(now);
+    expect(engine.state.buffs.find((buff) => buff.id === "reunion")?.until).toBe(now + 3600_000);
+    expect(engine.drainEvents()).toContainEqual(expect.objectContaining({ type: "reunion", seconds: 3600 }));
+    const timed = derive(engine.state, now);
+    const untimed = derive(engine.state, now, { ignoreTimed: true });
+    expect(timed.dps / untimed.dps).toBeCloseTo(REUNION_DPS);
+    expect(verifyTransition(before, engine.state, 8 * 3600_000 + 1000)).toEqual([]);
+    expect(verifyState(engine.state, now)).toEqual([]);
+
+    // An open tab left alone counts too; a short absence brings nothing.
+    const open = newGame(4);
+    let then = playBot(open, T0, 30 * 60, { clicksPerSecond: 5 });
+    open.markInput(then);
+    then = run(open, then, REUNION_MIN_AWAY_SECONDS - 60);
+    open.markInput(then);
+    expect(open.state.buffs.some((buff) => buff.id === "reunion")).toBe(false);
+    then = run(open, then, 2 * 3600);
+    open.markInput(then);
+    expect(open.state.buffs.find((buff) => buff.id === "reunion")?.until).toBe(then + 1_200_000);
+  }, 60_000);
+
+  it("tells the walker back what the company did alone, once, and only after a real absence", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.afkAfterMs = 60_000;
+    engine.markInput(now);
+    const before = structuredClone(engine.state);
+    now = run(engine, now, 2 * 3600);
+    engine.drainEvents();
+    engine.markInput(now);
+    const reunion = engine.drainEvents().find((event) => event.type === "reunion");
+    const account = reunion?.type === "reunion" ? reunion.account : undefined;
+    const s = engine.state;
+    expect(account).toBeDefined();
+    expect(account!.seconds).toBeCloseTo(2 * 3600);
+    expect(account!.fromStage).toBe(before.maxStage);
+    expect(account!.toStage).toBe(s.maxStage);
+    expect(account!.toStage).toBeGreaterThan(account!.fromStage);
+    expect(account!.gold).toBeCloseTo(s.lifetime.goldEarned - before.lifetime.goldEarned);
+    expect(account!.spent).toBeCloseTo(account!.gold - (s.gold - before.gold));
+    expect(account!.talents).toEqual(s.heroUpgrades.slice(before.heroUpgrades.length));
+    for (const entry of account!.levels) {
+      expect(entry.from).toBe(before.heroLevels[entry.heroId] ?? 0);
+      expect(entry.to).toBe(s.heroLevels[entry.heroId]);
+    }
+    expect(account!.hired).toEqual(account!.levels.filter((entry) => entry.from === 0).map((entry) => entry.heroId));
+    for (const stage of account!.walls) expect(stage).toBeLessThan(s.maxStage);
+    expect(account!.blockedAt).toBe(s.autoAdvance ? null : s.maxStage);
+
+    // Told once; a short absence afterwards tells nothing.
+    now = run(engine, now, 10 * 60);
+    engine.markInput(now);
+    expect(engine.drainEvents().some((event) => event.type === "reunion")).toBe(false);
+  }, 60_000);
+
+  it("rejects boons that last too long", () => {
+    const engine = newGame(4);
+    const now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    const forged = structuredClone(engine.state);
+    forged.buffs.push({ id: "reunion", until: forged.lastTickAt + 3 * 3600_000 });
+    expect(verifyState(forged, now).map((violation) => violation.code)).toContain("buff");
+    const endless = structuredClone(engine.state);
+    endless.buffs.push({ id: "rage", until: endless.lastTickAt + 24 * 3600_000 });
+    expect(verifyState(endless, now).map((violation) => violation.code)).toContain("buff");
+  });
+
   it("pushes on while away even when auto-advance was paused by a failed boss", () => {
     const engine = newGame(4);
     let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
@@ -559,6 +707,44 @@ describe("anti-cheat", () => {
     expect(engine.state.maxStage).toBe(maxStage + summary.stages);
     expect(engine.state.stage).toBeGreaterThanOrEqual(engine.state.maxStage - 1);
   });
+
+  it("goes back to the boss that stopped the walker while away, and heals its wounds", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 20 * 60, { clicksPerSecond: 5 });
+    // Left idle until a boss stops the walker and keeps its wounds.
+    for (let second = 0; second < 3600 && engine.state.autoAdvance; second += 1) now = run(engine, now, 1);
+    const wounded = engine.state.maxStage;
+    expect(engine.state.autoAdvance).toBe(false);
+    expect(engine.state.trail.wound?.stage).toBe(wounded);
+    const before = structuredClone(engine.state);
+
+    // An open tab: the autopilot levels companions up and retries the boss within minutes.
+    const open = new GameEngine(structuredClone(before), seededRng(4), now);
+    open.afkAfterMs = 60_000;
+    open.markInput(now);
+    const later = run(open, now, 45 * 60);
+    expect(open.state.maxStage).toBeGreaterThan(wounded);
+    open.drainEvents();
+    open.markInput(later);
+    // Back, the walker hears of the boss that stopped them, then gave way.
+    const reunion = open.drainEvents().find((event) => event.type === "reunion");
+    expect(reunion?.type === "reunion" && reunion.account?.walls[0]).toBe(wounded);
+    expect(open.state.trail.wound?.stage ?? open.state.maxStage).toBe(open.state.maxStage);
+    expect(verifyState(open.state, later)).toEqual([]);
+
+    // A background tab: the catch-up does the same, and the save stays valid.
+    now += 3 * 3600_000;
+    const fails = engine.state.lifetime.bossFails;
+    const summary = engine.tick(now)!;
+    expect(engine.state.maxStage).toBeGreaterThan(wounded);
+    // The boss that stops it now was fought once on arrival, and keeps its wounds up to stage 44.
+    const blockedAt = summary.blockedAt!;
+    expect(engine.state.lifetime.bossFails).toBeGreaterThan(fails);
+    if (blockedAt <= WOUND_LAST_STAGE && !isKingStage(blockedAt)) expect(engine.state.trail.wound?.stage).toBe(blockedAt);
+    else expect(engine.state.trail.wound).toBeUndefined();
+    expect(verifyTransition(before, engine.state, 3 * 3600_000 + 1000)).toEqual([]);
+    expect(verifyState(engine.state, now)).toEqual([]);
+  }, 60_000);
 
   it("lets the autopilot of an open tab level companions and retry bosses, only once the player is away", () => {
     const engine = newGame(4);
@@ -632,17 +818,83 @@ describe("anti-cheat", () => {
     cheated.achievements.push("stage-9");
     expect(verifyState(cheated, T0).map((v) => v.code)).toContain("achievement");
   });
+
+  it("keeps every deed's id and adds tiers to the end of the last Age", () => {
+    const threshold = (id: string) => ACHIEVEMENTS.find((achievement) => achievement.id === id)!.threshold;
+    expect([threshold("stage-10"), threshold("stage-11"), threshold("stage-12"), threshold("gold-7")]).toEqual([1_000, 2_000, 3_000, 1e36]);
+    for (const series of ["stage", "gold"]) {
+      const tiers = ACHIEVEMENTS.filter((achievement) => achievement.series === series).map((achievement) => achievement.threshold);
+      expect(tiers).toEqual([...tiers].sort((a, b) => a - b));
+    }
+    // A stage deed at the end of every Age from the third, gold earned to the end of the last.
+    for (let age = 3; age <= 12; age += 1) expect(ACHIEVEMENTS.some((achievement) => achievement.series === "stage" && achievement.threshold === age * 250)).toBe(true);
+    expect(Math.max(...ACHIEVEMENTS.filter((achievement) => achievement.series === "gold").map((achievement) => achievement.threshold))).toBeGreaterThanOrEqual(1e225);
+    // The two deepest tiers weigh more, whatever the order of their ids.
+    expect(ACHIEVEMENTS.filter((achievement) => achievement.series === "stage" && achievement.bonus > 0.03).map((achievement) => achievement.id)).toEqual(["stage-19", "stage-12"]);
+  });
+
+  it("detects an unearned achievement", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    const earned = cheated.achievements[0];
+    expect(earned).toBeDefined();
+    cheated.achievements.push(earned, earned);
+    expect(verifyState(cheated, now).map((v) => v.code)).toContain("achievement");
+  });
+
+  it("detects ritual stacks without the powers behind them", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    cheated.ritualStacks = 1e12;
+    expect(verifyState(cheated, now).map((v) => v.code)).toContain("skills");
+  });
+
+  it("bounds rebirths, guardians and stages by time and fights, even without a previous save", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    cheated.lifetime.ascensions = 2e9;
+    cheated.descents = 2e9;
+    cheated.lifetime.bosses = cheated.lifetime.kills + 1;
+    cheated.maxStageEver = 2_000;
+    const codes = verifyState(cheated, now).map((v) => v.code);
+    expect(codes).toContain("ascension");
+    expect(codes).toContain("descent");
+    expect(codes).toContain("kills");
+    expect(codes).toContain("stage");
+  });
+
+  it("detects a last tick far in the future", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    cheated.lastTickAt = now + 30 * 86_400_000;
+    expect(verifyState(cheated, now).map((v) => v.code)).toContain("time");
+  });
+
+  it("refuses at parse time the numbers and records that would make the checks slow", () => {
+    const valid = JSON.parse(JSON.stringify(newGame().state)) as GameState;
+    // One uncapped weave level used to cost one loop turn per level on the server.
+    expect(() => parseState({ ...valid, weaves: { plenty: Number.MAX_SAFE_INTEGER } })).toThrow();
+    expect(() => parseState({ ...valid, maxStageEver: 1e9 })).toThrow();
+    const junk = Object.fromEntries(Array.from({ length: 5_000 }, (_, index) => [`junk-${index}`, 1]));
+    expect(() => parseState({ ...valid, bestiary: junk })).toThrow();
+    expect(() => parseState({ ...valid, recognition: junk })).toThrow();
+    expect(parseState({ ...valid, weaves: { plenty: 3 } }).weaves.plenty).toBe(3);
+  });
 });
 
 describe("usernames", () => {
   it("accepts normal usernames", () => {
-    for (const name of ["Aldric", "Maëlle_42", "ShadowBlade", "Constance", "Nicolas", "Sextant-9", "Analyste", "Violette", "Cassandre", "Chateaubriand", "Computer", "Bobby", "Unique"]) {
+    for (const name of ["Aldric", "Maëlle_42", "ShadowBlade", "Constance", "Nicolas", "Sextant-9", "Analyste", "Violette", "Cassandre", "Chateaubriand", "Computer", "Bobby", "Unique", "Brotherhood", "Carrot", "Herot7x", "Annulaire"]) {
       expect(validateUsername(name), name).toMatchObject({ ok: true });
     }
   });
 
   it("refuses offensive usernames, even disguised", () => {
-    for (const name of ["connard", "C0nn4rd", "SSaalllooppee", "Hitler88", "n1gg3r", "fdp_du_93", "con", "Big_Con", "admin", "Idlebound", "pUt3"]) {
+    for (const name of ["connard", "C0nn4rd", "SSaalllooppee", "Hitler88", "n1gg3r", "fdp_du_93", "con", "Big_Con", "admin", "Idlebound", "pUt3", "R00t", "rooooot", "Nuuull"]) {
       expect(validateUsername(name).ok, name).toBe(false);
     }
   });

@@ -1,5 +1,8 @@
 import type { GameState } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
+import type { BoardId } from "./boards";
+
+export { BOARD_IDS, type BoardId } from "./boards";
 
 export interface AccountUser {
   id: string;
@@ -15,13 +18,24 @@ export type ApiResult<T> =
   | { ok: true; data: T; status: number }
   | { ok: false; error: string; status: number; field?: string; body?: Record<string, unknown> };
 
+/** A request left unanswered this long counts as a lost connection (the proxy gives up at 15 s). */
+const REQUEST_TIMEOUT_MS = 20_000;
+
+/** No answer at all, or the game server behind the proxy is down or busy: worth trying again. */
+export function isUnreachable(result: { ok: boolean; status: number }): boolean {
+  return !result.ok && (result.status === 0 || result.status === 429 || result.status >= 500);
+}
+
 async function request<T>(method: string, path: string, body?: unknown, options: { keepalive?: boolean } = {}): Promise<ApiResult<T>> {
   let response: Response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     response = await fetch(`/api${path}`, {
       method,
       credentials: "same-origin",
       keepalive: options.keepalive,
+      signal: controller.signal,
       headers: {
         Accept: "application/json",
         // Required by the API on every state-changing request (CSRF protection).
@@ -31,14 +45,21 @@ async function request<T>(method: string, path: string, body?: unknown, options:
       body: body !== undefined ? JSON.stringify(body) : undefined
     });
   } catch {
+    clearTimeout(timeout);
     return { ok: false, status: 0, error: currentMessages().hud.errors.network };
   }
   let json: Record<string, unknown> = {};
+  let readable = true;
   try {
     json = await response.json();
   } catch {
-    // Empty or non-JSON response.
+    // Empty or non-JSON response, or the body was cut off.
+    readable = false;
+  } finally {
+    clearTimeout(timeout);
   }
+  // Every answer of the API is JSON: a success without a readable body was lost on the way.
+  if (response.ok && !readable) return { ok: false, status: 0, error: currentMessages().hud.errors.network };
   if (!response.ok) {
     return {
       ok: false,
@@ -55,11 +76,13 @@ export interface CloudSave {
   state: GameState;
   revision: number;
   updatedAt: string;
+  /** Milliseconds the server saw pass since this save was written. */
+  elapsedMs: number;
 }
 
 export interface LeaderboardData {
-  board: string;
-  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number }[];
+  board: BoardId;
+  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number }[];
   me: { rank: number; value: number } | null;
 }
 
@@ -78,5 +101,5 @@ export const api = {
   getSave: () => request<{ save: CloudSave | null }>("GET", "/save"),
   putSave: (state: GameState, baseRevision: number | null, replace = false, keepalive = false) =>
     request<{ revision: number; updatedAt: string }>("PUT", "/save", { state, baseRevision, replace }, { keepalive }),
-  leaderboard: (board: string) => request<LeaderboardData>("GET", `/leaderboard?board=${encodeURIComponent(board)}&limit=50`)
+  leaderboard: (board: BoardId) => request<LeaderboardData>("GET", `/leaderboard?board=${encodeURIComponent(board)}&limit=50`)
 };

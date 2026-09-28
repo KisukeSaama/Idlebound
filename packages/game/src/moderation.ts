@@ -15,13 +15,18 @@ const LEET: Record<string, string> = {
 
 /** Lowercase, accents stripped, leet-speak decoded, repeated letters merged, separators removed. */
 export function normalizeForModeration(value: string): string {
+  return decodeForModeration(value).replace(/(.)\1+/g, "$1");
+}
+
+/** Lowercase, accents stripped, leet-speak decoded, separators removed. */
+function decodeForModeration(value: string): string {
   const lowered = value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "");
   let decoded = "";
   for (const char of lowered) decoded += LEET[char] ?? char;
-  return decoded.replace(/[^a-z]/g, "").replace(/(.)\1+/g, "$1");
+  return decoded.replace(/[^a-z]/g, "");
 }
 
 /**
@@ -61,6 +66,8 @@ const RESERVED = [
   "admin", "administrateur", "administrator", "moderateur", "moderator", "modo", "support", "staff",
   "idlebound", "system", "systeme", "root", "null", "undefined", "anonymous", "anonyme", "official", "officiel"
 ];
+/** Reserved words keep their double letters ("root" is not "rot", or Brother would be refused); a stretched letter still matches. */
+const RESERVED_PATTERNS = RESERVED.map((word) => new RegExp(word.replace(/(.)\1*/g, (run, letter: string) => `${letter}{${run.length},}`)));
 
 /** Why a username was refused; the UI and the API turn it into a sentence. */
 export type UsernameIssue = "too-short" | "too-long" | "charset" | "no-letter" | "reserved" | "forbidden";
@@ -76,7 +83,8 @@ export function validateUsername(input: string): UsernameCheck {
 
   const normalized = normalizeForModeration(value);
   const collapsed = (text: string) => normalizeForModeration(text);
-  if (RESERVED.some((word) => normalized.includes(collapsed(word)))) {
+  const decoded = decodeForModeration(value);
+  if (RESERVED_PATTERNS.some((pattern) => pattern.test(decoded))) {
     return { ok: false, reason: "reserved" };
   }
   if (BANNED_SUBSTRINGS.some((word) => normalized.includes(collapsed(word)))) {

@@ -59,6 +59,8 @@ export const leaderboard = pgTable("leaderboard", {
   ascensions: integer("ascensions").notNull().default(0),
   essences: doublePrecision("essences").notNull().default(0),
   achievements: integer("achievements").notNull().default(0),
+  /** Descents (BIBLE 12.7): the Night board, Depth breaking ties. */
+  descents: integer("descents").notNull().default(0),
   playTime: integer("play_time").notNull().default(0),
   hidden: boolean("hidden").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
@@ -66,7 +68,8 @@ export const leaderboard = pgTable("leaderboard", {
   index("leaderboard_stage_idx").on(sql`${table.maxStage} desc`, table.updatedAt),
   index("leaderboard_ascensions_idx").on(sql`${table.ascensions} desc`),
   index("leaderboard_essences_idx").on(sql`${table.essences} desc`),
-  index("leaderboard_achievements_idx").on(sql`${table.achievements} desc`)
+  index("leaderboard_achievements_idx").on(sql`${table.achievements} desc`),
+  index("leaderboard_descents_idx").on(sql`${table.descents} desc`, sql`${table.maxStage} desc`)
 ]);
 
 /** Log of saves rejected by the anti-cheat (audit). */

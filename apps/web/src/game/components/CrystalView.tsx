@@ -2,6 +2,8 @@
 
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
+import { PixelSprite } from "../pixel/PixelSprite";
+import { crystalSource } from "../pixel/sources";
 
 /** The wandering crystal: it crosses the scene for a few seconds, catch it on the fly. */
 export function CrystalView() {
@@ -14,7 +16,7 @@ export function CrystalView() {
     <button
       key={crystal.id}
       type="button"
-      className={`crystal ${remaining < 3000 ? "fading" : ""}`}
+      className={`crystal ${crystal.storm !== undefined ? "storm" : ""} ${remaining < (crystal.storm !== undefined ? 1000 : 3000) ? "fading" : ""}`}
       style={{ left: `${crystal.x}%`, top: `${crystal.y}%` }}
       aria-label={t.hud.crystal.catch}
       onPointerDown={(event) => {
@@ -23,7 +25,7 @@ export function CrystalView() {
         store.act((engine, now) => engine.clickCrystal(now));
       }}
     >
-      <img src="/assets/icons/sidebar-essences-crystals.webp" alt="" width={70} height={77} draggable={false} />
+      <PixelSprite source={crystalSource()} size={76} />
     </button>
   );
 }

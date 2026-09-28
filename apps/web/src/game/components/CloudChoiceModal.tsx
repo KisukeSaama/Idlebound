@@ -3,13 +3,14 @@
 import { formatDuration, intlLocale } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { summarize } from "../cloud";
-import { useCloud, useGame } from "../context";
+import { useCloud, useGame, useUi } from "../context";
 import { Picto } from "../icons";
 import { Modal } from "./Modal";
 
 /** Two different games (this device and the server): the player picks which one to keep. */
 export function CloudChoiceModal() {
   const cloud = useCloud();
+  const ui = useUi();
   const { state } = useGame();
   const { t, locale } = useI18n();
   const m = t.hud.cloudChoice;
@@ -32,15 +33,30 @@ export function CloudChoiceModal() {
 
   const localBetter = local.maxStage > remote.maxStage || (local.maxStage === remote.maxStage && local.playTime >= remote.playTime);
 
+  // Keeping the weaker game erases the stronger one on the server: say what goes, and ask.
+  const keepCurrent = async () => {
+    if (!localBetter) {
+      const confirmed = await ui.confirm({
+        title: m.weakerTitle,
+        text: m.weakerText(remote.maxStage, remote.ascensions, formatDuration(remote.playTime, locale)),
+        confirmLabel: m.keepCurrent,
+        danger: true
+      });
+      if (!confirmed) return;
+    }
+    await cloud.resolveChoice("local");
+  };
+
   return (
     <Modal title={m.title} icon={<Picto name="swords" size={30} />} size="md">
+      <p className="ledger-voice">{t.account.ledger.conflict}</p>
       <p className="modal-text">{m.text}</p>
       <div className="save-compare">
         {card(m.current, local, localBetter)}
         {card(m.account, remote, !localBetter)}
       </div>
       <div className="save-choice-actions">
-        <button type="button" className="btn btn-ghost" onClick={() => void cloud.resolveChoice("local")}>{m.keepCurrent}</button>
+        <button type="button" className="btn btn-ghost" onClick={() => void keepCurrent()}>{m.keepCurrent}</button>
         <button type="button" className="btn btn-gold" onClick={() => void cloud.resolveChoice("cloud")}>{m.takeAccount}</button>
       </div>
     </Modal>

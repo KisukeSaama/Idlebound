@@ -1,11 +1,11 @@
 "use client";
 
-import { GameEngine, createInitialState, type GameEvent, type GameState } from "@idlebound/game";
+import { GameEngine, createInitialState, type GameEvent, type GameState, type Locale } from "@idlebound/game";
 
 type Listener = () => void;
 export type FxListener = (event: GameEvent) => void;
 export interface ActOptions {
-  /** False for routine, high-frequency actions (attack clicks) that need no early save. */
+  /** False for routine, high-frequency actions (attack clicks): no early save, no immediate render. */
   save?: boolean;
 }
 
@@ -18,7 +18,8 @@ const AFK_AFTER_MS = 60_000;
 /**
  * Bridge between the engine (mutable, outside React) and the UI.
  * - the simulation advances every 50 ms;
- * - React is notified at most every 100 ms (or on the next frame after an action);
+ * - React is notified at most every 100 ms (or on the next frame after an action other
+ *   than an attack);
  * - events (damage, loot…) go to visual and sound effects without re-rendering.
  */
 export class GameStore {
@@ -31,6 +32,8 @@ export class GameStore {
   private lastRender = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private dirty = false;
+  /** The language the walker reads in, carried over to every new engine (Two Tongues). */
+  private locale: Locale = "fr";
 
   constructor(state: GameState = createInitialState()) {
     this.engine = this.createEngine(state);
@@ -115,18 +118,32 @@ export class GameStore {
     this.engine.markInput(now);
     const result = action(this.engine, now);
     this.flushEvents();
-    this.notify(true);
-    if (options.save !== false) for (const listener of this.actionListeners) listener();
+    // Routine actions (attack taps) keep the throttled cadence: the canvas already answers
+    // the tap at once, and tapping fast would otherwise re-render the page every frame.
+    const routine = options.save === false;
+    this.notify(!routine);
+    if (!routine) for (const listener of this.actionListeners) listener();
     return result;
   }
 
   /**
-   * Replaces the whole game (server save, new game, logout). The game only runs while its
-   * page is open: the time since the save was written is skipped, unless `creditAbsence`
-   * (the browser discarded this very tab, which was still open).
+   * Runs something on the engine that is not a player action (a date check, a notice):
+   * no input is marked (the autopilot keeps its own clock) and no early save is asked.
    */
-  replaceState(state: GameState, { creditAbsence = false }: { creditAbsence?: boolean } = {}) {
-    if (!creditAbsence) state.lastTickAt = Math.max(state.lastTickAt, Date.now());
+  apply<T>(action: (engine: GameEngine, now: number) => T): T {
+    const result = action(this.engine, Date.now());
+    this.flushEvents();
+    this.notify(true);
+    return result;
+  }
+
+  /**
+   * Replaces the whole game (server save, new game, logout). `awayMs` of the time since the
+   * save was written are caught up at once (the company walked on while the game was
+   * closed, within the catch-up cap); the rest is skipped.
+   */
+  replaceState(state: GameState, { awayMs = 0 }: { awayMs?: number } = {}) {
+    state.lastTickAt = Math.max(state.lastTickAt, Date.now() - Math.max(0, awayMs));
     const visible = this.engine.visible;
     this.engine = this.createEngine(state);
     this.engine.visible = visible;
@@ -142,11 +159,20 @@ export class GameStore {
   private createEngine(state: GameState) {
     const engine = new GameEngine(state);
     engine.afkAfterMs = AFK_AFTER_MS;
+    engine.locale = this.locale;
     engine.markInput(Date.now());
     return engine;
   }
 
+  /** The tab is watched again (or not): coming back after a long absence leaves one line. */
   setVisible(visible: boolean) {
-    this.engine.visible = visible;
+    this.engine.setVisible(visible, Date.now());
+    this.flushEvents();
+    this.notify(true);
+  }
+
+  setLocale(locale: Locale) {
+    this.locale = locale;
+    this.engine.locale = locale;
   }
 }

@@ -14,7 +14,13 @@ import { VERIFY_LINK_DAYS, verificationRequired, verifyDeadline } from "../lib/v
 
 const registerIp = limiter(5, 60 * 60_000);
 const loginIp = limiter(20, 15 * 60_000);
-const loginAccount = limiter(8, 15 * 60_000);
+/**
+ * Guesses at one account from one address. Keyed on both, so a stranger hammering someone's
+ * e-mail locks out only their own address, never the player's.
+ */
+const loginAttempt = limiter(8, 15 * 60_000);
+/** Looser ceiling per account, whatever the address: a botnet still gets few guesses. */
+const loginAccount = limiter(60, 15 * 60_000);
 const forgotIp = limiter(5, 60 * 60_000);
 const forgotAccount = limiter(3, 60 * 60_000);
 const sensitiveUser = limiter(10, 15 * 60_000);
@@ -119,6 +125,9 @@ export const authRoutes = new Hono()
     const parsed = await body(c, loginBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
     const { email: address, password: secret } = parsed.data;
+    const attempt = `${clientIp(c)}|${address}`;
+    const attemptWait = loginAttempt.consume(attempt);
+    if (attemptWait > 0) return tooMany(c, attemptWait);
     const accountWait = loginAccount.consume(address);
     if (accountWait > 0) return tooMany(c, accountWait);
 
@@ -126,7 +135,7 @@ export const authRoutes = new Hono()
     const valid = user ? await verifyPassword(secret, user.passwordHash) : await dummyVerify(secret);
     if (!user || !valid) return c.json({ error: t(c).wrongCredentials }, 401);
 
-    loginAccount.reset(address);
+    loginAttempt.reset(attempt);
     await db.update(users).set({ lastLoginAt: new Date(), lastSeenAt: new Date(), inactivityNoticeAt: null, locale: localeOf(c) }).where(eq(users.id, user.id));
     await createSession(c, user.id);
     return c.json({ user: publicUser(user) });

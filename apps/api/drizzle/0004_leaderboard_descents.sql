@@ -1,0 +1,2 @@
+ALTER TABLE "leaderboard" ADD COLUMN "descents" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+CREATE INDEX "leaderboard_descents_idx" ON "leaderboard" USING btree ("descents" desc,"max_stage" desc);

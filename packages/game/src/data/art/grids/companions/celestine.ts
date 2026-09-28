@@ -1,0 +1,101 @@
+import { C } from "../../palette";
+import type { PortraitRecipe } from "../../types";
+
+/**
+ * Célestine, Voice of the Crystals (BIBLE 10.3): dreamy, joyful, eerie, childlike. A girl
+ * with big eyes turned up toward the light and a small round mouth humming, her lavender
+ * hair drifting back as if under water, glowing crystal shards caught in it.
+ */
+export const CELESTINE: PortraitRecipe = {
+  materials: {
+    skin: { ramp: [C.flesh0, C.flesh1, C.flesh2, C.paper], texture: "smooth" },
+    hair: { ramp: [C.night3, C.keepStone, C.royal, C.keepAccent], texture: "fur" },
+    dress: { ramp: [C.night2, C.plum], texture: "cloth" }
+  },
+  grid: {
+    rows: [
+      "...............gghhhh......hghhghh",
+      "...............hhhhhhhhhhh..gghghh",
+      "...............hhhhhhhhhhhhhhghhhhh",
+      "................hhhhhhhhhhhhhghhhgh",
+      "...........ggggghhhhhShhhhhhhhhhhghh",
+      "...hgghhhhhhhghhhhhhSTShhgghhhhhhgh",
+      "...gggggggghhhhhhhhhhShhhhghhhhhhhhhhh",
+      "...gghhhggghhShhhhhhhhhhihhhhhhhhhhhhhgggg",
+      "....gggghhhgSTShiiihhhhhihiiihhhhihhhhggggf",
+      ".....ggggggggShhiiihhhhiiiiiihhhhihhhhhgggff",
+      "........hhggggghhhhhhhiiiiiiiihhhhhhhghhgggff",
+      ".........ffghhgghhhhiiiiihiiiihhhhhhhgggggggff",
+      "....fgggggggghhhgghhhiiihhhiihhhhhhhhhggggffgff",
+      ".gggggggghhhhhhhhhiihhiihhhhhhhhhhh.hggggfffggf",
+      "ggggggggggghhhhhhhhiihhhhhhh.hhhhh...hgggg.fffff",
+      "ggggffSfffgghhhhhhhhiiihhhhcccchh.....gg....ffff",
+      "gggffSTSgggggggghhhhhiiihhcccccccccccc......ffff",
+      "gggggfSfgggggggghhhhhhihhccccccccccccccb....ffff",
+      ".......hggghhhhhghhhhhhhccddcccccccccccbb...fffff",
+      "...........hhhhggghhhhhhgfffgcccccccffgbbb..fffff",
+      "..............ggghhhhhhccccccccccccccccbbbb.fgfff",
+      "................ghhhgghccccccccccccccccbbbbb.gfff",
+      "...............fghhhhhgccccccccccccccccbbbbb.ffgf",
+      ".............gggghhhhhcccEEEEEbccccbEEEEbbba.ffgff",
+      "...........ffgggggggggccbWHGGWbcccccWHGbbbba.ffgff",
+      ".........ffffgggggggggcccbWWWbccccbcbWWbbbbaafffff",
+      "ggggggggggggggggfgggggccccccccccdcbccbbbbbbaafffff",
+      "ffgSggfffffffgggffggffccccccccccdcbccbbbbbaaaffff",
+      ".fSTSfgggggfggggffffffccccccccccccbcbbbbbbaaafffg",
+      "...Sffggggggggggffffffcccbbcccccccccbbbbbbaaafffg",
+      ".....gggfffgggggfffffccccccbcccccccbbbbbbbaaaffff",
+      "........fffff.gffffff.ccccccccccbabbbbbbbaaaafff",
+      "..............ggggfff.cccccccccccbbbbbbbaaaa.fff",
+      ".............fggggfgg.ccccccccccbbbbbbbbaaa..ff",
+      ".........ffffffffffff..cccccccccbbbbbbbbaaa..f",
+      "....fffffSfggffffffff..cccccccbbEabbbbbaaaa",
+      "..ffffffSTSffffffff.....ccccccbbaabbbbaaaaa",
+      "..fffffffSffffffff.......ccbbbbbcdbbbaaaaa",
+      "............ffffff........bbbbbbbbbbbaaaa",
+      "...........ffffffff.........bbbbbbbbaaaa",
+      "..........ffffffffff.........aaaaaaaaaa",
+      ".........ffffffffff..........aaaaaaa",
+      "........ffffff...............aaaaaaa",
+      ".....S..ffff.................aaaaaaa",
+      "....STSfff...................bbaaaaa",
+      ".....S.ff....................baaaaaa",
+      ".......ff.................cc.aaaaaaacc",
+      ".......f.................cccccc..cccccc",
+      "......................llcccccccccccccccckk",
+      "...................lllllccccccccccccccccklllk",
+      "................lllllllccccllccccccllcccclllkkkk",
+      ".............lllllllllccllllllccccllllllccklkkkkkkk",
+      "............lllllllllllllllllllccllllllllkklkkkkkkkk",
+      "..........lllllllllllllllllllllllllllllllkklkkkkkkkkkk",
+      "........lllllllllllllllllllllllllllllllllkkkkkkkkkkkkkkk",
+      ".......lllllllllllllllllllllllllllllllklllkkkkkkkkkkkkkkk",
+      "......llllllllllllllllllllllllllllllllklllkkkkkkkkkkkkkkkk",
+      "......lllllllllllllllllllllllllllllllkklllkkkkkkkkkkkkkkkk",
+      ".....llllllllllllllllllllllllllllllkkkllklkkkkkkkkkkkkkkkkk",
+      ".....llllllllllllllllllllllllllllkkkkkllkkkkkkkkkkkkkkkkkkk",
+      ".....llllllllllllllllllllllllllllkkkkkllkkkkkkkkkkkkkkkkkkk",
+      ".....lllllllllllllllllllllllllllkklkkkkkkkkkkkkkkkkkkkkkkkk",
+      "....lllllllllllllllllllllllllllkkklkkkkkkkkkkkkkkkkkkkkkkkkk",
+      "....lllllllllllllllllllllllllklkkklkkkkkkkkkkkkkkkkkkkkkkkkk"
+    ],
+    legend: {
+      a: { m: "skin", step: 0 },
+      b: { m: "skin", step: 1 },
+      c: { m: "skin", step: 2 },
+      d: { m: "skin", step: 3 },
+      E: { pal: C.ink },
+      f: { m: "hair", step: 0 },
+      g: { m: "hair", step: 1 },
+      G: { pal: C.royal },
+      h: { m: "hair", step: 2 },
+      H: { pal: C.keepAccent },
+      i: { m: "hair", step: 3 },
+      k: { m: "dress", step: 0 },
+      l: { m: "dress", step: 1 },
+      S: { pal: C.essenceLight, glow: true },
+      T: { pal: C.paper, glow: true },
+      W: { pal: C.paper }
+    }
+  }
+};

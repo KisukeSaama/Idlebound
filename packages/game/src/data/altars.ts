@@ -12,9 +12,9 @@ import { lookup } from "./lookup";
  */
 export const ALTARS: AltarDef[] = [
   { id: "might", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.1, format: "pct" },
-  { id: "blade", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.15, format: "pct" },
+  { id: "blade", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.1, format: "pct" },
   { id: "fortune", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.12, format: "pct" },
-  { id: "patience", maxLevel: 0, costBase: 1, costGrowth: 1.7, stacking: "mult", valuePerLevel: 0.15, format: "pct" },
+  { id: "patience", maxLevel: 0, costBase: 1, costGrowth: 1.7, stacking: "mult", valuePerLevel: 0.14, format: "pct" },
   { id: "time", maxLevel: 30, costBase: 2, costGrowth: 1.35, stacking: "add", valuePerLevel: 1, format: "seconds" },
   { id: "fate", maxLevel: 5, costBase: 3, costGrowth: 2, stacking: "add", valuePerLevel: 0.2, format: "pct" },
   { id: "precision", maxLevel: 25, costBase: 3, costGrowth: 1.3, stacking: "add", valuePerLevel: 0.01, format: "pct" },
@@ -28,15 +28,18 @@ export const ALTARS: AltarDef[] = [
 
 export const ALTAR_BY_ID = lookup(ALTARS.map((altar) => [altar.id, altar])) as Record<AltarId, AltarDef>;
 
-/** Total effect of an altar at a given level: `value × level`, or `(1 + value)^level - 1`. */
-export function altarEffect(altar: AltarDef, level: number): number {
-  const capped = altar.maxLevel > 0 ? Math.min(level, altar.maxLevel) : level;
+/**
+ * Total effect of an altar at a given level: `value × level`, or `(1 + value)^level - 1`.
+ * `maxLevel` is the altar's cap for this walker (the Knot of Dusk raises the Wanderer's).
+ */
+export function altarEffect(altar: AltarDef, level: number, maxLevel = altar.maxLevel): number {
+  const capped = maxLevel > 0 ? Math.min(level, maxLevel) : level;
   return altar.stacking === "mult" ? Math.pow(1 + altar.valuePerLevel, capped) - 1 : capped * altar.valuePerLevel;
 }
 
-export function altarCost(id: AltarId, level: number): number {
+export function altarCost(id: AltarId, level: number, maxLevel = ALTAR_BY_ID[id].maxLevel): number {
   const altar = ALTAR_BY_ID[id];
-  if (altar.maxLevel > 0 && level >= altar.maxLevel) return Number.POSITIVE_INFINITY;
+  if (maxLevel > 0 && level >= maxLevel) return Number.POSITIVE_INFINITY;
   return altarLevelPrice(altar, level);
 }
 

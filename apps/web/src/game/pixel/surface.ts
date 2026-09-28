@@ -1,0 +1,106 @@
+/**
+ * Browser side of the generator: pixel buffers become canvases, kept in small LRU caches
+ * (BIBLE 18.9). Generation can be queued for idle time so the next
+ * stage's monsters are ready before they are needed.
+ */
+import { toRgba, type Pixels } from "./pixels";
+
+export type Surface = HTMLCanvasElement | OffscreenCanvas;
+
+export function toSurface(pixels: Pixels): Surface {
+  const bitmap = toRgba(pixels);
+  const surface: Surface =
+    typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(bitmap.w, bitmap.h) : Object.assign(document.createElement("canvas"), { width: bitmap.w, height: bitmap.h });
+  const ctx = surface.getContext("2d") as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+  if (ctx) ctx.putImageData(new ImageData(bitmap.data, bitmap.w, bitmap.h), 0, 0);
+  return surface;
+}
+
+export interface Lru {
+  /** The cached value for `key`, made on the first call; least recently used out past the limit. */
+  get<T>(key: string, make: () => T): T;
+  has(key: string): boolean;
+  readonly size: number;
+}
+
+export function lru(limit: number): Lru {
+  const entries = new Map<string, unknown>();
+  return {
+    get<T>(key: string, make: () => T): T {
+      if (entries.has(key)) {
+        const hit = entries.get(key) as T;
+        entries.delete(key);
+        entries.set(key, hit);
+        return hit;
+      }
+      const value = make();
+      entries.set(key, value);
+      while (entries.size > limit) entries.delete(entries.keys().next().value as string);
+      return value;
+    },
+    has: (key) => entries.has(key),
+    get size() {
+      return entries.size;
+    }
+  };
+}
+
+/**
+ * Creature sheets (every frame, flash, ring and shadow): the two stretches of road the
+ * arena warms (eight creatures each), the wanderers and the event tones besides.
+ */
+export const spriteCache = lru(32);
+/** The arena's effects: the Seam's steps, the lantern garlands, the Eclipse's ring. */
+export const effectCache = lru(24);
+/**
+ * The interface's pixel art (portraits, emblems, relics, icons, the crystal): small and
+ * many, kept apart so opening the Bag never evicts a creature sheet.
+ */
+export const uiCache = lru(112);
+/** Creatures shown in the interface (the Ledger's pages, the map's guardians): every one of them fits. */
+export const stillCache = lru(64);
+/** Whole scenes are larger: a handful is enough (the current biome and its neighbors). */
+export const sceneCache = lru(6);
+
+/** Runs `task` when the browser is idle (or soon, where idle callbacks do not exist). */
+export function whenIdle(task: () => void): () => void {
+  if (typeof requestIdleCallback === "function") {
+    const id = requestIdleCallback(task, { timeout: 1500 });
+    return () => cancelIdleCallback(id);
+  }
+  const id = setTimeout(task, 60);
+  return () => clearTimeout(id);
+}
+
+/** Device pixel ratio, capped: beyond 3 nothing gets sharper, only heavier. */
+export function deviceRatio(): number {
+  return typeof window === "undefined" ? 1 : Math.min(3, window.devicePixelRatio || 1);
+}
+
+/**
+ * The interface's zoom (`--ui-zoom` on the root, globals.css): large screens magnify the whole
+ * page. One CSS pixel of the page is then `uiZoom()` screen pixels, and the viewport measures
+ * (`getBoundingClientRect`, `clientX`) are in screen pixels while styles are in page pixels.
+ */
+export function uiZoom(): number {
+  if (typeof document === "undefined") return 1;
+  const root = document.documentElement as HTMLElement & { currentCSSZoom?: number };
+  const zoom = root.currentCSSZoom ?? parseFloat(getComputedStyle(root).getPropertyValue("--ui-zoom"));
+  return zoom > 0 ? zoom : 1;
+}
+
+/** Device pixels per page CSS pixel: what a whole-pixel scale is counted in. */
+export function pixelRatio(): number {
+  return deviceRatio() * uiZoom();
+}
+
+/** An element's box in page CSS pixels (its viewport box divided by the interface's zoom). */
+export function pageRect(element: Element): DOMRect {
+  const box = element.getBoundingClientRect();
+  const zoom = uiZoom();
+  return zoom === 1 ? box : new DOMRect(box.x / zoom, box.y / zoom, box.width / zoom, box.height / zoom);
+}
+
+export function prefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}

@@ -1,87 +1,87 @@
 import type { BiomeDef, MonsterDef } from "../types";
 
-const enemy = (name: string) => `/assets/enemies/${name}.webp`;
-const zone = (name: string) => `/assets/zones/${name}.webp`;
-
 export const STAGES_PER_BIOME = 10;
 
-/** Names and descriptions live in `content/` (one table per locale). */
+/**
+ * Names and descriptions live in `content/` (one table per locale); scenes and creatures are
+ * drawn by the pixel generator from the art recipes of `data/art/`, keyed by these ids.
+ */
 export const BIOMES: BiomeDef[] = [
   {
     id: "green-plains",
     index: 0,
-    background: zone("green-plains"),
     accent: "#8bd46a",
     monsters: [
-      { id: "field-rat", image: enemy("field-rat") },
-      { id: "wild-boar", image: enemy("wild-boar") },
-      { id: "rabid-rat", image: enemy("field-rat"), filter: "hue-rotate(-25deg) saturate(1.6) brightness(0.9)" }
+      { id: "field-rat" },
+      { id: "wild-boar" },
+      { id: "carrion-crow" },
+      { id: "hollow-scarecrow" },
+      { id: "lantern-moth" },
+      { id: "dusk-hare" }
     ],
-    miniBoss: { id: "tusk-king", image: enemy("wild-boar"), filter: "saturate(1.4) contrast(1.15)", scale: 1.12 },
-    boss: { id: "moss-alpha", image: enemy("moss-alpha"), scale: 1.08 }
+    miniBoss: { id: "last-reaper" },
+    boss: { id: "moss-alpha" }
   },
   {
     id: "dark-forest",
     index: 1,
-    background: zone("dark-forest"),
     accent: "#4fd1a5",
     monsters: [
-      { id: "shade-wolf", image: enemy("shade-wolf") },
-      { id: "briar-witch", image: enemy("briar-witch") },
-      { id: "blight-boar", image: enemy("wild-boar"), filter: "hue-rotate(200deg) saturate(0.8) brightness(0.8)" }
+      { id: "shade-wolf" },
+      { id: "briar-witch" },
+      { id: "grove-spinner" },
+      { id: "mourning-owl" },
+      { id: "toadstool-choir" },
+      { id: "whisper-bramble" }
     ],
-    miniBoss: { id: "briar-matron", image: enemy("briar-witch"), filter: "hue-rotate(60deg) saturate(1.5)", scale: 1.1 },
-    boss: { id: "old-grove", image: enemy("old-grove"), scale: 1.1 }
+    miniBoss: { id: "root-knight" },
+    boss: { id: "old-grove" }
   },
   {
     id: "forgotten-caves",
     index: 2,
-    background: zone("forgotten-caves"),
     accent: "#8f9cff",
     monsters: [
-      { id: "blind-crawler", image: enemy("blind-crawler") },
-      { id: "echo-bat", image: enemy("echo-bat") },
-      { id: "deep-wolf", image: enemy("shade-wolf"), filter: "hue-rotate(-50deg) brightness(1.15) saturate(1.3)" }
+      { id: "blind-crawler" },
+      { id: "echo-bat" },
+      { id: "crystal-mite" },
+      { id: "drip-leech" },
+      { id: "rune-cart" },
+      { id: "hollow-canary" }
     ],
-    miniBoss: { id: "howling-swarm", image: enemy("echo-bat"), filter: "hue-rotate(90deg) saturate(1.6)", scale: 1.15 },
-    boss: { id: "stone-devourer", image: enemy("stone-devourer"), scale: 1.08 }
+    miniBoss: { id: "miner-shade" },
+    boss: { id: "stone-devourer" }
   },
   {
     id: "corrupted-marsh",
     index: 3,
-    background: zone("corrupted-marsh"),
     accent: "#b6d94c",
     monsters: [
-      { id: "bog-remnant", image: enemy("bog-remnant") },
-      { id: "putrid-crawler", image: enemy("blind-crawler"), filter: "sepia(0.6) hue-rotate(40deg) saturate(1.8) brightness(0.85)" },
-      { id: "marsh-hag", image: enemy("briar-witch"), filter: "hue-rotate(-40deg) saturate(1.2) brightness(0.9)" }
+      { id: "bog-remnant" },
+      { id: "rot-toad" },
+      { id: "will-o-wisp" },
+      { id: "drowned-courtier" },
+      { id: "peat-cutter" },
+      { id: "mire-heron" }
     ],
-    miniBoss: { id: "bog-colossus", image: enemy("bog-remnant"), filter: "contrast(1.2) saturate(1.4)", scale: 1.14 },
-    boss: { id: "rot-baron", image: enemy("rot-baron"), scale: 1.1 }
+    miniBoss: { id: "bog-colossus" },
+    boss: { id: "rot-baron" }
   },
   {
     id: "fallen-king-ruins",
     index: 4,
-    background: zone("fallen-king-ruins"),
     accent: "#c58cff",
     monsters: [
-      { id: "royal-hound", image: enemy("shade-wolf"), filter: "grayscale(0.6) brightness(1.2) hue-rotate(20deg)" },
-      { id: "crown-bat", image: enemy("echo-bat"), filter: "hue-rotate(-30deg) saturate(1.4)" },
-      { id: "fallen-sentinel", image: enemy("bog-remnant"), filter: "grayscale(0.7) brightness(1.1) contrast(1.2)" }
+      { id: "hour-gargoyle" },
+      { id: "banner-wraith" },
+      { id: "fallen-sentinel" },
+      { id: "hollow-page" },
+      { id: "last-hound" },
+      { id: "candle-maid" }
     ],
-    miniBoss: { id: "stone-warden", image: enemy("stone-devourer"), filter: "grayscale(0.5) hue-rotate(40deg) brightness(1.1)", scale: 1.1 },
-    boss: { id: "ruined-king", image: enemy("ruined-king"), scale: 1.12 }
+    miniBoss: { id: "stone-warden" },
+    boss: { id: "ruined-king" }
   }
-];
-
-/** Colour shift applied to every monster of an era (index 1..5, cycling after that). */
-const ERA_FILTERS = [
-  "",
-  "hue-rotate(160deg) saturate(1.2)",
-  "sepia(0.5) hue-rotate(-30deg) saturate(2) brightness(0.95)",
-  "invert(0.08) hue-rotate(250deg) saturate(1.5) brightness(0.85)",
-  "hue-rotate(90deg) saturate(1.8) brightness(1.1)",
-  "grayscale(0.4) contrast(1.4) brightness(1.15)"
 ];
 
 export function biomeForStage(stage: number): BiomeDef {
@@ -102,18 +102,51 @@ export function isBiomeBossStage(stage: number): boolean {
   return stage % STAGES_PER_BIOME === 0;
 }
 
-/** Applies the era variant (tint) to a monster. The name prefix is added at display time. */
-export function eraVariant(monster: MonsterDef, stage: number): MonsterDef {
-  const era = eraForStage(stage);
-  if (era === 0) return monster;
-  const variant = era % ERA_FILTERS.length || 1;
-  const filter = [monster.filter, ERA_FILTERS[variant]].filter(Boolean).join(" ");
-  return { ...monster, filter };
+export const TREASURE_MONSTER: MonsterDef = { id: "golden-rat" };
+
+/**
+ * The twelve forms of the King (BIBLE 8.7): the guardian of every stage that ends a stratum
+ * wears the form of its Age. Same strength in every form; only the look, the name and the
+ * words change. Form I is the Fallen King of the Keep.
+ */
+export const KING_FORMS: readonly string[] = [
+  "ruined-king",
+  "titan-king",
+  "hallowed-king",
+  "star-crowned",
+  "woven-king",
+  "sketched-king",
+  "king-name",
+  "sleeping-king",
+  "window-king",
+  "hollow-crown",
+  "blank-king",
+  "aldemar"
+];
+
+/** At the stage cap, the Dawn stands where the King should be. */
+export const THE_DAWN = "the-dawn";
+export const DAWN_STAGE = 3000;
+
+/** Stages that end a stratum: the King's (every 50th). */
+export function isKingStage(stage: number): boolean {
+  return stage % (STAGES_PER_BIOME * BIOMES.length) === 0;
 }
 
-export const TREASURE_MONSTER: MonsterDef = {
-  id: "golden-rat",
-  image: enemy("field-rat"),
-  filter: "sepia(1) saturate(4) hue-rotate(-12deg) brightness(1.25)",
-  scale: 0.85
-};
+/** The boss of a boss stage: the guardian at a biome's end, the biome's elite otherwise. */
+export function bossForStage(stage: number): MonsterDef {
+  return isBiomeBossStage(stage) ? guardianForStage(stage) : biomeForStage(stage).miniBoss;
+}
+
+/** The guardian of a biome-boss stage: its biome's guardian, the King's form of the Age, or the Dawn. */
+export function guardianForStage(stage: number): MonsterDef {
+  if (stage >= DAWN_STAGE) return { id: THE_DAWN };
+  if (isKingStage(stage)) {
+    const age = Math.min(KING_FORMS.length - 1, Math.floor(eraForStage(stage) / 5));
+    return { id: KING_FORMS[age] };
+  }
+  return biomeForStage(stage).boss;
+}
+
+/** Every creature that can hold a guardian's stage (biome guardians, the King's forms, the Dawn). */
+export const GUARDIAN_IDS: readonly string[] = [...BIOMES.map((biome) => biome.boss.id), ...KING_FORMS.slice(1), THE_DAWN];

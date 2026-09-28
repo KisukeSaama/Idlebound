@@ -1,0 +1,105 @@
+import { C } from "../../palette";
+import type { PortraitRecipe } from "../../types";
+import { SKINS } from "./skins";
+
+/**
+ * The Awakened, Hero of the Prophecy (BIBLE 10.3): a calm young face with eyes of pale
+ * light, the moon full on its near side, under concentric rings of a dithered golden halo;
+ * a pale gold mantle. Its skin and hair (steps 0 to 3) follow the walker's own settings.
+ */
+export const AWAKENED: PortraitRecipe = {
+  materials: {
+    skin: SKINS.light,
+    hair: "fur-gold",
+    mantle: { ramp: [C.night2, C.goldInk, C.goldDeep, C.goldDark], texture: "cloth" }
+  },
+  grid: {
+    rows: [
+      "................P.......Q.Q.Q.Q.Q.Q.Q.Q.....P",
+      "...............P.....Q.Q.............Q.Q",
+      "..............P.....Q...................Q.Q",
+      ".............P.....Q.....................Q.Q",
+      "............P.....Q.........................Q",
+      "...........P.....Q............iiihh..........Q...........Q",
+      "................Q........iiiiihiihhhhggg......Q...P",
+      "...............Q......iiiiiiiihiihhhghggggg....Q",
+      "......Q.......Q.....ihiiiiiiiihhhhhhghgggggf....Q...P",
+      ".............Q.....iiiihiiiiiiihhhhhhggggggff..Q",
+      "............Q......iiiihiihhhhihhhhhghggggffff..Q",
+      "..................iiiiihiihhhhihhhhhghggggfffff..Q...P",
+      "........P...Q....iiiiiihiihhhhhhhghhhggggggfffff..Q",
+      ".......P...Q.....iiiiiihhhgghhhhgggggggggggfffff.Q",
+      "................iihiiiihhhggggggggggggfggggfffff..Q...P",
+      "...........Q....iihiiiiddddddgggggggggfggfgfffff...Q",
+      "..........Q....ihihhiiidddddddddcccccgggffffffff..Q",
+      ".......P...Q...ihiihiiidddddddddcccccccgffgfffff...Q",
+      "..........Q....ihihhhiddddddddddcccccccbbfgffffff.Q...P",
+      "...........Q...ihhhhhhddddddddddcccccccbbbfffffff..Q",
+      "..........Q....ihhhghhdddfffdddccccccccbbbbffffff.Q",
+      ".......P...Q...ihhhghdddgfffdddcccccffgbbbbafffff..Q",
+      "..........Q....ihhgghddddcccccdccccccccbbbbafffff.Q...P",
+      "...........Q...ihhgggddddEEEEEbccccbEEEEbbbafffff..Q",
+      "..........Q....ighgggdddbbWHKWbccccbWHKbbbaafffff.Q",
+      ".......P...Q...ighgggdddddcGGcccccbccGGbbbaaaffff",
+      "............Q..igggggddddddcccccccbcccbbbbaaaffff.Q...P",
+      "...........Q...fggggdddddcccccccccbccbbbbbaaaffffQ...P",
+      "........P...Q..fggggdddddcccccccccbcbbbbbbaaaffff",
+      ".............Q.ffggfddccccccccccccccbbbbbaaaaffffQ",
+      "...Q..........Qfffgf.dcccccccccccccbbbbbbaaaaffff",
+      ".........P...Q.fffff..dcccccccccbabbbbbbaaaaaffff",
+      "..............Qfffff..dcccccccccccbbbbbbaaaaffff",
+      "...........P...ffff....dcccccccccbbbbbbbaaa.ffff",
+      "...............ffff....dccccccccbbbbbbbaaaa.ffff..P.........Q",
+      "...............ffff.....dccccbaaaaaabbaaaa.Qffff.P",
+      "...............ffff.Q....dccccbbccbbbbaaaaQ.ffffP",
+      "...................Q.Q....dcbbbbbbbbbaaaaQ.....P",
+      "......................Q.Q..bbbbbbccbaaaaQ.....P",
+      ".................P.....Q.Q.Qaabbbbbaaaa......P",
+      "..........................Q.aaaaaaaaaa",
+      "...................P........aaaaaaaaa",
+      "......................P.....aaaaaaaaa.P",
+      ".........................P..aaaaaaaaaP",
+      "........................nmmmbaaaaaaaalk",
+      "......................mmmmmmbaaaaaaaakkkk",
+      "..................nmmmmmmllllllllkkkkkkkkkklll",
+      "...............nnnnnllmllllllkkklkkkkkkkkkkklllll",
+      "............nnnnnmnkkkllkkkkllkkkkkkkkkkkkkkkkllllll",
+      ".........nnnmmmmmmmkkkkkkkkkkkkkkkkkkkkkkkkkkklllllllkk",
+      ".......nnnnmmmmmmmkkkkllmmmmmmmmmmmmmmllkkkkkkkllllllkkkk",
+      "......nnnmnmmmmmmlllmmmmmmmmmmmmmmmmmmlllllkkkkklllllkkkkk",
+      ".....nnnnmmmmmmmmmmmmmmmmmmmmmmmmmmmmmlllllllllkllllkkkkkkk",
+      "...nmmnnnnmmmmmmmmmmmmmmmmmmmmmmmmmmlmllllllllllllklkkkkkkkkk",
+      "..nnmmnmnnmmmmmmmmmmmmmmmmmmmmmmmmmmlllllllllllllkklkkkkkkkkkk",
+      ".mnnmmmmmnmmmmmmmmmmmmmmmmmmmmmmmmlllllllllllllllkkkkkkkkkkkkkk",
+      "mmmnmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmlllllllllllllllkkkkkkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmlllllllllllllllkkkkkkkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmllmlllllllllllllllkkkkkkkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmmmlmllllllllllllllllllkkkkkkkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmmmmmmllllllllllllllllllllklkkkkkkkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmlmmmlllllllllllllllllllllkkkkkkkkkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmlmmmlllllllllllllllllllllkkkkkkkkkkkkkkkkkk",
+      "mmmmmmmmmmmmmmmmmmmmmlmlmllllllllllllllllklkkkkkkkkkkkkkkkkkkkkk"
+    ],
+    legend: {
+      a: { m: "skin", step: 0 },
+      b: { m: "skin", step: 1 },
+      c: { m: "skin", step: 2 },
+      d: { m: "skin", step: 3 },
+      E: { pal: C.ink },
+      f: { m: "hair", step: 0 },
+      G: { pal: C.goldDark },
+      g: { m: "hair", step: 1 },
+      H: { pal: C.goldLight, glow: true },
+      h: { m: "hair", step: 2 },
+      i: { m: "hair", step: 3 },
+      K: { pal: C.ink },
+      k: { m: "mantle", step: 0 },
+      l: { m: "mantle", step: 1 },
+      m: { m: "mantle", step: 2 },
+      n: { m: "mantle", step: 3 },
+      P: { pal: C.lilac, glow: true },
+      Q: { pal: C.goldLight, glow: true },
+      W: { pal: C.paper }
+    }
+  }
+};

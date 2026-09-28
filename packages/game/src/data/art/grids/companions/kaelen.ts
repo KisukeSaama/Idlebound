@@ -1,0 +1,105 @@
+import { C } from "../../palette";
+import type { PortraitRecipe } from "../../types";
+
+/**
+ * Kaelen, Fallen Knight (BIBLE 10.3): a gaunt, grave face with hollow cheeks, one clean
+ * scar and a shadow of stubble, dark hair cut short, eyes lowered under heavy lids; he will
+ * not look at the throne. The moonlit plate of the King's guard, dented, and a torn tabard
+ * in his red with its crest split.
+ */
+export const KAELEN: PortraitRecipe = {
+  materials: {
+    skin: { ramp: [C.flesh0, C.flesh1, C.flesh2, C.paper], texture: "smooth" },
+    hair: { ramp: [C.ink, C.night1, C.night3, C.dusk], texture: "fur" },
+    steel: { ramp: [C.night1, C.night3, C.dusk, C.haze, C.lilac], texture: "metal" },
+    cloth: { ramp: [C.night1, C.blood, C.red], texture: "cloth" }
+  },
+  grid: {
+    rows: [
+      "",
+      "",
+      "",
+      "",
+      "...............................hhggggf",
+      "..........................ihhhhihhgggggg",
+      ".......................hihhihhiihhggggfggf",
+      ".....................hhhiihihiihhhghggfggfff",
+      "....................hhhhihhihihhhghhgggfgffff",
+      "...................hihhhihhhhihhhghggggfgfffff",
+      "..................hhihhhihhghhhhhgghggggffffff",
+      "..................hihhhihhhghhhhggghggggfgfffff",
+      ".................hhiihhghhhhghhhhgghgggggggffff",
+      "................hhihihhg..hhghhhgggggggggggfffff",
+      "................hhihhhh....ihh.hhhgg..gggfgfffff",
+      "................hhghhi.ccccccccghhg....fgf.fffff",
+      "................hhhgh.ccccccccccghccbb......ffff",
+      "................hhhg.cccccccccccghccbbbb.....fff",
+      "................hhhh.cccccccccccccccbbbbb....fff",
+      ".................hhgccccccccccccccccbbbbbb....f",
+      ".................gg.cccccfffccccccccbbbbbaa...f",
+      ".................gg.ccccffffgcccccccfffgbaaa",
+      ".................g.bccccbccccccccccbbbbbbaaa",
+      "..................bbbbcccEEEEEbccccbEEEEbaaa",
+      "..................bbbbcccbEEEbbcccbbbEEbbaaa",
+      "..................bbbacccccHKcccccbbbHKbaaaaa",
+      "..................bbbacccccccccccbbbbbbbaaaaa",
+      "..................bbbaccccbcccccbbbbbbbbaaaaa",
+      "..................bbaaccccbccccbbbbbbbbaaaaaa",
+      "..................bbaacccccbcccbbbbbbbbaaaaa",
+      "...................aaacccccbccbbbcbbbbbaaaaa",
+      "....................a.ccccccbbbbbabbbbaaaaaa",
+      "......................bbbcccbbbbbbbbbaaaaaa",
+      ".......................bbbccbbbbbbbbaaaaaaa",
+      ".......................abbbbbbbbbbbbaaaaaaa",
+      "........................bbbbbbaaaaaaaaaaaa",
+      "........................bbbbbbbbccaabaaaaa",
+      "........................bbbbbbbbbbbaaaaaa",
+      ".........................bbbbbbbabbaaaaaa",
+      "...........................bbbaaaaaaaaaa",
+      "............................aaaaaaaaaaa",
+      "............................aaaaaaaaa",
+      "............................aaaaaaaaa",
+      "...........................waaaaaaaaat",
+      "...........vwwwwwwu.......vvvvuuuuuttss......vwwwwwwv",
+      ".....wvwwwwwvuuuuuut.....uuuuutttttsssss....wwvvvvvvwwwwwwu",
+      "....wwwwvvvvvvuuuuuttt..stttttsssssssssss.wwwwvvvvvvvvvvvuut",
+      "...wwwwvvvvvuvuuuuttttwwwtswwwssssssssssswwwwvvvvvvvvuuuuuuut",
+      "..wwwwwvvvvuuuuuuuttttwwwwwsssssssssstttssuuwwvvvvvvvvuuuuuutt",
+      ".wwvvvvvvvuuutttssssstwwwwvwwvvvvvvuuutttssttttttuuvvvuuuuuutts",
+      "vvvvvvuuttssssttttttttwwwwmlmmlllllllkkttssvvvvuuttsssttttttttss",
+      "vttttttttuvuuuuttttttwwwwwmllmlllllklkkttssvvvvvvvvuuuuttsssssss",
+      "vuuuvvvuuustuutttttttwwwwwllllllllkkkkktttsvvvvuvvvuuuuuuttttsss",
+      "vvvuuuvuuuuuutttttsstuwwwwllllllvskkkkkttssssvvuuustuuttuttsssss",
+      "vvvuuuuuuuuuttsssssstuwwwwlllllvsvkkkkkttssssssstttuuuuttttsssss",
+      "uuuuuuuttssssssssssswwwvwwllllvwswvkkkktssssuuuuttssssssttssssss",
+      "uttsssstttttttvtsssswwwvvvlllllswvkkkkkksssssuuuuutttttsssssssss",
+      "uttttuuttttttsstsssuvvvvvvllvllslvkkkkkksssssutttttttttvssssssss",
+      "tttttttttttssssssssuvvvvvlllstsllkkkkkkksssssutttttttssstsssssss",
+      "ttttttttssssssssssstttvvvlkkllllkkkkkkkkssssssssstttssssssssssss",
+      "tttssssssssssssssssvvvvvvllkkkkkkkkkkkkksssssttsssssssssssssssss",
+      "sssssssssssssssssstvvvvvullkkkkuukkkkkkkssssssssssssssssssssssss",
+      "sssssssssssssssssstuuuvuuklkkkuuttkktskkssssssssssssssssssssssss",
+      "ssssssssssssssssssuuuuuuukkkkuttttttssskssssssssssssssssssssssss"
+    ],
+    legend: {
+      a: { m: "skin", step: 0 },
+      b: { m: "skin", step: 1 },
+      c: { m: "skin", step: 2 },
+      E: { pal: C.ink },
+      f: { m: "hair", step: 0 },
+      g: { m: "hair", step: 1 },
+      H: { pal: C.haze },
+      h: { m: "hair", step: 2 },
+      i: { m: "hair", step: 3 },
+      K: { pal: C.night1 },
+      k: { m: "cloth", step: 0 },
+      l: { m: "cloth", step: 1 },
+      m: { m: "cloth", step: 2 },
+      s: { m: "steel", step: 0 },
+      t: { m: "steel", step: 1 },
+      u: { m: "steel", step: 2 },
+      v: { m: "steel", step: 3 },
+      w: { m: "steel", step: 4 }
+    }
+  }
+};

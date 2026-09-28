@@ -1,6 +1,6 @@
 "use client";
 
-import { HERO_BY_ID, SKILLS, isSkillUnlocked } from "@idlebound/game";
+import { SKILLS, isSkillUnlocked } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
 import { audio } from "../audio";
@@ -12,11 +12,13 @@ export function SkillBar() {
   const { t, g } = useI18n();
   const m = t.hud.skills;
   const now = Date.now();
+  // Only the powers the walker holds: the others appear the day they are earned.
+  const skills = SKILLS.filter((skill) => isSkillUnlocked(state, skill.id));
+  if (skills.length === 0) return null;
 
   return (
     <div className="skill-bar" onPointerDown={(event) => event.stopPropagation()} role="toolbar" aria-label={m.label}>
-      {SKILLS.map((skill) => {
-        const unlocked = isSkillUnlocked(state, skill.id);
+      {skills.map((skill) => {
         const skillState = state.skills[skill.id];
         const active = Boolean(skillState && skillState.activeUntil > now);
         const cooling = Boolean(skillState && skillState.readyAt > now);
@@ -24,24 +26,20 @@ export function SkillBar() {
         const remaining = skillState ? Math.max(0, skillState.readyAt - now) : 0;
         const cooldownRatio = cooling ? remaining / total : 0;
         const activeLeft = active && skillState ? Math.ceil((skillState.activeUntil - now) / 1000) : 0;
-        const unlockHero = g.heroes[HERO_BY_ID[skill.unlock.heroId].id].name;
         const text = g.skills[skill.id];
-        const label = unlocked
-          ? m.ready(text.name, skill.hotkey, text.description) + (cooling ? m.cooldown(formatCooldown(remaining, m)) : "")
-          : m.lockedLabel(text.name, unlockHero, skill.unlock.level);
+        const label = m.ready(text.name, skill.hotkey, text.description) + (cooling ? m.cooldown(formatCooldown(remaining, m)) : "");
         return (
           <button
             key={skill.id}
             type="button"
-            className={`skill ${unlocked ? "" : "locked"} ${active ? "active" : ""} ${cooling && !active ? "cooling" : ""} ${unlocked && !cooling ? "ready" : ""}`}
-            disabled={!unlocked}
+            className={`skill ${active ? "active" : ""} ${cooling && !active ? "cooling" : ""} ${!cooling ? "ready" : ""}`}
             aria-label={label}
             onClick={() => {
               const used = store.act((engine, time) => engine.useSkill(skill.id, time));
               if (!used) audio.play("error");
             }}
           >
-            <Picto name={unlocked ? SKILL_PICTO[skill.id] : "lock"} className="skill-icon" />
+            <Picto name={SKILL_PICTO[skill.id]} className="skill-icon" />
             <span className="skill-key" aria-hidden="true">{skill.hotkey}</span>
             {cooling && !active ? (
               <>
@@ -52,7 +50,7 @@ export function SkillBar() {
             {active && activeLeft > 0 ? <span className="skill-timer active-timer" aria-hidden="true">{m.activeSeconds(activeLeft)}</span> : null}
             <span className="skill-tip" role="tooltip">
               <strong>{text.name}</strong>
-              <span>{unlocked ? text.description : m.locked(unlockHero, skill.unlock.level)}</span>
+              <span>{text.description}</span>
             </span>
           </button>
         );

@@ -1,7 +1,7 @@
 import type { SkillDef, SkillId } from "../types";
 import { lookup } from "./lookup";
 
-/** Active powers (keys 1 to 6). Names and descriptions live in `content/`. */
+/** Active powers (keys 1 to 7). Names and descriptions live in `content/`. */
 export const SKILLS: SkillDef[] = [
   {
     id: "frenzy",
@@ -44,6 +44,14 @@ export const SKILLS: SkillDef[] = [
     duration: 0,
     cooldown: 3_600,
     unlock: { heroId: "garrick", level: 25 }
+  },
+  {
+    // The seventh power, woven at Eldra's Loom: the current stretch of road is unmade.
+    id: "unweave",
+    hotkey: "7",
+    duration: 0,
+    cooldown: 3_600,
+    unlock: { weave: "seventh-night" }
   }
 ];
 

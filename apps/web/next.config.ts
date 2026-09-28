@@ -24,8 +24,9 @@ const config: NextConfig = {
         ]
       },
       {
-        // The reset token is in the URL: it must never leak through the Referer header.
-        source: "/:locale(fr|en)/reset-password",
+        // Reset and confirmation tokens are in the URL: they must never leak through the
+        // Referer header nor stay in a cache.
+        source: "/:locale(fr|en)/:page(reset-password|verify-email)",
         headers: [{ key: "Referrer-Policy", value: "no-referrer" }, { key: "Cache-Control", value: "no-store" }]
       },
       {

@@ -1,172 +1,115 @@
 # AGENTS.md
 
-Guide for anyone (human or AI agent) changing this repository. Read it before writing code.
+Durable rules for every session that touches this repository. Read before writing code.
 
-- [PRODUCT.md](PRODUCT.md): what the game is, its rules and numbers.
-- [DESIGN.md](DESIGN.md): visual identity, layout, components, copy voice.
-- [README.md](README.md): setup, commands, deployment.
+- [PRODUCT.md](PRODUCT.md): what the game does today. [DESIGN.md](DESIGN.md): how it looks today.
+- [docs/BIBLE.md](docs/BIBLE.md): the world, story and art direction to build toward.
+- The code is the source of truth. Change a documented behaviour, update its doc in the same change.
 
-The code is the source of truth. When you change behaviour described in one of these
-documents, update the document in the same change.
+## Foundations
 
-## Non-negotiable rules
+- Saves live on the server only. Browser storage holds UI conveniences, never game state.
+- English codebase: identifiers, comments, tests, commits, docs. English URLs under `/fr` and `/en`.
+- Next.js 16 has breaking changes: read `node_modules/next/dist/docs/` before using a Next API.
+- Keep the security defaults (nonce CSP, `X-Idlebound` header, internal API, rate limits).
 
-1. **Saves live on the server only.** No `localStorage`/IndexedDB save, no export/import.
-   Browser storage may only hold small UI conveniences, never game state. One exception,
-   not game state either: the per-tab `ib_tab` sessionStorage flag that tells a tab
-   reloaded by the browser from a newly opened one (`apps/web/src/game/cloud.ts`).
-2. **Every save is verified.** Any change to `GameState`, to a formula, or to anything the
-   player can earn or spend must keep `packages/game/src/validation.ts` correct, and the
-   test "accepts a real multi-hour game saved regularly" must keep passing (no false
-   positives on honest play).
-3. **English codebase.** Identifiers, comments, log messages, test names, commit messages
-   and docs are in English.
-4. **Bilingual product.** Every user-facing string exists in French and English. Never
-   hardcode a visible string in a component, the engine or the API.
-5. **No em dash (—) in user-facing strings**, in either language, and **no emoji** anywhere
-   in the UI: use the SVG icons of `apps/web/src/game/icons.tsx`.
-6. **English, locale-prefixed URLs**: `/fr/...` and `/en/...`. The language is changed in
-   the in-game Settings window, never with a header switcher.
-7. **Use the design tokens** from `globals.css`; do not hardcode colors that have a token.
-8. **Next.js 16 has breaking changes.** Before using a Next API, read the matching guide in
-   `node_modules/next/dist/docs/` (for example: `middleware` is now `src/proxy.ts`, route
-   `params` are Promises).
-9. **Security defaults stay on**: nonce CSP (`apps/web/src/proxy.ts`), `X-Idlebound`
-   header required on API writes, the API reachable only through the web container, rate
-   limits, no account enumeration. Do not weaken them to make something work.
+## Balance targets
 
-## Repository map
+Hold these with the bot, median of 9 seeds (5 are too few: the bot's ascension timing
+swings single seeds by ±50 stages):
 
-```text
-packages/game/            @idlebound/game: pure TypeScript, shared by web and API
-  src/data/               mechanics only: ids, numbers, colors, images (no player-facing text)
-  src/content/            player-facing game text: fr.ts, en.ts (+ accessors in index.ts)
-  src/i18n.ts             Locale type, negotiation (cookie > Accept-Language), cookie name
-  src/engine.ts           GameEngine: mutable simulation, player actions, events
-  src/formulas.ts         HP, gold, costs, derived stats (derive), offline gains
-  src/save.ts             zod schema of GameState, migrateState, parseState
-  src/validation.ts       anti-cheat: verifyState, verifyTransition, leaderboardSummary
-  src/moderation.ts       username rules and profanity filter (returns reason codes)
-  src/numbers.ts          number, duration and percent formatting
-  scripts/                bot player + balance simulation (npm run balance)
-apps/web/                 Next.js App Router, standalone output
-  src/app/[locale]/       pages: landing, play, leaderboard, privacy, reset-password,
-                          verify-email, 404
-  src/app/api/[...path]/  proxy from the browser to the API (the API is not public)
-  src/app/{robots,sitemap,manifest}.ts
-  src/proxy.ts            nonce CSP + locale redirects (Next 16 "proxy", ex-middleware)
-  src/i18n/               UI dictionaries (messages/<namespace>.ts), provider, routing
-  src/game/               the game client: store, cloud sync, audio, components, windows
-  src/components/         site chrome (nav, footer)
-  src/lib/                API clients (browser and server), site config
-apps/api/                 Hono on Node, bundled with esbuild
-  src/routes/             auth, save, leaderboard
-  src/lib/                sessions, passwords, rate limits, mail, i18n, e-mail
-                          verification, inactivity warnings and purge
-  src/db/ + drizzle/      Drizzle schema and versioned SQL migrations
-assets-src/               original art + optimize.py (WebP generation)
-deploy/                   production compose, paths.env, app.env template
-```
+| Milestone       | Target      |
+| --------------- | ----------- |
+| Stage 10        | about 2 min |
+| Stage 50        | 1.5 to 2 h  |
+| First ascension | about 3 h   |
+| Stage 100       | 4 to 6 h    |
 
-## Architecture in one page
+- After any gameplay change (formula, number, reward, cost, timer, new mechanic), run
+  `npx tsx packages/game/scripts/milestones.ts 9` (the four milestones above),
+  `npm run balance -- 24 compare 9` (idle and active styles) and
+  `npx tsx packages/game/scripts/walls.ts 9` (a naive walker loses a few minutes at most at
+  each guardian before the King), and compare against the targets above and the figures in
+  PRODUCT.md. Report the numbers. A miss is a bug, not a note.
+- No runaway: growth past stage 1000 must keep slowing. Late essence growth is a knife edge.
+- Idle and active styles stay within a quarter of each other at 24 h.
 
-- **Engine.** `GameEngine` owns a mutable `GameState` and a cached `Derived` (computed
-  stats). The web `GameStore` ticks it every 50 ms and notifies React at most every 100 ms
-  (on the next animation frame after a player action). The engine emits `GameEvent`s (hits, kills, loot,
-  achievements, crystal rewards…) that drive sounds, toasts and effects without re-rendering.
-- **Data vs content.** `data/` describes mechanics by id. `content/<locale>.ts` holds every
-  name, description and lore line for that id. Components read text through
-  `useI18n().g` or the helpers `monsterName`, `itemName`, `achievementText`, `talentName`,
-  `biomeName`, `eraLabel`. Items store the index of their base noun (`base`) so their name
-  follows the language; legacy items keep their stored French `name`.
-- **Saves.** `CloudSync` (`apps/web/src/game/cloud.ts`) sends the whole state every 30 s,
-  3 s after a player action (`store.act`, except attack clicks), an achievement, a loot drop
-  or a new biome (at least 15 s between uploads), when the tab is hidden and on logout, with
-  the revision it builds on. The API
-  (`routes/save.ts`) parses it with the shared zod schema, runs `verifyState` and, for the
-  same lineage (`createdAt`), `verifyTransition` against the previous save and the elapsed
-  server time. 409 = another device or run (the player chooses), 422 = anti-cheat rejection
-  (logged in `save_rejections`), 403 = e-mail confirmation overdue, 200 = accepted and the leaderboard row keeps the best
-  verified values.
-- **Request path.** Browser → web container (Traefik) → `/api/*` route handler → API on the
-  internal network → Postgres. Server components call the API directly
-  (`lib/server-api.ts`, `INTERNAL_API_BASE_URL`).
-- **Locale.** Explicit choice in cookie `ib_lang` (set from Settings), otherwise
-  `Accept-Language`; no header means French, an unsupported language means English. The web
-  proxy redirects unprefixed paths to `/<locale>/...` and legacy French paths (`/jouer`,
-  `/classement`, `/confidentialite`, `/reinitialiser`) with a 308. The API reads the same
-  cookie/header to localize its messages and e-mails.
+## Mechanics
 
-## Working on text (i18n)
+- Every mechanic lives in `packages/game` (engine, formulas, data), shared by client and
+  server. The client renders and sends actions; it never computes an outcome the server cannot.
+- Every mechanic is covered by `validation.ts`: anything earned or spent is bounded by
+  statistics the server already verifies. Add a rejection test and keep the honest-play test
+  ("accepts a real multi-hour game saved regularly") green.
+- Randomness comes from the engine RNG (`rng.ts`), never `Math.random`.
+- Existing saves stay valid. New `GameState` fields are optional or defaulted in
+  `migrateState`, bump the save version when the shape changes, and test that a save of the
+  previous version parses, verifies and plays.
+- Every mechanic has a reason inside the world (BIBLE section 6). No reason, not finished.
 
-- **Game content** (names, descriptions, lore): add the entry to both
-  `packages/game/src/content/fr.ts` and `en.ts`. The `GameText` type and the i18n test fail
-  if one locale misses an entry.
-- **UI strings**: add them to the right namespace in `apps/web/src/i18n/messages/`, in both
-  `fr` and `en` (`defineMessages` makes the English object match the French shape).
-  Strings with parameters are functions. Read them with `const { t } = useI18n()` in client
-  components, `await getI18n(params)` in server components, `currentMessages()` outside
-  React.
-- **API messages and e-mails**: `apps/api/src/lib/i18n.ts`, locale from the request.
-- **Anti-cheat and username errors** are codes (`Violation.code`, `UsernameIssue`); the
-  message shown to the player is chosen by the client or the API from the code.
-- **Numbers**: `formatNumber` is locale-independent; pass the locale to `formatDuration`
-  and `formatPercent`.
-- French copy uses *tutoiement*. English copy is idiomatic, not literal. See DESIGN.md.
+## Pixel art by code
 
-## Recipes
+- The world is pixel art, the interface is not. Monsters, backgrounds, companions, relics and
+  effects are generated by code; header, panels, windows, numbers and buttons keep the tokens,
+  Cinzel/Inter and SVG icons.
+- No new image files for world art. Recipes are data in `packages/game/src/data/art/`; the
+  generator lives in `apps/web/src/game/pixel/` (canvas 2D, no dependency).
+- Deterministic: same recipe, era and seed give the same pixels everywhere. Snapshot-hash tests.
+- Palette: Orvane 64 only, 4 to 12 colors per sprite, hue-shifted ramps, darkest color
+  `#0b0a14`, never pure black. Biome ramps from BIBLE section 18.3.
+- Integer scaling only, `image-rendering: pixelated`, positions snapped to the grid.
+- Under 2 ms per sprite on a mid phone, cached. Reduced motion gets a single frame and fades.
 
-- **New hero, monster, altar, power, market offer or achievement series**: add the
-  mechanics in `packages/game/src/data/`, the text in both `content/` files, then check
-  `validation.ts` (can the new thing be earned or spent? is it bounded?) and run
-  `npm run balance` for anything that changes progression speed. Update PRODUCT.md.
-- **New field in `GameState`**: add it to `types.ts`, `createInitialState`, the zod schema
-  in `save.ts` (optional or defaulted through `migrateState` so old saves still parse), the
-  relevant checks in `validation.ts`, and a test.
-- **Id-indexed tables fed by save data** use `lookup()` (null prototype) and own-property
-  reads, so an id like `constructor` cannot reach `Object.prototype`.
-- **New page**: `apps/web/src/app/[locale]/<english-slug>/page.tsx`, add it to `ROUTES` in
-  `src/i18n/routing.ts`, to `sitemap.ts`, give it localized metadata with canonical and
-  `hreflang` alternates, and link to it with `href(locale, route)`.
-- **New API route**: validate input with zod, rate-limit it, return `{ error, field? }` with
-  a localized message, require the session with `currentUser` where needed, add a test in
-  `apps/api/src/api.test.ts`.
-- **Database change**: edit `apps/api/src/db/schema.ts`, run `npm run db:generate`, commit
-  the generated SQL and snapshot. Migrations run when the API starts.
-- **Art**: drop originals in `assets-src/original/`, run `npm run assets`, reference the
-  WebP under `/assets/...`.
+## Writing
 
-## Commands
+- Every string in French and English. Game text in `packages/game/src/content/`, UI text in
+  `apps/web/src/i18n/messages/`. Never hardcode visible text.
+- Tone: warm dark fantasy, melancholy under the jokes. French in _tutoiement_. Adapt, do not
+  translate.
+- No em dash, no emoji, in either language.
+- Reveal, never explain. One image, one gesture, one sentence, then stop. Never state the
+  Truth (BIBLE section 4); if a line answers one of its questions, cut it. Each Truth layer
+  needs three hints from three voices first.
+- Before Age VIII, never write: dream, dreamer, player, screen, tab, click, save.
+- Respect the voices and length limits of BIBLE section 20.
 
-| Command | What it does |
-|---|---|
-| `docker compose -f compose.dev.yml up` | Full dev stack: web :3000, API, Postgres, Mailpit :8025 |
-| `npm run dev` | API (8000) + web (3000) without Docker (needs a Postgres in `.env`) |
-| `npm run lint` | Type-checks the game package, the API and the web app |
-| `npm test` | Vitest: engine, balance, anti-cheat, i18n; API tests when `TEST_DATABASE_URL` is set |
-| `npm run build` | API bundle + Next.js build |
-| `npm run balance -- 24 5` | Simulates 24 h of play at 5 clicks/s |
-| `npm run db:generate` | New migration after a schema change |
-| `npm run assets` | Regenerates WebP and the OpenGraph image |
+## Progressive interface
 
-In development the game store is exposed as `window.__idlebound` (e.g.
-`__idlebound.act((engine, now) => engine.state.gold = 1e12)`).
+- An element appears when the player can first use it, never before: no greyed-out teasers,
+  no "coming soon".
+- Visibility derives from `GameState`, so every device shows the same interface.
+- The first appearance is announced once (toast or badge), then stays.
+- Existing saves already past a threshold see the element immediately. Never hide what the
+  player has already used.
+- Minute one shows the monster, the attack and the gold, plus the account and settings
+  buttons (a walker coming back logged out must reach their game at once). Everything else
+  is earned.
 
-## Before you hand work back
+## Done means
 
-1. `npm run lint` is clean.
-2. `npm test` passes (and API tests against a real Postgres when the API changed:
-   `TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test`).
-3. `npm run build` passes when you touched `apps/web` or `apps/api`.
-4. For UI changes, check the page in both languages and at mobile width (≤ 900px).
-5. No new French in code, no hardcoded visible string, no em dash or emoji in copy.
-6. PRODUCT.md, DESIGN.md or README.md updated if behaviour, visuals or setup changed.
+1. `npm run lint` and `npm test` pass.
+2. Gameplay changed: balance run done, targets hold, numbers reported.
+3. Anti-cheat covers the change; honest-play test green; previous-version save still loads.
+4. Every new string exists in FR and EN, follows the writing rules.
+5. UI changed: seen working in the running app, at desktop and phone width, with reduced
+   motion, and no console errors.
+6. PRODUCT.md, DESIGN.md updated; the matching BIBLE section marked shipped.
+7. Nothing left half-built: no TODO, no dead code, no disabled test.
 
-## Environment notes
+## Pixel art rules (non-negotiable)
 
-- Line endings are LF in the repository (`.gitattributes`); `deploy/paths.env` and shell
-  scripts break on the runner with CRLF.
-- `next dev` writes `apps/web/AGENTS.md` and `apps/web/CLAUDE.md` (Next's own agent notes);
-  they are generated, keep them as they are.
-- Deployment follows the platform docs of the `devops/docs` repository (Traefik, GitLab CI,
-  `webapp` template). See README.md for the pipeline and CI variables.
+- Single internal resolution for the whole scene. Never resize a sprite: to change its size, REDRAW it at the new size.
+- Final upscale by an integer factor only, with `image-rendering: pixelated`.
+- No partial transparency on sprites: pixels are either fully opaque or empty.
+- No random per-pixel noise. Shapes are built from flat color areas.
+- Dithering only for gradients and transitions, in regular patterns.
+- Limited palette: 16 to 24 colors for the whole scene.
+- Lights and halos: circular dithering in concentric rings, never square or rectangular shapes.
+- Scale follows depth: the farther an object is, the smaller it is and the more it blends into the sky color.
+- Characters and creatures keep a readable silhouette with a dark outline and strong contrast against the background.
+- Leave calm, empty areas. Readability beats detail.
+
+## Creature rules
+
+- Each creature is hand-authored with its own anatomy. No shared body templates, no palette-swap variants of the same shape.
+- Threatening by default: angular silhouette, three-quarter view facing the player, aggressive pose, glowing eyes in shadow.

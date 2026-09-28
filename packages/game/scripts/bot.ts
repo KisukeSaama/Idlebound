@@ -1,10 +1,11 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
 import { ALTAR_BY_ID, altarCost } from "../src/data/altars";
 import { HEROES } from "../src/data/heroes";
+import { relicDensity } from "../src/data/items";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, isSkillUnlocked } from "../src/engine";
-import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier } from "../src/formulas";
-import type { AltarId } from "../src/types";
+import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier, strikeFillShare } from "../src/formulas";
+import type { AltarId, Derived, GameState, Item } from "../src/types";
 
 export interface BotOptions {
   clicksPerSecond: number;
@@ -23,35 +24,66 @@ export interface BotOptions {
 export interface AltarPlan {
   /** Capped altars bought whenever cheap. */
   milestones: AltarId[];
-  /** Open-ended altars, weighted by how much of their effect reaches this play style. */
-  weights: Partial<Record<AltarId, number>>;
 }
 
 export const CLICKER_ALTARS: AltarPlan = {
-  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "fate", "precision", "echoes"],
-  weights: { might: 1, blade: 0.6, fortune: 0.7 }
+  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "fate", "precision", "echoes"]
 };
 export const IDLE_ALTARS: AltarPlan = {
-  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "echoes"],
-  weights: { might: 1, patience: 0.9, fortune: 0.7 }
+  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "echoes"]
 };
 
+type Weights = Partial<Record<AltarId, number>>;
+/**
+ * Open-ended altars, weighted by how much of their effect reaches the walker: the Blade when
+ * the strikes lead (they deal more than the Patience bonus they stand in for), Patience when
+ * the company does.
+ */
+const STRIKE_WEIGHTS: Weights = { might: 1, blade: 0.9, fortune: 0.7 };
+const COMPANY_WEIGHTS: Weights = { might: 1, patience: 0.9, fortune: 0.7 };
+
+/** Whether the walker's strikes, at this pace, deal more than the Patience bonus they stand in for. */
+export function strikesLead(state: GameState, d: Derived, clicksPerSecond: number): boolean {
+  const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
+  return strikes * strikeFillShare(state) > d.patienceDps;
+}
+
+/**
+ * Damage a second of the company with a walker striking `clicksPerSecond` times a second
+ * (crits averaged): the strikes take the place of the Patience bonus, and add past it.
+ */
+export function damageRate(state: GameState, d: Derived, clicksPerSecond: number): number {
+  const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
+  return d.dps - d.patienceDps + Math.max(0, d.patienceDps - strikes * strikeFillShare(state)) + strikes;
+}
+
+/** Average strikes a second of a play style over a whole run. */
+export function averageClicks(options: BotOptions): number {
+  if (options.idleFromStage !== undefined) return 0;
+  return options.burst ? (options.clicksPerSecond * options.burst.seconds) / options.burst.everySeconds : options.clicksPerSecond;
+}
+
 const DT = 0.1;
+
+/** What a relic is worth to the bot: its main stat, times its density. */
+function relicWorth(item: Item): number {
+  return (1 + item.affixes[0].value) * relicDensity(item);
+}
 
 function bestHeroPurchase(engine: GameEngine, now: number, clicksPerSecond: number) {
   const s = engine.state;
   const multiplier = heroCostMultiplier(s);
   let best: { id: string; ratio: number } | null = null;
-  const base = derive(s, now, { ignoreTimed: true });
+  const base = damageRate(s, derive(s, now, { ignoreTimed: true }), clicksPerSecond);
   for (const hero of HEROES) {
     const level = s.heroLevels[hero.id] ?? 0;
     if (hero.index > 1 && level === 0 && (s.heroLevels[HEROES[hero.index - 1].id] ?? 0) === 0) continue;
     const cost = heroCost(hero, level, 1, multiplier);
     if (cost > s.gold) continue;
     s.heroLevels[hero.id] = level + 1;
-    const after = derive(s, now, { ignoreTimed: true });
+    const after = damageRate(s, derive(s, now, { ignoreTimed: true }), clicksPerSecond);
     s.heroLevels[hero.id] = level;
-    const gain = after.dps - base.dps + (after.click - base.click) * clicksPerSecond * (1 + after.critChance * (after.critMultiplier - 1));
+    const gain = after - base;
     const ratio = gain / cost;
     if (!best || ratio > best.ratio) best = { id: hero.id, ratio };
   }
@@ -95,7 +127,10 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       if (s.shards >= 30 && s.inventory.length < 40) engine.buyOffer("chest", now);
       for (const item of [...s.inventory]) {
         const equipped = s.equipment[item.slot];
-        if (!equipped || item.affixes[0].value > equipped.affixes[0].value) engine.equip(item.uid, now);
+        // Morgrath's Phylactery halves the click: only a walker who lets go of the sword wears it.
+        if (item.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) continue;
+        if (equipped?.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) { engine.equip(item.uid, now); continue; }
+        if (!equipped || relicWorth(item) > relicWorth(equipped)) engine.equip(item.uid, now);
       }
       engine.salvageUpTo("rare");
     }
@@ -108,10 +143,11 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
 
     if (engine.canAscend() && now - lastProgressAt > stagnation) {
       const from = s.maxStage;
+      const leading = strikesLead(s, derive(s, now, { ignoreTimed: true }), averageClicks(options));
       const gain = engine.ascend(now);
       options.onAscend?.(engine, now, gain, from);
-      // A clicking player never benefits from patience, an idle one from click altars.
-      buyAltars(engine, now, options.altars ?? (options.idleFromStage === undefined && !options.burst ? CLICKER_ALTARS : IDLE_ALTARS));
+      // Only a walker whose strikes lead the company invests in critical hits.
+      buyAltars(engine, now, options.altars ?? (leading ? CLICKER_ALTARS : IDLE_ALTARS), leading);
       lastMaxStage = s.maxStage;
       lastProgressAt = now;
     }
@@ -124,10 +160,12 @@ const MILESTONE_SHARE = 0.03;
 
 /**
  * Essence spending after an ascension: capped altars when cheap, then the open-ended level
- * that adds the most log-power per essence, as long as it beats keeping the essences
- * (each one owned gives +10% DPS).
+ * that adds the most log-power per essence (the Blade if the strikes led the last run,
+ * Patience if the company did), as long as it beats keeping the essences (each one owned
+ * gives +10% DPS).
  */
-export function buyAltars(engine: GameEngine, now: number, { milestones, weights }: AltarPlan) {
+export function buyAltars(engine: GameEngine, now: number, { milestones }: AltarPlan, strikesLed: boolean) {
+  const weights = strikesLed ? STRIKE_WEIGHTS : COMPANY_WEIGHTS;
   const s = engine.state;
   for (let guard = 0; guard < 2000; guard += 1) {
     let bought = false;

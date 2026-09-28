@@ -1,47 +1,71 @@
 import { defineMessages } from "../define";
 
-/** Public leaderboard page (/[locale]/leaderboard). */
+/**
+ * The Roll of the Bound: the public leaderboard page (/[locale]/leaderboard) and the boards'
+ * names, shared with the Hall in the game. Each board has its name on the Roll and its plain
+ * meaning, always shown together (BIBLE 6.8).
+ */
 export const leaderboard = defineMessages({
   fr: {
-    metaTitle: "Classement des joueurs",
+    metaTitle: "Classement des marcheurs",
     metaDescription:
-      "Le classement public d'Idlebound : étape maximale, ascensions, essences récoltées et succès des meilleurs aventuriers. Chaque score est vérifié par le serveur.",
-    title: "Classement",
-    intro: "Les scores sont vérifiés par le serveur à chaque sauvegarde : seules les progressions possibles avec les règles du jeu y figurent. ",
+      "Le classement public d'Idlebound : étape maximale, ascensions, essences récoltées, succès et descentes des meilleurs aventuriers. Chaque score est vérifié par le serveur.",
+    title: "Le Registre des Liés",
+    subtitle: "Classement",
+    intro: "Le Grand Livre n'écrit que ce qui est vraiment arrivé : chaque score est vérifié par le serveur à chaque envoi. ",
     introCta: "Crée un compte en jeu",
-    introEnd: " pour y apparaître.",
+    introEnd: " pour y inscrire ton nom.",
     tabsLabel: "Type de classement",
     boards: {
+      stage: "Profondeur",
+      ascensions: "Nuits",
+      essences: "Lumière",
+      achievements: "Hauts faits",
+      descents: "Nuit"
+    },
+    meanings: {
       stage: "Étape maximale",
       ascensions: "Ascensions",
-      essences: "Essences",
-      achievements: "Succès"
+      essences: "Essences récoltées",
+      achievements: "Succès",
+      descents: "Descentes, puis étape maximale"
     },
     stageValue: (stage: string) => `Étape ${stage}`,
+    descentsValue: (descents: string, stage: string) => `${descents} · étape ${stage}`,
     unavailable: "Le classement est momentanément indisponible. Réessaie dans un instant.",
-    empty: "Personne n'est encore classé. ",
-    emptyCta: "Prends la première place !",
+    empty: "Aucun nom n'est encore inscrit. ",
+    emptyCta: "Inscris le premier nom !",
     columns: { rank: "#", player: "Aventurier", stage: "Étape", ascensions: "Ascensions" }
   },
   en: {
-    metaTitle: "Player leaderboard",
+    metaTitle: "Leaderboard of walkers",
     metaDescription:
-      "Idlebound's public leaderboard: highest stage, ascensions, essences harvested and achievements of the best adventurers. Every score is verified by the server.",
-    title: "Leaderboard",
-    intro: "Scores are verified by the server on every save: only progress that is possible under the game's rules makes it here. ",
+      "Idlebound's public leaderboard: highest stage, ascensions, essences collected, achievements and Descents of the best adventurers. Every score is verified by the server.",
+    title: "The Roll of the Bound",
+    subtitle: "Leaderboard",
+    intro: "The Ledger only writes what truly happened: every score is verified by the server on every update. ",
     introCta: "Create an account in the game",
-    introEnd: " to show up.",
+    introEnd: " to inscribe your name.",
     tabsLabel: "Leaderboard type",
     boards: {
+      stage: "Depth",
+      ascensions: "Nights",
+      essences: "Light",
+      achievements: "Deeds",
+      descents: "Night"
+    },
+    meanings: {
       stage: "Highest stage",
       ascensions: "Ascensions",
-      essences: "Essences",
-      achievements: "Achievements"
+      essences: "Essences collected",
+      achievements: "Achievements",
+      descents: "Descents, then highest stage"
     },
     stageValue: (stage: string) => `Stage ${stage}`,
+    descentsValue: (descents: string, stage: string) => `${descents} · stage ${stage}`,
     unavailable: "The leaderboard is temporarily unavailable. Try again in a moment.",
-    empty: "Nobody is ranked yet. ",
-    emptyCta: "Take first place!",
+    empty: "No name is inscribed yet. ",
+    emptyCta: "Write the first one!",
     columns: { rank: "#", player: "Adventurer", stage: "Stage", ascensions: "Ascensions" }
   }
 });

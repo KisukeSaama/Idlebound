@@ -1,3 +1,6 @@
+import type { EventId } from "./data/events";
+import type { WeaveId } from "./data/descent";
+import type { MilestoneId } from "./data/strata";
 import type { Notation } from "./numbers";
 
 export type HeroEffect =
@@ -33,20 +36,20 @@ export interface HeroDef {
   /** Click damage per level (click hero only). */
   baseClick: number;
   color: string;
-  glyph: string;
   /** How the companion's hits look in the scene (visual only). */
   strike: StrikeStyle;
   upgrades: HeroUpgradeDef[];
 }
 
-export type SkillId = "frenzy" | "rally" | "hawkeye" | "goldrain" | "ritual" | "echo";
+export type SkillId = "frenzy" | "rally" | "hawkeye" | "goldrain" | "ritual" | "echo" | "unweave";
 
 export interface SkillDef {
   id: SkillId;
   hotkey: string;
   duration: number;
   cooldown: number;
-  unlock: { heroId: string; level: number };
+  /** A companion at a level, or a Weave of Eldra's Loom. */
+  unlock: { heroId: string; level: number } | { weave: WeaveId };
 }
 
 export type AltarId =
@@ -97,27 +100,25 @@ export interface Item {
   affixes: Affix[];
   forge: number;
   locked?: boolean;
+  /** Id of a named relic (`data/relics.ts`): its name, legend and unique effect. */
+  named?: string;
 }
 
+/** A creature of the road. Its look is the art recipe of the same id (`data/art/`). */
 export interface MonsterDef {
   id: string;
-  image: string;
-  /** CSS filter applied to the sprite to create variants. */
-  filter?: string;
-  scale?: number;
 }
 
 export interface BiomeDef {
   id: string;
   index: number;
-  background: string;
   accent: string;
   monsters: MonsterDef[];
   miniBoss: MonsterDef;
   boss: MonsterDef;
 }
 
-export type BuffId = "rage" | "fortune" | "autoclick" | "overcharge" | "sharpness";
+export type BuffId = "rage" | "fortune" | "autoclick" | "overcharge" | "sharpness" | "walker" | "cheese" | "lantern" | "reunion";
 
 export interface Buff {
   id: BuffId;
@@ -128,14 +129,20 @@ export interface MonsterState {
   id: string;
   /** Legacy display name, only in saves written before names were localized. */
   name?: string;
-  image: string;
-  filter?: string;
-  scale: number;
   hp: number;
   maxHp: number;
-  kind: "normal" | "treasure" | "miniboss" | "boss";
+  /** "rare": a biome's rare wanderer, met at most once a run. */
+  kind: MonsterKind;
   gold: number;
+  /** An event creature: the Seam Warden, the Quiet, the Stray Armor, a half-drawn Remnant. */
+  event?: "seam" | "quiet" | "stray" | "unfinished";
+  /** Pip's Wager: clicks landed, and when Pip gives up. */
+  wager?: { clicks: number; until: number };
+  /** The King, shadowed by his Eclipse. */
+  eclipse?: boolean;
 }
+
+export type MonsterKind = "normal" | "treasure" | "rare" | "miniboss" | "boss";
 
 export interface StatBlock {
   clicks: number;
@@ -153,6 +160,8 @@ export interface StatBlock {
 export interface LifetimeStats extends StatBlock {
   ascensions: number;
   essencesEarned: number;
+  /** Essences every ascension ever granted (the history keeps only the last ones). */
+  ascensionEssences: number;
   shardsEarned: number;
   itemsFound: number;
   legendaries: number;
@@ -163,12 +172,18 @@ export interface LifetimeStats extends StatBlock {
   /** All-time records (hero levels are reset by ascension). */
   bestLevelSum: number;
   bestHired: number;
+  /** Kings beaten (every 50th stage), Seams closed, threads woven. */
+  kings: number;
+  seams: number;
+  threads: number;
 }
 
 export interface AscensionRecord {
   at: number;
   maxStage: number;
   essences: number;
+  /** A Descent rather than an ascension: the threads it wove. */
+  threads?: number;
 }
 
 export interface Crystal {
@@ -176,6 +191,8 @@ export interface Crystal {
   expiresAt: number;
   x: number;
   y: number;
+  /** During a Crystal Storm: crystals still to come after this one. */
+  storm?: number;
 }
 
 export type BuyMode = 1 | 10 | 25 | 100 | "max";
@@ -183,6 +200,7 @@ export type BuyMode = 1 | 10 | 25 | 100 | "max";
 export interface Settings {
   notation: Notation;
   sound: boolean;
+  /** Volume of the sound effects, 0 to 1. */
   volume: number;
   damageNumbers: boolean;
   reducedMotion: boolean;
@@ -190,6 +208,8 @@ export interface Settings {
   buyMode: BuyMode;
   /** While away, companions spend the gold they earn on levels and talents. */
   offlineSpending: boolean;
+  /** Keep the night of the Kingdom: deeper Ages keep the first Age's sky and scenes. */
+  darkNight: boolean;
 }
 
 export interface TutorialState {
@@ -199,6 +219,59 @@ export interface TutorialState {
 export interface SkillState {
   activeUntil: number;
   readyAt: number;
+}
+
+/** What the Chronicle remembers beyond the Bestiary: counters, never text (BIBLE 17.2). */
+export interface LoreState {
+  /** Biome echoes brought back, per biome id (the n first authored lines of that biome, then the grammar). */
+  echoes: Record<string, number>;
+  /** Age echoes brought back, per Age index. */
+  ages: Record<string, number>;
+  /** Nights the King saw the walker in his Regalia (his Regalia words, in turn). */
+  regalia: number;
+  /** Crystal songs, dreams and Stallkeeper sayings heard. */
+  songs: number;
+  dreams: number;
+  sayings: number;
+  /** Aldric's talents ever bought: each one a Lesson. */
+  lessons: string[];
+  /** Play time between midnight and four in the morning, local time (the Night Owl secret). */
+  nightSeconds: number;
+  /** Guardians beaten in the last half second (the Last Second secret). */
+  lastSeconds: number;
+  /** Runs with Vorn at level 150 (the Good Boy secret). */
+  biscuit: number;
+  /** Play time in each language (the Two Tongues secret). */
+  tongues: { fr: number; en: number };
+  /** Second readings of the strata keystones: strata cleared in each Descent (index = Descent - 1). */
+  readings: number[];
+  /** Events met at least once, and altars whose legend was read (level 5 reached once). */
+  events: string[];
+  altars: string[];
+  /** Chronicle entries already read, per source (the rest shows as new). */
+  seen: Record<string, number>;
+}
+
+/** What the current run remembers for the story; reset by ascension. */
+export interface RunTrail {
+  /** Rare wanderers met this run (one each at most). */
+  wanderers: string[];
+  /** Kills on stages 1 to 10 this run (the Thousandth Notch secret). */
+  fieldKills: number;
+  /** The King's timer run out in a row at stage 50, untouched (Let Him Rest). */
+  rest: number;
+  /** Golden rats caught with Thorvald at level 50 or more (Even). */
+  evenRats: number;
+  /** Essences offered to the altars since dusk (Keep Some, That's How It Starts). */
+  offered: number;
+  /** Seconds in the Deepvaults, watched and untouched (Listening). */
+  listen: number;
+  /** A stage crossed by another biome's Remnants (the Migration). */
+  migration?: { stage: number; biome: string };
+  /** The next King is shadowed (the King's Eclipse). */
+  eclipse?: boolean;
+  /** Wounds a boss kept from failed fights: its stage and the share of its HP they took. */
+  wound?: { stage: number; share: number };
 }
 
 export interface GameState {
@@ -244,6 +317,28 @@ export interface GameState {
 
   settings: Settings;
   tutorial: TutorialState;
+
+  /** Kills (or sightings) of each creature the Bestiary keeps a page for. */
+  bestiary: Record<string, number>;
+  lore: LoreState;
+  /** Runs in which each companion reached level 100 (Recognition). */
+  recognition: Record<string, number>;
+  /** Named relics already found (each drops once per save). */
+  named: string[];
+  /** Secrets found (BIBLE 15). */
+  secrets: string[];
+  trail: RunTrail;
+
+  /** The Descent (BIBLE 12.7): how many, the threads held, the Weaves of the Loom. */
+  descents: number;
+  threads: number;
+  weaves: Partial<Record<WeaveId, number>>;
+  /** Essences gathered in all when the last Descent began: threads count from there. */
+  descentMark: number;
+  /** ISO week of the last Caravan purchase (one ware a week). */
+  caravanWeek: string;
+  /** The engine's random generator, carried by the save: a reload draws the same fates again. */
+  rngState: number;
 }
 
 export interface Derived {
@@ -255,18 +350,26 @@ export interface Derived {
   goldMultiplier: number;
   bossTimer: number;
   bossDamage: number;
+  /** Gold multiplier of biome guardians (Mosshide). */
+  guardianGold: number;
   treasureChance: number;
   dpsMultiplier: number;
   essenceMultiplier: number;
-  /** The full idle bonus applies (no attack click for 30 s). */
-  idle: boolean;
-  /** Share of the idle bonus in effect, from 0 right after a click to 1. */
-  idleRatio: number;
-  /** Full DPS bonus granted while idle (Altar of Patience + idle talents), active or not. */
+  /** The Patience bonus (Altar of Patience + idle talents), a share of companion DPS. */
   idleBonus: number;
+  /** Companion damage per second that bonus adds, included in `dps`: the walker's strikes take its place. */
+  patienceDps: number;
   /** Share of companion DPS added to each click. */
   clickDpsShare: number;
   autoClicksPerSecond: number;
+  /** Damage to the King (Oathcutter, the Regalia), and to the Baron of Rot (Mirelle's ring). */
+  kingDamage: number;
+  baronDamage: number;
+  /** Seconds a wandering crystal stays, and the share of its usual wait. */
+  crystalStay: number;
+  crystalWait: number;
+  /** Fragment chance multiplier (the Frayed Edge, Oriane's Ear, Remembrance Nights). */
+  fragmentChance: number;
 }
 
 export type GameEvent =
@@ -286,10 +389,70 @@ export type GameEvent =
   | { type: "crystalSpawned" }
   | { type: "ascended"; essences: number }
   | { type: "inventoryFull"; item: Item; shards: number }
-  | { type: "hourglass"; kills: number };
+  | { type: "hourglass"; kills: number }
+  /** A Bestiary entry unlocked its `tier`-th line. */
+  | { type: "bestiary"; id: string; tier: number }
+  /** A companion remembers the walker a little more. */
+  | { type: "recognition"; heroId: string; tier: number }
+  | { type: "secret"; id: string }
+  /** A new Chronicle entry. */
+  | { type: "fragment"; entry: ChronicleEntry }
+  /** A Crystal Storm begins: the Lantern Queen crosses the sky. */
+  | { type: "storm" }
+  /** An event of the Long Night begins (BIBLE 13); `won` when a timed one ends. */
+  | { type: "event"; id: EventId; won?: boolean }
+  /** The King's Word of a night, spoken at dusk. */
+  | { type: "kingWord"; night: number }
+  /** A long absence left one line. */
+  | { type: "dream"; index: number }
+  /** The walker is back: the Reunion lasts `seconds`. */
+  | { type: "reunion"; seconds: number; account?: AbsenceAccount }
+  | { type: "descended"; threads: number };
+
+/** One entry of the Chronicle; its words come from `content/` (`chronicleText`). */
+export type ChronicleEntry =
+  /** A stratum's keystone; after a Descent, its reading in that Descent's voice. */
+  | { source: "keystone"; era: number; reading?: number }
+  | { source: "milestone"; id: MilestoneId }
+  /** The King's Word of the n-th night (1-based). */
+  | { source: "king"; night: number }
+  | { source: "echo"; biome: string; index: number }
+  | { source: "age"; age: number; index: number }
+  | { source: "wanderer"; id: string }
+  | { source: "memory"; hero: string; tier: number }
+  | { source: "lesson"; id: string }
+  | { source: "song"; index: number }
+  | { source: "dream"; index: number }
+  | { source: "saying"; index: number }
+  | { source: "relic"; id: string }
+  | { source: "altar"; id: AltarId }
+  | { source: "secret"; id: string }
+  | { source: "event"; id: EventId }
+  | { source: "crown" };
 
 /** What a wandering crystal gave: gold, a timed buff (amount = seconds), shards or essences. */
 export type CrystalReward = "gold" | "overcharge" | "sharpness" | "shards" | "essence";
+
+/** What the company tells the walker at the Reunion: the road it held alone. */
+export interface AbsenceAccount {
+  /** Seconds away. */
+  seconds: number;
+  /** Furthest stage when the walker left, and now. */
+  fromStage: number;
+  toStage: number;
+  gold: number;
+  spent: number;
+  /** Companions who joined, in order. */
+  hired: string[];
+  /** Companions who gained levels. */
+  levels: { heroId: string; from: number; to: number }[];
+  /** Talents learned, in order. */
+  talents: string[];
+  /** Boss stages that stopped the company, then gave way. */
+  walls: number[];
+  /** The boss stage that still bars the road, if any. */
+  blockedAt: number | null;
+}
 
 export interface OfflineSummary {
   seconds: number;
