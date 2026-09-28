@@ -2155,14 +2155,15 @@ button.resource:hover {
 
 .bestiary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 8px;
 }
 
+/* The portrait sits above the text: sprites are drawn at their own size (up to ~150 art
+   pixels) and never shrink below one device pixel per art pixel, so the band grows to hold them. */
 .bestiary-entry {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  align-items: start;
+  grid-template-rows: auto 1fr;
   gap: 10px;
   padding: 10px;
   border-radius: 10px;
@@ -2174,10 +2175,13 @@ button.resource:hover {
   border-color: color-mix(in srgb, var(--violet) 40%, var(--border));
 }
 
-.bestiary-sprite {
-  justify-self: center;
+.bestiary-portrait {
+  display: grid;
+  place-items: end center;
+  min-height: 112px;
+  padding: 6px;
   border-radius: 8px;
-  background: radial-gradient(circle at 50% 70%, #231c3f, #100d1e 75%);
+  background: radial-gradient(ellipse at 50% 80%, #231c3f, #100d1e 75%);
 }
 
 .bestiary-entry.unknown .bestiary-sprite {
@@ -3655,12 +3659,14 @@ kbd {
 }
 
 .bestiary-blank {
-  place-items: center start;
   background: #1b1730;
 }
 
+.bestiary-blank .bestiary-portrait {
+  place-items: center;
+}
+
 .bestiary-paw {
-  justify-self: center;
   fill: var(--faint);
 }
 

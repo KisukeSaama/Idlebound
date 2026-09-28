@@ -27,7 +27,7 @@ export interface CreatureSheet {
   treatment: Treatment;
   /** World pixels per sprite pixel (1, or more in the First Mark). */
   unit: number;
-  flash: (color: Pal) => Surface;
+  flash: (color: Pal, look: FlashLook) => Surface;
   ring: (color: Pal) => Surface;
   /** Its shadow on the ground, away from the moon's side, and its offset from the sprite. */
   shadow: (side: number, color: Pal) => { surface: Surface; dx: number; dy: number };
@@ -37,13 +37,25 @@ export interface CreatureSheet {
 export type Tone = "grey" | "eclipse";
 const TONES: Record<Tone, (pixels: Pixels) => Pixels> = { grey: greyPixels, eclipse: eclipsePixels };
 
-/** Every non-emissive pixel in one color: the frame of a hit (eyes keep their light). */
-export function flashPixels(source: Pixels, color: Pal): Pixels {
+/** How a hit lights a creature: a checker of light (`spark`) or its whole body (`fill`, a critical blow). */
+export type FlashLook = "spark" | "fill";
+
+/**
+ * The frame of a hit: the body inside the outline in one color, every pixel (`fill`) or one
+ * in two (`spark`). The outline stays dark so the silhouette holds, and eyes keep their light.
+ */
+export function flashPixels(source: Pixels, color: Pal, look: FlashLook): Pixels {
   const out = clonePixels(source);
-  for (let at = 0; at < out.idx.length; at += 1) {
-    if (out.idx[at] === EMPTY || out.emit[at]) continue;
-    out.idx[at] = color;
-    out.alpha[at] = 255;
+  const empty = (x: number, y: number) => x < 0 || y < 0 || x >= source.w || y >= source.h || source.idx[y * source.w + x] === EMPTY;
+  for (let y = 0; y < source.h; y += 1) {
+    for (let x = 0; x < source.w; x += 1) {
+      const at = y * source.w + x;
+      if (source.idx[at] === EMPTY || source.emit[at]) continue;
+      if (empty(x - 1, y) || empty(x + 1, y) || empty(x, y - 1) || empty(x, y + 1)) continue;
+      if (look === "spark" && (x + y) % 2 === 1) continue;
+      out.idx[at] = color;
+      out.alpha[at] = 255;
+    }
   }
   return out;
 }
@@ -79,7 +91,7 @@ export function creatureSheet(id: string, era: number, night?: { key: string; gr
       return { ...render, pixels: grade(render.pixels) };
     });
     const base = renders[0];
-    const flashes = new Map<Pal, Surface>();
+    const flashes = new Map<string, Surface>();
     const shadows = new Map<string, { surface: Surface; dx: number; dy: number }>();
     const rings = new Map<Pal, Surface>();
     return {
@@ -91,9 +103,10 @@ export function creatureSheet(id: string, era: number, night?: { key: string; gr
       feet: base.feet,
       treatment: base.treatment,
       unit: base.treatment.unit ?? 1,
-      flash: (color) => {
-        let surface = flashes.get(color);
-        if (!surface) flashes.set(color, (surface = toSurface(flashPixels(base.pixels, color))));
+      flash: (color, look) => {
+        const key = `${look}:${color}`;
+        let surface = flashes.get(key);
+        if (!surface) flashes.set(key, (surface = toSurface(flashPixels(base.pixels, color, look))));
         return surface;
       },
       shadow: (side, color) => {

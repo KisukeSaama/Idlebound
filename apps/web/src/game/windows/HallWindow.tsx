@@ -183,7 +183,9 @@ function Bestiary() {
                 const next = entry.tiers[tier];
                 return (
                   <article key={entry.id} className={`bestiary-entry ${tier > 0 ? "met" : "unknown"}`}>
-                    <PixelSprite source={creatureSource(entry.id, 0, false)} size={64} className="bestiary-sprite" />
+                    <div className="bestiary-portrait">
+                      <PixelSprite source={creatureSource(entry.id, 0, false)} size={112} className="bestiary-sprite" />
+                    </div>
                     <div>
                       <h4>{tier > 0 ? g.monsters[entry.id] : text.unknownCreature}</h4>
                       {tier > 0 ? <p className="bestiary-count">{text.kills(fmt(kills))}{next !== undefined ? ` · ${text.nextLine(fmt(next))}` : ""}</p> : null}
@@ -194,7 +196,9 @@ function Bestiary() {
               })}
               {blank ? (
                 <article className="bestiary-entry bestiary-blank" aria-label={t.chronicle.pawPrint}>
-                  <PawPrint />
+                  <div className="bestiary-portrait">
+                    <PawPrint />
+                  </div>
                   <div aria-hidden="true"><h4>…</h4></div>
                 </article>
               ) : null}

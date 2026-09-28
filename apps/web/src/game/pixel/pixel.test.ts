@@ -12,6 +12,7 @@ import { structureView } from "./props";
 import { compositeLayers, flattenScene, MAX_SCENE_COLORS, PLACE_IDS, renderScene, type Scene } from "./scene";
 import { eclipsePixels, eclipseRing, GREY_TABLE, GREYS, greyPixels, greyScene, lanternPlaces, remembrancePixels, seamPixels, unfinishedOrder, unfinishedPixels, unfinishedShare } from "./events";
 import { placeFrames } from "./stage";
+import { flashPixels } from "./sprites";
 
 const hash = (pixels: Pixels) => hashBitmap(toRgba(pixels));
 /** Every Age's mark: the first era of each Age, the Ink of the Blank and the Dawn's line. */
@@ -153,6 +154,26 @@ describe("pixel generator", () => {
       expect(lights.length > 0, `${id} lights drawn`).toBe(drawsLight);
       expect(lights.filter((pixel) => blink.emit[pixel] !== 2 || blink.idx[pixel] !== still.idx[pixel]).length, `${id} lights stay lit`).toBe(0);
       if (eyes.length) expect(eyes.some((pixel) => blink.emit[pixel] === 0), `${id} eyes close`).toBe(true);
+    }
+  });
+
+  it("lights a hit inside the outline: a checker of light, the whole body on a critical, eyes and outline untouched", () => {
+    for (const id of Object.keys(CREATURE_RECIPES)) {
+      const still = renderCreature(id).pixels;
+      const edge = (at: number) => {
+        const x = at % still.w;
+        const y = Math.floor(at / still.w);
+        return [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].some(([nx, ny]) => nx < 0 || ny < 0 || nx >= still.w || ny >= still.h || still.idx[ny * still.w + nx] === EMPTY);
+      };
+      const drawn = [...still.idx.keys()].filter((at) => still.idx[at] !== EMPTY);
+      const kept = drawn.filter((at) => still.emit[at] || edge(at));
+      const inside = drawn.filter((at) => !still.emit[at] && !edge(at));
+      const spark = flashPixels(still, C.moon, "spark");
+      const fill = flashPixels(still, C.pale, "fill");
+      for (const lit of [spark, fill]) expect(kept.filter((at) => lit.idx[at] !== still.idx[at]).length, `${id} outline and eyes kept`).toBe(0);
+      expect(inside.every((at) => fill.idx[at] === C.pale), `${id} filled`).toBe(true);
+      const lit = (at: number) => ((at % still.w) + Math.floor(at / still.w)) % 2 === 0;
+      expect(inside.every((at) => spark.idx[at] === (lit(at) ? C.moon : still.idx[at])), `${id} a checker of light`).toBe(true);
     }
   });
 
