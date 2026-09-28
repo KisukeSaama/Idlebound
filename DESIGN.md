@@ -497,10 +497,11 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
 - Monsters (pixel arena): they gather from the dark into their silhouette in a quarter
   second, breathe (the upper body rises a pixel or two over the creature's own slow cycle),
   blink every few seconds,
-  once a cycle make their gesture (the twitch); a hit is one frame of light inside the
-  outline (a checker of white; a critical fills the body pale, unless the last flash ended
-  under 80 ms ago, so fast clicks never strobe; always the checker with reduced motion;
-  outline and light pixels keep their color) and a 2 px knockback away from the blow; on death they come apart
+  once a cycle make their gesture (the twitch); a hit is one frame of soft light inside the
+  outline (lilac, paler on a critical, never white; outline and light pixels keep their
+  color) and a 2 px knockback away from the blow. The monster flashes at most three times a
+  second, companions' shots included (the photosensitivity threshold): faster blows keep
+  only their knockback. On death they come apart
   into their own pixels, which drift up and turn into gold motes flying to the gold counter
   (guardians shed violet ones too). Elites and guardians pulse a 1 px outline in the biome's
   accent, Pip in gold.
@@ -532,7 +533,7 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   companion (weighted by its share of DPS): its medallion in the party lunges and flashes,
   and a pixel shot in its ramp flies from the medallion to the monster's body (a head with a
   3-step trail, snapped to the grid), then bursts (a 5 px cross flare, a ring of 8 pixels,
-  sparks thrown back the way it came) while the monster flashes a checker of that color. Each
+  sparks thrown back the way it came) while the monster flashes in that color. Each
   companion has a strike family (`HeroDef.strike`) that sets the flight: arrows fly fast and
   flat, blades and claws quick, heavy blows lob high and hit with a wider ring, spells
   wobble and leave sparkles. A player's hit keeps its own light. Shots and lunges are

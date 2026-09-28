@@ -1560,10 +1560,10 @@ Generated from the base frame, no hand-drawn frames:
 
 - **Idle:** 4 frames, a 1 px breathing shift of the upper rows (sine), a blink every few
   seconds, parts that sway (tails, banners, flames) on their own phase.
-- **Hit:** 1 frame of light inside the outline (a white checker, a pale fill on a critical
-  that is not too close to the last flash; outline and emissive pixels stay), 2 px
-  knockback away from the source; companion shots tint the checker with the companion's
-  color (**shipped**).
+- **Hit:** 1 frame of soft light inside the outline (lilac, paler on a critical, never
+  white; outline and emissive pixels stay), at most three flashes a second, 2 px knockback
+  away from the source; companion shots tint the flash with the companion's color
+  (**shipped**).
 - **Death:** the sprite **comes apart into its own pixels**, which drift up and fade into
   gold motes toward the gold counter: a Remnant is a memory, and memories come apart into
   light. Guardians shed a few violet pixels too.

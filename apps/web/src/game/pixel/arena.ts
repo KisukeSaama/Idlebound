@@ -13,7 +13,7 @@ import { companionRamp, drawMotes, drawShot, Particles, shotBackAngle, shotDurat
 import type { NightGrade } from "./night";
 import { hash2 } from "./pixels";
 import { sceneRecipe, type SceneOptions } from "./scene";
-import { creatureSheet, css, flashPixels, sceneSheet, type CreatureSheet, type FlashLook, type SceneSheet, type Tone } from "./sprites";
+import { creatureSheet, css, flashPixels, sceneSheet, type CreatureSheet, type SceneSheet, type Tone } from "./sprites";
 import { deviceRatio, effectCache, toSurface, whenIdle, type Surface } from "./surface";
 
 export interface CssRect {
@@ -35,7 +35,7 @@ interface MonsterView {
   still: boolean;
   /** The Unfinished: share of its body drawn, and the drawing at that share. */
   share: number;
-  drawn?: { order: Int32Array; step: number; surface: Surface | null; flashes: Map<string, Surface> };
+  drawn?: { order: Int32Array; step: number; surface: Surface | null; flashes: Map<Pal, Surface> };
 }
 
 /** What `setMonster` needs to know of the monster in the state. */
@@ -47,8 +47,8 @@ export type ArenaMonster = Pick<MonsterState, "id" | "kind" | "event" | "eclipse
  */
 const IDLE_FRAME_SECONDS = 0.55;
 const SPAWN_SECONDS = 0.25;
-/** A critical blow this soon after the last flash stays a checker of light: no strobe. */
-const STROBE_GAP_SECONDS = 0.08;
+/** The monster flashes at most three times a second, however fast the blows land: never a strobe. */
+const FLASH_GAP_SECONDS = 1 / 3;
 /** The Lantern Queen's flight across the sky during a Crystal Storm. */
 const QUEEN_SECONDS = 15;
 /** The Seam opens this fast behind its Warden, and closes this fast when it falls. */
@@ -97,7 +97,7 @@ export class ArenaRenderer {
   private particles = new Particles(7);
   private shots: Shot[] = [];
   private motes: Mote[] = [];
-  private flash: { until: number; color: Pal; look: FlashLook } | null = null;
+  private flash: { at: number; until: number; color: Pal } | null = null;
   private queen: { sheet: CreatureSheet; at: number } | null = null;
   private knock: { until: number; dx: number } | null = null;
   private sceneArgs: { id: string; era: number; options: SceneOptions } | null = null;
@@ -375,11 +375,8 @@ export class ArenaRenderer {
     const monster = this.monster;
     if (!monster) return;
     const now = this.now();
-    // A critical blow lights the whole body, unless the last flash has barely ended: fast
-    // clicks stay a checker of light, never a strobe (nor with reduced motion).
-    const recent = this.flash !== null && now - this.flash.until < STROBE_GAP_SECONDS;
-    const fill = crit && !recent && !this.reducedMotion;
-    this.flash = { until: now + (crit ? 0.09 : 0.06), color: fill ? C.pale : C.moon, look: fill ? "fill" : "spark" };
+    // A soft light, a paler one on a critical blow; blows landing faster keep only their knockback.
+    if (this.canFlash(now)) this.flash = { at: now, until: now + (crit ? 0.09 : 0.06), color: crit ? C.pale : C.lilac };
     if (!this.reducedMotion) {
       const center = this.arena.x + this.arena.width / 2;
       const dir = fromX === undefined || fromX <= center ? 1 : -1;
@@ -496,8 +493,12 @@ export class ArenaRenderer {
     this.ctx.drawImage(surface, 0, Math.max(0, this.toGrid(0, this.arena.y).y - 2));
   }
 
-  /** The Unfinished at its share, on its first frame only (a drawing does not breathe); `flash` is a hit's light. */
-  private unfinishedSurface(monster: MonsterView, flash: { color: Pal; look: FlashLook } | null): Surface {
+  private canFlash(now: number) {
+    return this.flash === null || now - this.flash.at >= FLASH_GAP_SECONDS;
+  }
+
+  /** The Unfinished at its share, on its first frame only (a drawing does not breathe); `flash` is a hit's color. */
+  private unfinishedSurface(monster: MonsterView, flash: Pal | null): Surface {
     const sheet = monster.sheet;
     const drawn = (monster.drawn ??= { order: unfinishedOrder(sheet.pixels, resolveCreature(monster.id).seed), step: -1, surface: null, flashes: new Map() });
     if (drawn.step !== monster.share || !drawn.surface) {
@@ -506,9 +507,8 @@ export class ArenaRenderer {
       drawn.flashes.clear();
     }
     if (flash === null) return drawn.surface;
-    const key = `${flash.look}:${flash.color}`;
-    let surface = drawn.flashes.get(key);
-    if (!surface) drawn.flashes.set(key, (surface = toSurface(flashPixels(unfinishedPixels(sheet.pixels, drawn.order, monster.share), flash.color, flash.look))));
+    let surface = drawn.flashes.get(flash);
+    if (!surface) drawn.flashes.set(flash, (surface = toSurface(flashPixels(unfinishedPixels(sheet.pixels, drawn.order, monster.share), flash))));
     return surface;
   }
 
@@ -678,8 +678,8 @@ export class ArenaRenderer {
     const blinkPhase = (now * speed + hash2(monster.key.length, 0, 1) * 4) % 4.2;
     let surface = blinkPhase < 0.14 && !still ? sheet.blink : sheet.frames[idle];
     const flashing = this.flash !== null && now < this.flash.until;
-    if (monster.event === "unfinished") surface = this.unfinishedSurface(monster, flashing ? this.flash : null);
-    else if (flashing) surface = sheet.flash(this.flash!.color, this.flash!.look);
+    if (monster.event === "unfinished") surface = this.unfinishedSurface(monster, flashing ? this.flash!.color : null);
+    else if (flashing) surface = sheet.flash(this.flash!.color);
     ctx.drawImage(surface, x, place.y, w, h);
     ctx.globalAlpha = 1;
     if (sheet.treatment.embers && !this.reducedMotion && now - this.lastEmber > 0.12) {
@@ -708,7 +708,7 @@ export class ArenaRenderer {
       if (drawShot(this.ctx, shot, t)) {
         this.particles.sparks(shot.toX, shot.toY, shotBackAngle(shot), shot.style === "blunt" ? 3.2 : 2.2, shot.style === "blunt" ? 10 : 7, shot.ramp[shot.ramp.length - 1], now);
         // The monster lights up in the companion's color (a player's hit keeps its own light).
-        if (this.monster && !(this.flash && now < this.flash.until)) this.flash = { until: now + 0.06, color: shot.tint, look: "spark" };
+        if (this.monster && this.canFlash(now)) this.flash = { at: now, until: now + 0.06, color: shot.tint };
         this.onLand?.(shot.ramp[shot.ramp.length - 1]);
       }
     }

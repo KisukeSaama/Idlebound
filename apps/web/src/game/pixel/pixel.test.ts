@@ -157,7 +157,7 @@ describe("pixel generator", () => {
     }
   });
 
-  it("lights a hit inside the outline: a checker of light, the whole body on a critical, eyes and outline untouched", () => {
+  it("lights a hit inside the outline: the whole body in one color, eyes and outline untouched", () => {
     for (const id of Object.keys(CREATURE_RECIPES)) {
       const still = renderCreature(id).pixels;
       const edge = (at: number) => {
@@ -168,12 +168,9 @@ describe("pixel generator", () => {
       const drawn = [...still.idx.keys()].filter((at) => still.idx[at] !== EMPTY);
       const kept = drawn.filter((at) => still.emit[at] || edge(at));
       const inside = drawn.filter((at) => !still.emit[at] && !edge(at));
-      const spark = flashPixels(still, C.moon, "spark");
-      const fill = flashPixels(still, C.pale, "fill");
-      for (const lit of [spark, fill]) expect(kept.filter((at) => lit.idx[at] !== still.idx[at]).length, `${id} outline and eyes kept`).toBe(0);
-      expect(inside.every((at) => fill.idx[at] === C.pale), `${id} filled`).toBe(true);
-      const lit = (at: number) => ((at % still.w) + Math.floor(at / still.w)) % 2 === 0;
-      expect(inside.every((at) => spark.idx[at] === (lit(at) ? C.moon : still.idx[at])), `${id} a checker of light`).toBe(true);
+      const lit = flashPixels(still, C.lilac);
+      expect(kept.filter((at) => lit.idx[at] !== still.idx[at]).length, `${id} outline and eyes kept`).toBe(0);
+      expect(inside.every((at) => lit.idx[at] === C.lilac), `${id} filled`).toBe(true);
     }
   });
 
