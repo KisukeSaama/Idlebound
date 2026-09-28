@@ -11,7 +11,7 @@ import { BuffChips } from "./BuffChips";
 import { CrystalView } from "./CrystalView";
 import { FxLayer, type PointerMemo } from "./FxLayer";
 import { Party } from "./Party";
-import { SceneCanvas } from "./SceneCanvas";
+import { SceneCanvas, monsterKeyOf } from "./SceneCanvas";
 import { SkillBar } from "./SkillBar";
 import { StageBar } from "./StageBar";
 import { TutorialHint } from "./TutorialHint";
@@ -45,7 +45,7 @@ export function Scene() {
   const timerSpan = useRef({ key: "", total: 1 });
   const wager = monster?.wager;
   const atFrontier = state.stage === state.maxStage;
-  const monsterKey = `${state.stage}-${state.lifetime.kills}-${state.lifetime.bossFails}`;
+  const monsterKey = monsterKeyOf(state);
   if (timerSpan.current.key !== monsterKey) timerSpan.current = { key: monsterKey, total: timedEvent ? state.bossTimeLeft : derived.bossTimer };
   timerSpan.current.total = Math.max(timerSpan.current.total, timedEvent ? state.bossTimeLeft : derived.bossTimer, 0.001);
   const timerRatio = timed ? Math.max(0, Math.min(1, state.bossTimeLeft / timerSpan.current.total)) : 0;
@@ -123,7 +123,6 @@ export function Scene() {
         biomeId={biome.id}
         era={era}
         monster={monster}
-        monsterKey={monsterKey}
         cleared={state.maxStage > state.stage || state.kills >= MONSTERS_PER_STAGE}
         fullMoon={state.secrets.includes("night-owl")}
         darkNight={state.settings.darkNight}
