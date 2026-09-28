@@ -701,13 +701,13 @@ describe("anti-cheat", () => {
 
 describe("usernames", () => {
   it("accepts normal usernames", () => {
-    for (const name of ["Aldric", "Maëlle_42", "ShadowBlade", "Constance", "Nicolas", "Sextant-9", "Analyste", "Violette", "Cassandre", "Chateaubriand", "Computer", "Bobby", "Unique"]) {
+    for (const name of ["Aldric", "Maëlle_42", "ShadowBlade", "Constance", "Nicolas", "Sextant-9", "Analyste", "Violette", "Cassandre", "Chateaubriand", "Computer", "Bobby", "Unique", "Brotherhood", "Carrot", "Herot7x", "Annulaire"]) {
       expect(validateUsername(name), name).toMatchObject({ ok: true });
     }
   });
 
   it("refuses offensive usernames, even disguised", () => {
-    for (const name of ["connard", "C0nn4rd", "SSaalllooppee", "Hitler88", "n1gg3r", "fdp_du_93", "con", "Big_Con", "admin", "Idlebound", "pUt3"]) {
+    for (const name of ["connard", "C0nn4rd", "SSaalllooppee", "Hitler88", "n1gg3r", "fdp_du_93", "con", "Big_Con", "admin", "Idlebound", "pUt3", "R00t", "rooooot", "Nuuull"]) {
       expect(validateUsername(name).ok, name).toBe(false);
     }
   });

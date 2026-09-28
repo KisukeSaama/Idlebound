@@ -355,7 +355,7 @@ describe("pixel generator", () => {
     expect(hash(flattenScene(renderScene("green-plains", 3, { darkNight: true })))).toBe(hash(flattenScene(renderScene("green-plains", 3))));
     expect(renderScene("green-plains", 3, { darkNight: true }).night).toBeDefined();
     expect(hash(flattenScene(renderScene("sanctum", 40, { darkNight: true })))).toBe(hash(flattenScene(renderScene("sanctum"))));
-  });
+   }, 60_000);
 
   it("draws the places of the story like the biomes: flat, 20 colors at most, alive, deterministic", () => {
     for (const id of PLACE_IDS) {

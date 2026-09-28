@@ -3,7 +3,7 @@
  * They run when TEST_DATABASE_URL is set (CI job, or locally with compose.dev.yml):
  *   TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test
  */
-import { GameEngine, SAVE_VERSION, createInitialState, seededRng, type GameState } from "@idlebound/game";
+import { GameEngine, SAVE_VERSION, createInitialState, seededRng, validateUsername, type GameState } from "@idlebound/game";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
 
@@ -55,6 +55,14 @@ class Client {
 
 const unique = Date.now().toString(36);
 
+/** A unique username the moderation accepts: a random suffix can spell a reserved word ("Hero0t" holds "root"). */
+function freshName(prefix: string, length = 6): string {
+  for (let seed = Date.now(); ; seed += 1) {
+    const name = `${prefix}${seed.toString(36).slice(-length)}`;
+    if (validateUsername(name).ok) return name;
+  }
+}
+
 function playedState(minutes: number): GameState {
   const start = Date.now() - minutes * 60_000 - 5_000;
   const engine = new GameEngine(createInitialState(start), seededRng(9), start);
@@ -104,14 +112,14 @@ suite("API (real Postgres)", () => {
     const offensive = await client.call("POST", "/auth/register", { email: `a${unique}@test.fr`, username: "C0nn4rd", password: "unBonMotDePasse!" });
     expect(offensive.status).toBe(400);
     expect(offensive.json.field).toBe("username");
-    const weak = await client.call("POST", "/auth/register", { email: `a${unique}@test.fr`, username: `Hero${unique.slice(-5)}`, password: "password" });
+    const weak = await client.call("POST", "/auth/register", { email: `a${unique}@test.fr`, username: freshName("Hero", 5), password: "password" });
     expect(weak.status).toBe(400);
     expect(weak.json.field).toBe("password");
   });
 
   it("handles a full journey: sign-up, save, cheat, leaderboard, deletion", async () => {
     const client = new Client("10.0.0.2");
-    const username = `Hero${unique.slice(-6)}`;
+    const username = freshName("Hero");
     const email = `${unique}@idlebound.test`;
 
     const register = await client.call("POST", "/auth/register", { email, username, password: "Un-Mot-De-Passe-Solide" });
@@ -174,7 +182,7 @@ suite("API (real Postgres)", () => {
 
   it("refunds the altars of a version 3 save, including from an outdated client", async () => {
     const client = new Client("10.0.0.9");
-    const register = await client.call("POST", "/auth/register", { email: `fate${unique}@idlebound.test`, username: `Fate${unique.slice(-6)}`, password: "Un-Mot-De-Passe-Solide" });
+    const register = await client.call("POST", "/auth/register", { email: `fate${unique}@idlebound.test`, username: freshName("Fate"), password: "Un-Mot-De-Passe-Solide" });
     expect(register.status).toBe(201);
 
     // A save from before the altar rework (version 3): 12 levels of the Altar of Fate bought
@@ -223,8 +231,8 @@ suite("API (real Postgres)", () => {
     const active = new Client("10.0.0.12");
     const dormantEmail = `dormant-${unique}@test.fr`;
     const activeEmail = `actif-${unique}@test.fr`;
-    expect((await dormant.call("POST", "/auth/register", { email: dormantEmail, username: `Dor${unique.slice(-6)}`, password })).status).toBe(201);
-    expect((await active.call("POST", "/auth/register", { email: activeEmail, username: `Act${unique.slice(-6)}`, password })).status).toBe(201);
+    expect((await dormant.call("POST", "/auth/register", { email: dormantEmail, username: freshName("Dor"), password })).status).toBe(201);
+    expect((await active.call("POST", "/auth/register", { email: activeEmail, username: freshName("Act"), password })).status).toBe(201);
     await sql`update users set last_seen_at = now() - interval '1096 days' where email = ${dormantEmail}`;
     await sql`update users set last_seen_at = now() - interval '1094 days' where email = ${activeEmail}`;
 
@@ -255,7 +263,7 @@ suite("API (real Postgres)", () => {
       const password = "unBonMotDePasse!";
       const client = new Client("10.0.0.20");
       const email = `verif-${unique}@test.fr`;
-      const register = await client.call("POST", "/auth/register", { email, username: `Ver${unique.slice(-6)}`, password });
+      const register = await client.call("POST", "/auth/register", { email, username: freshName("Ver"), password });
       expect(register.status).toBe(201);
       expect(register.json.user.emailVerified).toBe(false);
       expect(register.json.user.verifyBy).toBeTruthy();
@@ -298,7 +306,7 @@ suite("API (real Postgres)", () => {
 
       // An account never confirmed is deleted after 30 days.
       const ghost = `ghost-${unique}@test.fr`;
-      expect((await new Client("10.0.0.22").call("POST", "/auth/register", { email: ghost, username: `Gho${unique.slice(-6)}`, password })).status).toBe(201);
+      expect((await new Client("10.0.0.22").call("POST", "/auth/register", { email: ghost, username: freshName("Gho"), password })).status).toBe(201);
       await sql`update users set created_at = now() - interval '31 days' where email = ${ghost}`;
       await purgeExpired();
       expect(await sql`select 1 from users where email = ${ghost}`).toHaveLength(0);
