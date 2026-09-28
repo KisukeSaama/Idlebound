@@ -204,9 +204,9 @@ past a threshold shows those elements at once, without a flood of announcements.
 Screens run from phones to 4K, so nothing is laid out for one resolution. Past a laptop's
 size the whole interface grows (`--ui-zoom` on the root, `globals.css`): the page is laid out
 as on a smaller screen and magnified by the CSS `zoom`, game and public pages alike, windows
-included. Each step keeps at least 1600 x 820 CSS pixels once zoomed, the full desktop
-layout: ×1.25 from 2000 x 1025, ×1.5 from 2400 x 1230, ×1.75 from 2800 x 1435, ×2 from
-3200 x 1640.
+included. The steps are gentle: each keeps at least 1920 x 960 CSS pixels once zoomed (a
+full HD screen): ×1.125 from 2160 x 1080, ×1.25 from 2560 x 1280, ×1.5 from 3200 x 1600,
+×1.75 from 3840 x 1920.
 
 - The pixel art keeps whole pixels: every scale is counted in device pixels per page pixel
   (`pixelRatio()` = device ratio × zoom, `pixel/surface.ts`), for sprites, the arena and the
