@@ -5,6 +5,7 @@ import { useEffect, useRef, type RefObject } from "react";
 import { currentMessages } from "@/i18n/client";
 import { useFormat, useStoreRef } from "../context";
 import type { ArenaRenderer } from "../pixel/arena";
+import { pageRect } from "../pixel/surface";
 
 export interface PointerMemo {
   x: number;
@@ -92,9 +93,9 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
     const sceneCenter = (element: Element | null | undefined) => {
       const section = layer.current?.closest(".scene");
       if (!section || !element) return null;
-      const rect = element.getBoundingClientRect();
+      const rect = pageRect(element);
       if (rect.width === 0) return null;
-      const box = section.getBoundingClientRect();
+      const box = pageRect(section);
       return { x: rect.left - box.left + rect.width / 2, y: rect.top - box.top + rect.height / 2 };
     };
 

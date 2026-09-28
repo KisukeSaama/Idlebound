@@ -4,7 +4,7 @@ import { achievementText, gameText, itemName, monsterName } from "./content";
 import { ACHIEVEMENTS } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarCost, altarTotalCost } from "./data/altars";
 import { BIOMES, TREASURE_MONSTER, isKingStage } from "./data/biomes";
-import { HEROES } from "./data/heroes";
+import { HEROES, HERO_BY_ID } from "./data/heroes";
 import { SLOTS, SLOT_BASE_COUNT } from "./data/items";
 import { MARKET_OFFERS } from "./data/market";
 import { SKILLS } from "./data/skills";
@@ -25,6 +25,8 @@ import {
   essencesForStage,
   heroCost,
   maxAffordableLevels,
+  milestoneMultiplier,
+  nextBreakpoint,
   stageGold,
   stageHp
 } from "./formulas";
@@ -557,6 +559,45 @@ describe("anti-cheat", () => {
     expect(verifyState(s, now)).toEqual([]);
   });
 
+  it("spends while away by breakpoints: hires first, then talent levels and milestones, never a level at a time", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    const before = structuredClone(engine.state.heroLevels);
+    now += 8 * 3600_000;
+    engine.tick(now);
+    const s = engine.state;
+    const breakpoints = new Set([1, 10, 25, 50, 100, 150]);
+    for (const hero of HEROES.slice(1)) {
+      const level = s.heroLevels[hero.id] ?? 0;
+      if (level === (before[hero.id] ?? 0)) continue;
+      expect(breakpoints.has(level) || (level >= 200 && level % 25 === 0), `${hero.id} at ${level}`).toBe(true);
+    }
+    expect(s.heroUpgrades.length).toBeGreaterThan(0);
+    // Companions join in order, none skipped.
+    const hired = HEROES.slice(1).map((hero) => (s.heroLevels[hero.id] ?? 0) > 0);
+    expect(hired.indexOf(false) === -1 || !hired.slice(hired.indexOf(false)).includes(true)).toBe(true);
+  });
+
+  it("hires the next companion at once, and buys no level short of a breakpoint", () => {
+    const state = createInitialState(T0);
+    state.heroLevels.maelle = 10;
+    state.heroUpgrades.push("maelle-10");
+    state.gold = 990;
+    state.lastTickAt = T0;
+    const engine = new GameEngine(state, seededRng(1), T0);
+    engine.tick(T0 + 6_000);
+    // Brom joins (250 gold); Maëlle's way to level 25 (about 2,500) is out of reach: kept.
+    expect(engine.state.heroLevels.brom).toBe(1);
+    expect(engine.state.heroLevels.maelle).toBe(10);
+    expect(engine.state.gold).toBeGreaterThanOrEqual(740);
+  });
+
+  it("finds each companion's next breakpoint", () => {
+    const maelle = HERO_BY_ID.maelle;
+    expect([0, 9, 10, 49, 100, 150, 199, 200, 224, 225].map((level) => nextBreakpoint(maelle, level))).toEqual([10, 10, 25, 50, 150, 200, 200, 225, 225, 250]);
+    expect([199, 200, 224, 225].map(milestoneMultiplier)).toEqual([1, 3.5, 3.5, 12.25]);
+  });
+
   it("keeps the gold earned while away when offline spending is off", () => {
     const engine = newGame(4);
     let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
@@ -583,7 +624,7 @@ describe("anti-cheat", () => {
     engine.drainEvents();
     engine.markInput(now);
     expect(engine.state.buffs.find((buff) => buff.id === "reunion")?.until).toBe(now + 3600_000);
-    expect(engine.drainEvents()).toContainEqual({ type: "reunion", seconds: 3600 });
+    expect(engine.drainEvents()).toContainEqual(expect.objectContaining({ type: "reunion", seconds: 3600 }));
     const timed = derive(engine.state, now);
     const untimed = derive(engine.state, now, { ignoreTimed: true });
     expect(timed.dps / untimed.dps).toBeCloseTo(REUNION_DPS);
@@ -600,6 +641,40 @@ describe("anti-cheat", () => {
     then = run(open, then, 2 * 3600);
     open.markInput(then);
     expect(open.state.buffs.find((buff) => buff.id === "reunion")?.until).toBe(then + 1_200_000);
+  }, 60_000);
+
+  it("tells the walker back what the company did alone, once, and only after a real absence", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.afkAfterMs = 60_000;
+    engine.markInput(now);
+    const before = structuredClone(engine.state);
+    now = run(engine, now, 2 * 3600);
+    engine.drainEvents();
+    engine.markInput(now);
+    const reunion = engine.drainEvents().find((event) => event.type === "reunion");
+    const account = reunion?.type === "reunion" ? reunion.account : undefined;
+    const s = engine.state;
+    expect(account).toBeDefined();
+    expect(account!.seconds).toBeCloseTo(2 * 3600);
+    expect(account!.fromStage).toBe(before.maxStage);
+    expect(account!.toStage).toBe(s.maxStage);
+    expect(account!.toStage).toBeGreaterThan(account!.fromStage);
+    expect(account!.gold).toBeCloseTo(s.lifetime.goldEarned - before.lifetime.goldEarned);
+    expect(account!.spent).toBeCloseTo(account!.gold - (s.gold - before.gold));
+    expect(account!.talents).toEqual(s.heroUpgrades.slice(before.heroUpgrades.length));
+    for (const entry of account!.levels) {
+      expect(entry.from).toBe(before.heroLevels[entry.heroId] ?? 0);
+      expect(entry.to).toBe(s.heroLevels[entry.heroId]);
+    }
+    expect(account!.hired).toEqual(account!.levels.filter((entry) => entry.from === 0).map((entry) => entry.heroId));
+    for (const stage of account!.walls) expect(stage).toBeLessThan(s.maxStage);
+    expect(account!.blockedAt).toBe(s.autoAdvance ? null : s.maxStage);
+
+    // Told once; a short absence afterwards tells nothing.
+    now = run(engine, now, 10 * 60);
+    engine.markInput(now);
+    expect(engine.drainEvents().some((event) => event.type === "reunion")).toBe(false);
   }, 60_000);
 
   it("rejects boons that last too long", () => {
@@ -639,8 +714,14 @@ describe("anti-cheat", () => {
     // An open tab: the autopilot levels companions up and retries the boss within minutes.
     const open = new GameEngine(structuredClone(before), seededRng(4), now);
     open.afkAfterMs = 60_000;
-    const later = run(open, now, 15 * 60);
+    open.markInput(now);
+    const later = run(open, now, 45 * 60);
     expect(open.state.maxStage).toBeGreaterThan(wounded);
+    open.drainEvents();
+    open.markInput(later);
+    // Back, the walker hears of the boss that stopped them, then gave way.
+    const reunion = open.drainEvents().find((event) => event.type === "reunion");
+    expect(reunion?.type === "reunion" && reunion.account?.walls[0]).toBe(wounded);
     expect(open.state.trail.wound?.stage ?? open.state.maxStage).toBe(open.state.maxStage);
     expect(verifyState(open.state, later)).toEqual([]);
 

@@ -4,7 +4,7 @@ import { BIOMES, MAX_STAGE, STAGES_PER_BIOME, biomeForStage, eraForStage, rememb
 import { useEffect, useRef, type RefObject } from "react";
 import { useGame } from "../context";
 import { ArenaRenderer, type Stretch } from "../pixel/arena";
-import { prefersReducedMotion } from "../pixel/surface";
+import { pageRect, prefersReducedMotion } from "../pixel/surface";
 
 let active: { renderer: ArenaRenderer; canvas: HTMLCanvasElement } | null = null;
 /** Windows and dialogs open over the scene right now. */
@@ -23,11 +23,11 @@ export function coverScene(): () => void {
   };
 }
 
-/** Where the monster stands on the page (viewport pixels), for what must not cover it (the toasts). */
+/** Where the monster stands on the page (page CSS pixels), for what must not cover it (the toasts). */
 export function monsterOnPage(): { left: number; top: number; right: number; bottom: number } | null {
   const box = active?.renderer.spriteBox();
   if (!active || !box) return null;
-  const canvas = active.canvas.getBoundingClientRect();
+  const canvas = pageRect(active.canvas);
   return { left: canvas.left + box.x, top: canvas.top + box.y, right: canvas.left + box.x + box.width, bottom: canvas.top + box.y + box.height };
 }
 
@@ -79,8 +79,8 @@ export function SceneCanvas({
     active = { renderer: arenaRenderer, canvas: element };
     arenaRenderer.setCovered(covers > 0);
     const fit = () => {
-      const box = section.getBoundingClientRect();
-      const inner = arena.getBoundingClientRect();
+      const box = pageRect(section);
+      const inner = pageRect(arena);
       arenaRenderer.resize({ x: 0, y: 0, width: box.width, height: box.height }, { x: inner.left - box.left, y: inner.top - box.top, width: inner.width, height: inner.height });
     };
     const observer = new ResizeObserver(fit);

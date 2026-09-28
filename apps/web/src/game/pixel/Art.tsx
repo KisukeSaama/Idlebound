@@ -32,7 +32,8 @@ export type ArtSpec =
   /** A place of the story in motion, a wide banner: fills its parent at a whole scale unless a size is given. */
   | { kind: "place"; id: PlaceId }
   | { kind: "stage"; biome: string; era?: number; guardian?: boolean; width?: number; darkNight?: boolean }
-  | { kind: "depth"; biome: string; era?: number; depth: Depth }
+  /** The planes of one depth; `width` widens the view (in art pixels) around the scene. */
+  | { kind: "depth"; biome: string; era?: number; depth: Depth; width?: number }
   | { kind: "structure"; biome: string; id: string; era?: number }
   | { kind: "portrait"; hero: string }
   | { kind: "emblem"; hero: string }
@@ -54,7 +55,7 @@ export function artSource(spec: ArtSpec): PixelSource {
     case "stage":
       return stageSource(spec.biome, spec.era ?? 0, spec.guardian ?? true, spec.width, spec.darkNight ?? false);
     case "depth":
-      return depthSource(spec.biome, spec.era ?? 0, spec.depth);
+      return depthSource(spec.biome, spec.era ?? 0, spec.depth, spec.width);
     case "structure":
       return structureSource(spec.biome, spec.id, spec.era ?? 0);
     case "portrait":

@@ -7,6 +7,7 @@ import { getI18n } from "@/i18n/server";
 import { fetchLeaderboard, fetchStats } from "@/lib/server-api";
 import { SITE_NAME, pageAlternates, siteUrl } from "@/lib/site";
 import { Art, type ArtSpec } from "@/game/pixel/Art";
+import { LandingHero } from "./LandingHero";
 import "./landing.css";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -89,67 +90,65 @@ export default async function LandingPage({ params }: Props) {
       <SiteNav locale={locale} />
 
       <main>
-        <section className="hero">
-          <div className="hero-bg" aria-hidden="true">
-            <Art spec={{ kind: "scene", biome: "fallen-king-ruins" }} size="parent" cover className="hero-scene" />
-          </div>
-          <div className="hero-inner">
-            <div className="hero-copy">
-              <h1>{l.hero.titleLead}<span>{l.hero.titleAccent}</span></h1>
-              <p className="hero-lead">{l.hero.lead}</p>
-              <div className="hero-cta">
-                <Link href={href(locale, "play")} className="btn btn-gold btn-lg">{l.hero.play}</Link>
-                <Link href={href(locale, "leaderboard")} className="btn btn-ghost btn-lg">{l.hero.leaderboard}</Link>
-              </div>
-              <p className="hero-note">{l.hero.note}</p>
-              <ul className="hero-proof" aria-label={l.hero.proofLabel}>
-                <li><strong>{COMPANION_COUNT}</strong> {l.hero.companions}</li>
-                <li><strong>{BESTIARY.length}</strong> {l.hero.creatures}</li>
-                <li><strong>{stages}</strong> {l.hero.stages}</li>
-                {stats && stats.players > 0 ? <li><strong>{formatNumber(stats.players)}</strong> {l.hero.players(stats.players)}</li> : null}
-              </ul>
-            </div>
-            <div className="hero-art" aria-hidden="true">
-              <div className="hero-glow" />
-              <div className="hero-boss">
-                <Art spec={{ kind: "creature", id: "ruined-king" }} size="parent" />
-              </div>
-              <span className="hero-dmg hero-dmg-1">1.2M</span>
-              <span className="hero-dmg hero-dmg-2 crit">48.7M</span>
-              <span className="hero-dmg hero-dmg-3">980K</span>
-            </div>
-          </div>
-        </section>
+        <LandingHero
+          text={{
+            titleLead: l.hero.titleLead,
+            titleAccent: l.hero.titleAccent,
+            lead: l.hero.lead,
+            play: l.hero.play,
+            leaderboard: l.hero.leaderboard,
+            back: l.hero.back,
+            backLink: l.hero.backLink,
+            kingName: g.monsters["ruined-king"],
+            boss: l.hero.boss
+          }}
+          playHref={href(locale, "play")}
+          leaderboardHref={href(locale, "leaderboard")}
+        />
 
-        <section className="section steps" aria-labelledby="steps-title">
-          <h2 id="steps-title" className="section-title">{l.steps.title}</h2>
-          <ol className="step-list">
-            {l.steps.items.map((step, index) => (
-              <li key={step.title}><span className="step-num">{index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></li>
-            ))}
-          </ol>
+        <section className="loop" aria-label={l.steps.label}>
+          {l.steps.items.map((step) => (
+            <div key={step.title}>
+              <h2>{step.title}</h2>
+              <p>{step.text}</p>
+            </div>
+          ))}
         </section>
 
         <section id={l.features.anchor} className="section" aria-labelledby="features-title">
           <h2 id="features-title" className="section-title">{l.features.title}</h2>
-          <div className="feature-grid">
-            {features.map((feature, index) => (
-              <article key={feature.title} className="feature card">
-                <span className="feature-art"><Art spec={FEATURE_ART[index]} size={56} /></span>
-                <h3>{feature.title}</h3>
-                <p>{feature.text}</p>
-              </article>
-            ))}
-            <article className="feature feature-wide card">
-              <div className="feature-place" aria-hidden="true">
-                <Art spec={{ kind: "place", id: "loom" }} cover className="feature-place-art" />
-              </div>
-              <div className="feature-wide-body">
-                <h3>{l.features.descent.title}</h3>
-                <p>{l.features.descent.text(counts)}</p>
-              </div>
-            </article>
+          <div className="features">
+            <div className="feature-list">
+              {features.map((feature, index) => (
+                <article key={feature.title} className="feature">
+                  <span className="feature-art pixel-frame"><Art spec={FEATURE_ART[index]} size={72} /></span>
+                  <div>
+                    <h3>{feature.title}</h3>
+                    <p>{feature.text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <aside className="numbers" aria-labelledby="numbers-title">
+              <h3 id="numbers-title">{l.features.numbers.title}</h3>
+              <dl>
+                <div><dt>{l.features.numbers.companions}</dt><dd>{COMPANION_COUNT}</dd></div>
+                <div><dt>{l.features.numbers.creatures}</dt><dd>{BESTIARY.length}</dd></div>
+                <div><dt>{l.features.numbers.stages}</dt><dd>{stages}</dd></div>
+                <div><dt>{l.features.numbers.strata}</dt><dd>{ERA_COUNT}</dd></div>
+                {stats && stats.players > 0 ? <div><dt>{l.features.numbers.players}</dt><dd>{formatNumber(stats.players)}</dd></div> : null}
+              </dl>
+            </aside>
           </div>
+          <article className="descent">
+            <div className="descent-place pixel-frame" aria-hidden="true">
+              <Art spec={{ kind: "place", id: "loom" }} cover className="descent-place-art" />
+            </div>
+            <div className="descent-body">
+              <h3>{l.features.descent.title}</h3>
+              <p>{l.features.descent.text(counts)}</p>
+            </div>
+          </article>
         </section>
 
         <section className="section" aria-labelledby="biomes-title">
@@ -159,8 +158,8 @@ export default async function LandingPage({ params }: Props) {
               const bossName = g.monsters[biome.boss.id];
               const remnant = BIOME_REMNANT[biome.id] ?? biome.monsters[0].id;
               return (
-                <article key={biome.id} className="biome card" style={{ ["--accent" as string]: biome.accent }}>
-                  <div className="biome-img">
+                <article key={biome.id} className="biome" style={{ ["--accent" as string]: biome.accent }}>
+                  <div className="biome-img pixel-frame">
                     <Art spec={{ kind: "scene", biome: biome.id }} size="parent" cover className="biome-scene" />
                     <div className="biome-remnant-art">
                       <Art spec={{ kind: "creature", id: remnant, animated: false }} size="parent" label={g.monsters[remnant]} />
@@ -181,37 +180,47 @@ export default async function LandingPage({ params }: Props) {
           </div>
         </section>
 
-        <section className="section board" aria-labelledby="board-title">
-          <h2 id="board-title" className="section-title">{l.board.title}</h2>
-          {board && board.rows.length > 0 ? (
-            <ol className="mini-board card">
-              {board.rows.map((row) => (
-                <li key={row.rank}>
-                  <span className={`rank rank-${row.rank}`}>{row.rank}</span>
-                  <span className="name">{row.username}</span>
-                  <span className="value">{l.board.value(formatNumber(row.value))}</span>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="board-empty card">{l.board.empty}<Link href={href(locale, "play")}>{l.board.emptyCta}</Link></p>
-          )}
-          <Link href={href(locale, "leaderboard")} className="btn btn-ghost btn-sm board-more">{l.board.more}</Link>
-        </section>
+        <div className="section duo">
+          <section className="board" aria-labelledby="board-title">
+            <h2 id="board-title" className="section-title">{l.board.title}</h2>
+            {board && board.rows.length > 0 ? (
+              <table className="mini-board">
+                <thead>
+                  <tr><th scope="col">{l.board.rank}</th><th scope="col">{l.board.walker}</th><th scope="col" className="value">{l.board.depth}</th></tr>
+                </thead>
+                <tbody>
+                  {board.rows.map((row) => (
+                    <tr key={row.rank}>
+                      <td><span className={`rank rank-${row.rank}`}>{row.rank}</span></td>
+                      <td className="name">{row.username}</td>
+                      <td className="value">{l.board.value(formatNumber(row.value))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="board-empty">{l.board.empty}<Link href={href(locale, "play")}>{l.board.emptyCta}</Link></p>
+            )}
+            <p className="board-join">{l.board.join}</p>
+            <Link href={href(locale, "leaderboard")} className="board-more">{l.board.more}</Link>
+          </section>
 
-        <section className="section faq" aria-labelledby="faq-title">
-          <h2 id="faq-title" className="section-title">{l.faq.title}</h2>
-          {l.faq.items.map((entry) => (
-            <details key={entry.q} className="card">
-              <summary>{entry.q}</summary>
-              <p>{entry.a}</p>
-            </details>
-          ))}
-        </section>
+          <section className="faq" aria-labelledby="faq-title">
+            <h2 id="faq-title" className="section-title">{l.faq.title}</h2>
+            {l.faq.items.map((entry) => (
+              <details key={entry.q}>
+                <summary>{entry.q}</summary>
+                <p>{entry.a}</p>
+              </details>
+            ))}
+          </section>
+        </div>
 
         <section className="final-cta">
-          <h2>{l.finalCta.title}</h2>
-          <p>{l.finalCta.text}</p>
+          <div>
+            <h2>{l.finalCta.title}</h2>
+            <p>{l.finalCta.text}</p>
+          </div>
           <Link href={href(locale, "play")} className="btn btn-gold btn-lg">{l.finalCta.button}</Link>
         </section>
       </main>

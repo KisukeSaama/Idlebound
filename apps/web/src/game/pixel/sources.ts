@@ -78,8 +78,12 @@ export function placeSource(id: PlaceId): PixelSource {
 }
 
 /** Only the planes of one depth of a biome's scene (the workshop). */
-export function depthSource(biomeId: string, era: number, depth: Depth): PixelSource {
-  return { key: `depth:${biomeId}:${era}:${depth}`, frames: () => Array.from({ length: STAGE_FRAMES }, (_, frame) => depthFrame(biomeId, era, frame, depth)), fps: 2.5 };
+export function depthSource(biomeId: string, era: number, depth: Depth, width?: number): PixelSource {
+  return {
+    key: `depth:${biomeId}:${era}:${depth}${width ? `:${width}` : ""}`,
+    frames: () => Array.from({ length: STAGE_FRAMES }, (_, frame) => depthFrame(biomeId, era, frame, depth, width)),
+    fps: 2.5
+  };
 }
 
 /** One building or ruin of a biome, worn by an era (the workshop). */

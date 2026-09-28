@@ -176,10 +176,20 @@ export function upgradeCost(upgradeId: string): number {
   return entry.hero.baseCost * entry.upgrade.costMult;
 }
 
+const MILESTONE_FIRST = 200;
+const MILESTONE_STEP = 25;
+
 /** Automatic milestones: ×3.5 every 25 levels from level 200. */
 export function milestoneMultiplier(level: number): number {
-  if (level < 200) return 1;
-  return Math.pow(3.5, Math.floor((level - 175) / 25));
+  if (level < MILESTONE_FIRST) return 1;
+  return Math.pow(3.5, Math.floor((level - MILESTONE_FIRST) / MILESTONE_STEP) + 1);
+}
+
+/** The next level where a companion's power jumps: its next talent, then every milestone. */
+export function nextBreakpoint(hero: HeroDef, level: number): number {
+  const talent = hero.upgrades.find((upgrade) => upgrade.level > level);
+  if (talent) return talent.level;
+  return Math.max(MILESTONE_FIRST, (Math.floor(level / MILESTONE_STEP) + 1) * MILESTONE_STEP);
 }
 
 /**

@@ -2,6 +2,9 @@ import { defineMessages } from "../define";
 
 type Count = number | string;
 
+/** A stat name set inside a line: lowercased, except an acronym ("DPS") that stays as it is. */
+const inSentence = (label: string) => (label === label.toUpperCase() ? label : label.toLowerCase());
+
 /** In-game shell: header, scene, companions panel, powers, toasts, modals, cloud sync. */
 export const hud = defineMessages({
   fr: {
@@ -119,7 +122,7 @@ export const hud = defineMessages({
       none: "aucune",
       stage: (stage: Count) => `étape ${stage}`
     },
-    affix: (value: string, label: string) => `+${value} % ${label.toLowerCase()}`,
+    affix: (value: string, label: string) => `+${value} % ${inSentence(label)}`,
     tutorial: {
       ok: "OK",
       okLabel: "Compris",
@@ -335,7 +338,7 @@ export const hud = defineMessages({
       none: "none",
       stage: (stage: Count) => `stage ${stage}`
     },
-    affix: (value: string, label: string) => `+${value}% ${label.toLowerCase()}`,
+    affix: (value: string, label: string) => `+${value}% ${inSentence(label)}`,
     tutorial: {
       ok: "OK",
       okLabel: "Got it",

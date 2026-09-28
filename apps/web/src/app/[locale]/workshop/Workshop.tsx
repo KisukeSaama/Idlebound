@@ -29,7 +29,7 @@ import { PixelSprite } from "@/game/pixel/PixelSprite";
 import { PLACE_IDS, renderScene } from "@/game/pixel/scene";
 import type { Depth } from "@/game/pixel/stage";
 import { awakenedSeed, portraitSource } from "@/game/pixel/sources";
-import { spriteCache } from "@/game/pixel/surface";
+import { pageRect, spriteCache } from "@/game/pixel/surface";
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
 const ERA_COUNT = AGE_COUNT * ERAS_PER_AGE;
@@ -106,8 +106,8 @@ function ArenaDemo({ era, reduced }: { era: number; reduced: boolean }) {
     const arena = new ArenaRenderer(element);
     renderer.current = arena;
     const fit = () => {
-      const outer = container.getBoundingClientRect();
-      const inner = ground.getBoundingClientRect();
+      const outer = pageRect(container);
+      const inner = pageRect(ground);
       arena.resize({ x: 0, y: 0, width: outer.width, height: outer.height }, { x: inner.left - outer.left, y: inner.top - outer.top, width: inner.width, height: inner.height });
     };
     const observer = new ResizeObserver(fit);
@@ -138,14 +138,14 @@ function ArenaDemo({ era, reduced }: { era: number; reduced: boolean }) {
   }, [biome, creature, era, lit, reduced, dark]);
 
   const shoot = (family: StrikeStyle) => {
-    const outer = box.current?.getBoundingClientRect();
+    const outer = box.current ? pageRect(box.current) : undefined;
     if (!outer) return;
     const hero = HEROES.find((entry) => entry.id === FAMILY_HERO[family]);
     renderer.current?.shoot(family, hero?.color ?? "#f5c85b", { x: 28, y: outer.height * 0.78 });
   };
 
   const kill = () => {
-    const outer = box.current?.getBoundingClientRect();
+    const outer = box.current ? pageRect(box.current) : undefined;
     renderer.current?.kill({ x: (outer?.width ?? 400) - 40, y: 10 });
     setTimeout(summon, 900);
   };

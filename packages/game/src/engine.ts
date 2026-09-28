@@ -1,6 +1,6 @@
 import { ACHIEVEMENTS } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID } from "./data/altars";
-import { TREASURE_MONSTER, BIOMES, biomeForStage, eraForStage, guardianForStage, isBiomeBossStage, isBossStage, isKingStage, THE_DAWN } from "./data/biomes";
+import { TREASURE_MONSTER, BIOMES, biomeForStage, bossForStage, eraForStage, guardianForStage, isBiomeBossStage, isBossStage, isKingStage, THE_DAWN } from "./data/biomes";
 import { CARAVAN_BUFF_SECONDS, caravanWare, isoWeek } from "./data/caravan";
 import { DESCENT_HERO, DESCENT_MIN_STAGE, WEAVE_BY_ID, threadsFor, weaveCost, type WeaveId } from "./data/descent";
 import {
@@ -100,6 +100,7 @@ import {
   heroCostMultiplier,
   maxAffordableLevels,
   memoryStartGold,
+  nextBreakpoint,
   offlineCapSeconds,
   REUNION_MIN_AWAY_SECONDS,
   REUNION_SHARE,
@@ -115,7 +116,7 @@ import {
 import { generateItem } from "./loot";
 import { pick, randomInt, uid, type Rng } from "./rng";
 import { emptyStats, emptyTrail } from "./state";
-import type { AltarId, BuffId, BuyMode, ChronicleEntry, Derived, GameEvent, GameState, Item, ItemSlot, MonsterDef, MonsterKind, MonsterState, OfflineSummary, Rarity, SkillId } from "./types";
+import type { AbsenceAccount, AltarId, BuffId, BuyMode, ChronicleEntry, Derived, GameEvent, GameState, Item, ItemSlot, MonsterDef, MonsterKind, MonsterState, OfflineSummary, Rarity, SkillId } from "./types";
 
 /** Past this gap between two ticks, gains are computed in one catch-up instead of simulated. */
 const CATCH_UP_THRESHOLD_MS = 5_000;
@@ -123,6 +124,10 @@ const CATCH_UP_THRESHOLD_MS = 5_000;
 const OFFLINE_SLICE_SECONDS = 60;
 /** Most purchase batches per offline slice. */
 const OFFLINE_SPEND_ROUNDS = 200;
+/** Companions keep their gold for a better purchase they can afford within this many seconds. */
+const SAVING_SECONDS = 300;
+/** A talent that adds no damage (gold, crits, time) is learned once it costs this share of the gold at most. */
+const CHEAP_TALENT_SHARE = 0.1;
 /** While the player is away from an open tab, the autopilot acts this often (like an offline slice). */
 const AUTOPILOT_INTERVAL_SECONDS = OFFLINE_SLICE_SECONDS;
 const MAX_ASCENSION_HISTORY = 100;
@@ -150,6 +155,13 @@ export function canDescend(state: GameState): boolean {
   return state.maxStageEver >= DESCENT_MIN_STAGE && recognitionTier(state, DESCENT_HERO) >= 5;
 }
 
+/** Stages of the guardians the company passed while away, in order. */
+export function guardiansPassed(account: AbsenceAccount): number[] {
+  const stages: number[] = [];
+  for (let stage = account.fromStage; stage < account.toStage; stage += 1) if (isBiomeBossStage(stage)) stages.push(stage);
+  return stages;
+}
+
 /** Threads a Descent would weave now. */
 export function descentPreview(state: GameState): number {
   return threadsFor(state.lifetime.essencesEarned - state.descentMark);
@@ -169,6 +181,38 @@ function strongestCompanion(derived: Derived): string | null {
       value = dps;
     }
   }
+  return best;
+}
+
+/** How things stood when the company went on alone, for the Reunion's account. */
+interface AbsenceMark {
+  maxStage: number;
+  heroLevels: Record<string, number>;
+  talents: number;
+  goldEarned: number;
+  gold: number;
+  /** Boss stages that stopped the company since. */
+  walls: number[];
+}
+
+/** A purchase the company weighs while away: levels up to a breakpoint, the talents it unlocks. */
+interface Purchase {
+  heroId: string;
+  levels: number;
+  talents: string[];
+  cost: number;
+  /** Companion damage it adds. */
+  gain: number;
+}
+
+/** The companion who joins next, hired in order as in the shop, if any is left. */
+function nextRecruit(state: GameState) {
+  return HEROES.find((hero) => hero.id !== CLICK_HERO_ID && !(state.heroLevels[hero.id] > 0) && (hero.index <= 1 || state.heroLevels[HEROES[hero.index - 1].id] > 0));
+}
+
+function bestValue(options: Purchase[]): Purchase | undefined {
+  let best: Purchase | undefined;
+  for (const option of options) if (!best || option.gain / option.cost > best.gain / best.cost) best = option;
   return best;
 }
 
@@ -201,6 +245,8 @@ export class GameEngine {
   private awaySeconds = 0;
   /** Seconds caught up since the player's last input (a reloaded tab gets its time back). */
   private aloneSeconds = 0;
+  /** How things stood after the player's last input, told and cleared when they are back. */
+  private absence: AbsenceMark | null = null;
   /** An attack click landed during the current boss fight (Let Him Rest). */
   private clickedThisFight = false;
   /** When Nyx's portrait was touched lately (Faceless). */
@@ -276,7 +322,7 @@ export class GameEngine {
     if (count <= 0) return;
     const biome = biomeForStage(stage);
     if (isBossStage(stage)) {
-      this.recordKills((isBiomeBossStage(stage) ? guardianForStage(stage) : biome.miniBoss).id, count);
+      this.recordKills(bossForStage(stage).id, count);
       return;
     }
     const kinds = biome.monsters.length;
@@ -440,6 +486,7 @@ export class GameEngine {
     const s = this.state;
     const gapMs = now - s.lastTickAt;
     if (gapMs <= 0) return null;
+    this.leave();
 
     if (gapMs > CATCH_UP_THRESHOLD_MS) {
       const summary = this.catchUp(gapMs / 1000, now);
@@ -521,9 +568,57 @@ export class GameEngine {
    */
   markInput(now: number) {
     const away = Math.max((now - this.lastInputAt) / 1000, this.aloneSeconds);
+    const account = this.absence && away >= REUNION_MIN_AWAY_SECONDS ? this.account(away) : undefined;
+    this.absence = null;
     this.lastInputAt = now;
     this.aloneSeconds = 0;
-    if (away >= REUNION_MIN_AWAY_SECONDS) this.reunion(now, away);
+    if (away >= REUNION_MIN_AWAY_SECONDS) this.reunion(now, away, account);
+  }
+
+  /** After the player's last input: how things stand, to tell them later what changed. */
+  private leave() {
+    if (this.absence) return;
+    const s = this.state;
+    const blocked = this.blockedAt();
+    this.absence = {
+      maxStage: s.maxStage,
+      heroLevels: { ...s.heroLevels },
+      talents: s.heroUpgrades.length,
+      goldEarned: s.lifetime.goldEarned,
+      gold: s.gold,
+      walls: blocked === null ? [] : [blocked]
+    };
+  }
+
+  /** A boss stopped the company where it stands, which trains before it. */
+  private blockedAt(): number | null {
+    const s = this.state;
+    return !s.autoAdvance && isBossStage(s.maxStage) ? s.maxStage : null;
+  }
+
+  private stoppedBy(stage: number) {
+    if (this.absence && !this.absence.walls.includes(stage)) this.absence.walls.push(stage);
+  }
+
+  /** What the company tells the walker back from `seconds` away. */
+  private account(seconds: number): AbsenceAccount {
+    const s = this.state;
+    const mark = this.absence!;
+    const levels = HEROES.filter((hero) => (s.heroLevels[hero.id] ?? 0) > (mark.heroLevels[hero.id] ?? 0))
+      .map((hero) => ({ heroId: hero.id, from: mark.heroLevels[hero.id] ?? 0, to: s.heroLevels[hero.id] }));
+    const gold = s.lifetime.goldEarned - mark.goldEarned;
+    return {
+      seconds,
+      fromStage: mark.maxStage,
+      toStage: s.maxStage,
+      gold,
+      spent: Math.max(0, gold - (s.gold - mark.gold)),
+      hired: levels.filter((entry) => entry.from === 0).map((entry) => entry.heroId),
+      levels,
+      talents: s.heroUpgrades.slice(mark.talents),
+      walls: mark.walls.filter((stage) => stage < s.maxStage),
+      blockedAt: this.blockedAt()
+    };
   }
 
   /**
@@ -602,15 +697,15 @@ export class GameEngine {
   /** Damage factor against a boss stage's guardian, for the catch-up and the autopilot. */
   private stageFactor(stage: number, d: Derived): number {
     if (!isBossStage(stage)) return 1;
-    const id = isBiomeBossStage(stage) ? guardianForStage(stage).id : biomeForStage(stage).miniBoss.id;
+    const id = bossForStage(stage).id;
     return d.bossDamage * (isKingStage(stage) ? d.kingDamage : 1) * (id === "rot-baron" ? d.baronDamage : 1);
   }
 
   /** Reunion: the company that walked on alone fights harder for a share of the time away. */
-  private reunion(now: number, awaySeconds: number) {
+  private reunion(now: number, awaySeconds: number, account?: AbsenceAccount) {
     const seconds = Math.min(BUFF_MAX_SECONDS, awaySeconds * REUNION_SHARE);
     this.addBuff("reunion", seconds, now);
-    this.emit({ type: "reunion", seconds });
+    this.emit(account ? { type: "reunion", seconds, account } : { type: "reunion", seconds });
   }
 
   /**
@@ -666,6 +761,7 @@ export class GameEngine {
             if (d.bossTimer > time) break;
             time -= d.bossTimer;
             failedAt = stage;
+            this.stoppedBy(stage);
             s.lifetime.bossFails += 1;
             this.keepWound(stage, (d.dps * this.stageFactor(stage, d) * d.bossTimer) / (bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1)));
             continue;
@@ -756,33 +852,85 @@ export class GameEngine {
   }
 
   /**
-   * Spending while away: every affordable talent, then companion levels by best DPS gained
-   * per gold, a batch at a time (up to the next 25-level milestone). Returns the gold spent.
+   * Spending while away. The next companion joins as soon as the company can pay for them;
+   * then each purchase takes a companion to their next breakpoint (a talent level, then every
+   * milestone), with or without the talents it unlocks, or learns a talent left behind. The best damage
+   * per gold wins; when it is out of reach but close, companions save for it. Returns the gold
+   * spent.
    */
   private autoSpend(now: number): number {
     const s = this.state;
     const goldBefore = s.gold;
-    const multiplier = heroCostMultiplier(s);
     for (let round = 0; round < OFFLINE_SPEND_ROUNDS; round += 1) {
-      this.buyAllUpgrades(now);
-      const base = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps;
-      let best: { id: string; count: number; ratio: number } | null = null;
-      for (const hero of HEROES) {
-        if (hero.id === CLICK_HERO_ID) continue;
-        const level = s.heroLevels[hero.id] ?? 0;
-        // Companions are hired in order, as in the shop.
-        if (level === 0 && hero.index > 1 && (s.heroLevels[HEROES[hero.index - 1].id] ?? 0) === 0) continue;
-        const count = Math.min(25 - (level % 25), maxAffordableLevels(hero, level, s.gold, multiplier));
-        if (count <= 0) continue;
-        s.heroLevels[hero.id] = level + count;
-        const gain = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps - base;
-        s.heroLevels[hero.id] = level;
-        const ratio = gain / heroCost(hero, level, count, multiplier);
-        if (ratio > 0 && (!best || ratio > best.ratio)) best = { id: hero.id, count, ratio };
+      const recruit = nextRecruit(s);
+      if (recruit && this.buyHero(recruit.id, 1, now)) continue;
+      const options = this.purchaseOptions(now);
+      const cheap = options.find((option) => option.gain <= 0 && option.levels === 0 && option.cost <= s.gold * CHEAP_TALENT_SHARE);
+      if (cheap) {
+        this.buyPurchase(cheap, now);
+        continue;
       }
-      if (!best || !this.buyHero(best.id, best.count, now)) break;
+      const valued = options.filter((option) => option.gain > 0);
+      const best = bestValue(valued);
+      if (!best) break;
+      if (best.cost > s.gold) {
+        const d = derive(s, now, { ignoreTimed: true, forceIdle: true });
+        if (best.cost - s.gold <= this.goldRate(d) * SAVING_SECONDS) break;
+      }
+      const choice = best.cost <= s.gold ? best : bestValue(valued.filter((option) => option.cost <= s.gold));
+      if (!choice) break;
+      this.buyPurchase(choice, now);
     }
     return goldBefore - s.gold;
+  }
+
+  /** What the company could buy next: each companion up to their next breakpoint, each talent left behind. */
+  private purchaseOptions(now: number): Purchase[] {
+    const s = this.state;
+    const multiplier = heroCostMultiplier(s);
+    const base = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps;
+    const gain = (heroId: string, level: number, talents: string[]) => {
+      const before = s.heroLevels[heroId] ?? 0;
+      s.heroLevels[heroId] = level;
+      s.heroUpgrades.push(...talents);
+      const dps = derive(s, now, { ignoreTimed: true, forceIdle: true }).dps;
+      s.heroLevels[heroId] = before;
+      s.heroUpgrades.length -= talents.length;
+      return dps - base;
+    };
+    const options: Purchase[] = [];
+    for (const hero of HEROES) {
+      const level = s.heroLevels[hero.id] ?? 0;
+      if (level === 0) continue;
+      const missing = (upTo: number) => hero.upgrades.filter((upgrade) => upgrade.level <= upTo && !s.heroUpgrades.includes(upgrade.id)).map((upgrade) => upgrade.id);
+      for (const id of missing(level)) {
+        options.push({ heroId: hero.id, levels: 0, talents: [id], cost: upgradeCost(id), gain: gain(hero.id, level, [id]) });
+      }
+      // Aldric's levels raise the click, which the company never uses.
+      if (hero.id === CLICK_HERO_ID) continue;
+      // Up to the breakpoint, with or without its talents: a talent can wait for the gold.
+      const target = nextBreakpoint(hero, level);
+      const levelsCost = heroCost(hero, level, target - level, multiplier);
+      options.push({ heroId: hero.id, levels: target - level, talents: [], cost: levelsCost, gain: gain(hero.id, target, []) });
+      const talents = missing(target);
+      if (talents.length > 0) {
+        const cost = levelsCost + talents.reduce((total, id) => total + upgradeCost(id), 0);
+        options.push({ heroId: hero.id, levels: target - level, talents, cost, gain: gain(hero.id, target, talents) });
+      }
+    }
+    return options;
+  }
+
+  private buyPurchase(purchase: Purchase, now: number) {
+    if (purchase.levels > 0) this.buyHero(purchase.heroId, purchase.levels, now);
+    for (const id of purchase.talents) this.buyUpgrade(id, now);
+  }
+
+  /** Gold a second the company earns alone on the stage it holds. */
+  private goldRate(d: Derived): number {
+    if (d.dps <= 0) return 0;
+    const stage = isBossStage(this.state.maxStage) ? Math.max(1, this.state.maxStage - 1) : this.state.maxStage;
+    return (stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9)) / (stageHp(stage) / d.dps + RESPAWN_SECONDS);
   }
 
   // ---------------------------------------------------------------- combat
@@ -1139,6 +1287,7 @@ export class GameEngine {
     s.respawnIn = 0.6;
     s.bossTimeLeft = 0;
     if (s.stage === s.maxStage && s.stage > 1) {
+      this.stoppedBy(s.stage);
       s.autoAdvance = false;
       this.setStage(s.stage - 1);
     }

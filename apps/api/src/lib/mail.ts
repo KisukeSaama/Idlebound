@@ -79,16 +79,18 @@ interface MailContent {
  */
 const C = {
   bg: "#0b0a14",
-  panel: "#171428",
-  border: "#372c58",
-  text: "#efe9ff",
-  muted: "#a69ec8",
-  faint: "#6f6794",
-  gold: "#f5c85b",
-  goldText: "#241603"
+  panel: "#16141e",
+  border: "#3e3a50",
+  frame: "#8f6a20",
+  text: "#ece8f3",
+  muted: "#a8a2b8",
+  faint: "#767089",
+  gold: "#e8b949",
+  goldLight: "#f7d98b",
+  goldText: "#1a1204"
 };
 const DISPLAY = "Cinzel,Georgia,'Times New Roman',serif";
-const BODY = "Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const BODY = "'Alegreya Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
 function render(locale: Locale, content: MailContent): Mail {
   const common = messagesFor(locale).mail;
@@ -122,7 +124,7 @@ function render(locale: Locale, content: MailContent): Mail {
 <meta name="color-scheme" content="dark">
 <meta name="supported-color-schemes" content="dark">
 <title>${escapeHtml(content.subject)}</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&amp;family=Inter:wght@400;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&amp;family=Alegreya+Sans:wght@400;700&amp;display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;supported-color-schemes:dark}
 body{margin:0;padding:0;width:100%!important;-webkit-text-size-adjust:100%}
@@ -143,12 +145,12 @@ a{color:${C.gold}}
 <tr><td align="center" style="padding:0 0 24px">
 <a href="${escapeHtml(home)}" style="text-decoration:none"><img src="${escapeHtml(`${site}/assets/brand/idlebound-logo-mail.png`)}" width="220" alt="Idlebound" style="display:block;width:220px;max-width:70%;height:auto;border:0;outline:none;font-family:${DISPLAY};font-size:30px;font-weight:700;color:${C.gold}"></a>
 </td></tr>
-<tr><td class="ib-card" bgcolor="${C.panel}" style="background-color:${C.panel};border:1px solid ${C.border};border-radius:12px;padding:36px 32px">
+<tr><td class="ib-card" bgcolor="${C.panel}" style="background-color:${C.panel};border:1px solid ${C.frame};border-radius:4px;padding:36px 32px">
 <h1 class="ib-title" style="margin:0 0 18px;font-family:${DISPLAY};font-size:24px;line-height:1.3;font-weight:700;color:${C.gold}">${escapeHtml(content.title)}</h1>
 ${paragraphs}
 <table role="presentation" class="ib-btn" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 8px">
-<tr><td class="ib-btn" align="center" bgcolor="${C.gold}" style="border-radius:8px;background-color:${C.gold};background-image:linear-gradient(180deg,#ffd978,#e0a53c)">
-<a href="${link}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:${BODY};font-size:16px;line-height:20px;font-weight:700;color:${C.goldText};text-decoration:none;border-radius:8px">${escapeHtml(content.button)}</a>
+<tr><td class="ib-btn" align="center" bgcolor="${C.gold}" style="border-radius:3px;background-color:${C.gold};border-top:1px solid ${C.goldLight};border-bottom:1px solid ${C.frame}">
+<a href="${link}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:${BODY};font-size:17px;line-height:20px;font-weight:700;color:${C.goldText};text-decoration:none;border-radius:3px">${escapeHtml(content.button)}</a>
 </td></tr>
 </table>
 <p style="margin:24px 0 0;font-family:${BODY};font-size:14px;line-height:1.55;color:${C.muted}">${escapeHtml(content.note)}</p>

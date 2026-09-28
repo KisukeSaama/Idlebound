@@ -3,6 +3,7 @@
 import { WAGER_CLICKS, WAGER_SECONDS, biomeForStage, biomeName, chronicleText, eraForStage, isBossStage, isBiomeBossStage, monsterName, MONSTERS_PER_STAGE } from "@idlebound/game";
 import { useEffect, useRef, useState } from "react";
 import type { ArenaRenderer } from "../pixel/arena";
+import { uiZoom } from "../pixel/surface";
 import { useI18n } from "@/i18n/client";
 import { useFormat, useGame, useReveals } from "../context";
 import { stratumLabel } from "../shell";
@@ -68,8 +69,10 @@ export function Scene() {
     };
   }, [store, locale]);
 
+  // Viewport pixels to the arena's page pixels (the interface is zoomed on large screens).
   const strike = (clientX: number, clientY: number, rect: DOMRect) => {
-    pointer.current = { x: clientX - rect.left, y: clientY - rect.top, at: performance.now() };
+    const zoom = uiZoom();
+    pointer.current = { x: (clientX - rect.left) / zoom, y: (clientY - rect.top) / zoom, at: performance.now() };
     store.act((engine, now) => engine.click(now), { save: false });
   };
 

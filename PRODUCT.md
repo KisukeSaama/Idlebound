@@ -104,10 +104,10 @@ late game; mashing the mouse is never required.
   with every crit investment maxed stays under 6× at 5 clicks/s. At 24 h (median of 9 seeds)
   every style stands within a quarter of the others, and the occasional player leads: back
   every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
-  blocks the company (780, 4 h of real play); then continuous bursts (776), 10 clicks/s
+  blocks the company (779, 4 h of real play); then continuous bursts (776), 10 clicks/s
   (747), idle (717), 5/s (698) and 2/s (590). 8 h in a background tab after 24 h of play
-  adds 4 to 32 stages (median per profile), and the Reunion doubles the first hour back
-  (+11 to +32 stages instead of +5 to +19). The 72 h bot
+  adds 4 to 34 stages (median per profile), and the Reunion doubles the first hour back
+  (+11 to +27 stages instead of +5 to +18). The 72 h bot
   reaches stage 1097 after 13 ascensions (stage 250 at 10 h 30, 500 at 18 h, 750 at 28 h,
   1000 at 50 h, then 97 stages in the last 22 h), slowing down smoothly (no runaway).
 - **Real schedules** (hybrid simulation: active sessions played by the bot, the tab left
@@ -387,9 +387,16 @@ or plays something else. It does not progress while it is closed.
   memory (`document.wasDiscarded` in Chromium) or that was reloaded, told apart by a
   per-tab `sessionStorage` flag (`ib_tab`, Firefox and Safari included). A live tab saves
   every 30 s, so reloading it loses nothing.
-- **Spending while away** (switch at the top of the companions panel, on by default): every affordable talent, then
-  companion levels by best DPS gained per gold, by batches up to the next 25-level
-  milestone. Aldric is never levelled. Turned off, the gold is kept.
+- **Spending while away** (switch at the top of the companions panel, on by default): the
+  next companion is hired (level 1) as soon as the gold allows, in shop order. Then each
+  purchase is weighed by companion DPS gained per gold: a companion's levels up to their next
+  breakpoint (the next talent level, 10, 25, 50, 100, 150, then every milestone: 200, 225,
+  250...), with or without the talents it unlocks, or a talent already reached and left
+  unbought. Levels never land between two breakpoints. The best purchase is bought; when it
+  is out of reach but affordable within 5 minutes of the company's gold rate, companions save
+  for it, otherwise they buy the best they can afford. A talent that adds no companion damage
+  (gold, crits, boss time, treasure) is learned once it costs 10% of the gold at most.
+  Aldric is never levelled. Turned off, the gold is kept.
 - **What presence adds**, with no ratio applied to the away player: wandering crystals,
   powers, faster purchases, ascensions, altars, the shard market, gear and the forge.
 - **Reunion** (*Retrouvailles*): back from 30 min or more away (no input on the page, or
@@ -398,8 +405,15 @@ or plays something else. It does not progress while it is closed.
   at an hour (a night gives the full hour). It never applies during the absence, catch-ups
   ignore it, and like every boon it cannot last more than an hour past the last tick
   (anti-cheat, where the damage bound counts it).
-- No summary when the player comes back: comparing with what they remember is part of
-  the game.
+- **The company's account**: with the Reunion, the player sees what changed since their
+  last input: time away, road from the furthest stage then to the furthest stage now, gold
+  earned and spent, bosses that stopped the company then gave way, the last guardians
+  passed, companions who joined, talents learned, levels gained per companion, and the boss
+  that still bars the road. It covers everything the autopilot and the catch-ups did, and
+  none of the player's own purchases (the account starts at the first tick after their last
+  input). Kept in memory only, never in the save: a page loaded after the absence tells only
+  what its own catch-up did. Shown once, at the Reunion's threshold (30 min); a shorter
+  absence tells nothing and starts over.
 
 ### Balance targets
 

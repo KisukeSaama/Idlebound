@@ -4,10 +4,10 @@ import { defineMessages } from "../define";
 export const site = defineMessages({
   fr: {
     meta: {
-      tagline: "Le clicker fantasy gratuit dans ton navigateur",
+      tagline: "Le clicker fantasy dans ton navigateur",
       description:
-        "Idlebound est un idle clicker fantasy gratuit : terrasse des monstres, recrute 20 compagnons, affronte des boss, fais ton ascension et grimpe au classement. Sans téléchargement.",
-      keywords: ["idle game", "clicker", "jeu incrémental", "jeu navigateur gratuit", "idle clicker", "fantasy", "clicker heroes", "jeu idle français", "jeu gratuit sans téléchargement"],
+        "Idlebound est un idle clicker fantasy : terrasse des monstres, recrute 20 compagnons, affronte des boss, fais ton ascension et grimpe au classement. Sans téléchargement.",
+      keywords: ["idle game", "clicker", "jeu incrémental", "jeu navigateur", "idle clicker", "fantasy", "clicker heroes", "jeu idle français", "jeu sans téléchargement"],
       ogImageAlt: "Idlebound, clicker fantasy"
     },
     nav: {
@@ -18,7 +18,7 @@ export const site = defineMessages({
       play: "Jouer"
     },
     footer: {
-      copyright: (year: number) => `© ${year} Idlebound · Clicker fantasy gratuit`,
+      copyright: (year: number) => `© ${year} Idlebound · Clicker fantasy`,
       links: "Liens de pied de page",
       play: "Jouer",
       leaderboard: "Classement",
@@ -31,19 +31,19 @@ export const site = defineMessages({
       back: "Retour à l'accueil"
     },
     play: {
-      title: "Jouer à Idlebound, clicker fantasy gratuit",
+      title: "Jouer à Idlebound, clicker fantasy",
       description:
-        "Lance Idlebound dans ton navigateur : clique, recrute des compagnons, affronte les boss et fais ton ascension. Gratuit, sans téléchargement, sauvegarde automatique.",
+        "Lance Idlebound dans ton navigateur : clique, recrute des compagnons, affronte les boss et fais ton ascension. Sans téléchargement, sauvegarde automatique.",
       noscript: "Idlebound a besoin de JavaScript pour fonctionner.",
       loading: "Réveil des compagnons…"
     }
   },
   en: {
     meta: {
-      tagline: "The free fantasy clicker in your browser",
+      tagline: "The fantasy clicker in your browser",
       description:
-        "Idlebound is a free fantasy idle clicker: slay monsters, hire 20 companions, battle bosses, ascend and climb the leaderboard. No download needed.",
-      keywords: ["idle game", "clicker", "incremental game", "free browser game", "idle clicker", "fantasy", "clicker heroes", "fantasy idle game", "free game no download"],
+        "Idlebound is a fantasy idle clicker: slay monsters, hire 20 companions, battle bosses, ascend and climb the leaderboard. No download needed.",
+      keywords: ["idle game", "clicker", "incremental game", "browser game", "idle clicker", "fantasy", "clicker heroes", "fantasy idle game", "no download game"],
       ogImageAlt: "Idlebound, fantasy clicker"
     },
     nav: {
@@ -54,7 +54,7 @@ export const site = defineMessages({
       play: "Play"
     },
     footer: {
-      copyright: (year: number) => `© ${year} Idlebound · Free fantasy clicker`,
+      copyright: (year: number) => `© ${year} Idlebound · Fantasy clicker`,
       links: "Footer links",
       play: "Play",
       leaderboard: "Leaderboard",
@@ -67,9 +67,9 @@ export const site = defineMessages({
       back: "Back to home"
     },
     play: {
-      title: "Play Idlebound, the free fantasy clicker",
+      title: "Play Idlebound, the fantasy clicker",
       description:
-        "Launch Idlebound in your browser: click, hire companions, battle bosses and ascend. Free, no download, automatic saving.",
+        "Launch Idlebound in your browser: click, hire companions, battle bosses and ascend. No download, automatic saving.",
       noscript: "Idlebound needs JavaScript to run.",
       loading: "Waking the companions…"
     }

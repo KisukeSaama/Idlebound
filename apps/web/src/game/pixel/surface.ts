@@ -77,6 +77,30 @@ export function deviceRatio(): number {
   return typeof window === "undefined" ? 1 : Math.min(3, window.devicePixelRatio || 1);
 }
 
+/**
+ * The interface's zoom (`--ui-zoom` on the root, globals.css): large screens magnify the whole
+ * page. One CSS pixel of the page is then `uiZoom()` screen pixels, and the viewport measures
+ * (`getBoundingClientRect`, `clientX`) are in screen pixels while styles are in page pixels.
+ */
+export function uiZoom(): number {
+  if (typeof document === "undefined") return 1;
+  const root = document.documentElement as HTMLElement & { currentCSSZoom?: number };
+  const zoom = root.currentCSSZoom ?? parseFloat(getComputedStyle(root).getPropertyValue("--ui-zoom"));
+  return zoom > 0 ? zoom : 1;
+}
+
+/** Device pixels per page CSS pixel: what a whole-pixel scale is counted in. */
+export function pixelRatio(): number {
+  return deviceRatio() * uiZoom();
+}
+
+/** An element's box in page CSS pixels (its viewport box divided by the interface's zoom). */
+export function pageRect(element: Element): DOMRect {
+  const box = element.getBoundingClientRect();
+  const zoom = uiZoom();
+  return zoom === 1 ? box : new DOMRect(box.x / zoom, box.y / zoom, box.width / zoom, box.height / zoom);
+}
+
 export function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }

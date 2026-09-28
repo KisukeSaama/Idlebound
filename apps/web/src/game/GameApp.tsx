@@ -25,6 +25,7 @@ import {
   recognitionTier,
   regaliaWord,
   wearsRegalia,
+  type AbsenceAccount,
   type ChronicleEntry,
   type GameEvent
 } from "@idlebound/game";
@@ -39,6 +40,7 @@ import { ANNOUNCED, revealMark, stratumLabel, type RevealId } from "./shell";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
+import { ReunionModal } from "./components/ReunionModal";
 import { GameHeader } from "./components/GameHeader";
 import { HeroPanel } from "./components/HeroPanel";
 import { NavRail } from "./components/NavRail";
@@ -81,6 +83,7 @@ export default function GameApp() {
   const [openWindow, setOpenWindow] = useState<{ id: WindowId; tab?: string } | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
+  const [reunion, setReunion] = useState<{ account: AbsenceAccount; seconds: number } | null>(null);
   const [mobileTab, setMobileTab] = useState<"heroes" | "scene">("heroes");
   const [ready, setReady] = useState(false);
   const toastId = useRef(0);
@@ -104,7 +107,7 @@ export default function GameApp() {
     else show(entry);
   }, [show]);
 
-  const covered = openWindow !== null || confirmRequest !== null;
+  const covered = openWindow !== null || confirmRequest !== null || reunion !== null;
   useEffect(() => {
     holding.current = covered;
     if (covered) return;
@@ -337,7 +340,9 @@ export default function GameApp() {
           toast({ tone: "violet", icon: "sparkle", title: n.descendedTitle, text: n.descendedText(fmt(event.threads)) });
           break;
         case "reunion":
-          toast({ tone: "gold", icon: "campfire", title: n.reunionTitle, text: n.reunionText(formatDuration(event.seconds, locale)) });
+          // The company tells the road it held alone; with nothing to tell, a welcome.
+          if (event.account) setReunion({ account: event.account, seconds: event.seconds });
+          else toast({ tone: "gold", icon: "campfire", title: n.reunionTitle, text: n.reunionText(formatDuration(event.seconds, locale)) });
           break;
         case "dream":
           // The line itself is shown over the scene (Scene), with no numbers.
@@ -460,6 +465,7 @@ export default function GameApp() {
         {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
         <CloudChoiceModal />
         {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
+        {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
         <Toasts toasts={toasts} held={covered} />
       </div>
     </GameContext.Provider>

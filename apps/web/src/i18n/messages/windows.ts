@@ -156,7 +156,7 @@ export const windows = defineMessages({
       enterAction: "Attaquer (zone de combat sélectionnée)",
       escapeKey: "Échap",
       escapeAction: "Fermer une fenêtre",
-      footer: "Idlebound v1.0 · Aucune publicité, aucun achat intégré."
+      footer: "Idlebound v1.0"
     }
   },
   en: {
@@ -313,7 +313,7 @@ export const windows = defineMessages({
       enterAction: "Attack (combat area focused)",
       escapeKey: "Esc",
       escapeAction: "Close a window",
-      footer: "Idlebound v1.0 · No ads, no in-app purchases."
+      footer: "Idlebound v1.0"
     }
   }
 });

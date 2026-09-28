@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { ToastInput } from "../context";
 import { Picto } from "../icons";
+import { pageRect } from "../pixel/surface";
 import { monsterOnPage } from "./SceneCanvas";
 
 export interface Toast extends ToastInput {
@@ -32,12 +33,18 @@ interface Room {
 
 let desktopQuery: MediaQueryList | null = null;
 
+/** The box of the first element matching `selector`, in page CSS pixels (the toasts' own). */
+function pageRectOf(selector: string): DOMRect | undefined {
+  const element = document.querySelector(selector);
+  return element ? pageRect(element) : undefined;
+}
+
 /** Where the stack docks on a desktop layout, only measured (reads, no write); null on phones. */
 function measureRoom(top: number): Room | null {
   if (!(desktopQuery ??= window.matchMedia("(min-width: 901px) and (min-height: 561px)")).matches) return null;
-  const scene = document.querySelector(".scene")?.getBoundingClientRect();
+  const scene = pageRectOf(".scene");
   if (!scene) return null;
-  const panel = document.querySelector(".monster-panel")?.getBoundingClientRect();
+  const panel = pageRectOf(".monster-panel");
   const monster = monsterOnPage();
   const bottom = (panel?.top ?? scene.bottom) - GAP;
   let left = scene.right - GAP - MAX_WIDTH;
@@ -57,7 +64,7 @@ function measureRoom(top: number): Room | null {
     }
   }
   // A tutorial hint stays readable: where the stack would cross it, it starts under it.
-  const hint = document.querySelector(".tutorial-hint.hint-arena")?.getBoundingClientRect();
+  const hint = pageRectOf(".tutorial-hint.hint-arena");
   const start = hint && hint.height > 0 && hint.left < left + width && hint.right > left ? Math.max(top, hint.bottom + GAP) : top;
   return { start, left, width, limit };
 }
@@ -110,8 +117,8 @@ export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boole
         observed = bar;
       }
       // Every measure first, then the writes: one layout, not one per measure.
-      const floor = (header?.getBoundingClientRect().bottom ?? 0) + GAP;
-      const top = Math.max(floor, bar.getBoundingClientRect().bottom + GAP);
+      const floor = (header ? pageRect(header).bottom : 0) + GAP;
+      const top = Math.max(floor, pageRect(bar).bottom + GAP);
       dock(container, top, measureRoom(top));
     };
     function schedule() {

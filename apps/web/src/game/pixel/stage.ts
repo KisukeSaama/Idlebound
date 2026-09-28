@@ -57,10 +57,14 @@ export function stageFrame(biomeId: string, era: number, frame: number, guardian
   return compositeLayers(scene.layers.slice(front), width, frame, out, origin);
 }
 
-/** One frame of only the planes of one depth, on nothing. */
-export function depthFrame(biomeId: string, era: number, frame: number, depth: Depth): Pixels {
+/**
+ * One frame of only the planes of one depth, on nothing, in a view `width` columns wide
+ * centered on the scene (the frame at its edges), as the arena widens it.
+ */
+export function depthFrame(biomeId: string, era: number, frame: number, depth: Depth, width = SCENE_WIDTH): Pixels {
   const scene = sceneOf(biomeId, era);
-  return compositeLayers(scene.layers.filter((layer) => depthOf(layer) === depth), SCENE_WIDTH, frame);
+  const origin = Math.floor(width / 2) - SCENE_WIDTH / 2;
+  return compositeLayers(scene.layers.filter((layer) => depthOf(layer) === depth), width, frame, createPixels(width, SCENE_HEIGHT), origin);
 }
 
 function upscale(source: Pixels, unit: number): Pixels {

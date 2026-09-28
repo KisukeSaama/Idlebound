@@ -403,7 +403,7 @@ export type GameEvent =
   /** A long absence left one line. */
   | { type: "dream"; index: number }
   /** The walker is back: the Reunion lasts `seconds`. */
-  | { type: "reunion"; seconds: number }
+  | { type: "reunion"; seconds: number; account?: AbsenceAccount }
   | { type: "descended"; threads: number };
 
 /** One entry of the Chronicle; its words come from `content/` (`chronicleText`). */
@@ -429,6 +429,27 @@ export type ChronicleEntry =
 
 /** What a wandering crystal gave: gold, a timed buff (amount = seconds), shards or essences. */
 export type CrystalReward = "gold" | "overcharge" | "sharpness" | "shards" | "essence";
+
+/** What the company tells the walker at the Reunion: the road it held alone. */
+export interface AbsenceAccount {
+  /** Seconds away. */
+  seconds: number;
+  /** Furthest stage when the walker left, and now. */
+  fromStage: number;
+  toStage: number;
+  gold: number;
+  spent: number;
+  /** Companions who joined, in order. */
+  hired: string[];
+  /** Companions who gained levels. */
+  levels: { heroId: string; from: number; to: number }[];
+  /** Talents learned, in order. */
+  talents: string[];
+  /** Boss stages that stopped the company, then gave way. */
+  walls: number[];
+  /** The boss stage that still bars the road, if any. */
+  blockedAt: number | null;
+}
 
 export interface OfflineSummary {
   seconds: number;

@@ -14,7 +14,7 @@ import type { NightGrade } from "./night";
 import { hash2 } from "./pixels";
 import { sceneRecipe, type SceneOptions } from "./scene";
 import { creatureSheet, css, flashPixels, sceneSheet, type CreatureSheet, type SceneSheet, type Tone } from "./sprites";
-import { deviceRatio, effectCache, toSurface, whenIdle, type Surface } from "./surface";
+import { effectCache, pixelRatio, toSurface, whenIdle, type Surface } from "./surface";
 
 export interface CssRect {
   x: number;
@@ -131,7 +131,7 @@ export class ArenaRenderer {
 
   /** Recomputes the whole-number scale and the canvas size from the element's CSS box. */
   resize(sceneBox: CssRect, arena: CssRect) {
-    this.ratio = deviceRatio();
+    this.ratio = pixelRatio();
     this.arena = arena;
     const deviceHeight = sceneBox.height * this.ratio;
     this.scale = Math.max(1, Math.floor(deviceHeight / SCENE_HEIGHT));

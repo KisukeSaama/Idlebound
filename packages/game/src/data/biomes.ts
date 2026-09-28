@@ -133,6 +133,11 @@ export function isKingStage(stage: number): boolean {
   return stage % (STAGES_PER_BIOME * BIOMES.length) === 0;
 }
 
+/** The boss of a boss stage: the guardian at a biome's end, the biome's elite otherwise. */
+export function bossForStage(stage: number): MonsterDef {
+  return isBiomeBossStage(stage) ? guardianForStage(stage) : biomeForStage(stage).miniBoss;
+}
+
 /** The guardian of a biome-boss stage: its biome's guardian, the King's form of the Age, or the Dawn. */
 export function guardianForStage(stage: number): MonsterDef {
   if (stage >= DAWN_STAGE) return { id: THE_DAWN };

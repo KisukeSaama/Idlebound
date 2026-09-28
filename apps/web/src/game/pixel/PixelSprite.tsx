@@ -7,7 +7,7 @@
  */
 import { useEffect, useRef, type CSSProperties } from "react";
 import type { Pixels } from "./pixels";
-import { deviceRatio, prefersReducedMotion, toSurface, whenIdle, type Surface } from "./surface";
+import { pageRect, pixelRatio, prefersReducedMotion, toSurface, whenIdle, type Surface } from "./surface";
 
 export interface PixelSource {
   /** Identity of the art: the canvas redraws only when it changes. */
@@ -80,12 +80,13 @@ export function PixelSprite({
       element.width = first.width;
       element.height = first.height;
       const fit = () => {
-        const ratio = deviceRatio();
+        const ratio = pixelRatio();
         let fitScale: number;
         if (fixedScale) {
           fitScale = Math.round(fixedScale * ratio);
         } else if (size === "parent") {
-          const box = element.parentElement?.getBoundingClientRect();
+          const parent = element.parentElement;
+          const box = parent ? pageRect(parent) : null;
           if (!box || box.width === 0) return;
           const byWidth = (box.width * ratio) / first.width;
           const byHeight = (box.height * ratio) / first.height;

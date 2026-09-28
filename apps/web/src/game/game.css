@@ -8,10 +8,7 @@
   inset: 0;
   display: grid;
   grid-template-rows: var(--header-height) minmax(0, 1fr);
-  background:
-    radial-gradient(circle at 15% 0%, rgba(155, 107, 255, 0.14), transparent 36rem),
-    radial-gradient(circle at 100% 100%, rgba(245, 200, 91, 0.06), transparent 30rem),
-    var(--bg);
+  background: var(--bg);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -49,15 +46,15 @@
   align-items: center;
   gap: 14px;
   padding: 0 12px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(23, 20, 40, 0.95), rgba(14, 12, 26, 0.95));
+  border-bottom: 1px solid #000;
+  background: var(--bg-2);
+  box-shadow: 0 1px 0 var(--border);
   min-width: 0;
 }
 
 .game-logo img {
   height: 40px;
   width: auto;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
 }
 
 .resource-bar {
@@ -75,15 +72,17 @@
   display: none;
 }
 
+/* A counter sunk into the bar, the way old games kept their purses. */
 .resource {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 38px;
+  height: 36px;
   padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(8, 7, 16, 0.55);
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
+  background: #07060c;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.06);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -96,16 +95,19 @@ button.resource:hover {
   border-color: var(--border-strong);
 }
 
+button.resource:hover .resource-label {
+  color: var(--text);
+}
+
 .resource-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--faint);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .resource-value {
-  font-weight: 750;
-  font-size: 0.95rem;
+  font-weight: 800;
+  font-size: 1.02rem;
 }
 
 /* Values that change every tick keep a stable width ("6.65Qi" is the longest letter form),
@@ -117,15 +119,14 @@ button.resource:hover {
 }
 
 .resource-gold {
-  border-color: rgba(245, 200, 91, 0.45);
-  background: linear-gradient(180deg, rgba(245, 200, 91, 0.16), rgba(245, 200, 91, 0.05));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--gold-deep);
   padding: 0 16px 0 10px;
 }
 
 .resource-gold .resource-value {
   font-family: var(--font-display);
   font-size: 1.2rem;
-  color: var(--gold-2);
+  color: var(--gold);
 }
 
 .resource-essence .resource-value {
@@ -146,18 +147,19 @@ button.resource:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
+  height: 36px;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: var(--panel-2);
-  font-weight: 650;
-  font-size: 0.88rem;
-  max-width: 220px;
+  box-shadow: var(--bevel);
+  font-weight: 700;
+  font-size: 0.92rem;
+  max-width: 300px;
 }
 
 .account-chip:hover {
-  filter: brightness(1.15);
+  filter: brightness(1.12);
 }
 
 .account-name {
@@ -167,12 +169,14 @@ button.resource:hover {
 }
 
 .account-cta {
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: 1px 7px;
+  border-radius: var(--radius-sm);
   background: var(--gold);
-  color: #241603;
-  font-size: 0.75rem;
+  color: #1a1204;
+  box-shadow: inset 0 1px 0 var(--gold-2);
+  font-size: 0.8rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .sync-dot {
@@ -183,12 +187,12 @@ button.resource:hover {
   flex: none;
 }
 
-.sync-synced { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.sync-synced { background: var(--success); }
 .sync-syncing { background: var(--shard); animation: blink 1s ease-in-out infinite; }
 .sync-error,
 .sync-rejected { background: var(--danger); }
 .sync-idle { background: var(--gold); }
-.sync-unverified { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+.sync-unverified { background: var(--gold); box-shadow: 0 0 0 2px var(--gold-deep); }
 
 @keyframes blink {
   50% { opacity: 0.3; }
@@ -199,11 +203,11 @@ button.resource:hover {
 .nav-rail {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   padding: 6px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--panel);
+  background: var(--bg-2);
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -214,41 +218,46 @@ button.resource:hover {
   place-items: center;
   gap: 1px;
   padding: 6px 2px 4px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  box-shadow: var(--bevel);
+  transition: background 120ms ease, border-color 120ms ease;
 }
 
 .nav-button img,
 .nav-button svg {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55));
-  transition: transform 160ms ease;
+  transition: translate 120ms steps(2, end);
 }
 
 .nav-button:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--border);
+  background: var(--panel-3);
+  border-color: var(--border-strong);
 }
 
 .nav-button:hover img,
 .nav-button:hover svg {
-  transform: translateY(-2px) scale(1.06);
+  translate: 0 -2px;
 }
 
+/* Pressed while its window is open. */
 .nav-button.active {
-  border-color: rgba(245, 200, 91, 0.6);
-  background: linear-gradient(180deg, rgba(245, 200, 91, 0.16), rgba(245, 200, 91, 0.04));
+  border-color: #000;
+  background: #07060c;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--gold-deep);
+}
+
+.nav-button.active .nav-label {
+  color: var(--gold);
 }
 
 .nav-label {
-  font-size: 0.66rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--muted);
-  letter-spacing: 0.02em;
 }
 
 .nav-badge {
@@ -257,23 +266,24 @@ button.resource:hover {
   right: 3px;
   min-width: 18px;
   height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
   background: var(--violet);
   color: #fff;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   font-weight: 800;
-  line-height: 18px;
+  line-height: 16px;
 }
 
 .nav-badge.urgent {
   background: var(--gold);
-  color: #241603;
-  animation: badge-pop 1.4s ease-in-out infinite;
+  color: #1a1204;
+  animation: badge-pop 1.4s steps(2, jump-none) infinite;
 }
 
 @keyframes badge-pop {
-  50% { transform: scale(1.2); }
+  50% { translate: 0 -2px; }
 }
 
 /* ====================================================================== scene */
@@ -284,11 +294,11 @@ button.resource:hover {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid #000;
   background: var(--bg);
   overflow: hidden;
   isolation: isolate;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 /* The line every run opens with, over the fields at dusk. */
@@ -299,7 +309,7 @@ button.resource:hover {
   margin: 0;
   text-align: center;
   font-family: var(--font-display);
-  font-size: clamp(1.2rem, 3vw, 1.9rem);
+  font-size: clamp(1.2rem, calc(3 * var(--vw)), 1.9rem);
   font-weight: 600;
   letter-spacing: 0.06em;
   color: var(--gold-2);
@@ -338,20 +348,18 @@ button.resource:hover {
 
 .scene-era {
   display: inline-block;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  padding: 0 7px;
+  border-radius: var(--radius-sm);
+  background: rgba(7, 6, 12, 0.85);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, #000);
   color: var(--accent);
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .scene-biome {
   margin-top: 4px;
-  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-size: clamp(1rem, calc(2 * var(--vw)), 1.35rem);
   line-height: 1.15;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
   /* A long place name wraps rather than losing its end: it is where the walker stands. */
@@ -365,18 +373,19 @@ button.resource:hover {
   align-items: center;
   gap: 6px;
   padding: 5px;
-  border-radius: 999px;
-  background: rgba(8, 7, 16, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(6px);
+  border-radius: var(--radius);
+  background: rgba(7, 6, 12, 0.9);
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 .stage-arrow {
   width: 30px;
   height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
   background: var(--panel-2);
+  box-shadow: var(--bevel);
   font-size: 1.2rem;
   line-height: 1;
 }
@@ -398,36 +407,35 @@ button.resource:hover {
   position: relative;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.14);
-  background: rgba(31, 26, 53, 0.9);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--border-strong);
+  background: var(--panel-2);
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
-  transition: transform 120ms ease, border-color 120ms ease;
+  transition: translate 120ms steps(2, end);
 }
 
 .stage-pip:hover:not(:disabled) {
-  transform: translateY(-2px);
+  translate: 0 -2px;
 }
 
 .stage-pip.cleared {
-  border-color: rgba(111, 220, 140, 0.55);
+  box-shadow: 0 0 0 1px rgba(95, 207, 128, 0.6);
   color: #c4f5d2;
 }
 
 .stage-pip.boss {
-  border-color: rgba(255, 92, 122, 0.6);
+  box-shadow: 0 0 0 1px rgba(232, 86, 111, 0.75);
 }
 
 .stage-pip.current {
-  border-color: var(--gold);
-  background: linear-gradient(180deg, #4b3a12, #2a1f08);
+  background: #2a1f08;
   color: var(--gold-2);
-  box-shadow: 0 0 14px rgba(245, 200, 91, 0.45);
-  transform: scale(1.12);
+  box-shadow: 0 0 0 2px var(--gold), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .stage-pip.locked {
@@ -454,11 +462,12 @@ button.resource:hover {
   gap: 4px;
   height: 30px;
   padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
   background: var(--panel-2);
-  font-size: 0.78rem;
-  font-weight: 750;
+  box-shadow: var(--bevel);
+  font-size: 0.88rem;
+  font-weight: 800;
 }
 
 .auto-toggle.on {
@@ -476,7 +485,7 @@ button.resource:hover {
 }
 
 @keyframes nudge {
-  50% { box-shadow: 0 0 0 5px rgba(245, 200, 91, 0.2); }
+  50% { box-shadow: 0 0 0 2px var(--gold); }
 }
 
 /* ------------------------------------------------ active buffs */
@@ -496,13 +505,13 @@ button.resource:hover {
   align-items: center;
   gap: 5px;
   height: 28px;
-  padding: 0 9px;
-  border-radius: 999px;
-  background: rgba(8, 7, 16, 0.72);
-  border: 1px solid rgba(155, 107, 255, 0.55);
-  font-size: 0.75rem;
-  font-weight: 650;
-  box-shadow: 0 0 12px rgba(155, 107, 255, 0.25);
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(7, 6, 12, 0.9);
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px rgba(155, 107, 255, 0.6);
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
 .buff-time {
@@ -518,7 +527,7 @@ button.resource:hover {
 }
 
 .buff-chip.is-pending {
-  --chip-bg: rgba(8, 7, 16, 0.72);
+  --chip-bg: rgba(7, 6, 12, 0.9);
   background: linear-gradient(90deg, color-mix(in srgb, var(--violet) 34%, var(--chip-bg)) calc(var(--fill) * 100%), var(--chip-bg) calc(var(--fill) * 100%));
   border-color: var(--border-strong);
   box-shadow: none;
@@ -735,9 +744,10 @@ button.resource:hover {
   width: max-content;
   max-width: min(420px, 88%);
   padding: 10px 10px 10px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--gold);
-  background: linear-gradient(180deg, rgba(58, 44, 12, 0.95), rgba(30, 22, 6, 0.95));
+  border-radius: var(--radius);
+  border: 1px solid #000;
+  background: #1f1706;
+  box-shadow: 0 0 0 1px var(--gold), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   color: var(--gold-2);
   font-weight: 650;
   font-size: 0.9rem;
@@ -749,7 +759,7 @@ button.resource:hover {
 .tutorial-hint button {
   flex: none;
   padding: 5px 10px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   border: 0;
   background: var(--gold);
   color: #241603;
@@ -803,28 +813,27 @@ button.resource:hover {
 .kind-badge {
   display: inline-block;
   margin-right: 7px;
-  padding: 1px 7px;
-  border-radius: 5px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   vertical-align: 2px;
 }
 
 .kind-boss { background: #b3203f; color: #fff; }
 .kind-miniboss { background: #7a3fd6; color: #fff; }
-.kind-treasure { background: var(--gold); color: #241603; }
+.kind-treasure { background: var(--gold); color: #1a1204; }
 
 .hp-bar {
   position: relative;
   height: 18px;
-  border-radius: 999px;
-  background: rgba(8, 7, 16, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  background: #07060c;
+  border: 1px solid #000;
   overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 1px var(--border-strong);
 }
 
 .hp-fill,
@@ -840,9 +849,9 @@ button.resource:hover {
 }
 
 .hp-fill {
-  background: linear-gradient(180deg, #ff6b7f, #c21f3e 60%, #8f1230);
+  background: var(--danger);
   transition: transform 90ms linear;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.18);
 }
 
 .boss-timer,
@@ -850,9 +859,10 @@ button.resource:hover {
   position: relative;
   height: 20px;
   margin-top: 6px;
-  border-radius: 999px;
-  background: rgba(8, 7, 16, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  background: #07060c;
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--border);
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -876,16 +886,16 @@ button.resource:hover {
 }
 
 .boss-timer-fill {
-  background: linear-gradient(90deg, #7a3fd6, #b86bff);
+  background: #8a55e6;
 }
 
 .boss-timer.urgent .boss-timer-fill {
-  background: linear-gradient(90deg, #b3203f, #ff5c7a);
-  animation: blink 0.6s ease-in-out infinite;
+  background: var(--danger);
+  animation: blink 0.6s steps(2, jump-none) infinite;
 }
 
 .kill-progress-fill {
-  background: linear-gradient(90deg, rgba(245, 200, 91, 0.45), rgba(245, 200, 91, 0.75));
+  background: #8f6a20;
 }
 
 .kill-progress.farm span {
@@ -903,68 +913,74 @@ button.resource:hover {
   z-index: 5;
 }
 
+/* An action bar: square keys, the hotkey in the corner, the cooldown sweeping over. */
 .skill {
   position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  border: 2px solid var(--border-strong);
-  background: linear-gradient(180deg, #2c2450, #19142f);
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
+  background: #0c0b14;
+  box-shadow: 0 0 0 1px var(--border-strong), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   display: grid;
   place-items: center;
-  transition: transform 100ms ease, border-color 120ms ease;
+  transition: translate 80ms ease;
 }
 
 .skill-icon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
 }
 
 .skill-key {
   position: absolute;
-  top: 2px;
+  top: 1px;
   left: 4px;
-  font-size: 0.62rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  color: var(--faint);
+  color: #fff;
+  text-shadow: 0 1px 0 #000;
 }
 
 .skill.ready {
-  border-color: var(--violet);
-  box-shadow: 0 0 14px rgba(155, 107, 255, 0.45);
+  box-shadow: 0 0 0 1px var(--gold-deep), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .skill.ready:hover {
-  transform: translateY(-3px);
+  box-shadow: 0 0 0 1px var(--gold-2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.skill.ready:active {
+  translate: 0 1px;
 }
 
 .skill.active {
-  border-color: var(--gold);
-  box-shadow: 0 0 20px rgba(245, 200, 91, 0.6);
-  animation: skill-active 0.9s ease-in-out infinite;
+  box-shadow: 0 0 0 2px var(--gold), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: skill-active 0.9s steps(2, jump-none) infinite;
 }
 
 .skill-cooldown {
   position: absolute;
   inset: 0;
-  border-radius: 10px;
+  border-radius: inherit;
   background: conic-gradient(rgba(6, 5, 12, 0.78) calc(var(--ratio) * 360deg), transparent 0);
 }
 
 .skill-timer {
   position: absolute;
-  bottom: 2px;
+  bottom: 1px;
   left: 0;
   right: 0;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  text-shadow: 0 1px 2px #000;
+  text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000;
 }
 
 .active-timer {
   color: var(--gold-2);
 }
 
+/* Tooltips of powers and talents: the item card of old games. */
 .skill-tip,
 .talent-tip {
   position: absolute;
@@ -972,21 +988,21 @@ button.resource:hover {
   left: 50%;
   z-index: 20;
   width: max-content;
-  max-width: 230px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background: #120f22;
-  box-shadow: var(--shadow);
-  font-size: 0.78rem;
+  max-width: 240px;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--tip-border);
+  background: var(--tip-bg);
+  box-shadow: 0 0 0 1px #000, 0 10px 24px rgba(0, 0, 0, 0.5);
+  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.35;
   text-align: left;
   color: var(--text);
   opacity: 0;
   visibility: hidden;
-  transform: translate(-50%, 4px);
-  transition: opacity 120ms ease, transform 120ms ease;
+  transform: translate(-50%, 2px);
+  transition: opacity 80ms ease, transform 80ms ease;
   pointer-events: none;
   display: grid;
   gap: 2px;
@@ -1013,7 +1029,7 @@ button.resource:hover {
 }
 
 @keyframes skill-active {
-  50% { box-shadow: 0 0 28px rgba(245, 200, 91, 0.85); }
+  50% { box-shadow: 0 0 0 2px var(--gold-2), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
 }
 
 /* ====================================================================== companions */
@@ -1025,6 +1041,7 @@ button.resource:hover {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--panel);
+  box-shadow: var(--bevel);
 }
 
 .hero-panel-head {
@@ -1037,33 +1054,40 @@ button.resource:hover {
 }
 
 .hero-panel-head h2 {
-  font-size: 1.1rem;
-  color: var(--gold-2);
+  font-size: 1.2rem;
+  color: var(--text);
 }
 
+/* Buy modes: one strip of keys, the chosen one pressed in. */
 .buy-modes {
   display: flex;
-  padding: 3px;
-  border-radius: 999px;
-  background: rgba(8, 7, 16, 0.7);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--border-strong);
+  overflow: hidden;
 }
 
 .buy-modes button {
-  min-width: 38px;
-  height: 26px;
+  min-width: 40px;
+  height: 28px;
   padding: 0 7px;
-  border-radius: 999px;
+  border-radius: 0;
   border: 0;
-  background: transparent;
+  background: var(--panel-2);
+  box-shadow: var(--bevel);
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.88rem;
   font-weight: 800;
 }
 
+.buy-modes button + button {
+  border-left: 1px solid #000;
+}
+
 .buy-modes button.active {
-  background: var(--gold);
-  color: #241603;
+  background: #07060c;
+  color: var(--gold);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .hero-autospend {
@@ -1074,7 +1098,7 @@ button.resource:hover {
   padding: 6px 12px;
   border-bottom: 1px solid var(--border);
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -1102,65 +1126,63 @@ button.resource:hover {
   flex: 1;
   min-height: 0;
   margin: 0;
-  padding: 8px;
+  padding: 0;
   list-style: none;
   overflow-y: auto;
   display: grid;
   align-content: start;
-  gap: 6px;
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
 
+/* The roster: one line per companion, alternating like an old guild list. */
 .hero-row {
   --hero: var(--gold);
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--hero) 9%, transparent), rgba(22, 19, 38, 0.6) 45%);
-  transition: border-color 120ms ease;
+  gap: 12px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background 120ms ease;
 }
 
-.hero-row.affordable {
-  border-color: color-mix(in srgb, var(--hero) 45%, var(--border));
+.hero-row:nth-child(even) {
+  background: var(--bg-2);
 }
 
 .hero-row.unhired .hero-medallion {
   filter: grayscale(0.7) brightness(0.8);
 }
 
+/* The portrait's frame: the world object frame, its thread in the companion's color. */
 .hero-medallion {
   position: relative;
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: 0;
   display: grid;
   place-items: center;
-  border: 2px solid var(--hero, var(--faint));
-  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--hero, #555) 45%, #1b1630), #0f0c1c 75%);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--hero, #000) 35%, transparent), inset 0 2px 4px rgba(255, 255, 255, 0.15);
+  border: 1px solid #000;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--hero, var(--faint)) 70%, #000), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   font-size: 1.45rem;
   color: #fff;
 }
 
-/* Recognition: one thin gold ring per tier around the medallion. */
-.hero-medallion.recognition-1 { box-shadow: 0 0 0 2px #0f0c1c, 0 0 0 3px var(--gold-deep); }
-.hero-medallion.recognition-2 { box-shadow: 0 0 0 2px #0f0c1c, 0 0 0 3px var(--gold-deep), 0 0 0 5px #0f0c1c, 0 0 0 6px var(--gold-deep); }
-.hero-medallion.recognition-3 { box-shadow: 0 0 0 2px #0f0c1c, 0 0 0 3px var(--gold), 0 0 0 5px #0f0c1c, 0 0 0 6px var(--gold-deep); }
-.hero-medallion.recognition-4 { box-shadow: 0 0 0 2px #0f0c1c, 0 0 0 3px var(--gold), 0 0 0 5px #0f0c1c, 0 0 0 6px var(--gold); }
-.hero-medallion.recognition-5 { box-shadow: 0 0 0 2px #0f0c1c, 0 0 0 3px var(--gold-2), 0 0 0 5px #0f0c1c, 0 0 0 6px var(--gold), 0 0 14px rgba(245, 200, 91, 0.45); }
+/* Recognition: one thin gold ring per tier around the frame. */
+.hero-medallion.recognition-1 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold-deep); }
+.hero-medallion.recognition-2 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold-deep), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold-deep); }
+.hero-medallion.recognition-3 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold-deep); }
+.hero-medallion.recognition-4 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold); }
+.hero-medallion.recognition-5 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold-2), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold); }
 
-/* Portraits are drawn a little larger than their medallion; the circle crops them. */
+/* Portraits are drawn a little larger than their frame; the frame crops them. */
 .medallion-clip {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  border-radius: 50%;
   overflow: hidden;
   pointer-events: none;
 }
@@ -1192,10 +1214,9 @@ button.resource:hover {
   height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  border: 2px solid var(--hero);
-  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--hero) 45%, #1b1630), #0f0c1c 75%);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.15);
+  border: 1px solid #000;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--hero) 70%, #000);
   font-size: 1.2rem;
   color: #fff;
 }
@@ -1203,16 +1224,17 @@ button.resource:hover {
 .hero-level {
   position: absolute;
   bottom: -6px;
-  right: -6px;
+  right: -7px;
   min-width: 24px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: #0f0c1c;
-  border: 1px solid var(--hero);
-  font-size: 0.7rem;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: #07060c;
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--hero) 70%, #000);
+  font-size: 0.8rem;
   font-weight: 800;
-  line-height: 18px;
+  line-height: 16px;
   text-align: center;
 }
 
@@ -1221,7 +1243,8 @@ button.resource:hover {
 }
 
 .hero-name {
-  font-weight: 750;
+  font-weight: 800;
+  font-size: 1.02rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1229,12 +1252,12 @@ button.resource:hover {
 
 .hero-title {
   font-weight: 500;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   color: var(--muted);
 }
 
 .hero-sub {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -1260,10 +1283,11 @@ button.resource:hover {
   position: relative;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-strong);
-  background: #110e20;
-  font-size: 0.6rem;
+  border-radius: 2px;
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--border-strong);
+  background: #07060c;
+  font-size: 0.72rem;
   font-weight: 800;
   color: var(--faint);
   padding: 0;
@@ -1271,23 +1295,23 @@ button.resource:hover {
 }
 
 .talent-owned {
-  border-color: var(--gold);
-  background: radial-gradient(circle at 35% 30%, #ffe29a, #b8862b);
-  color: #241603;
-  font-size: 0.7rem;
+  background: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold-deep), inset 0 1px 0 var(--gold-2);
+  color: #1a1204;
+  font-size: 0.8rem;
 }
 
 .talent-reachable {
-  border-color: var(--violet);
+  box-shadow: 0 0 0 1px var(--violet);
   color: var(--violet-2);
 }
 
 .talent-buyable {
-  border-color: var(--violet-2);
-  background: radial-gradient(circle, #6f45d8, #3b2380);
+  background: #6f45d8;
+  box-shadow: 0 0 0 1px var(--violet-2), inset 0 1px 0 #a98bff;
   color: #fff;
   cursor: pointer;
-  animation: talent-pulse 1.2s ease-in-out infinite;
+  animation: talent-pulse 1.2s steps(2, jump-none) infinite;
 }
 
 .talent:disabled {
@@ -1299,50 +1323,52 @@ button.resource:hover {
 }
 
 @keyframes talent-pulse {
-  50% { box-shadow: 0 0 0 4px rgba(155, 107, 255, 0.35); }
+  50% { box-shadow: 0 0 0 2px var(--violet-2), inset 0 1px 0 #a98bff; }
 }
 
 .hero-buy {
-  min-width: 96px;
-  height: 52px;
+  min-width: 100px;
+  height: 50px;
   padding: 4px 10px;
-  border-radius: 9px;
-  border: 1px solid #ffe7a6;
-  background: linear-gradient(180deg, #ffd978, #d9982f);
-  color: #241603;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gold-deep);
+  background: var(--gold);
+  color: #1a1204;
   display: grid;
   place-items: center;
   gap: 1px;
-  box-shadow: 0 4px 14px rgba(245, 200, 91, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transition: transform 90ms ease, filter 90ms ease;
+  box-shadow: inset 0 1px 0 var(--gold-2), 0 1px 0 #000;
+  transition: translate 80ms ease, filter 90ms ease;
 }
 
 .hero-buy:hover:not(:disabled) {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .hero-buy:active:not(:disabled) {
-  transform: scale(0.96);
+  translate: 0 1px;
+  box-shadow: none;
 }
 
+/* Not enough gold yet: the key sinks back, the price stays readable. */
 .hero-buy:disabled {
   cursor: not-allowed;
   border-color: var(--border);
-  background: #1f1a33;
-  color: var(--faint);
+  background: transparent;
+  color: var(--muted);
   box-shadow: none;
 }
 
 .hero-buy-label {
-  font-weight: 850;
-  font-size: 0.86rem;
+  font-weight: 800;
+  font-size: 0.95rem;
 }
 
 .hero-buy-cost {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -1356,21 +1382,20 @@ button.resource:hover {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(5, 4, 10, 0.72);
-  backdrop-filter: blur(4px);
-  animation: fade-in 140ms ease-out;
+  background: rgba(5, 4, 10, 0.74);
+  animation: fade-in 120ms ease-out;
 }
 
 .modal {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-height: min(88dvh, 900px);
-  border-radius: 14px;
-  border: 1px solid var(--border-strong);
-  background: linear-gradient(180deg, #1c1733, #120f22);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(245, 200, 91, 0.08);
-  animation: modal-in 180ms cubic-bezier(0.2, 1.2, 0.4, 1);
+  max-height: min(calc(88 * var(--dvh)), 900px);
+  border-radius: var(--radius);
+  border: 1px solid #000;
+  background: var(--panel-solid);
+  box-shadow: 0 0 0 1px var(--border-strong), var(--bevel), var(--shadow);
+  animation: modal-in 140ms ease-out;
   user-select: text;
   -webkit-user-select: text;
 }
@@ -1400,14 +1425,14 @@ button.resource:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 12px 14px 12px 16px;
   border-bottom: 1px solid var(--border);
 }
 
 .modal-head h2 {
   flex: 1;
-  font-size: 1.2rem;
-  color: var(--gold-2);
+  font-size: 1.3rem;
+  color: var(--text);
 }
 
 .modal-icon {
@@ -1419,39 +1444,53 @@ button.resource:hover {
 .modal-close {
   width: 34px;
   height: 34px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  box-shadow: var(--bevel);
   color: var(--muted);
 }
 
 .modal-close:hover {
   color: var(--text);
-  border-color: var(--border-strong);
+  background: var(--panel-3);
 }
 
+/* Folder tabs: the open one joins the page under it. */
 .modal-tabs {
   display: flex;
-  gap: 4px;
-  padding: 10px 16px 0;
-  border-bottom: 1px solid var(--border);
+  gap: 3px;
+  padding: 8px 14px 0;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border-strong);
   overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .modal-tabs button {
-  padding: 8px 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: none;
+  position: relative;
+  top: 1px;
+  padding: 7px 14px 6px;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--panel-2);
   color: var(--muted);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   white-space: nowrap;
 }
 
+.modal-tabs button:hover {
+  color: var(--text);
+}
+
 .modal-tabs button.active {
-  color: var(--gold-2);
-  border-bottom-color: var(--gold);
+  padding-bottom: 7px;
+  background: var(--panel-solid);
+  border-color: var(--border-strong);
+  box-shadow: inset 0 1px 0 var(--gold-deep);
+  color: var(--text);
 }
 
 .modal-body {
@@ -1470,28 +1509,37 @@ button.resource:hover {
 
 .modal-text {
   margin: 0 0 12px;
-  color: #ddd5f7;
+  color: var(--text);
 }
 
 .modal-hint {
   margin: 6px 0 0;
-  font-size: 0.8rem;
-  color: var(--faint);
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
+/* A heading inside a window, with the ruled line of old portal headers. */
 .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 20px 0 10px;
-  font-size: 1rem;
-  color: var(--violet-2);
+  font-size: 1.08rem;
+  color: var(--text);
+}
+
+.section-heading::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 1px solid #000;
 }
 
 .stat-label {
   display: block;
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--faint);
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .empty-state {
@@ -1502,16 +1550,18 @@ button.resource:hover {
 
 .progress-line {
   height: 10px;
-  border-radius: 999px;
-  background: rgba(8, 7, 16, 0.8);
-  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: #07060c;
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--border);
   overflow: hidden;
 }
 
 .progress-line span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--violet), var(--gold));
+  background: var(--gold);
+  box-shadow: inset 0 1px 0 var(--gold-2);
 }
 
 .progress-line.small {
@@ -1522,8 +1572,8 @@ button.resource:hover {
 .link-button {
   border: 0;
   background: none;
-  color: var(--violet-2);
-  font-size: 0.85rem;
+  color: var(--gold-2);
+  font-size: 0.95rem;
   padding: 4px;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1534,7 +1584,7 @@ button.resource:hover {
 }
 
 @keyframes modal-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
 }
 
 /* ------------------------------------------------ map */
@@ -1548,7 +1598,7 @@ button.resource:hover {
 
 .map-summary > div {
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--panel-2);
   border: 1px solid var(--border);
 }
@@ -1568,7 +1618,7 @@ button.resource:hover {
 .map-card {
   position: relative;
   aspect-ratio: 3 / 4;
-  border-radius: 12px;
+  border-radius: var(--radius);
   border: 2px solid var(--border);
   background-size: cover;
   background-position: center;
@@ -1586,8 +1636,8 @@ button.resource:hover {
 }
 
 .map-card.current {
-  border-color: var(--gold);
-  box-shadow: 0 0 18px rgba(245, 200, 91, 0.35);
+  border-color: #000;
+  box-shadow: 0 0 0 2px var(--gold);
 }
 
 .map-card-shade {
@@ -1619,10 +1669,8 @@ button.resource:hover {
 }
 
 .map-card-stages {
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--accent);
 }
 
@@ -1716,12 +1764,10 @@ button.resource:hover {
 .cap-badge {
   padding: 1px 6px;
   border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--gold);
-  font-size: 0.62rem;
+  font-size: 0.74rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   cursor: help;
 }
 
@@ -1731,14 +1777,16 @@ button.resource:hover {
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--rarity) 45%, var(--border));
-  background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 10%, #1a1630), #141124);
+  border-radius: var(--radius);
+  border: 1px solid #000;
+  background: var(--panel-2);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rarity) 55%, #000), var(--bevel);
 }
 
+/* The rarest relics wear a second thread of their color. */
 .item-card.rarity-legendary,
 .item-card.rarity-mythic {
-  box-shadow: 0 0 18px color-mix(in srgb, var(--rarity) 25%, transparent);
+  box-shadow: 0 0 0 1px var(--rarity), 0 0 0 3px #0b0a14, 0 0 0 4px color-mix(in srgb, var(--rarity) 60%, #000), var(--bevel);
 }
 
 .item-card.empty {
@@ -1771,7 +1819,7 @@ button.resource:hover {
   width: 68px;
   height: 68px;
   flex: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   border: 1px solid color-mix(in srgb, var(--rarity) 55%, transparent);
   background: rgba(0, 0, 0, 0.3);
 }
@@ -1783,7 +1831,7 @@ button.resource:hover {
   bottom: -5px;
   min-width: 22px;
   padding: 1px 4px 0;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--gold-deep);
   background: var(--bg);
   color: var(--gold-2);
@@ -1800,7 +1848,7 @@ button.resource:hover {
   border-color: var(--gold);
   color: var(--bg);
   background: var(--gold);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--gold) 55%, transparent);
+  box-shadow: inset 0 1px 0 var(--gold-2);
 }
 
 .item-name {
@@ -1975,11 +2023,10 @@ button.resource:hover {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   padding: 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(155, 107, 255, 0.45);
-  background:
-    radial-gradient(circle at 80% 20%, rgba(155, 107, 255, 0.3), transparent 60%),
-    linear-gradient(180deg, #221a40, #150f2a);
+  border-radius: var(--radius);
+  border: 1px solid #000;
+  background: #1a1530;
+  box-shadow: 0 0 0 1px rgba(155, 107, 255, 0.55), var(--bevel);
 }
 
 .ascension-stats {
@@ -2100,7 +2147,7 @@ button.resource:hover {
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: #151126;
   opacity: 0.7;
@@ -2108,8 +2155,8 @@ button.resource:hover {
 
 .achievement.done {
   opacity: 1;
-  border-color: rgba(245, 200, 91, 0.5);
-  background: linear-gradient(90deg, rgba(245, 200, 91, 0.1), #151126 70%);
+  border-color: var(--gold-deep);
+  background: #1c170c;
 }
 
 .achievement-badge {
@@ -2166,7 +2213,7 @@ button.resource:hover {
   grid-template-rows: auto 1fr;
   gap: 10px;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: #151126;
 }
@@ -2180,8 +2227,10 @@ button.resource:hover {
   place-items: end center;
   min-height: 112px;
   padding: 6px;
-  border-radius: 8px;
-  background: radial-gradient(ellipse at 50% 80%, #231c3f, #100d1e 75%);
+  border-radius: var(--radius);
+  background: var(--bg);
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--gold-deep), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .bestiary-entry.unknown .bestiary-sprite {
@@ -2230,13 +2279,13 @@ button.resource:hover {
 .fragment {
   padding: 10px 14px;
   border-left: 2px solid var(--border-strong);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
   background: #151126;
 }
 
 .fragment.unread {
   border-left-color: var(--violet-2);
-  background: linear-gradient(90deg, rgba(155, 107, 255, 0.12), #151126 70%);
+  background: #17132a;
 }
 
 .fragment blockquote {
@@ -2256,12 +2305,14 @@ button.resource:hover {
   color: var(--faint);
 }
 
+/* Body face even inside a Cinzel heading: the pill reads the same everywhere it shows. */
 .fragment-new {
   padding: 0 7px;
-  border-radius: 999px;
-  font-size: 0.66rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-size: 0.78rem;
   font-weight: 800;
-  text-transform: uppercase;
   color: var(--bg);
   background: var(--violet-2);
 }
@@ -2272,7 +2323,28 @@ button.resource:hover {
   gap: 20px;
 }
 
+/* The records beside the table read as its rows: same height, same rule, level with its body. */
+.stats-layout .stats-list {
+  gap: 0;
+  margin-top: calc(0.86rem * 1.5 + 13px);
+  align-self: start;
+}
+
+.stats-table tbody tr,
+.stats-layout .stats-list > div {
+  height: 2.25rem;
+}
+
+.stats-layout .stats-list > div {
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
 .stats-table {
+  align-self: start;
   width: 100%;
   border-collapse: collapse;
   font-size: 0.86rem;
@@ -2293,10 +2365,9 @@ button.resource:hover {
 }
 
 .stats-table thead th {
-  color: var(--faint);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 500;
 }
 
 .board-tabs-inline {
@@ -2308,7 +2379,7 @@ button.resource:hover {
 
 .board-tabs-inline button {
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted);
@@ -2349,32 +2420,37 @@ button.resource:hover {
   align-items: center;
   gap: 10px;
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius);
 }
 
 .board-list li:nth-child(odd) {
   background: rgba(255, 255, 255, 0.025);
 }
 
+/* The walker's own line: marked in gold, like everything that is theirs. */
 .board-list li.me {
-  background: rgba(155, 107, 255, 0.18);
-  border: 1px solid rgba(155, 107, 255, 0.5);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
 }
 
+/* Rank labels are the square labels of the public Roll, not circles. */
 .board-list .rank {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  justify-self: start;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
   background: var(--panel-3);
   font-weight: 800;
   font-size: 0.82rem;
 }
 
-.board-list .rank-1 { background: linear-gradient(180deg, #ffe29a, #d9a53a); color: #241603; }
-.board-list .rank-2 { background: linear-gradient(180deg, #eef1f6, #9ea7b8); color: #1b1f27; }
-.board-list .rank-3 { background: linear-gradient(180deg, #f3b98a, #b06a35); color: #2a1406; }
+.board-list .rank-1 { background: var(--gold); color: #1a1204; }
+.board-list .rank-2 { background: #c7ccd6; color: #1b1f27; }
+.board-list .rank-3 { background: #c98a55; color: #2a1406; }
 
 .board-list .board-name {
   font-weight: 650;
@@ -2398,7 +2474,7 @@ button.resource:hover {
 
 .auth-pitch {
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid rgba(245, 200, 91, 0.35);
   background: rgba(245, 200, 91, 0.07);
   font-size: 0.9rem;
@@ -2414,7 +2490,7 @@ button.resource:hover {
   gap: 4px;
   margin: 14px 0 10px;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: rgba(8, 7, 16, 0.6);
   border: 1px solid var(--border);
 }
@@ -2422,7 +2498,7 @@ button.resource:hover {
 .auth-tabs button {
   flex: 1;
   padding: 8px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   border: 0;
   background: transparent;
   color: var(--muted);
@@ -2442,7 +2518,7 @@ button.resource:hover {
 
 .danger-zone {
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid rgba(255, 92, 122, 0.45);
   background: rgba(255, 92, 122, 0.06);
 }
@@ -2471,8 +2547,10 @@ button.resource:hover {
   place-items: center;
   width: 52px;
   height: 52px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #a57bff, #6f45d8);
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
+  background: #7b52e0;
+  box-shadow: inset 0 1px 0 #a98bff;
   font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 800;
@@ -2484,7 +2562,7 @@ button.resource:hover {
   gap: 10px;
   margin-top: 14px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--panel-2);
 }
@@ -2510,7 +2588,7 @@ button.resource:hover {
   gap: 6px;
   margin-top: 14px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
   background: color-mix(in srgb, var(--gold) 8%, transparent);
   font-size: 0.88rem;
@@ -2563,8 +2641,18 @@ button.resource:hover {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* The words keep a readable width; a choice too wide for the row goes under them. */
+.setting-row {
+  flex-wrap: wrap;
+}
+
 .setting-row > span:first-child {
   display: grid;
+  flex: 1 1 10rem;
+}
+
+.segmented button small {
+  white-space: nowrap;
 }
 
 .setting-label {
@@ -2588,7 +2676,7 @@ button.resource:hover {
 .segmented button {
   display: grid;
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted);
@@ -2605,7 +2693,7 @@ button.resource:hover {
 .segmented button.active {
   border-color: var(--gold);
   color: var(--gold-2);
-  background: rgba(245, 200, 91, 0.08);
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
 }
 
 .switch {
@@ -2614,11 +2702,13 @@ button.resource:hover {
   flex: none;
   width: 46px;
   height: 26px;
-  border-radius: 999px;
-  background: #2a2347;
+  border-radius: var(--radius-pill);
+  /* Off: a slot sunk into the panel. On: a gold key, like every other thing the walker sets. */
+  background: var(--bg);
   border: 1px solid var(--border-strong);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background 140ms ease, border-color 140ms ease;
 }
 
 .switch::after {
@@ -2628,18 +2718,26 @@ button.resource:hover {
   left: 2px;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
-  background: #d9d2f5;
-  transition: transform 140ms ease;
+  border-radius: 2px;
+  background: var(--muted);
+  box-shadow: var(--bevel);
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), background 140ms ease;
+}
+
+.switch:hover::after {
+  background: var(--text);
 }
 
 .switch:checked {
-  background: var(--violet);
+  background: var(--gold);
+  border-color: var(--gold-deep);
+  box-shadow: inset 0 1px 0 var(--gold-2);
 }
 
 .switch:checked::after {
   transform: translateX(20px);
-  background: #fff;
+  background: var(--bg);
+  box-shadow: none;
 }
 
 .shortcut-list {
@@ -2652,12 +2750,29 @@ button.resource:hover {
   color: var(--muted);
 }
 
+/* Keys in one column, so the actions line up whether the key is "1" or "Échap". */
+.shortcut-list li {
+  display: grid;
+  grid-template-columns: 3.75rem 1fr;
+  align-items: center;
+}
+
+.shortcut-list kbd {
+  justify-self: start;
+}
+
+.shortcut-list + .modal-hint {
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  color: var(--faint);
+}
+
 kbd {
   display: inline-block;
   min-width: 26px;
   padding: 1px 7px;
-  margin-right: 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   border-bottom-width: 3px;
   background: var(--panel-2);
@@ -2678,7 +2793,7 @@ kbd {
 
 .save-card {
   padding: 14px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--panel-2);
 }
@@ -2698,7 +2813,7 @@ kbd {
 
 .save-best {
   padding: 1px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--gold);
   color: #241603;
   font-family: var(--font-body);
@@ -2736,6 +2851,128 @@ kbd {
   margin-top: 16px;
 }
 
+/* The Reunion: what the company tells of the road it held alone. */
+.account-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.account-facts > div {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+
+.account-facts dt {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Numbers are the reward: the road's figures read at a glance, like the header counters. */
+.account-facts dd {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.account-facts dd.is-gold {
+  color: var(--gold);
+}
+
+.account-moments,
+.account-levels {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-moments {
+  display: grid;
+  gap: 6px;
+}
+
+.account-moments li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+
+.account-moments li.blocked {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+}
+
+.account-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+}
+
+.account-line {
+  display: grid;
+  min-width: 0;
+}
+
+.account-line strong {
+  font-family: var(--font-display);
+  color: var(--gold-2);
+}
+
+.account-line span {
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.account-portrait {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #000;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--hero) 70%, #000);
+}
+
+.account-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.account-levels li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  font-size: 0.84rem;
+}
+
+.account-levels .account-portrait {
+  width: 26px;
+  height: 26px;
+}
+
+.account-level {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ------------------------------------------------ toasts */
 
 .toasts {
@@ -2746,7 +2983,7 @@ kbd {
   z-index: 60;
   display: grid;
   gap: 8px;
-  width: min(360px, calc(100vw - 24px));
+  width: min(360px, calc(100 * var(--vw) - 24px));
   pointer-events: none;
 }
 
@@ -2768,11 +3005,11 @@ kbd {
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--toast-color) 60%, transparent);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--toast-color) 22%, #151126), #151126);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
-  animation: toast-in 260ms cubic-bezier(0.2, 1.3, 0.4, 1);
+  border-radius: var(--radius);
+  border: 1px solid #000;
+  background: color-mix(in srgb, var(--toast-color) 12%, #13111b);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--toast-color) 60%, #000), var(--bevel), 0 12px 26px rgba(0, 0, 0, 0.5);
+  animation: toast-in 160ms ease-out;
 }
 
 .toast-gold { --toast-color: var(--gold); }
@@ -2869,6 +3106,9 @@ kbd {
   .ascension-hero {
     grid-template-columns: 1fr;
   }
+  .stats-layout .stats-list {
+    margin-top: 0;
+  }
   .map-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2884,7 +3124,7 @@ kbd {
     min-width: 0;
   }
   .setting-row input[type="range"] {
-    width: min(180px, 40vw);
+    width: min(180px, calc(40 * var(--vw)));
   }
 }
 
@@ -3006,7 +3246,7 @@ kbd {
   .skill {
     width: 44px;
     height: 44px;
-    border-radius: 10px;
+    border-radius: var(--radius);
   }
   .skill-icon {
     width: 21px;
@@ -3170,10 +3410,10 @@ kbd {
     z-index: 25;
     display: flex;
     width: max-content;
-    max-width: calc(100vw - 24px);
+    max-width: calc(100 * var(--vw) - 24px);
     transform: translateX(-50%);
     padding: 3px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: rgba(14, 12, 26, 0.94);
     border: 1px solid var(--border-strong);
     box-shadow: var(--shadow);
@@ -3181,7 +3421,7 @@ kbd {
   .mobile-tabs button {
     padding: 7px 14px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: transparent;
     color: var(--muted);
     font-weight: 700;
@@ -3197,7 +3437,7 @@ kbd {
     align-items: end;
   }
   .modal {
-    max-height: calc(100dvh - 16px);
+    max-height: calc(100 * var(--dvh) - 16px);
   }
 }
 
@@ -3207,7 +3447,7 @@ kbd {
   .game-root {
     --header-height: 46px;
     --rail-width: 56px;
-    --panel-width: min(340px, 42vw);
+    --panel-width: min(340px, calc(42 * var(--vw)));
   }
   .game-header {
     gap: 8px;
@@ -3258,7 +3498,7 @@ kbd {
     padding: 8px;
   }
   .modal {
-    max-height: calc(100dvh - 16px);
+    max-height: calc(100 * var(--dvh) - 16px);
   }
 }
 
@@ -3375,9 +3615,10 @@ kbd {
   position: relative;
   display: grid;
   align-items: end;
-  min-height: 132px;
+  /* Tall enough to show the place itself (the stones, the Loom's frame), not just its ground. */
+  min-height: 208px;
   margin-bottom: 14px;
-  border-radius: 12px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg-2);
   overflow: hidden;
@@ -3402,7 +3643,7 @@ kbd {
   position: absolute;
   inset: 0;
   /* Dark enough under the words that they read over a bright sky (the Sanctum's dusk). */
-  background: linear-gradient(180deg, rgba(11, 10, 20, 0.15) 0%, rgba(11, 10, 20, 0.7) 38%, rgba(11, 10, 20, 0.95) 80%);
+  background: linear-gradient(180deg, transparent 0%, rgba(11, 10, 20, 0.2) 40%, rgba(11, 10, 20, 0.75) 64%, rgba(11, 10, 20, 0.95) 88%);
 }
 
 .place-copy {
@@ -3466,10 +3707,8 @@ kbd {
 
 /* Eldra's Loom: paler than the Sanctum, the night one thread deeper. */
 .loom-hero {
-  border-color: rgba(201, 166, 255, 0.4);
-  background:
-    radial-gradient(circle at 20% 20%, rgba(201, 166, 255, 0.18), transparent 60%),
-    linear-gradient(180deg, #1d1935, #120f22);
+  box-shadow: 0 0 0 1px rgba(201, 166, 255, 0.5), var(--bevel);
+  background: #1b1832;
 }
 
 .thread-value {
@@ -3505,7 +3744,7 @@ kbd {
 .stall-discount {
   padding: 1px 8px;
   border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--gold-2);
   font-size: 0.74rem;
   font-weight: 750;
@@ -3524,9 +3763,9 @@ kbd {
   gap: 12px;
   margin-bottom: 14px;
   padding: 14px;
-  border-color: color-mix(in srgb, var(--gold) 55%, var(--border));
-  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 9%, var(--panel-2)), var(--panel-solid));
-  box-shadow: 0 0 16px rgba(245, 200, 91, 0.16);
+  border-color: #000;
+  background: #1c170c;
+  box-shadow: 0 0 0 1px var(--gold-deep), var(--bevel);
 }
 
 .caravan h3 {
@@ -3647,7 +3886,7 @@ kbd {
 .night-line {
   padding: 8px 14px;
   border-left: 2px solid color-mix(in srgb, var(--gold) 45%, var(--border));
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
   background: #151126;
   font-size: 0.84rem;
   line-height: 1.5;
@@ -3774,7 +4013,7 @@ kbd {
 
 /* Timed events run on the boss timer, in the violet of the night. */
 .event-timer .boss-timer-fill {
-  background: linear-gradient(90deg, #3a3f70, #9b7bff);
+  background: #6a5acf;
 }
 
 /* Pip's Wager: thirteen notches, filled as the strikes land. */
@@ -3792,7 +4031,7 @@ kbd {
 }
 
 .wager-strikes span.struck {
-  background: linear-gradient(180deg, #ffe9a8, var(--gold));
+  background: var(--gold);
   border-color: var(--gold);
 }
 
@@ -3800,7 +4039,6 @@ kbd {
 .medallion-stars {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
   background:
     radial-gradient(circle at 30% 28%, #fff 0 1px, transparent 1.5px),
     radial-gradient(circle at 68% 40%, #e6d0ff 0 1px, transparent 1.5px),

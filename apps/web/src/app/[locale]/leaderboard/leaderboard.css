@@ -15,8 +15,10 @@
 
 .board-tabs a {
   padding: 0.5rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  box-shadow: var(--bevel);
   color: var(--muted);
   font-weight: 600;
   font-size: 0.9rem;
@@ -29,8 +31,9 @@
 
 .board-tabs a.active {
   background: var(--gold);
-  border-color: var(--gold-2);
-  color: #241603;
+  border-color: var(--gold-deep);
+  color: #1a1204;
+  box-shadow: inset 0 1px 0 var(--gold-2);
 }
 
 .board-table-wrap {
@@ -45,25 +48,28 @@
 .board-table th {
   text-align: left;
   padding: 0.8rem;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--faint);
-  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .board-table td {
   padding: 0.6rem 0.8rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border);
+}
+
+.board-table tbody tr:nth-child(odd) td {
+  background: var(--bg-2);
 }
 
 .board-name {
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .board-value {
-  font-family: var(--font-display);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--gold-2);
 }
 
@@ -76,10 +82,9 @@
 /* The Roll: each board's name on the Roll, its plain meaning beneath. */
 .board-subtitle {
   margin-top: -0.4rem;
-  color: var(--faint) !important;
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--muted) !important;
+  font-size: 1rem;
+  font-style: italic;
 }
 
 .board-tabs a {
@@ -87,13 +92,12 @@
   flex-direction: column;
   align-items: center;
   line-height: 1.2;
-  border-radius: 14px;
 }
 
 .board-tab-meaning {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .board-th-meaning {

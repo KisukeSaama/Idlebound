@@ -1,6 +1,6 @@
 import { LOCALES } from "@idlebound/game";
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Inter } from "next/font/google";
+import { Alegreya_Sans, Cinzel } from "next/font/google";
 import { I18nProvider } from "@/i18n/client";
 import { assertLocale, getI18n, getPreference } from "@/i18n/server";
 import { OG_LOCALE, SITE_NAME, isIndexable, pageAlternates, siteUrl } from "@/lib/site";
@@ -8,7 +8,7 @@ import { href } from "@/i18n/routing";
 import "../globals.css";
 
 const display = Cinzel({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display", display: "swap" });
-const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const body = Alegreya_Sans({ subsets: ["latin"], weight: ["400", "500", "700", "800"], style: ["normal", "italic"], variable: "--font-body", display: "swap" });
 
 // Every page is rendered per request: runtime env (one image for dev and prod) and the
 // per-request CSP nonce set by src/proxy.ts both require it.
