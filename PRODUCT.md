@@ -106,8 +106,8 @@ late game; mashing the mouse is never required.
   every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
   blocks the company (780, 4 h of real play); then continuous bursts (776), 10 clicks/s
   (747), idle (717), 5/s (698) and 2/s (590). 8 h in a background tab after 24 h of play
-  adds 4 to 33 stages (median per profile), and the Reunion doubles the first hour back
-  (+13 to +33 stages instead of +6 to +17). The 72 h bot
+  adds 4 to 32 stages (median per profile), and the Reunion doubles the first hour back
+  (+11 to +32 stages instead of +5 to +19). The 72 h bot
   reaches stage 1097 after 13 ascensions (stage 250 at 10 h 30, 500 at 18 h, 750 at 28 h,
   1000 at 50 h, then 97 stages in the last 22 h), slowing down smoothly (no runaway).
 - **Real schedules** (hybrid simulation: active sessions played by the bot, the tab left
@@ -378,8 +378,9 @@ or plays something else. It does not progress while it is closed.
   than 5 s, the time elapsed is simulated in one go (up to 8 h per gap), exactly as the
   autopilot would have played it: one-minute slices, spending between slices (a single
   slice when spending while away is off), stages pushed from the furthest one reached (bosses included, shards of
-  biome bosses too, no item drops) until a boss companions cannot beat in time, then
-  training on the stage before it and trying again after each purchase. Companions fight
+  biome bosses too, no item drops) until a boss companions cannot beat in time. They fight
+  that boss once anyway, as an open tab would (a lost fight, its wounds kept up to stage
+  44), then train on the stage before it and try again after each purchase. Companions fight
   alone: idle bonus in full, no clicks, powers, crystals or potions.
 - **Closed tab**: nothing. A freshly opened page skips the time since the last save; only
   a tab that was already running the game gets it back: one the browser discarded to save

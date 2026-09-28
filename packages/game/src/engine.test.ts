@@ -3,7 +3,7 @@ import { playBot } from "../scripts/bot";
 import { achievementText, gameText, itemName, monsterName } from "./content";
 import { ACHIEVEMENTS } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarCost, altarTotalCost } from "./data/altars";
-import { BIOMES, TREASURE_MONSTER } from "./data/biomes";
+import { BIOMES, TREASURE_MONSTER, isKingStage } from "./data/biomes";
 import { HEROES } from "./data/heroes";
 import { SLOTS, SLOT_BASE_COUNT } from "./data/items";
 import { MARKET_OFFERS } from "./data/market";
@@ -14,6 +14,7 @@ import {
   MONSTERS_PER_STAGE,
   REUNION_DPS,
   REUNION_MIN_AWAY_SECONDS,
+  WOUND_LAST_STAGE,
   ascensionPreview,
   wandererSkip,
   IDLE_FULL_MS,
@@ -624,6 +625,38 @@ describe("anti-cheat", () => {
     expect(engine.state.maxStage).toBe(maxStage + summary.stages);
     expect(engine.state.stage).toBeGreaterThanOrEqual(engine.state.maxStage - 1);
   });
+
+  it("goes back to the boss that stopped the walker while away, and heals its wounds", () => {
+    const engine = newGame(4);
+    let now = playBot(engine, T0, 20 * 60, { clicksPerSecond: 5 });
+    // Left idle until a boss stops the walker and keeps its wounds.
+    for (let second = 0; second < 3600 && engine.state.autoAdvance; second += 1) now = run(engine, now, 1);
+    const wounded = engine.state.maxStage;
+    expect(engine.state.autoAdvance).toBe(false);
+    expect(engine.state.trail.wound?.stage).toBe(wounded);
+    const before = structuredClone(engine.state);
+
+    // An open tab: the autopilot levels companions up and retries the boss within minutes.
+    const open = new GameEngine(structuredClone(before), seededRng(4), now);
+    open.afkAfterMs = 60_000;
+    const later = run(open, now, 15 * 60);
+    expect(open.state.maxStage).toBeGreaterThan(wounded);
+    expect(open.state.trail.wound?.stage ?? open.state.maxStage).toBe(open.state.maxStage);
+    expect(verifyState(open.state, later)).toEqual([]);
+
+    // A background tab: the catch-up does the same, and the save stays valid.
+    now += 3 * 3600_000;
+    const fails = engine.state.lifetime.bossFails;
+    const summary = engine.tick(now)!;
+    expect(engine.state.maxStage).toBeGreaterThan(wounded);
+    // The boss that stops it now was fought once on arrival, and keeps its wounds up to stage 44.
+    const blockedAt = summary.blockedAt!;
+    expect(engine.state.lifetime.bossFails).toBeGreaterThan(fails);
+    if (blockedAt <= WOUND_LAST_STAGE && !isKingStage(blockedAt)) expect(engine.state.trail.wound?.stage).toBe(blockedAt);
+    else expect(engine.state.trail.wound).toBeUndefined();
+    expect(verifyTransition(before, engine.state, 3 * 3600_000 + 1000)).toEqual([]);
+    expect(verifyState(engine.state, now)).toEqual([]);
+  }, 60_000);
 
   it("lets the autopilot of an open tab level companions and retry bosses, only once the player is away", () => {
     const engine = newGame(4);

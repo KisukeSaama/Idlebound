@@ -585,8 +585,18 @@ export class GameEngine {
 
   /** HP a boss stage's boss comes back with: its wounds taken off, the Eclipse added. */
   private bossLeft(stage: number): number {
-    const wound = this.state.trail.wound?.stage === stage ? this.state.trail.wound.share : 0;
-    return bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1) * (1 - wound);
+    return bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1) * (1 - this.woundKept(stage));
+  }
+
+  /** Share of its HP a boss stage's boss still lacks from the fights it won. */
+  private woundKept(stage: number): number {
+    return this.state.trail.wound?.stage === stage ? this.state.trail.wound.share : 0;
+  }
+
+  /** A guardian or an elite of the present night keeps the wounds of a fight it won (`dealt`: share of its HP). */
+  private keepWound(stage: number, dealt: number) {
+    if (isKingStage(stage) || stage > WOUND_LAST_STAGE) return;
+    this.state.trail.wound = { stage, share: Math.min(WOUND_CAP, this.woundKept(stage) + dealt * WOUND_KEEP) };
   }
 
   /** Damage factor against a boss stage's guardian, for the catch-up and the autopilot. */
@@ -628,6 +638,8 @@ export class GameEngine {
     let shards = 0;
     let spent = 0;
     let blockedAt: number | null = null;
+    // The boss the company last lost to: the autopilot only goes back once it can win.
+    let failedAt: number | null = s.autoAdvance ? null : s.maxStage;
     s.stage = s.maxStage;
     // Whatever stood in the road (an event, Pip's dare) is gone when the walker comes back.
     s.monster = null;
@@ -647,13 +659,24 @@ export class GameEngine {
         const stage = s.maxStage;
         if (isBossStage(stage)) {
           const fight = this.bossLeft(stage) / (d.dps * this.stageFactor(stage, d));
-          if (fight > d.bossTimer) { blockedAt = stage; break; }
+          if (fight > d.bossTimer) {
+            // Reaching a boss too strong, the company fights it once anyway, as in an open
+            // tab, and the wounds it leaves stay (up to stage 44). Then it trains and waits.
+            if (stage === failedAt) { blockedAt = stage; break; }
+            if (d.bossTimer > time) break;
+            time -= d.bossTimer;
+            failedAt = stage;
+            s.lifetime.bossFails += 1;
+            this.keepWound(stage, (d.dps * this.stageFactor(stage, d) * d.bossTimer) / (bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1)));
+            continue;
+          }
           if (fight + BOSS_RESPAWN_SECONDS > time) break;
           time -= fight + BOSS_RESPAWN_SECONDS;
           kills += 1;
           bosses += 1;
           sliceGold += stageGold(stage) * bossHpMultiplier(stage) * d.goldMultiplier * (isBiomeBossStage(stage) ? d.guardianGold : 1);
           this.recordStageKills(stage, 1);
+          if (s.trail.wound?.stage === stage) delete s.trail.wound;
           if (isBiomeBossStage(stage)) shards += 1 + Math.floor(stage / 25) + namedEffect(s, "guardianShards");
           if (isKingStage(stage)) {
             kings += 1;
@@ -1107,10 +1130,9 @@ export class GameEngine {
     }
     // A guardian or an elite of the present night keeps its wounds for the next fight.
     const monster = s.monster;
-    if (monster && !isKingStage(s.stage) && s.stage <= WOUND_LAST_STAGE) {
-      const kept = s.trail.wound?.stage === s.stage ? s.trail.wound.share : 0;
-      const dealt = Math.max(0, (monster.maxHp * (1 - kept) - Math.max(0, monster.hp)) / monster.maxHp);
-      s.trail.wound = { stage: s.stage, share: Math.min(WOUND_CAP, kept + dealt * WOUND_KEEP) };
+    if (monster) {
+      const kept = this.woundKept(s.stage);
+      this.keepWound(s.stage, Math.max(0, (monster.maxHp * (1 - kept) - Math.max(0, monster.hp)) / monster.maxHp));
     }
     this.emit({ type: "bossFailed", stage: s.stage });
     s.monster = null;
