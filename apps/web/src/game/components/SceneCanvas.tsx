@@ -1,6 +1,6 @@
 "use client";
 
-import { BIOMES, MAX_STAGE, STAGES_PER_BIOME, biomeForStage, eraForStage, remembranceNight, type BiomeDef, type MonsterState } from "@idlebound/game";
+import { BIOMES, MAX_STAGE, STAGES_PER_BIOME, biomeForStage, eraForStage, remembranceNight, type BiomeDef, type GameState, type MonsterState } from "@idlebound/game";
 import { useEffect, useRef, type RefObject } from "react";
 import { useGame } from "../context";
 import { ArenaRenderer, type Stretch } from "../pixel/arena";
@@ -21,6 +21,11 @@ export function coverScene(): () => void {
     covers -= 1;
     active?.renderer.setCovered(covers > 0);
   };
+}
+
+/** Names the monster in the road: a new key is a new monster. */
+export function monsterKeyOf(state: GameState): string {
+  return `${state.stage}-${state.lifetime.kills}-${state.lifetime.bossFails}`;
 }
 
 /** Where the monster stands on the page (page CSS pixels), for what must not cover it (the toasts). */
@@ -45,7 +50,6 @@ export function SceneCanvas({
   biomeId,
   era,
   monster,
-  monsterKey,
   cleared,
   fullMoon,
   darkNight: darkNightProp
@@ -56,7 +60,6 @@ export function SceneCanvas({
   biomeId: string;
   era: number;
   monster: MonsterState | null;
-  monsterKey: string;
   cleared: boolean;
   /** The Hearthfields' moon is full (Night Owl). */
   fullMoon: boolean;
@@ -124,11 +127,20 @@ export function SceneCanvas({
   }, [renderer, cleared]);
 
   // What the events of the Long Night show of the monster: its event, the Eclipse, Pip's dare, its wounds.
+  // Read from the live state, never from the render: React hears the engine at most every
+  // 100 ms, and a monster struck down within one tick would otherwise never be seen.
   const hp = monster?.hp ?? 0;
   const wager = Boolean(monster?.wager);
   useEffect(() => {
-    renderer.current?.setMonster(monster ? { id: monster.id, kind: monster.kind, event: monster.event, eclipse: monster.eclipse, wager: monster.wager, hp: monster.hp, maxHp: monster.maxHp } : null, monsterKey, era);
-  }, [renderer, monster, monsterKey, era, hp, wager]);
+    const show = () => {
+      const live = store.state.monster;
+      renderer.current?.setMonster(live ? { id: live.id, kind: live.kind, event: live.event, eclipse: live.eclipse, wager: live.wager, hp: live.hp, maxHp: live.maxHp } : null, monsterKeyOf(store.state), eraForStage(store.state.stage));
+    };
+    show();
+    return store.onFx((event) => {
+      if (event.type === "spawn") show();
+    });
+  }, [renderer, store, monster, era, hp, wager]);
 
   // Echo of a Walker: another walker's shadow fights beside the company while its buff lasts.
   const walker = state.buffs.some((buff) => buff.id === "walker" && buff.until > Date.now());
