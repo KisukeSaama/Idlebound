@@ -680,7 +680,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   tutorial hint either (the stack starts under a hint it would cross):
   they dock beside the monster when a side has room (250 px at least, 360 px wide at most),
   else in the sky band above its drawn box, and a toast that does not fit is hidden, newest
-  first; the dock follows the monster every 250 ms. While a window or a confirmation is
+  first; the dock follows the monster every 250 ms but keeps its spot (left, right or above)
+  while toasts are shown and it still has room, so the stack never hops sides. While a window or a confirmation is
   open, new toasts wait and the shown ones are hidden; the waiting ones come when it closes.
   On portrait phones two toasts at most are shown (the rest wait their turn): above the
   companions / combat tabs while the companions are visible, under the top bar in

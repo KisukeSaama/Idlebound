@@ -29,7 +29,11 @@ interface Room {
   left: number;
   width: number;
   limit: number;
+  spot: Spot;
 }
+
+/** Where the stack stands relative to the creature. */
+type Spot = "left" | "right" | "above";
 
 let desktopQuery: MediaQueryList | null = null;
 
@@ -39,8 +43,13 @@ function pageRectOf(selector: string): DOMRect | undefined {
   return element ? pageRect(element) : undefined;
 }
 
-/** Where the stack docks on a desktop layout, only measured (reads, no write); null on phones. */
-function measureRoom(top: number): Room | null {
+/**
+ * Where the stack docks on a desktop layout, only measured (reads, no write); null on phones.
+ * The creature stands near the middle, so both sides are often about as wide: the spot the
+ * shown toasts already hold is kept while it still fits, or they would hop from side to side
+ * with every new creature.
+ */
+function measureRoom(top: number, held: Spot | null): Room | null {
   if (!(desktopQuery ??= window.matchMedia("(min-width: 901px) and (min-height: 561px)")).matches) return null;
   const scene = pageRectOf(".scene");
   if (!scene) return null;
@@ -50,12 +59,17 @@ function measureRoom(top: number): Room | null {
   let left = scene.right - GAP - MAX_WIDTH;
   let width = MAX_WIDTH;
   let limit = bottom;
+  let spot: Spot = "right";
   if (monster) {
     const leftSpace = monster.left - scene.left - 2 * GAP;
     const rightSpace = scene.right - monster.right - 2 * GAP;
-    if (Math.max(leftSpace, rightSpace) >= MIN_SIDE) {
-      width = Math.min(MAX_WIDTH, Math.max(leftSpace, rightSpace));
-      left = rightSpace >= leftSpace ? scene.right - GAP - width : scene.left + GAP;
+    if (held === "left" && leftSpace >= MIN_SIDE) spot = "left";
+    else if (held === "right" && rightSpace >= MIN_SIDE) spot = "right";
+    else if (held === "above" || Math.max(leftSpace, rightSpace) < MIN_SIDE) spot = "above";
+    else spot = rightSpace >= leftSpace ? "right" : "left";
+    if (spot !== "above") {
+      width = Math.min(MAX_WIDTH, spot === "right" ? rightSpace : leftSpace);
+      left = spot === "right" ? scene.right - GAP - width : scene.left + GAP;
     } else {
       // Not enough room beside it: the band of sky above its head, the scene's full width.
       width = Math.min(MAX_WIDTH * 1.4, scene.width - 2 * GAP);
@@ -66,7 +80,7 @@ function measureRoom(top: number): Room | null {
   // A tutorial hint stays readable: where the stack would cross it, it starts under it.
   const hint = pageRectOf(".tutorial-hint.hint-arena");
   const start = hint && hint.height > 0 && hint.left < left + width && hint.right > left ? Math.max(top, hint.bottom + GAP) : top;
-  return { start, left, width, limit };
+  return { start, left, width, limit, spot };
 }
 
 /** Places the stack in its room (phones: where the CSS puts it), then hides the toasts that do not fit. */
@@ -103,6 +117,7 @@ export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boole
   useEffect(() => {
     let frame = 0;
     let observed: Element | null = null;
+    let spot: Spot | null = null;
     const observer = new ResizeObserver(() => schedule());
     const place = () => {
       frame = 0;
@@ -119,7 +134,10 @@ export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boole
       // Every measure first, then the writes: one layout, not one per measure.
       const floor = (header ? pageRect(header).bottom : 0) + GAP;
       const top = Math.max(floor, pageRect(bar).bottom + GAP);
-      dock(container, top, measureRoom(top));
+      // An empty stack holds no spot: the next toast picks the widest side again.
+      const room = measureRoom(top, container.childElementCount ? spot : null);
+      spot = room?.spot ?? null;
+      dock(container, top, room);
     };
     function schedule() {
       if (!frame) frame = requestAnimationFrame(place);
