@@ -10,10 +10,11 @@ import type { MonsterState, StrikeStyle } from "@idlebound/game";
 import { C, RAMPS, rampFor, resolveCreature, SCENE_HEIGHT, type Pal } from "@idlebound/game/art";
 import { eclipseRing, greyPixels, remembrancePixels, SEAM_MARGIN, seamPixels, seamSpan, unfinishedOrder, unfinishedPixels, unfinishedShare, UNFINISHED_STEPS } from "./events";
 import { companionRamp, drawMotes, drawShot, Particles, shotBackAngle, shotDuration, type Mote, type Shot } from "./fx";
+import type { NightGrade } from "./night";
 import { hash2 } from "./pixels";
 import { sceneRecipe, type SceneOptions } from "./scene";
 import { creatureSheet, css, flashPixels, sceneSheet, type CreatureSheet, type SceneSheet, type Tone } from "./sprites";
-import { deviceRatio, spriteCache, toSurface, whenIdle, type Surface } from "./surface";
+import { deviceRatio, effectCache, toSurface, whenIdle, type Surface } from "./surface";
 
 export interface CssRect {
   x: number;
@@ -63,6 +64,22 @@ const FLICKER_SECONDS = 0.18;
 const WALKER_FADE_SECONDS = 0.6;
 const WALKER_BOB = [0, 1, 1, 0];
 const WALKER_BOB_SECONDS = 0.3;
+/** Under a window the scene barely shows through its veil: one frame a second is enough. */
+const COVERED_FRAME_SECONDS = 1;
+
+/** A stretch of road to warm ahead: its scene as `setScene` will ask for it, and its creatures. */
+export interface Stretch {
+  sceneId: string;
+  era: number;
+  fullMoon: boolean;
+  darkNight: boolean;
+  creatures: string[];
+}
+
+/** Names a scene in the sprite cache: its creatures are graded for its night under this key. */
+function sceneKeyOf(sceneId: string, era: number, fullMoon: boolean, darkNight: boolean) {
+  return `${sceneId}:${era}:${fullMoon}:${darkNight}`;
+}
 
 export class ArenaRenderer {
   private ctx: CanvasRenderingContext2D;
@@ -97,6 +114,9 @@ export class ArenaRenderer {
   private lastDraw = 0;
   private lastEmber = 0;
   private cancelIdle: (() => void) | null = null;
+  /** A window or a dialog is open over the scene. */
+  private covered = false;
+  private narrowQuery: MediaQueryList | null = null;
   reducedMotion = false;
   /** Called when a companion shot lands (the monster flinches in its color). */
   onLand: ((color: string) => void) | null = null;
@@ -158,7 +178,7 @@ export class ArenaRenderer {
    * Kingdom in every stratum ("Keep the night dark"); the creatures keep their own Age.
    */
   setScene(sceneId: string, era: number, fullMoon = false, darkNight = false) {
-    const key = `${sceneId}:${era}:${fullMoon}:${darkNight}`;
+    const key = sceneKeyOf(sceneId, era, fullMoon, darkNight);
     if (key === this.sceneKey) return;
     this.sceneKey = key;
     this.sceneArgs = { id: sceneId, era, options: { fullMoon, darkNight } };
@@ -292,17 +312,37 @@ export class ArenaRenderer {
     this.kick();
   }
 
-  /** Warms the cache with the creatures of the next stretch of road while the browser idles. */
-  prepare(ids: { id: string; era: number }[]) {
+  /**
+   * Warms the cache while the browser idles, one piece per idle moment: each stretch's scene,
+   * then its creatures graded for that scene's night, under the keys `setScene` and
+   * `setMonster` will ask for, so entering the next biome generates nothing.
+   */
+  prepare(stretches: Stretch[]) {
     this.cancelIdle?.();
-    const queue = [...ids];
+    const queue: (() => void)[] = [];
+    for (const stretch of stretches) {
+      let night: { key: string; grade: NightGrade } | undefined;
+      queue.push(() => {
+        const grade = sceneSheet(stretch.sceneId, stretch.era, { fullMoon: stretch.fullMoon, darkNight: stretch.darkNight }).scene.night;
+        night = grade ? { key: sceneKeyOf(stretch.sceneId, stretch.era, stretch.fullMoon, stretch.darkNight), grade } : undefined;
+      });
+      for (const id of stretch.creatures) queue.push(() => creatureSheet(id, stretch.era, night));
+    }
     const next = () => {
-      const item = queue.shift();
-      if (!item) return;
-      creatureSheet(item.id, item.era, this.night());
+      const task = queue.shift();
+      if (!task) return;
+      task();
       this.cancelIdle = whenIdle(next);
     };
     this.cancelIdle = whenIdle(next);
+  }
+
+  /** A window opens over the scene, or closes: under it the scene slows to a frame a second. */
+  setCovered(covered: boolean) {
+    if (covered === this.covered) return;
+    this.covered = covered;
+    if (!covered) this.draw(true);
+    this.kick();
   }
 
   /** The arena's box inside the canvas, in CSS pixels. */
@@ -411,7 +451,7 @@ export class ArenaRenderer {
     const open = this.seamOpen(now);
     if (!seam || open <= 0) return;
     const frame = this.reducedMotion ? 0 : Math.floor(now / FLICKER_SECONDS) % 2;
-    const surface = spriteCache.get(`seam:${seam.length}:${frame}:${open}`, () => toSurface(seamPixels(seam.length, frame, open)));
+    const surface = effectCache.get(`seam:${seam.length}:${frame}:${open}`, () => toSurface(seamPixels(seam.length, frame, open)));
     const fade = this.reducedMotion && seam.closing !== null ? 1 - (now - seam.closing) / SEAM_CLOSE_SECONDS : 1;
     this.ctx.globalAlpha = Math.max(0, fade);
     this.ctx.drawImage(surface, seam.x - Math.floor(surface.width / 2) + Math.round(this.sway(now) * 0.7), seam.y - Math.floor(seam.length / 2) - SEAM_MARGIN);
@@ -432,7 +472,7 @@ export class ArenaRenderer {
     const unit = sheet.unit;
     const floor = this.sceneTop() + (this.scene?.scene.ground ?? SCENE_HEIGHT - 40);
     // Just right of the company's column of portraits (narrower on small screens).
-    const narrow = window.matchMedia("(max-width: 900px), (max-height: 560px)").matches;
+    const narrow = (this.narrowQuery ??= window.matchMedia("(max-width: 900px), (max-height: 560px)")).matches;
     const x = this.toGrid(this.arena.x + (narrow ? 46 : 64), 0).x + Math.round(this.sway(now) * 0.7);
     const still = this.reducedMotion;
     const bob = still ? 0 : WALKER_BOB[Math.floor(now / WALKER_BOB_SECONDS) % WALKER_BOB.length];
@@ -452,7 +492,7 @@ export class ArenaRenderer {
     const frame = this.reducedMotion ? 0 : Math.floor(now / (FLICKER_SECONDS * 3)) % 2;
     const width = this.width;
     const grey = this.quiet;
-    const surface = spriteCache.get(`garland:${width}:${frame}:${grey}`, () => {
+    const surface = effectCache.get(`garland:${width}:${frame}:${grey}`, () => {
       const pixels = remembrancePixels(width, frame);
       return toSurface(grey ? greyPixels(pixels) : pixels);
     });
@@ -505,8 +545,9 @@ export class ArenaRenderer {
   private loop = () => {
     this.frame = 0;
     const now = this.now();
-    // Idle scenes redraw a few times a second; effects get every frame.
-    if (this.busy(now) || now - this.lastDraw > 1 / 12) this.draw(false);
+    // Idle scenes redraw a few times a second, effects every frame; under a window, once a second.
+    const gap = this.covered ? COVERED_FRAME_SECONDS : this.busy(now) ? 0 : 1 / 12;
+    if (now - this.lastDraw > gap) this.draw(false);
     if (!this.reducedMotion || this.busy(now)) this.frame = requestAnimationFrame(this.loop);
   };
 
@@ -626,7 +667,7 @@ export class ArenaRenderer {
     if (monster.eclipse) {
       // The King's Eclipse: a dark ring behind him, still.
       const radius = Math.round(Math.min(w, sheet.feet * unit) * 0.42);
-      const halo = spriteCache.get(`eclipse-ring:${radius}`, () => toSurface(eclipseRing(radius)));
+      const halo = effectCache.get(`eclipse-ring:${radius}`, () => toSurface(eclipseRing(radius)));
       ctx.drawImage(halo, x + Math.round(w / 2) - Math.floor(halo.width / 2), place.y + Math.round(sheet.feet * unit * 0.45) - Math.floor(halo.height / 2));
     }
     const ring = monster.kind === "boss" || monster.kind === "miniboss" ? this.accent : monster.kind === "treasure" ? C.gold : null;

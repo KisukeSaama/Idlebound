@@ -23,7 +23,7 @@ import {
   type Locale,
   type Rarity
 } from "@idlebound/game";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { useFormat, useGame, useUi } from "../context";
 import { Picto, ShardIcon, SlotIcon, WindowIcon } from "../icons";
@@ -31,6 +31,9 @@ import { Modal } from "../components/Modal";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { relicSource } from "../pixel/sources";
 import { formatAffix } from "../text";
+
+/** Rarities from the rarest down: the Bag sorts by it, and bulk salvage counts up to one. */
+const RARITY_ORDER: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
 
 const STATS: AffixStat[] = ["dps", "click", "gold", "bossDamage", "critChance", "critDamage", "essence"];
 
@@ -231,14 +234,19 @@ function Bag() {
   const ui = useUi();
   const fmt = useFormat();
   const [sort, setSort] = useState<"recent" | "rarity" | "slot">("recent");
-  const order: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
-  const items = [...state.inventory];
-  if (sort === "rarity") items.sort((a, b) => order.indexOf(a.rarity) - order.indexOf(b.rarity) || b.level - a.level);
-  if (sort === "slot") items.sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || order.indexOf(a.rarity) - order.indexOf(b.rarity));
-  if (sort === "recent") items.reverse();
+  // The relics carried, by their ids: the sorted Bag is only built again when they change.
+  const carried = state.inventory.map((item) => item.uid).join(",");
+  const items = useMemo(() => {
+    const sorted = [...store.state.inventory];
+    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || b.level - a.level);
+    if (sort === "slot") sorted.sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
+    if (sort === "recent") sorted.reverse();
+    return sorted;
+    // `carried` stands for the inventory: the same relics in the same order sort the same.
+  }, [store, sort, carried]);
 
   const bulk = async (rarity: Rarity, label: (count: number) => string) => {
-    const count = state.inventory.filter((item) => !item.locked && order.indexOf(item.rarity) >= order.indexOf(rarity)).length;
+    const count = state.inventory.filter((item) => !item.locked && RARITY_ORDER.indexOf(item.rarity) >= RARITY_ORDER.indexOf(rarity)).length;
     if (count === 0) return;
     const ok = await ui.confirm({ title: text.bulkTitle, text: text.bulkText(count, label(count)), confirmLabel: text.bulkConfirm, danger: true });
     if (!ok) return;

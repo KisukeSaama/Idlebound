@@ -32,21 +32,24 @@ import {
   type ChronicleSource,
   type Locale
 } from "@idlebound/game";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import type { Messages } from "@/i18n/messages";
 import { BOARD_IDS, api, type BoardId, type LeaderboardData } from "@/lib/api";
-import { useCloud, useFormat, useGame, useStoreRef, useUi } from "../context";
+import { perPublish, useCloud, useFormat, useGame, useStoreRef, useUi } from "../context";
 import { Picto, TrophyIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { creatureSource } from "../pixel/sources";
 
 const CATEGORIES: AchievementCategory[] = ["progression", "combat", "wealth", "companions", "ascension", "secrets"];
+/** A new save moves the walker on the Roll: the board is read again, at most once a minute. */
+const ROLL_REFRESH_MS = 60_000;
 
 /** The Hall: the Ledger's reading room (Deeds, Chronicle, Bestiary, its own pages, the Roll). */
 export function HallWindow({ onClose, initialTab }: { onClose: () => void; initialTab?: string }) {
   const [tab, setTab] = useState(initialTab ?? "achievements");
-  const { state } = useGame();
+  const { state, store } = useGame();
   const { t } = useI18n();
   const text = t.windows.hall;
   // The Bestiary opens with the first creature met, the Chronicle with the first fragment.
@@ -60,7 +63,7 @@ export function HallWindow({ onClose, initialTab }: { onClose: () => void; initi
       size="lg"
       tabs={[
         { id: "achievements", label: text.achievementsTab(state.achievements.length, ACHIEVEMENTS.length) },
-        ...(hasChronicle ? [{ id: "chronicle", label: text.chronicleTab(unreadChronicle(state)) }] : []),
+        ...(hasChronicle ? [{ id: "chronicle", label: text.chronicleTab(perPublish(store, "unread", () => unreadChronicle(state))) }] : []),
         ...(met > 0 ? [{ id: "bestiary", label: text.bestiaryTab(met, BESTIARY.length) }] : []),
         { id: "stats", label: text.statsTab },
         { id: "leaderboard", label: text.leaderboardTab }
@@ -76,6 +79,9 @@ export function HallWindow({ onClose, initialTab }: { onClose: () => void; initi
   );
 }
 
+/** The deeds of each category, in the Ledger's order. */
+const DEEDS = CATEGORIES.map((category) => ({ category, deeds: ACHIEVEMENTS.filter((achievement) => achievement.category === category) })).filter(({ deeds }) => deeds.length > 0);
+
 function Achievements() {
   const { state } = useGame();
   const { t, g, locale } = useI18n();
@@ -85,43 +91,52 @@ function Achievements() {
   return (
     <div>
       <p className="hall-bonus">{text.totalBonusLabel} <strong>{text.totalBonus(Math.round(achievementBonus(state) * 100))}</strong> {text.totalBonusNote}</p>
-      {CATEGORIES.map((category) => {
-        const deeds = ACHIEVEMENTS.filter((achievement) => achievement.category === category);
-        if (deeds.length === 0) return null;
-        return (
-          <section key={category}>
-            <h3 className="section-heading">{g.achievementCategories[category]}</h3>
-            <div className="achievement-grid">
-              {deeds.map((achievement) => {
-                const done = unlocked.has(achievement.id);
-                const progress = Math.min(1, achievement.metric(state) / achievement.threshold);
-                const copy = achievementText(achievement.id, locale);
-                // A secret deed hides its name until earned; its riddle is the only clue.
-                const secret = achievement.series === SECRET_SERIES;
-                if (secret && !done) copy.name = text.hiddenDeed;
-                return (
-                  <article key={achievement.id} className={`achievement ${done ? "done" : ""}`}>
-                    <Picto name={done ? "trophy" : "lock"} size={26} className="achievement-badge" />
-                    <div>
-                      <h4>{copy.name}</h4>
-                      <p>{copy.description}</p>
-                      {!done && !secret ? (
-                        <div className="progress-line small" title={`${fmt(achievement.metric(state))} / ${fmt(achievement.threshold)}`}>
-                          <span style={{ width: `${progress * 100}%` }} />
-                        </div>
-                      ) : null}
-                    </div>
-                    {achievement.bonus > 0 ? <span className="achievement-bonus">{text.achievementBonus(Math.round(achievement.bonus * 100))}</span> : null}
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
+      {DEEDS.map(({ category, deeds }) => (
+        <section key={category}>
+          <h3 className="section-heading">{g.achievementCategories[category]}</h3>
+          <div className="achievement-grid">
+            {deeds.map((achievement) => {
+              const done = unlocked.has(achievement.id);
+              // A deed done or secret shows no progress: its metric is not read.
+              const value = done || achievement.series === SECRET_SERIES ? 0 : achievement.metric(state);
+              return <Deed key={achievement.id} achievement={achievement} done={done} value={value} locale={locale} text={text} fmt={fmt} />;
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
+
+/** One deed of the Ledger; memoized, it only renders again when its progress moves. */
+const Deed = memo(function Deed({ achievement, done, value, locale, text, fmt }: {
+  achievement: (typeof ACHIEVEMENTS)[number];
+  done: boolean;
+  value: number;
+  locale: Locale;
+  text: Messages["windows"]["hall"];
+  fmt: (value: number) => string;
+}) {
+  const copy = achievementText(achievement.id, locale);
+  // A secret deed hides its name until earned; its riddle is the only clue.
+  const secret = achievement.series === SECRET_SERIES;
+  if (secret && !done) copy.name = text.hiddenDeed;
+  return (
+    <article className={`achievement ${done ? "done" : ""}`}>
+      <Picto name={done ? "trophy" : "lock"} size={26} className="achievement-badge" />
+      <div>
+        <h4>{copy.name}</h4>
+        <p>{copy.description}</p>
+        {!done && !secret ? (
+          <div className="progress-line small" title={`${fmt(value)} / ${fmt(achievement.threshold)}`}>
+            <span style={{ width: `${Math.min(1, value / achievement.threshold) * 100}%` }} />
+          </div>
+        ) : null}
+      </div>
+      {achievement.bonus > 0 ? <span className="achievement-bonus">{text.achievementBonus(Math.round(achievement.bonus * 100))}</span> : null}
+    </article>
+  );
+});
 
 /** Biscuit's page: a blank page with a paw print, no name, no line. */
 function PawPrint() {
@@ -412,18 +427,19 @@ function Leaderboard() {
   const [board, setBoard] = useState<BoardId>("stage");
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fetched = useRef<{ board: BoardId; at: number } | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    const last = fetched.current;
+    if (last && last.board === board && Date.now() - last.at < ROLL_REFRESH_MS) return;
+    fetched.current = { board, at: Date.now() };
     setError(null);
     void api.leaderboard(board).then((result) => {
-      if (cancelled) return;
+      // Only the board still chosen: another one may have been picked meanwhile.
+      if (fetched.current?.board !== board) return;
       if (result.ok) setData(result.data);
       else setError(result.error);
     });
-    return () => {
-      cancelled = true;
-    };
   }, [board, cloud.revision]);
 
   // Rows of the board just chosen only: the previous board's stay hidden while it loads.

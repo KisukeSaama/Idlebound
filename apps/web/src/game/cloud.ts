@@ -33,6 +33,8 @@ const SAVE_DEBOUNCE_MS = 3_000;
 /** Keeps uploads under the API limit (6 per minute), with room for page-hide saves. */
 const MIN_UPLOAD_GAP_MS = 15_000;
 const RETRY_AFTER_REJECT_MS = 10 * 60_000;
+/** Under the browsers' 64 KB keepalive limit, with room for the request's other fields. */
+const KEEPALIVE_MAX_BYTES = 60_000;
 
 /**
  * Server save, the game's only persistence. Each upload carries the revision it builds on;
@@ -208,7 +210,10 @@ export class CloudSync {
     this.inFlight = true;
     this.lastUploadAt = Date.now();
     if (!keepalive) this.set({ status: "syncing" });
-    const result = await api.putSave(structuredClone(this.store.state), baseRevision, replace, keepalive);
+    // The state is serialized as the request leaves, before any await: no copy is needed.
+    // A keepalive request is capped at 64 KB by browsers: a larger save goes as a plain one.
+    const lasting = keepalive && new TextEncoder().encode(JSON.stringify(this.store.state)).length <= KEEPALIVE_MAX_BYTES;
+    const result = await api.putSave(this.store.state, baseRevision, replace, lasting);
     this.inFlight = false;
     if (result.ok) {
       this.set({ status: "synced", revision: result.data.revision, lastSyncAt: Date.now(), message: null });

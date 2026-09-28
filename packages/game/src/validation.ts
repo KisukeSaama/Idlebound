@@ -65,6 +65,8 @@ function maxSkipKills(state: GameState): number {
 }
 /** Slack granted to client/server clocks. */
 const CLOCK_SLACK_SECONDS = 120;
+/** A device clock may run ahead of the server's, but not by more than this. */
+const FUTURE_TICK_SLACK_MS = 6 * 3600_000;
 /** Launch date: no save can be older. */
 export const GAME_EPOCH = Date.UTC(2026, 0, 1);
 
@@ -105,6 +107,15 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   const totalSeconds = state.lifetime.playTime + state.lifetime.offlineSeconds;
   if (state.lifetime.kills > totalSeconds * MAX_KILLS_PER_SECOND + 10 + state.lifetime.ascensions * maxSkipKills(state)) fail("kills", "Too many kills for the play time.");
   if (state.lifetime.clicks > state.lifetime.playTime * MAX_CLICKS_PER_SECOND + 10) fail("clicks", "Impossible click rate.");
+  // A rebirth takes at least half a minute, and every stage is left by a kill (the Wanderer's
+  // skip counts its kills) or by Unweave, a power.
+  const wallSeconds = Math.max(0, age);
+  if (state.lifetime.ascensions > wallSeconds / 30 + 1) fail("ascension", "More ascensions than time allows.");
+  if (state.descents > wallSeconds / 30 + 1) fail("descent", "More Descents than time allows.");
+  if (state.lifetime.bosses > state.lifetime.kills) fail("kills", "More guardians than kills.");
+  if (state.maxStageEver - 1 > state.lifetime.kills + state.lifetime.skillsUsed) fail("stage", "Stages cleared without fighting.");
+  // Boons are measured from the last tick: it cannot lie far in the server's future.
+  if (state.lastTickAt > serverNow + FUTURE_TICK_SLACK_MS) fail("time", "Last tick in the future.");
   const bestGold = bestGoldPerKill(state);
   const goldBound = (state.lifetime.kills + state.lifetime.crystals * 15 + state.lifetime.hourglasses * 12_000 + 1) * bestGold;
   if (!le(state.lifetime.goldEarned, goldBound)) fail("gold", "Too much gold earned.");
@@ -113,6 +124,8 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   for (const key of ["clicks", "crits", "kills", "bosses", "treasures", "goldEarned", "crystals", "skillsUsed", "maxHit", "playTime"] as const) {
     if (!le(state.run[key], state.lifetime[key])) fail("run-lifetime", `Inconsistent statistic "${key}".`);
   }
+  // Each Ritual is a power used this run.
+  if (state.ritualStacks > state.run.skillsUsed) fail("skills", "More ritual stacks than powers used.");
   if (state.lifetime.crits > state.lifetime.clicks + state.lifetime.playTime * 15 + 10) fail("crits", "Too many critical hits.");
 
   // Companions and talents.
@@ -192,7 +205,8 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   verifyChronicle(state, serverNow, fail);
   verifyDescent(state, fail);
 
-  // Achievements.
+  // Achievements, each earned once.
+  if (new Set(state.achievements).size !== state.achievements.length) fail("achievement", "Achievement listed twice.");
   for (const id of state.achievements) {
     const achievement = ACHIEVEMENT_BY_ID[id];
     if (!achievement) fail("achievement", `Unknown achievement: ${id}.`);

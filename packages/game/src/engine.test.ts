@@ -697,6 +697,58 @@ describe("anti-cheat", () => {
     cheated.achievements.push("stage-9");
     expect(verifyState(cheated, T0).map((v) => v.code)).toContain("achievement");
   });
+
+  it("detects an achievement listed twice", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    const earned = cheated.achievements[0];
+    expect(earned).toBeDefined();
+    cheated.achievements.push(earned, earned);
+    expect(verifyState(cheated, now).map((v) => v.code)).toContain("achievement");
+  });
+
+  it("detects ritual stacks without the powers behind them", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    cheated.ritualStacks = 1e12;
+    expect(verifyState(cheated, now).map((v) => v.code)).toContain("skills");
+  });
+
+  it("bounds rebirths, guardians and stages by time and fights, even without a previous save", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    cheated.lifetime.ascensions = 2e9;
+    cheated.descents = 2e9;
+    cheated.lifetime.bosses = cheated.lifetime.kills + 1;
+    cheated.maxStageEver = 2_000;
+    const codes = verifyState(cheated, now).map((v) => v.code);
+    expect(codes).toContain("ascension");
+    expect(codes).toContain("descent");
+    expect(codes).toContain("kills");
+    expect(codes).toContain("stage");
+  });
+
+  it("detects a last tick far in the future", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const cheated = structuredClone(engine.state);
+    cheated.lastTickAt = now + 30 * 86_400_000;
+    expect(verifyState(cheated, now).map((v) => v.code)).toContain("time");
+  });
+
+  it("refuses at parse time the numbers and records that would make the checks slow", () => {
+    const valid = JSON.parse(JSON.stringify(newGame().state)) as GameState;
+    // One uncapped weave level used to cost one loop turn per level on the server.
+    expect(() => parseState({ ...valid, weaves: { plenty: Number.MAX_SAFE_INTEGER } })).toThrow();
+    expect(() => parseState({ ...valid, maxStageEver: 1e9 })).toThrow();
+    const junk = Object.fromEntries(Array.from({ length: 5_000 }, (_, index) => [`junk-${index}`, 1]));
+    expect(() => parseState({ ...valid, bestiary: junk })).toThrow();
+    expect(() => parseState({ ...valid, recognition: junk })).toThrow();
+    expect(parseState({ ...valid, weaves: { plenty: 3 } }).weaves.plenty).toBe(3);
+  });
 });
 
 describe("usernames", () => {

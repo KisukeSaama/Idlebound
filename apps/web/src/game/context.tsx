@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useSyncExternalStore } from "re
 import { currentMessages } from "@/i18n/client";
 import type { CloudSync } from "./cloud";
 import type { PictoName } from "./icons";
-import { reveals, type RevealId } from "./shell";
+import { reveals, type RevealId, type Reveals } from "./shell";
 import type { GameStore } from "./store";
 
 export type WindowId = "map" | "gear" | "inventory" | "market" | "ascension" | "hall" | "account" | "settings";
@@ -64,8 +64,29 @@ export function useReveals() {
   const { store, cloud, fresh } = useGameContext();
   useSyncExternalStore(store.subscribe, store.getVersion, store.getVersion);
   useSyncExternalStore(cloud.subscribe, cloud.getVersion, cloud.getVersion);
-  const shown = reveals(store.state, cloud.user !== null);
+  const shown = revealsOf(store, cloud.user !== null);
   return { shown, freshClass: (id: RevealId) => (fresh.has(id) ? " is-fresh" : "") };
+}
+
+/** What the shell shows, computed once per store publish. */
+export function revealsOf(store: GameStore, loggedIn: boolean): Reveals {
+  return perPublish(store, loggedIn ? "reveals:in" : "reveals:out", () => reveals(store.state, loggedIn));
+}
+
+const published = new WeakMap<GameStore, { version: number; values: Map<string, unknown> }>();
+
+/**
+ * A value read from the state, computed once per store publish however many components
+ * (and listeners) ask for it: `key` names it among the others.
+ */
+export function perPublish<T>(store: GameStore, key: string, compute: () => T): T {
+  const version = store.getVersion();
+  let entry = published.get(store);
+  if (!entry || entry.version !== version) published.set(store, (entry = { version, values: new Map() }));
+  if (entry.values.has(key)) return entry.values.get(key) as T;
+  const value = compute();
+  entry.values.set(key, value);
+  return value;
 }
 
 export function useUi() {

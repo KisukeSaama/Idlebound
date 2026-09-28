@@ -38,6 +38,13 @@ export const WEAVES: readonly WeaveDef[] = [
   { id: "seventh-night", maxLevel: 1, costBase: 10, costGrowth: 1, valuePerLevel: 1 }
 ];
 
+/**
+ * Highest level a save may hold for any weave, the uncapped Warp of Plenty included. Level n
+ * of Plenty costs 2 × 1.6^n threads and a Descent weaves a few hundred at most: 200 is far
+ * out of reach, and keeps the cost sums below bounded.
+ */
+export const WEAVE_LEVEL_MAX = 200;
+
 export const WEAVE_BY_ID = lookup(WEAVES.map((weave) => [weave.id, weave])) as Record<WeaveId, WeaveDef>;
 
 /** A Descent asks for this deepest stage ever… */
@@ -61,7 +68,7 @@ export function weaveCost(id: WeaveId, level: number): number {
 export function weaveTotalCost(id: WeaveId, level: number): number {
   let total = 0;
   const weave = WEAVE_BY_ID[id];
-  const top = weave.maxLevel > 0 ? Math.min(level, weave.maxLevel) : level;
+  const top = Math.min(level, weave.maxLevel > 0 ? weave.maxLevel : WEAVE_LEVEL_MAX);
   for (let n = 0; n < top; n += 1) total += Math.ceil(weave.costBase * Math.pow(weave.costGrowth, n));
   return total;
 }

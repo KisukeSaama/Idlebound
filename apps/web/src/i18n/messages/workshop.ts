@@ -104,7 +104,7 @@ export const workshop = defineMessages({
       measure: "Mesurer",
       result: (count: number, average: string, worst: string) => `${count} créatures générées : ${average} ms en moyenne, ${worst} ms au pire.`,
       scenes: (count: number, average: string, worst: string) => `${count} décors générés : ${average} ms en moyenne, ${worst} ms au pire.`,
-      cache: (size: number) => `Cache : ${size} sprites sur 64 au plus.`
+      cache: (size: number) => `Cache : ${size} créatures sur 32 au plus.`
     }
   },
   en: {
@@ -209,7 +209,7 @@ export const workshop = defineMessages({
       measure: "Measure",
       result: (count: number, average: string, worst: string) => `${count} creatures generated: ${average} ms on average, ${worst} ms at worst.`,
       scenes: (count: number, average: string, worst: string) => `${count} scenes generated: ${average} ms on average, ${worst} ms at worst.`,
-      cache: (size: number) => `Cache: ${size} sprites out of 64 at most.`
+      cache: (size: number) => `Cache: ${size} creatures out of 32 at most.`
     }
   }
 });

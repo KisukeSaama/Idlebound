@@ -5,7 +5,7 @@ import { GameEngine, createInitialState, type GameEvent, type GameState, type Lo
 type Listener = () => void;
 export type FxListener = (event: GameEvent) => void;
 export interface ActOptions {
-  /** False for routine, high-frequency actions (attack clicks) that need no early save. */
+  /** False for routine, high-frequency actions (attack clicks): no early save, no immediate render. */
   save?: boolean;
 }
 
@@ -18,7 +18,8 @@ const AFK_AFTER_MS = 60_000;
 /**
  * Bridge between the engine (mutable, outside React) and the UI.
  * - the simulation advances every 50 ms;
- * - React is notified at most every 100 ms (or on the next frame after an action);
+ * - React is notified at most every 100 ms (or on the next frame after an action other
+ *   than an attack);
  * - events (damage, loot…) go to visual and sound effects without re-rendering.
  */
 export class GameStore {
@@ -117,8 +118,11 @@ export class GameStore {
     this.engine.markInput(now);
     const result = action(this.engine, now);
     this.flushEvents();
-    this.notify(true);
-    if (options.save !== false) for (const listener of this.actionListeners) listener();
+    // Routine actions (attack taps) keep the throttled cadence: the canvas already answers
+    // the tap at once, and tapping fast would otherwise re-render the page every frame.
+    const routine = options.save === false;
+    this.notify(!routine);
+    if (!routine) for (const listener of this.actionListeners) listener();
     return result;
   }
 

@@ -13,7 +13,7 @@ import { renderPortrait, awakenedRecipe } from "./portrait";
 import { eclipsePixels, greyPixels, greyScene } from "./events";
 import { castShadow, gradeForNight, type NightGrade } from "./night";
 import { renderScene, type Scene, type SceneOptions } from "./scene";
-import { sceneCache, spriteCache, toSurface, type Surface } from "./surface";
+import { sceneCache, spriteCache, toSurface, uiCache, type Surface } from "./surface";
 import type { Treatment } from "./eras";
 
 export interface CreatureSheet {
@@ -133,12 +133,12 @@ export function sceneSheet(sceneId: string, era: number, options: SceneOptions =
 }
 
 export const portraitPixels = (heroId: string, seed?: number): Pixels =>
-  spriteCache.get(`portrait-px:${heroId}:${seed ?? ""}`, () => renderPortrait(heroId, seed === undefined ? undefined : awakenedRecipe(seed)));
-export const emblemPixels = (heroId: string): Pixels => spriteCache.get(`emblem-px:${heroId}`, () => renderEmblem(heroId));
+  uiCache.get(`portrait-px:${heroId}:${seed ?? ""}`, () => renderPortrait(heroId, seed === undefined ? undefined : awakenedRecipe(seed)));
+export const emblemPixels = (heroId: string): Pixels => uiCache.get(`emblem-px:${heroId}`, () => renderEmblem(heroId));
 export const relicPixels = (slot: ItemSlot, base: number, rarity: Rarity, forge: number, named?: string): Pixels =>
-  spriteCache.get(`relic-px:${slot}:${base}:${rarity}:${forge}:${named ?? ""}`, () => renderRelic(slot, base, rarity, forge, named));
-export const iconPixels = (key: string, recipe: IconRecipe): Pixels => spriteCache.get(`icon-px:${key}`, () => renderIcon(recipe));
-export const crystalPixels = (frame: number): Pixels => spriteCache.get(`crystal-px:${frame}`, () => renderCrystal(frame));
+  uiCache.get(`relic-px:${slot}:${base}:${rarity}:${forge}:${named ?? ""}`, () => renderRelic(slot, base, rarity, forge, named));
+export const iconPixels = (key: string, recipe: IconRecipe): Pixels => uiCache.get(`icon-px:${key}`, () => renderIcon(recipe));
+export const crystalPixels = (frame: number): Pixels => uiCache.get(`crystal-px:${frame}`, () => renderCrystal(frame));
 
 /** CSS color of a palette entry. */
 export function css(pal: Pal, alpha = 1): string {

@@ -21,19 +21,30 @@ export const BOARDS: Record<"stage" | "ascensions" | "essences" | "achievements"
 
 export type BoardId = keyof typeof BOARDS;
 
+type BoardRow = { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number };
+
 interface CachedBoard {
   at: number;
-  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number }[];
+  /** Shared by every request arriving while the query runs: one query per expiry, not one per visitor. */
+  rows: Promise<BoardRow[]>;
 }
 
 const CACHE_MS = 30_000;
 const cache = new Map<string, CachedBoard>();
 const readLimiter = limiter(120, 60_000);
 
-async function topRows(board: BoardId, limit: number) {
+function topRows(board: BoardId, limit: number): Promise<BoardRow[]> {
   const key = `${board}:${limit}`;
   const cached = cache.get(key);
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.rows;
+  const rows = queryTopRows(board, limit);
+  cache.set(key, { at: Date.now(), rows });
+  // A failed query is not cached: the next request retries.
+  rows.catch(() => { if (cache.get(key)?.rows === rows) cache.delete(key); });
+  return rows;
+}
+
+async function queryTopRows(board: BoardId, limit: number): Promise<BoardRow[]> {
   const { column, tiebreak } = BOARDS[board];
   const rows = await db
     .select({
@@ -49,9 +60,7 @@ async function topRows(board: BoardId, limit: number) {
     .where(eq(leaderboard.hidden, false))
     .orderBy(desc(column), ...(tiebreak ? [desc(tiebreak)] : []), leaderboard.updatedAt)
     .limit(limit);
-  const ranked = rows.map((row, index) => ({ rank: index + 1, ...row, value: Number(row.value) }));
-  cache.set(key, { at: Date.now(), rows: ranked });
-  return ranked;
+  return rows.map((row, index) => ({ rank: index + 1, ...row, value: Number(row.value) }));
 }
 
 let statsCache: { at: number; value: { players: number; bestStage: number } } | null = null;
@@ -78,7 +87,9 @@ export const leaderboardRoutes = new Hono()
         me = { rank: Number(above.total) + 1, value: Number(mine.value) };
       }
     }
+    // The answer depends on the session cookie: a shared cache must never mix the two.
     c.header("Cache-Control", user ? "private, no-store" : "public, max-age=30");
+    c.header("Vary", "Cookie");
     return c.json({ board, rows, me });
   })
 

@@ -46,7 +46,7 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
-        <Toggle label={text.sound} hint={text.soundHint} checked={settings.sound} onChange={(value) => { update({ sound: value }); if (value) { audio.unlock(); audio.enabled = true; audio.play("coin"); } }} />
+        <Toggle label={text.sound} hint={text.soundHint} checked={settings.sound} onChange={(value) => { update({ sound: value }); if (value) { audio.setEnabled(true); audio.unlock(); audio.play("coin"); } }} />
         <div className="setting-row">
           <label htmlFor="volume">{text.volume}</label>
           <input id="volume" type="range" min={0} max={1} step={0.05} value={settings.volume} disabled={!settings.sound} onChange={(event) => update({ volume: Number(event.target.value) })} onPointerUp={() => audio.play("hit")} />

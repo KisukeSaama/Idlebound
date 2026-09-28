@@ -33,9 +33,9 @@ import { api } from "@/lib/api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { audio } from "./audio";
 import { CloudSync } from "./cloud";
-import { GameContext, type GameUi, type ToastInput, type WindowId } from "./context";
+import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
 import { SKILL_PICTO, type PictoName } from "./icons";
-import { ACCOUNT_AFTER_SECONDS, ANNOUNCED, revealMark, reveals, stratumLabel, type RevealId } from "./shell";
+import { ACCOUNT_AFTER_SECONDS, ANNOUNCED, revealMark, stratumLabel, type RevealId } from "./shell";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
@@ -135,6 +135,7 @@ export default function GameApp() {
     const onVisibility = () => {
       const visible = document.visibilityState === "visible";
       store.setVisible(visible);
+      audio.setHidden(!visible);
       if (!visible) void cloud.sync({ keepalive: true });
     };
     const onLeave = (event: BeforeUnloadEvent) => {
@@ -176,10 +177,10 @@ export default function GameApp() {
   useEffect(() => {
     if (!ready) return;
     let engine = store.engine;
-    let known = reveals(store.state, cloud.user !== null);
+    let known = revealsOf(store, cloud.user !== null);
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const check = () => {
-      const shown = reveals(store.state, cloud.user !== null);
+      const shown = revealsOf(store, cloud.user !== null);
       if (store.engine !== engine) {
         engine = store.engine;
         known = shown;
@@ -216,12 +217,13 @@ export default function GameApp() {
   // Audio settings.
   useEffect(() => {
     const sync = () => {
-      audio.enabled = store.state.settings.sound;
+      audio.setEnabled(store.state.settings.sound);
       audio.setVolume(store.state.settings.volume);
       document.documentElement.classList.toggle("reduced-motion", store.state.settings.reducedMotion);
     };
     sync();
-    // Any input also tells the engine the player is here (the autopilot waits for them to leave).
+    // Any input also tells the engine the player is here (the autopilot waits for them to leave),
+    // and wakes the sound when it is on.
     const onInput = () => {
       audio.unlock();
       store.markInput();

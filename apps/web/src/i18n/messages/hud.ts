@@ -215,7 +215,9 @@ export const hud = defineMessages({
       identity: "Sauvegarde refusée : cette partie ne prolonge pas celle du compte.",
       rollback: "Sauvegarde refusée : la progression a reculé.",
       stage: "Sauvegarde refusée : étapes franchies sans combattre.",
-      "lineage-age": "Sauvegarde refusée : cette partie est trop ancienne par rapport au compte."
+      "lineage-age": "Sauvegarde refusée : cette partie est trop ancienne par rapport au compte.",
+      skills: "Sauvegarde refusée : pouvoirs incohérents.",
+      descent: "Sauvegarde refusée : Descentes incohérentes."
     } as Record<string, string>
   },
   en: {
@@ -428,7 +430,9 @@ export const hud = defineMessages({
       identity: "Save rejected: this game does not continue the account's game.",
       rollback: "Save rejected: progress went backwards.",
       stage: "Save rejected: stages cleared without fighting.",
-      "lineage-age": "Save rejected: this game is too old compared to the account."
+      "lineage-age": "Save rejected: this game is too old compared to the account.",
+      skills: "Save rejected: inconsistent powers.",
+      descent: "Save rejected: inconsistent Descents."
     } as Record<string, string>
   }
 });

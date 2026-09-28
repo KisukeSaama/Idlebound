@@ -1,4 +1,5 @@
-import { leaderboardSummary, migrateState, safeParseState, verifyState, verifyTransition, type GameState, type Violation } from "@idlebound/game";
+import { migrateState, type GameState } from "@idlebound/game";
+import { leaderboardSummary, safeParseState, verifyState, verifyTransition, type Violation } from "@idlebound/game/server";
 import { eq, sql as raw } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -13,6 +14,11 @@ import { verificationOverdue } from "../lib/verification";
 const saveLimiter = limiter(6, 60_000);
 /** Replacing the cloud save with another lineage is rare, so it is tightly limited. */
 const replaceLimiter = limiter(3, 60 * 60_000);
+/** Rejections logged per player: a client looping on a refused save cannot flood the audit table. */
+const rejectionLog = limiter(30, 60 * 60_000);
+
+/** Violations sent back to the client: enough to debug, never a megabyte of echoes. */
+const MAX_REPORTED_VIOLATIONS = 20;
 
 /** A game played as a guest may predate sign-up by at most 30 days. */
 const MAX_GUEST_AGE_MS = 30 * 86_400_000;
@@ -65,6 +71,9 @@ export const saveRoutes = new Hono()
     const next = parsed.state;
     const now = Date.now();
     const { baseRevision, replace } = parsedBody.data;
+    // Checks that need no stored data run before the transaction: the row lock and the
+    // pooled connection are held only for what depends on the previous save.
+    const stateViolations = verifyState(next, now);
 
     const result = await db.transaction(async (tx) => {
       const [existing] = await tx.select().from(saves).where(eq(saves.userId, user.id)).for("update").limit(1);
@@ -81,7 +90,7 @@ export const saveRoutes = new Hono()
         return { status: 429 as const, body: { error: t(c).tooManyReplacements } };
       }
 
-      const violations: Violation[] = verifyState(next, now);
+      const violations: Violation[] = [...stateViolations];
       const sameLineage = existing && previous && previous.createdAt === next.createdAt;
       if (existing && previous && sameLineage) {
         violations.push(...verifyTransition(previous, next, now - existing.updatedAt.getTime()));
@@ -91,8 +100,10 @@ export const saveRoutes = new Hono()
         violations.push({ code: "lineage-age", message: "This game is too old compared to the account." });
       }
       if (violations.length > 0) {
-        await tx.insert(saveRejections).values({ userId: user.id, codes: violations.map((violation) => violation.code) });
-        return { status: 422 as const, body: { error: t(c).saveRejected, violations } };
+        if (rejectionLog.consume(user.id) === 0) {
+          await tx.insert(saveRejections).values({ userId: user.id, codes: [...new Set(violations.map((violation) => violation.code))] });
+        }
+        return { status: 422 as const, body: { error: t(c).saveRejected, violations: violations.slice(0, MAX_REPORTED_VIOLATIONS) } };
       }
 
       const revision = (existing?.revision ?? 0) + 1;

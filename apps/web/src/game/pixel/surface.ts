@@ -1,6 +1,6 @@
 /**
- * Browser side of the generator: pixel buffers become canvases, kept in a small LRU cache
- * (64 sprites at most, BIBLE 18.9). Generation can be queued for idle time so the next
+ * Browser side of the generator: pixel buffers become canvases, kept in small LRU caches
+ * (BIBLE 18.9). Generation can be queued for idle time so the next
  * stage's monsters are ready before they are needed.
  */
 import { toRgba, type Pixels } from "./pixels";
@@ -45,8 +45,20 @@ export function lru(limit: number): Lru {
   };
 }
 
-/** Sprites of creatures, portraits, relics and icons: 64 at most (BIBLE 18.9). */
-export const spriteCache = lru(64);
+/**
+ * Creature sheets (every frame, flash, ring and shadow): the two stretches of road the
+ * arena warms (eight creatures each), the wanderers and the event tones besides.
+ */
+export const spriteCache = lru(32);
+/** The arena's effects: the Seam's steps, the lantern garlands, the Eclipse's ring. */
+export const effectCache = lru(24);
+/**
+ * The interface's pixel art (portraits, emblems, relics, icons, the crystal): small and
+ * many, kept apart so opening the Bag never evicts a creature sheet.
+ */
+export const uiCache = lru(112);
+/** Creatures shown in the interface (the Ledger's pages, the map's guardians): every one of them fits. */
+export const stillCache = lru(64);
 /** Whole scenes are larger: a handful is enough (the current biome and its neighbors). */
 export const sceneCache = lru(6);
 

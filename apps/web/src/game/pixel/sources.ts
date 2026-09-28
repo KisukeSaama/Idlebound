@@ -11,11 +11,12 @@ import { structureView } from "./props";
 import { flattenScene, type PlaceId } from "./scene";
 import { depthFrame, placeFrames, stageFrame, STAGE_FRAMES, type Depth } from "./stage";
 import { crystalPixels, emblemPixels, iconPixels, portraitPixels, relicPixels, sceneSheet } from "./sprites";
+import { stillCache } from "./surface";
 
 export function creatureSource(id: string, era = 0, animated = true): PixelSource {
   return {
     key: `creature:${id}:${era}:${animated}`,
-    frames: () => Array.from({ length: animated ? idleFrames(id) : 1 }, (_, frame) => renderCreature(id, { era, frame }).pixels),
+    frames: () => stillCache.get(`creature-px:${id}:${era}:${animated}`, () => Array.from({ length: animated ? idleFrames(id) : 1 }, (_, frame) => renderCreature(id, { era, frame }).pixels)),
     fps: 1.8
   };
 }

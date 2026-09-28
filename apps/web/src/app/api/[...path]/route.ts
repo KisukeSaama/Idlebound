@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
 
 const FORWARDED_REQUEST_HEADERS = ["content-type", "cookie", "x-idlebound", "origin", "user-agent", "x-forwarded-for", "cf-connecting-ip", "accept", "accept-language"];
-const FORWARDED_RESPONSE_HEADERS = ["content-type", "set-cookie", "retry-after", "cache-control"];
+const FORWARDED_RESPONSE_HEADERS = ["content-type", "set-cookie", "retry-after", "cache-control", "vary"];
 /** Above the API limit (512 KB): refused here, without loading everything in memory. */
 const MAX_BODY_BYTES = 600 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15_000;

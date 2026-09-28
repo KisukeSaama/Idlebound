@@ -37,13 +37,40 @@ class AudioEngine {
   private bus: GainNode | null = null;
   private noise: AudioBuffer | null = null;
   private lastPlayed = new Map<Sound, number>();
-  enabled = true;
+  private enabled = true;
+  /** The page is out of sight. */
+  private hidden = false;
   volume = 0.6;
 
-  /** Browsers require a user gesture before producing sound. */
+  /** Sound on or off: while off (and while the page is hidden) the context sleeps. */
+  setEnabled(enabled: boolean) {
+    if (enabled === this.enabled) return;
+    this.enabled = enabled;
+    this.wake();
+  }
+
+  setHidden(hidden: boolean) {
+    if (hidden === this.hidden) return;
+    this.hidden = hidden;
+    this.wake();
+  }
+
+  /** Runs the context while sound is on and the page seen, suspends it otherwise. */
+  private wake() {
+    const ctx = this.context;
+    if (!ctx) return;
+    if (this.enabled && !this.hidden) {
+      if (ctx.state === "suspended") void ctx.resume();
+    } else if (ctx.state === "running") {
+      void ctx.suspend();
+    }
+  }
+
+  /** Browsers require a user gesture before producing sound: only asked while sound is on. */
   unlock() {
+    if (!this.enabled) return;
     if (this.context) {
-      if (this.context.state === "suspended") void this.context.resume();
+      this.wake();
       return;
     }
     try {

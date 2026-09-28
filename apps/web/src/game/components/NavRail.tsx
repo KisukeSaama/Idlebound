@@ -2,7 +2,7 @@
 
 import { ACHIEVEMENTS, altarCost, ALTARS, INVENTORY_LIMIT, unreadChronicle } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
-import { useCloud, useGame, useReveals, useUi, type WindowId } from "../context";
+import { perPublish, useCloud, useGame, useReveals, useUi, type WindowId } from "../context";
 import type { RevealId } from "../shell";
 import { WindowIcon } from "../icons";
 
@@ -32,7 +32,7 @@ export function NavRail({ active }: { active: WindowId | null }) {
   else if (state.inventory.length > 0) badges.inventory = String(state.inventory.length);
   if (state.shards >= 30) badges.market = "+";
   if (cloud.user && !cloud.user.emailVerified) badges.account = "!";
-  const unread = unreadChronicle(state);
+  const unread = perPublish(store, "unread", () => unreadChronicle(state));
   if (unread > 0) badges.hall = String(unread);
   const unlockedRatio = `${state.achievements.length}/${ACHIEVEMENTS.length}`;
 

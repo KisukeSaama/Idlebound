@@ -503,7 +503,15 @@ The game runs client-side, so the server cannot replay every click. It recompute
 deterministic with the shared engine (`packages/game/src/validation.ts`) and refuses a save
 when a ledger does not hold: gold spent vs earned, essences spent vs collected, play time vs
 real elapsed time, click and kill rates, gold per kill, boss beatable with the declared
-power, item and achievement generation rules, no statistic going backwards, no backdated run.
+power, item and achievement generation rules (each deed once), no statistic going backwards,
+no backdated run. Even a first save or a replacement, with no previous save to compare to, has
+its ascensions and Descents bounded by the game's age (30 s each at least), its guardians by
+its kills, its deepest stage by its kills and powers, its Ritual stacks by the powers used
+this run, and its last tick by the server clock (6 h of slack for a device running ahead).
+The schema bounds what the checks walk: stages up to 3000, weave levels up to 200, and every
+record keyed by game ids to a size well above the game's data, so no save can make the
+server spin. The schema and the checks live in `@idlebound/game/server` and never ship to
+the browser.
 The Chronicle is bounded the same way: Bestiary kills by lifetime kills (guardians by
 bosses, the King's forms by Kings beaten, wanderers by runs, storms by play time, a walker's
 echo by guardians), echoes by the strata reached, Age echoes by keystones, Seams and the
@@ -513,8 +521,10 @@ the save reached (and their slot and rarity), secrets by their conditions. The D
 bounded by its unlock (stage 1000, Eldra's Recognition), threads by the essences gathered,
 Weaves by their caps and the threads woven; Kings, Seams, threads, Descents, secrets and
 the Chronicle's counters never go back.
-Rejections are logged (kept 90 days); only accepted saves feed the leaderboard, which keeps each player's
-best verified values.
+Rejections are logged (kept 90 days, 30 per player and hour at most, one entry per code); a
+refused save returns its first 20 violations. Only accepted saves feed the leaderboard, which
+keeps each player's best verified values. Checks that need no stored save run before the
+save's row is locked.
 
 ## Leaderboard
 

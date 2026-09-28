@@ -23,17 +23,22 @@ const MAX_WIDTH = 360;
  * until the others leave.
  * Phones keep their own placement (CSS).
  */
-function dock(container: HTMLElement, top: number) {
-  const desktop = window.matchMedia("(min-width: 901px) and (min-height: 561px)").matches;
+interface Room {
+  start: number;
+  left: number;
+  width: number;
+  limit: number;
+}
+
+let desktopQuery: MediaQueryList | null = null;
+
+/** Where the stack docks on a desktop layout, only measured (reads, no write); null on phones. */
+function measureRoom(top: number): Room | null {
+  if (!(desktopQuery ??= window.matchMedia("(min-width: 901px) and (min-height: 561px)")).matches) return null;
   const scene = document.querySelector(".scene")?.getBoundingClientRect();
+  if (!scene) return null;
   const panel = document.querySelector(".monster-panel")?.getBoundingClientRect();
   const monster = monsterOnPage();
-  const children = [...container.children] as HTMLElement[];
-  if (!desktop || !scene) {
-    container.classList.remove("docked");
-    for (const child of children) child.style.display = "";
-    return;
-  }
   const bottom = (panel?.top ?? scene.bottom) - GAP;
   let left = scene.right - GAP - MAX_WIDTH;
   let width = MAX_WIDTH;
@@ -54,16 +59,28 @@ function dock(container: HTMLElement, top: number) {
   // A tutorial hint stays readable: where the stack would cross it, it starts under it.
   const hint = document.querySelector(".tutorial-hint.hint-arena")?.getBoundingClientRect();
   const start = hint && hint.height > 0 && hint.left < left + width && hint.right > left ? Math.max(top, hint.bottom + GAP) : top;
+  return { start, left, width, limit };
+}
+
+/** Places the stack in its room (phones: where the CSS puts it), then hides the toasts that do not fit. */
+function dock(container: HTMLElement, top: number, room: Room | null) {
+  const children = [...container.children] as HTMLElement[];
+  container.style.setProperty("--toast-top", `${room ? room.start : top}px`);
+  if (!room) {
+    container.classList.remove("docked");
+    for (const child of children) child.style.display = "";
+    return;
+  }
   container.classList.add("docked");
-  container.style.setProperty("--toast-top", `${start}px`);
-  container.style.setProperty("--toast-left", `${left}px`);
-  container.style.setProperty("--toast-width", `${width}px`);
+  container.style.setProperty("--toast-left", `${room.left}px`);
+  container.style.setProperty("--toast-width", `${room.width}px`);
   // Only the toasts that fit are shown, the newest first; the others wait out of sight.
+  // Their heights at the docked width are the one measure left after the writes.
   for (const child of children) child.style.display = "";
   const heights = children.map((child) => child.offsetHeight + GAP);
-  let used = start;
+  let used = room.start;
   for (let index = children.length - 1; index >= 0; index -= 1) {
-    const fits = used + heights[index] <= limit;
+    const fits = used + heights[index] <= room.limit;
     children[index].style.display = fits ? "" : "none";
     if (fits) used += heights[index];
   }
@@ -92,10 +109,10 @@ export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boole
         observer.observe(bar);
         observed = bar;
       }
+      // Every measure first, then the writes: one layout, not one per measure.
       const floor = (header?.getBoundingClientRect().bottom ?? 0) + GAP;
       const top = Math.max(floor, bar.getBoundingClientRect().bottom + GAP);
-      container.style.setProperty("--toast-top", `${top}px`);
-      dock(container, top);
+      dock(container, top, measureRoom(top));
     };
     function schedule() {
       if (!frame) frame = requestAnimationFrame(place);

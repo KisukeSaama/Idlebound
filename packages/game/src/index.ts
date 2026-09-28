@@ -1,3 +1,7 @@
+/**
+ * What the client and the server share. The save schema (zod) and the anti-cheat checks are
+ * server-only: they live in "@idlebound/game/server", so the game's bundle never carries them.
+ */
 export * from "./types";
 export * from "./i18n";
 export * from "./numbers";
@@ -6,8 +10,7 @@ export * from "./state";
 export * from "./formulas";
 export * from "./loot";
 export * from "./engine";
-export * from "./save";
-export * from "./validation";
+export * from "./migrate";
 export * from "./moderation";
 export * from "./content";
 export * from "./data/biomes";

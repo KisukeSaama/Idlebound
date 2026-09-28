@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { useI18n } from "@/i18n/client";
+import { coverScene } from "./SceneCanvas";
 
 interface ModalProps {
   title: string;
@@ -24,6 +25,8 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, tab
   closeRef.current = onClose;
 
   useEffect(() => {
+    // The scene behind the veil slows down while the window is open.
+    const uncover = coverScene();
     const previous = document.activeElement as HTMLElement | null;
     const first = dialog.current?.querySelector<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
     first?.focus({ preventScroll: true });
@@ -48,6 +51,7 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, tab
     document.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("keydown", onKey, true);
+      uncover();
       previous?.focus?.({ preventScroll: true });
     };
   }, []);

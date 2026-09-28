@@ -1,12 +1,27 @@
 "use client";
 
-import { BIOMES, MAX_STAGE, STAGES_PER_BIOME, biomeForStage, eraForStage, remembranceNight, type MonsterState } from "@idlebound/game";
+import { BIOMES, MAX_STAGE, STAGES_PER_BIOME, biomeForStage, eraForStage, remembranceNight, type BiomeDef, type MonsterState } from "@idlebound/game";
 import { useEffect, useRef, type RefObject } from "react";
 import { useGame } from "../context";
-import { ArenaRenderer } from "../pixel/arena";
+import { ArenaRenderer, type Stretch } from "../pixel/arena";
 import { prefersReducedMotion } from "../pixel/surface";
 
 let active: { renderer: ArenaRenderer; canvas: HTMLCanvasElement } | null = null;
+/** Windows and dialogs open over the scene right now. */
+let covers = 0;
+
+/** A window opens over the scene: it slows down beneath until the returned function is called. */
+export function coverScene(): () => void {
+  covers += 1;
+  active?.renderer.setCovered(true);
+  let done = false;
+  return () => {
+    if (done) return;
+    done = true;
+    covers -= 1;
+    active?.renderer.setCovered(covers > 0);
+  };
+}
 
 /** Where the monster stands on the page (viewport pixels), for what must not cover it (the toasts). */
 export function monsterOnPage(): { left: number; top: number; right: number; bottom: number } | null {
@@ -62,6 +77,7 @@ export function SceneCanvas({
     const arenaRenderer = new ArenaRenderer(element);
     renderer.current = arenaRenderer;
     active = { renderer: arenaRenderer, canvas: element };
+    arenaRenderer.setCovered(covers > 0);
     const fit = () => {
       const box = section.getBoundingClientRect();
       const inner = arena.getBoundingClientRect();
@@ -126,17 +142,21 @@ export function SceneCanvas({
     renderer.current?.setRemembrance(remembrance);
   }, [renderer, remembrance]);
 
+  // The next stretch of road: its biome (the Dawn at the last stage) and its era.
+  const nextStage = stage + STAGES_PER_BIOME;
+  const nextBiome = biomeForStage(nextStage);
+  const nextSceneId = nextStage >= MAX_STAGE ? "dawn" : nextBiome.id;
+  const nextEra = eraForStage(nextStage);
   useEffect(() => {
-    // The creatures of this stretch and the next, generated while the browser idles.
-    const next = biomeForStage(stage + STAGES_PER_BIOME);
-    const nextEra = eraForStage(stage + STAGES_PER_BIOME);
+    // This stretch and the next, scenes and creatures, generated while the browser idles.
+    const creatures = (biome: BiomeDef) => [...biome.monsters, biome.miniBoss, biome.boss].map((def) => def.id);
     const current = BIOMES.find((biome) => biome.id === biomeId);
-    const ids = [
-      ...(current ? [...current.monsters, current.miniBoss, current.boss].map((def) => ({ id: def.id, era })) : []),
-      ...[...next.monsters, next.miniBoss, next.boss].map((def) => ({ id: def.id, era: nextEra }))
+    const stretches: Stretch[] = [
+      ...(current ? [{ sceneId, era, fullMoon, darkNight, creatures: creatures(current) }] : []),
+      { sceneId: nextSceneId, era: nextEra, fullMoon, darkNight, creatures: creatures(nextBiome) }
     ];
-    renderer.current?.prepare(ids);
-  }, [renderer, biomeId, era, stage]);
+    renderer.current?.prepare(stretches);
+  }, [renderer, biomeId, sceneId, era, nextBiome, nextSceneId, nextEra, fullMoon, darkNight]);
 
   return <canvas ref={canvas} className="scene-canvas" aria-hidden="true" />;
 }
