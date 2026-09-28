@@ -4,8 +4,8 @@
  * landmark at the end of the road, far buildings in silhouette. In the middle: the ground
  * with what is sown on it, still water mirroring the sky, the buildings and ruins drawn
  * by the builder (architecture.ts), mist drifting over the horizon. In front: dark shapes
- * framing the view. Each plane is darker and duller with distance and follows the camera's
- * slow sway at its own pace; water, lights, banners and leaves move on their own frames.
+ * framing the view. Each plane is darker and duller with distance; water, lights, banners
+ * and leaves move on their own frames.
  * A scene uses 20 colors at most, all named by its recipe. The era then wears the place
  * down (wear.ts), and the Age of the stratum transforms it (BIBLE 18.6): the sky brightens,
  * and each Age leaves its mark (marks.ts: bones, temples, glass, threads, runes, a low moon,
@@ -32,7 +32,7 @@ export interface SceneLayer {
   frames: Pixels[];
   /** Continuous drift, in scene pixels per second (clouds). */
   drift: number;
-  /** Nearness, 0 (the sky) to 1 and more (the foreground): how much the camera's sway moves it. */
+  /** Nearness, 0 (the sky) to 1 and more (the foreground): the plane it belongs to. */
   depth: number;
   /** Seconds per frame. */
   period?: number;
@@ -172,7 +172,7 @@ function composeScene(sceneId: string, recipe: SceneRecipe, era: number, options
   const shafts = paintShafts(recipe);
   const farStructures = paintFarStructures(recipe, wear);
   const [far, ...near] = recipe.ranges;
-  // Depth: how much the camera's slow sway moves each plane (parallax).
+  // Depth: how near each plane stands, from the sky to the foreground.
   const back: SceneLayer[] = [
     { frames: [sky.pixels], drift: 0, depth: 0 },
     ...(clouds ? [{ frames: [clouds], drift: 1, depth: 0.05 }] : []),

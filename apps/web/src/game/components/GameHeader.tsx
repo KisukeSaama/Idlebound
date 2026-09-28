@@ -52,18 +52,16 @@ export function GameHeader() {
           </button>
         ) : null}
       </div>
-      {shown.account ? (
-        <button
-          type="button"
-          className={`account-chip ${cloud.user ? "is-online" : ""}${freshClass("account")}`}
-          title={cloud.user ? undefined : t.account.ledger.guestPlain}
-          onClick={() => ui.openWindow("account")}
-        >
-          <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />
-          <span className="account-name">{cloud.user ? cloud.user.username : t.account.ledger.guest}</span>
-          {!cloud.user ? <span className="account-cta">{m.notSaved}</span> : null}
-        </button>
-      ) : null}
+      <button
+        type="button"
+        className={`account-chip ${cloud.user ? "is-online" : ""}`}
+        title={cloud.user ? undefined : t.account.ledger.guestPlain}
+        onClick={() => ui.openWindow("account")}
+      >
+        <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />
+        <span className="account-name">{cloud.user ? cloud.user.username : t.account.ledger.guest}</span>
+        {!cloud.user ? <span className="account-cta">{m.notSaved}</span> : null}
+      </button>
     </header>
   );
 }

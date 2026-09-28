@@ -7,15 +7,17 @@ import type { RevealId } from "../shell";
 import { WindowIcon } from "../icons";
 
 const ORDER: WindowId[] = ["map", "gear", "inventory", "market", "ascension", "hall", "account", "settings"];
-/** What earns each menu its place in the rail (the settings are always there, for accessibility). */
-const REVEAL: Record<Exclude<WindowId, "settings">, RevealId> = {
+/**
+ * What earns each menu its place in the rail. The account (to find a game again at once) and
+ * the settings (for accessibility) are always there.
+ */
+const REVEAL: Partial<Record<WindowId, RevealId>> = {
   map: "map",
   gear: "gear",
   inventory: "gear",
   market: "market",
   ascension: "ascension",
-  hall: "hall",
-  account: "account"
+  hall: "hall"
 };
 
 export function NavRail({ active }: { active: WindowId | null }) {
@@ -38,13 +40,14 @@ export function NavRail({ active }: { active: WindowId | null }) {
 
   return (
     <nav className="nav-rail" aria-label={t.hud.nav.label}>
-      {ORDER.filter((id) => id === "settings" || shown[REVEAL[id]]).map((id) => {
+      {ORDER.filter((id) => !REVEAL[id] || shown[REVEAL[id]]).map((id) => {
+        const reveal = REVEAL[id];
         const title = t.hud.windowTitles[id];
         return (
           <button
             key={id}
             type="button"
-            className={`nav-button ${active === id ? "active" : ""}${id === "settings" ? "" : freshClass(REVEAL[id])}`}
+            className={`nav-button ${active === id ? "active" : ""}${reveal ? freshClass(reveal) : ""}`}
             onClick={() => ui.openWindow(id)}
             aria-label={title.label}
             title={id === "hall" ? `${t.hud.nav.hallTitle(title.label, unlockedRatio)}${unread > 0 ? ` · ${t.hud.nav.unread(unread)}` : ""}` : title.label}

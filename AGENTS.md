@@ -81,7 +81,9 @@ swings single seeds by ±50 stages):
 - The first appearance is announced once (toast or badge), then stays.
 - Existing saves already past a threshold see the element immediately. Never hide what the
   player has already used.
-- Minute one shows the monster, the attack and the gold. Everything else is earned.
+- Minute one shows the monster, the attack and the gold, plus the account and settings
+  buttons (a walker coming back logged out must reach their game at once). Everything else
+  is earned.
 
 ## Done means
 

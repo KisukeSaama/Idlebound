@@ -1,6 +1,6 @@
 /**
  * The arena renderer: one canvas for the whole combat scene (BIBLE 18.9). It draws the
- * biome's parallax layers, its lights, the monster (idle, blink, hit flash, knockback,
+ * biome's layers, its lights, the monster (idle, blink, hit flash, knockback,
  * boss outline, spawn and death), companion shots and particles, on a logical grid scaled
  * by a whole factor, so every pixel of the world is the same size and snapped to the grid.
  *
@@ -45,10 +45,6 @@ export type ArenaMonster = Pick<MonsterState, "id" | "kind" | "event" | "eclipse
  * The whole scene lives on one grid: SCENE_HEIGHT rows scaled up by the largest whole factor
  * that fits the box's height; the width, and a few extra ground rows, follow the screen.
  */
-/** The camera's slow sway, in scene pixels at depth 1, and its period in seconds: parallax. */
-const SWAY_PIXELS = 3;
-const SWAY_SECONDS = 23;
-
 const IDLE_FRAME_SECONDS = 0.55;
 const SPAWN_SECONDS = 0.25;
 /** The Lantern Queen's flight across the sky during a Crystal Storm. */
@@ -147,11 +143,6 @@ export class ArenaRenderer {
     this.canvas.style.height = `${this.height * cssScale}px`;
     this.ctx.imageSmoothingEnabled = false;
     this.draw(true);
-  }
-
-  /** The camera's slow sway at time `t`, in scene pixels at depth 1. */
-  private sway(t: number): number {
-    return this.reducedMotion ? 0 : Math.sin((t / SWAY_SECONDS) * Math.PI * 2) * SWAY_PIXELS;
   }
 
   /** CSS pixels to the logical grid. */
@@ -454,7 +445,7 @@ export class ArenaRenderer {
     const surface = effectCache.get(`seam:${seam.length}:${frame}:${open}`, () => toSurface(seamPixels(seam.length, frame, open)));
     const fade = this.reducedMotion && seam.closing !== null ? 1 - (now - seam.closing) / SEAM_CLOSE_SECONDS : 1;
     this.ctx.globalAlpha = Math.max(0, fade);
-    this.ctx.drawImage(surface, seam.x - Math.floor(surface.width / 2) + Math.round(this.sway(now) * 0.7), seam.y - Math.floor(seam.length / 2) - SEAM_MARGIN);
+    this.ctx.drawImage(surface, seam.x - Math.floor(surface.width / 2), seam.y - Math.floor(seam.length / 2) - SEAM_MARGIN);
     this.ctx.globalAlpha = 1;
   }
 
@@ -473,7 +464,7 @@ export class ArenaRenderer {
     const floor = this.sceneTop() + (this.scene?.scene.ground ?? SCENE_HEIGHT - 40);
     // Just right of the company's column of portraits (narrower on small screens).
     const narrow = (this.narrowQuery ??= window.matchMedia("(max-width: 900px), (max-height: 560px)")).matches;
-    const x = this.toGrid(this.arena.x + (narrow ? 46 : 64), 0).x + Math.round(this.sway(now) * 0.7);
+    const x = this.toGrid(this.arena.x + (narrow ? 46 : 64), 0).x;
     const still = this.reducedMotion;
     const bob = still ? 0 : WALKER_BOB[Math.floor(now / WALKER_BOB_SECONDS) % WALKER_BOB.length];
     const top = floor - sheet.feet * unit;
@@ -559,14 +550,12 @@ export class ArenaRenderer {
     if (!scene) return;
     const top = this.sceneTop();
     const still = this.reducedMotion;
-    const sway = this.sway(t);
     const ground = scene.layers.findIndex((layer) => layer.ground);
     scene.layers.forEach((layer, index) => {
       if (layer.anchor) return;
       const surface = layer.frames[still ? 0 : Math.floor(t / layer.period) % layer.frames.length];
-      // Layers are centered on the canvas and tile sideways; the near ones follow the
-      // camera's sway more than the far ones (parallax), clouds also drift on their own.
-      const origin = Math.floor(this.width / 2) - 160 - (still ? 0 : Math.floor(t * layer.drift)) + Math.round(sway * layer.depth);
+      // Layers are centered on the canvas and tile sideways; clouds drift on their own.
+      const origin = Math.floor(this.width / 2) - 160 - (still ? 0 : Math.floor(t * layer.drift));
       let first = origin % layer.width;
       if (first > 0) first -= layer.width;
       for (let x = first; x < this.width; x += layer.width) ctx.drawImage(surface, x, top);
@@ -575,7 +564,7 @@ export class ArenaRenderer {
     });
     if (scene.milestone) {
       const stone = this.milestoneLit ? scene.milestone.on : scene.milestone.off;
-      ctx.drawImage(stone, Math.floor(this.width / 2) + (scene.milestone.x - 160) + Math.round(sway * 0.7), top + scene.milestone.y);
+      ctx.drawImage(stone, Math.floor(this.width / 2) + (scene.milestone.x - 160), top + scene.milestone.y);
     }
     const light = scene.scene.light;
     if (light) {
@@ -618,17 +607,16 @@ export class ArenaRenderer {
     });
   }
 
-  /** The dark shapes pinned to the edges, in front of the creature, swaying. */
+  /** The dark shapes pinned to the edges, in front of the creature. */
   private drawFrame(t: number) {
     const scene = this.scene;
     if (!scene) return;
     const ctx = this.ctx;
     const top = this.sceneTop();
-    const sway = this.sway(t);
     for (const layer of scene.layers) {
       if (!layer.anchor) continue;
       const surface = layer.frames[this.reducedMotion ? 0 : Math.floor(t / layer.period) % layer.frames.length];
-      const x = (layer.anchor === "left" ? 0 : this.width - layer.width) + Math.round(sway * layer.depth);
+      const x = layer.anchor === "left" ? 0 : this.width - layer.width;
       ctx.drawImage(surface, x, top);
       this.extend(surface, x, layer.width, top, false);
     }
@@ -650,7 +638,6 @@ export class ArenaRenderer {
     const sheet = monster.sheet;
     const age = now - monster.spawnedAt;
     const place = this.placement(sheet);
-    place.x += Math.round(this.sway(now) * 0.7);
     const unit = sheet.unit;
     const w = sheet.pixels.w * unit;
     const h = sheet.pixels.h * unit;

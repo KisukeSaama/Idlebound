@@ -35,7 +35,7 @@ import { audio } from "./audio";
 import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
 import { SKILL_PICTO, type PictoName } from "./icons";
-import { ACCOUNT_AFTER_SECONDS, ANNOUNCED, revealMark, stratumLabel, type RevealId } from "./shell";
+import { ANNOUNCED, revealMark, stratumLabel, type RevealId } from "./shell";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
@@ -48,7 +48,7 @@ import { WindowHost } from "./windows/WindowHost";
 import "./game.css";
 
 /** A guest who really played is warned before losing their game by leaving. */
-const GUEST_WARNING_SECONDS = ACCOUNT_AFTER_SECONDS;
+const GUEST_WARNING_SECONDS = 120;
 /** Never more than one fragment toast a minute (BIBLE 17.4): the others wait in the Chronicle. */
 const FRAGMENT_TOAST_GAP_MS = 60_000;
 /**
@@ -69,7 +69,6 @@ const REVEAL_PICTO: Partial<Record<RevealId, PictoName>> = {
   market: "stall",
   ascension: "gem",
   hall: "trophy",
-  account: "cloud",
   loom: "unweave",
   caravan: "stall"
 };
@@ -177,10 +176,10 @@ export default function GameApp() {
   useEffect(() => {
     if (!ready) return;
     let engine = store.engine;
-    let known = revealsOf(store, cloud.user !== null);
+    let known = revealsOf(store);
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const check = () => {
-      const shown = revealsOf(store, cloud.user !== null);
+      const shown = revealsOf(store);
       if (store.engine !== engine) {
         engine = store.engine;
         known = shown;
@@ -195,7 +194,7 @@ export default function GameApp() {
         }, FRESH_MS);
         timers.add(timer);
         const mark = revealMark(id);
-        if (!ANNOUNCED.includes(id) || store.state.tutorial.done.includes(mark) || (id === "account" && cloud.user)) continue;
+        if (!ANNOUNCED.includes(id) || store.state.tutorial.done.includes(mark)) continue;
         const m = currentMessages();
         const g = gameText(currentLocale());
         const place = id as keyof typeof m.night.reveal;
@@ -205,14 +204,12 @@ export default function GameApp() {
       }
       known = shown;
     };
-    const unsubscribeStore = store.subscribe(check);
-    const unsubscribeCloud = cloud.subscribe(check);
+    const unsubscribe = store.subscribe(check);
     return () => {
-      unsubscribeStore();
-      unsubscribeCloud();
+      unsubscribe();
       for (const timer of timers) clearTimeout(timer);
     };
-  }, [ready, store, cloud, toast, fresh]);
+  }, [ready, store, toast, fresh]);
 
   // Audio settings.
   useEffect(() => {

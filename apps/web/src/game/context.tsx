@@ -61,16 +61,15 @@ export function useCloud() {
  * of them just appeared.
  */
 export function useReveals() {
-  const { store, cloud, fresh } = useGameContext();
+  const { store, fresh } = useGameContext();
   useSyncExternalStore(store.subscribe, store.getVersion, store.getVersion);
-  useSyncExternalStore(cloud.subscribe, cloud.getVersion, cloud.getVersion);
-  const shown = revealsOf(store, cloud.user !== null);
+  const shown = revealsOf(store);
   return { shown, freshClass: (id: RevealId) => (fresh.has(id) ? " is-fresh" : "") };
 }
 
 /** What the shell shows, computed once per store publish. */
-export function revealsOf(store: GameStore, loggedIn: boolean): Reveals {
-  return perPublish(store, loggedIn ? "reveals:in" : "reveals:out", () => reveals(store.state, loggedIn));
+export function revealsOf(store: GameStore): Reveals {
+  return perPublish(store, "reveals", () => reveals(store.state));
 }
 
 const published = new WeakMap<GameStore, { version: number; values: Map<string, unknown> }>();

@@ -16,7 +16,6 @@ export const night = defineMessages({
       market: "Tes premiers éclats. Le Comptoir les échange au marché.",
       ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension et les autels t'y attendent.",
       hall: "Le Grand Livre t'ouvre une page : hauts faits, Bestiaire, Chronique.",
-      account: "La nuit oublie les marcheurs sans nom. Inscris le tien au Registre.",
       loom: "Eldra t'attend au Sanctuaire. Son Métier défait la nuit, un fil plus bas.",
       caravan: "La Roulotte du Comptoir passe entre les nuits. Une marchandise par semaine, au marché."
     },
@@ -57,7 +56,6 @@ export const night = defineMessages({
       market: "Your first shards. The Stallkeeper trades for them at the market.",
       ascension: "The Sanctum of Dusk opens: ascension and the altars wait for you there.",
       hall: "The Ledger opens a page for you: deeds, Bestiary, Chronicle.",
-      account: "The night forgets nameless walkers. Inscribe yours on the Roll.",
       loom: "Eldra waits in the Sanctum. Her Loom unweaves the night, one thread deeper.",
       caravan: "The Stallkeeper's Caravan travels between nights. One ware a week, at the market."
     },

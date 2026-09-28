@@ -17,7 +17,9 @@ import {
  * The progressive interface (AGENTS.md): each element of the shell appears when the walker
  * can first use it, from the save alone, so every device shows the same interface. The
  * conditions only look at records that never go back (lifetime counters, the deepest stage,
- * what was once hired or earned), so nothing the walker used ever disappears.
+ * what was once hired or earned), so nothing the walker used ever disappears. The account
+ * and the settings are not part of it: they are there from the first second, so a walker
+ * coming back logged out can find their game again at once.
  */
 export type RevealId =
   | "map"
@@ -25,7 +27,6 @@ export type RevealId =
   | "market"
   | "ascension"
   | "hall"
-  | "account"
   | "loom"
   | "caravan"
   | "stageBar"
@@ -38,19 +39,16 @@ export type RevealId =
   | "autoSpend";
 
 /** Elements whose first appearance gets a toast; the others only glow as they arrive. */
-export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "account", "loom", "caravan"];
+export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan"];
 
 /** Id kept in `state.tutorial.done` once an element was announced (short: the list holds 50). */
 export function revealMark(id: RevealId): string {
   return `ui:${id}`;
 }
 
-/** Play time after which a guest is offered to keep their game (and warned before leaving). */
-export const ACCOUNT_AFTER_SECONDS = 120;
-
 export type Reveals = Record<RevealId, boolean>;
 
-export function reveals(state: GameState, loggedIn: boolean): Reveals {
+export function reveals(state: GameState): Reveals {
   const life = state.lifetime;
   const announced = (id: RevealId) => state.tutorial.done.includes(revealMark(id));
   const companionHired = Object.entries(state.heroLevels).some(([id, level]) => id !== CLICK_HERO_ID && level > 0);
@@ -66,7 +64,6 @@ export function reveals(state: GameState, loggedIn: boolean): Reveals {
     // The Hall opens with the first deed, the first guardian or elite down (its Bestiary
     // line), or the first Chronicle entry: never on the first kill of minute one.
     hall: state.achievements.length > 0 || life.bosses > 0 || CHRONICLE_SOURCES.some((source) => sourceCount(state, source) > 0) || announced("hall"),
-    account: loggedIn || life.playTime >= ACCOUNT_AFTER_SECONDS || announced("account"),
     // Places inside other windows: Eldra's Loom in the Sanctum, the Caravan at the stall.
     loom: canDescend(state) || state.descents > 0,
     caravan: life.ascensions >= CARAVAN_MIN_ASCENSIONS,

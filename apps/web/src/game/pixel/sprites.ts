@@ -116,7 +116,7 @@ export function creatureSheet(id: string, era: number, night?: { key: string; gr
 
 export interface SceneSheet {
   scene: Scene;
-  layers: { frames: Surface[]; drift: number; depth: number; period: number; anchor?: "left" | "right"; ground?: boolean; width: number }[];
+  layers: { frames: Surface[]; drift: number; period: number; anchor?: "left" | "right"; ground?: boolean; width: number }[];
   milestone?: { x: number; y: number; off: Surface; on: Surface };
 }
 
@@ -126,7 +126,7 @@ export function sceneSheet(sceneId: string, era: number, options: SceneOptions =
     const scene = grey ? greyScene(sceneSheet(sceneId, era, options).scene) : renderScene(sceneId, era, options);
     return {
       scene,
-      layers: scene.layers.map((layer) => ({ frames: layer.frames.map(toSurface), drift: layer.drift, depth: layer.depth, period: layer.period ?? 0.9, anchor: layer.anchor, ground: layer.ground, width: layer.frames[0].w })),
+      layers: scene.layers.map((layer) => ({ frames: layer.frames.map(toSurface), drift: layer.drift, period: layer.period ?? 0.9, anchor: layer.anchor, ground: layer.ground, width: layer.frames[0].w })),
       milestone: scene.milestone ? { x: scene.milestone.x, y: scene.milestone.y, off: toSurface(scene.milestone.off), on: toSurface(scene.milestone.on) } : undefined
     };
   });

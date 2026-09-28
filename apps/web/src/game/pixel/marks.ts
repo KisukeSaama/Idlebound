@@ -33,7 +33,7 @@ export interface Mark {
   frames: Pixels[];
   period?: number;
   drift?: number;
-  /** How much the camera's sway moves it, when not its plane's own. */
+  /** Its nearness, when not its plane's own. */
   depth?: number;
 }
 

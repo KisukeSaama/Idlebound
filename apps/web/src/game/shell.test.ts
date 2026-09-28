@@ -4,7 +4,7 @@ import { ANNOUNCED, revealMark, reveals, stratumLabel } from "./shell";
 
 describe("progressive interface", () => {
   it("shows nothing but the fight, the attack and the gold at minute one", () => {
-    const shown = reveals(createInitialState(), false);
+    const shown = reveals(createInitialState());
     expect(Object.entries(shown).filter(([, visible]) => visible)).toEqual([]);
   });
 
@@ -14,10 +14,9 @@ describe("progressive interface", () => {
     state.heroLevels = { aldric: 3, maelle: 1 };
     state.lifetime.bestHired = 2;
     state.lifetime.shardsEarned = 1;
-    const shown = reveals(state, false);
+    const shown = reveals(state);
     expect(shown.map && shown.stageBar && shown.dps && shown.click && shown.shards && shown.market && shown.autoSpend).toBe(true);
-    expect(shown.gear || shown.ascension || shown.essences || shown.account).toBe(false);
-    expect(reveals(state, true).account).toBe(true);
+    expect(shown.gear || shown.ascension || shown.essences).toBe(false);
   });
 
   it("never hides what a walker already used after a new night", () => {
@@ -26,14 +25,14 @@ describe("progressive interface", () => {
     state.lifetime.bestHired = 6;
     state.lifetime.bestLevelSum = 400;
     state.maxStageEver = 80;
-    const shown = reveals(state, false);
+    const shown = reveals(state);
     expect(shown.dps && shown.click && shown.essences && shown.ascension && shown.buyModes && shown.autoToggle).toBe(true);
   });
 
   it("keeps an announced menu even when its reason is gone", () => {
     const state = createInitialState();
     state.tutorial.done.push(revealMark("gear"));
-    expect(reveals(state, false).gear).toBe(true);
+    expect(reveals(state).gear).toBe(true);
   });
 
   it("keeps its marks short and few (the save holds 50 tutorial ids of 40 characters)", () => {

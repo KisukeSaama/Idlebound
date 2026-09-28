@@ -129,8 +129,9 @@ Content colors live with the game data, not in CSS:
 ### Progressive interface
 
 Minute one shows the monster, the attack, the gold, Aldric's row ("Train" / « S'entraîner »,
-he is the walker) and the Settings button; everything else appears the moment it can first
-be used (`reveals(state, loggedIn)` in `apps/web/src/game/shell.ts`), from records that only
+he is the walker), the Account button and chip (a walker coming back logged out finds their
+game at once) and the Settings button; everything else appears the moment it can first be
+used (`reveals(state)` in `apps/web/src/game/shell.ts`), from records that only
 grow, so nothing the walker used disappears after an ascension or a Descent:
 
 | Element | Appears |
@@ -140,7 +141,7 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Market | the first shards |
 | Ascension | stage 51 reached once, essences, an ascension or a Descent |
 | Hall | the first deed, the first elite or guardian down, or a first fragment |
-| Account (rail and header chip) | 2 minutes of play, or logged in |
+| Account (rail and header chip) | always |
 | Settings | always |
 | Header pills | DPS with the first companion, click damage with Aldric's first level, shards once earned, essences as before |
 | Stage bar | stage 2; the Auto/Farm switch after a failed boss or a rebirth |
@@ -275,8 +276,8 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   dotted true pixel circles, each dot one band lighter), the halos of lanterns and
   braziers (a checker, then dotted circles farther and farther apart), mist, shafts of
   moonlight, the glade, three rows between two bands of ground, the window's glow on the
-  grass. Each scene is built in three depths, each plane darker and duller with distance
-  and following the camera's slow sway at its own pace (parallax):
+  grass. Each scene is built in three depths, each plane darker and duller with distance.
+  The view holds still: only clouds and mist drift sideways.
   - **Far**: the sky in bands with its stars (a few in crosses, some twinkling) and a flat
     moon (two craters, a shaded rim; the Hearthfields' moon a crescent until the Night Owl
     secret makes it full), or a rock ceiling in the Deepvaults; lit clouds (puffs over a
@@ -347,7 +348,7 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   view still shows it, and the guardian's ground stays calm (a test keeps bright and
   light-giving pixels under 1.5% of the space where it stands).
 
-  **Motion**: the camera sways very slowly; clouds and mist drift; lanterns, flames and lit
+  **Motion**: the camera holds still; clouds and mist drift; lanterns, flames and lit
   windows flicker, banners and leaves move, the owl blinks, water ripples (four frames);
   props sway on two frames, lights blink on and off over the scene (fireflies, wisps,
   runes, embers). With reduced motion, everything holds its first frame.
@@ -561,7 +562,7 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   input.
 - **Reduced motion**: honoured from `prefers-reduced-motion` and from the in-game
   "Reduced animations" setting (`.reduced-motion` on `<html>`), which stops the looping
-  animations. The pixel world then holds a single frame: no drift, no sway, no breathing;
+  animations. The pixel world then holds a single frame: no drift, no breathing;
   monsters fade in and out instead of gathering and scattering. Damage numbers can be turned off separately.
 
 - **Events of the Long Night**: a violet toast when one begins and a toast for its
