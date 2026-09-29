@@ -76,7 +76,7 @@ import {
   type SecretId
 } from "./data/lore";
 import { NAMED_BY_ID, NAMED_RELICS, namedEffect, namedSourceReached, wearing, wearsRegalia, type NamedRelicDef } from "./data/relics";
-import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, MARKET_BY_ID, type MarketOfferId } from "./data/market";
+import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BY_ID, type MarketOfferId } from "./data/market";
 import { SKILLS, SKILL_BY_ID } from "./data/skills";
 import { ageForEra, ageForStage, MILESTONES } from "./data/strata";
 import { milestoneReached } from "./chronicle";
@@ -315,7 +315,7 @@ export class GameEngine {
     const s = this.state;
     const existing = s.buffs.find((buff) => buff.id === id);
     const start = existing && existing.until > now ? existing.until : now;
-    const until = Math.min(start + seconds * 1000, now + BUFF_MAX_SECONDS * 1000);
+    const until = isMarketBuff(id) ? start + seconds * 1000 : Math.min(start + seconds * 1000, now + BUFF_MAX_SECONDS * 1000);
     if (existing) existing.until = until;
     else s.buffs.push({ id, until });
   }

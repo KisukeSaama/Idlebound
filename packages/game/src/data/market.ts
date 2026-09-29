@@ -1,3 +1,4 @@
+import type { BuffId } from "../types";
 import { lookup } from "./lookup";
 
 export type MarketOfferId = "chest" | "great-chest" | "rage" | "fortune" | "autoclick" | "hourglass";
@@ -9,7 +10,14 @@ export interface MarketOffer {
 }
 
 export const BUFF_DURATION_SECONDS = 600;
+/** Longest a boon can run past the last tick, except the stall's own, which stack without end. */
 export const BUFF_MAX_SECONDS = 3600;
+/** Boons the stall and the Caravan sell by the draught: their time piles up as long as shards last. */
+export const MARKET_BUFFS = ["rage", "fortune", "autoclick"] as const satisfies readonly (BuffId & MarketOfferId)[];
+
+export function isMarketBuff(id: BuffId): boolean {
+  return (MARKET_BUFFS as readonly BuffId[]).includes(id);
+}
 
 export const MARKET_OFFERS: MarketOffer[] = [
   { id: "chest", cost: 30 },

@@ -262,7 +262,8 @@ The second layer of rebirth, for the long run (it keeps players apart after week
 - **Shard market** (the Stallkeeper's stall; one of their twelve sayings at each visit):
   relic chest (30), great chest (160, epic or better), rage potion (20, DPS ×2), fortune
   elixir (20, gold ×2), striking scroll (25, 5 clicks/s), golden hourglass (60, 1 h of gold
-  now). Timed buffs last 10 min and stack up to 1 h. Chests are refused when the inventory
+  now). Timed buffs last 10 min and stack without limit (anti-cheat: the time left on them
+  never exceeds what every shard ever earned could buy). Chests are refused when the inventory
   is full, the hourglass when it would pay nothing. The Stallkeeper's Token takes 10% off
   every price. From the third ascension, the Caravan (see Events) brings one more ware a
   week.
@@ -449,7 +450,7 @@ opens again, within the same cap as a hidden tab.
   time a background tab or a closed game caught up), the player's first input brings a gold toast
   and companion damage ×3 for a sixth of the absence, counted from that moment and capped
   at an hour (a night gives the full hour). It never applies during the absence, catch-ups
-  ignore it, and like every boon it cannot last more than an hour past the last tick
+  ignore it, and like every boon but the stall's it cannot last more than an hour past the last tick
   (anti-cheat, where the damage bound counts it).
 - **The company's account**: with the Reunion, the player sees what changed since their
   last input: time away, road from the furthest stage then to the furthest stage now, gold
