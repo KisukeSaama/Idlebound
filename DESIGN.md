@@ -211,7 +211,7 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Companions | Aldric, the companions hired, and only the next one, once affordable this night or hired on a past night; talents only reachable or owned; buy modes from 10 levels; "spend while away" with the first companion |
 | Powers | only the unlocked ones; Unweave on key 7 once woven |
 | Loom tab, Caravan | when a Descent is possible or has happened; from the third ascension |
-| "Keep the night dark" | from Age II |
+| "Keep the Kingdom's sky" | from Age II |
 
 Each first appearance during play is announced once: a toast for the rail's windows, the
 Loom and the Caravan (marked `ui:<id>` in `tutorial.done`, so it happens once on every
@@ -628,7 +628,7 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   a frozen sea; a colonnade and shafts of light; the sky pouring; warp threads; paper; walls
   of runes; a low moon and mist; a lamp, a hearth and a window; grey; outline; a point then a
   line), 20 colors per scene at most, the guardian's ground kept calm.
-- **"Keep the night dark"**: a scene of any era keeps the sky, wear and marks of `era % 5`
+- **"Keep the Kingdom's sky"**: a scene of any era keeps the sky, wear and marks of `era % 5`
   (the Kingdom's five strata); creatures keep their own Age.
 
 ### Brand and interface

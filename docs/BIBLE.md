@@ -1488,7 +1488,7 @@ wait in the Chronicle.
 > of the road was then redrawn by hand in the look of the painted originals: dark masses
 > in clusters, texture, a moonlit rim, glowing eyes (section 8).
 > Then shipped too: the King's twelve forms (8.7) and every other creature of section 8,
-> the Sanctum, Loom and Dawn scenes, the "Keep the night dark" setting, the masks of all
+> the Sanctum, Loom and Dawn scenes, the "Keep the Kingdom's sky" setting, the masks of all
 > the named relics and the Crown, and the Age marks of Ages II to XII, redrawn with solid
 > pixels and regular dithering only.
 
@@ -1630,7 +1630,7 @@ half of the story: **the deeper, the less finished the world looks**, until Dawn
 
 The scene's **sky brightens by Age**, from the night purple of Age I to the pale lilac of
 Age XI. The HUD never changes: tokens and contrast stay the same everywhere. A setting
-("Keep the night dark") keeps Age I backgrounds for players who prefer them.
+("Keep the Kingdom's sky") keeps Age I backgrounds for players who prefer them.
 
 ### 18.7 Backgrounds
 
