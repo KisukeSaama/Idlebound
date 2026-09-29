@@ -581,7 +581,8 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
 **Rendering.** Buffers are palette indices; they become canvases once and stay in small LRU
 caches kept apart (32 creature sheets, 24 arena effects, 112 interface sprites, 64 interface
 creatures, 6 scenes); the arena warms the next biome's scene and creatures while the browser
-idles, and slows to one frame a second under an open window. `PixelSprite` shows one sprite in the page at a whole number
+idles, and under an open window keeps its idle cadence (12 frames a second) without the
+full-rate effect frames. `PixelSprite` shows one sprite in the page at a whole number
 of device pixels (`image-rendering: pixelated`), animated on one shared clock; generation
 waits for an idle moment. The combat scene is one canvas (`ArenaRenderer`) on a single
 logical grid 180 rows high, the scene's own, scaled by the largest whole factor that fits
