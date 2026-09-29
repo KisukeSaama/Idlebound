@@ -106,8 +106,8 @@ export class GameStore {
     this.timer = null;
   }
 
-  private step() {
-    const summary = this.engine.tick(Date.now());
+  private step(now = Date.now()) {
+    const summary = this.engine.tick(now);
     this.flushEvents();
     this.notify(summary !== null);
   }
@@ -143,11 +143,13 @@ export class GameStore {
    * closed, within the catch-up cap); the rest is skipped.
    */
   replaceState(state: GameState, { awayMs = 0 }: { awayMs?: number } = {}) {
-    state.lastTickAt = Math.max(state.lastTickAt, Date.now() - Math.max(0, awayMs));
+    // One clock read: a millisecond between two reads would be caught up past `awayMs`.
+    const now = Date.now();
+    state.lastTickAt = Math.max(state.lastTickAt, now - Math.max(0, awayMs));
     const visible = this.engine.visible;
     this.engine = this.createEngine(state);
     this.engine.visible = visible;
-    this.step();
+    this.step(now);
     this.publish();
   }
 

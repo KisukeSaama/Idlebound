@@ -1,9 +1,10 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
 import { ALTAR_BY_ID, altarCost } from "../src/data/altars";
+import { WEAVES, weaveCost } from "../src/data/descent";
 import { HEROES } from "../src/data/heroes";
 import { relicDensity } from "../src/data/items";
 import { SKILLS } from "../src/data/skills";
-import { GameEngine, isSkillUnlocked } from "../src/engine";
+import { GameEngine, canDescend, descentPreview, isSkillUnlocked } from "../src/engine";
 import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier, strikeFillShare } from "../src/formulas";
 import type { AltarId, Derived, GameState, Item } from "../src/types";
 
@@ -19,6 +20,18 @@ export interface BotOptions {
   onAscend?: (engine: GameEngine, now: number, gain: number, from: number) => void;
   /** Altar plan after each ascension (default: by play style, see `buyAltars`). */
   altars?: AltarPlan;
+  /** Descend right after an ascension when this plan allows it (never without one). */
+  descent?: DescentPlan;
+  onDescend?: (engine: GameEngine, now: number, threads: number) => void;
+}
+
+/**
+ * When the bot descends: once the Descent would weave at least `minThreads`, and at least
+ * `growth` times the threads woven so far (a second Descent must be worth the climb back).
+ */
+export interface DescentPlan {
+  minThreads: number;
+  growth: number;
 }
 
 export interface AltarPlan {
@@ -146,6 +159,11 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       const leading = strikesLead(s, derive(s, now, { ignoreTimed: true }), averageClicks(options));
       const gain = engine.ascend(now);
       options.onAscend?.(engine, now, gain, from);
+      if (options.descent && wantsDescent(s, options.descent)) {
+        const threads = engine.descend(now);
+        buyWeaves(engine, now);
+        options.onDescend?.(engine, now, threads);
+      }
       // Only a walker whose strikes lead the company invests in critical hits.
       buyAltars(engine, now, options.altars ?? (leading ? CLICKER_ALTARS : IDLE_ALTARS), leading);
       lastMaxStage = s.maxStage;
@@ -153,6 +171,24 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
     }
   }
   return now;
+}
+
+function wantsDescent(state: GameState, { minThreads, growth }: DescentPlan): boolean {
+  return canDescend(state) && descentPreview(state) >= Math.max(minThreads, growth * state.lifetime.threads);
+}
+
+/** Threads spent on the cheapest weave first; the Long Thread only matters to a closed game. */
+export function buyWeaves(engine: GameEngine, now: number) {
+  const s = engine.state;
+  for (let guard = 0; guard < 500; guard += 1) {
+    let cheapest: { id: (typeof WEAVES)[number]["id"]; cost: number } | null = null;
+    for (const weave of WEAVES) {
+      if (weave.id === "long-thread") continue;
+      const cost = weaveCost(weave.id, s.weaves[weave.id] ?? 0);
+      if (cost <= s.threads && (!cheapest || cost < cheapest.cost)) cheapest = { id: weave.id, cost };
+    }
+    if (!cheapest || !engine.buyWeave(cheapest.id, now)) return;
+  }
 }
 
 /** Capped altars bought as soon as they cost little next to the owned essences. */
