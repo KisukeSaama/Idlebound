@@ -6,7 +6,8 @@
  *
  * Each game plays day by day and stops at the Dawn. Prints the median best stage at each
  * checkpoint, the median day of the first Descent, the Descents woven, and how many seeds
- * reached the Dawn (with the median day).
+ * reached the Dawn (with the median day). Each game reports every simulated day on stderr,
+ * with the time that day took to play.
  */
 import { fileURLToPath } from "node:url";
 import { DAWN_STAGE } from "../src/data/biomes";
@@ -21,7 +22,7 @@ const seeds = Number(process.argv[3] ?? 9);
 const clicksPerSecond = Number(process.argv[4] ?? 5);
 const start = Date.UTC(2026, 0, 1);
 const DAY_MS = 86_400_000;
-const days = weeks * 7;
+const days = Math.round(weeks * 7);
 const CHECKPOINTS = [1, 2, 3, 7, 14, 21, 28, 42, 56, 84, 112].filter((day) => day <= days);
 
 const PLANS: { label: string; descent?: DescentPlan }[] = [
@@ -54,8 +55,18 @@ function playLong({ plan, seed }: { plan: number; seed: number }): Played {
     }
   };
   let now = start;
+  const began = performance.now();
   for (let day = 1; day <= days; day += 1) {
-    if (played.dawnDay === null) now = playBot(engine, now, DAY_MS / 1000, options);
+    if (played.dawnDay === null) {
+      const dayBegan = performance.now();
+      now = playBot(engine, now, DAY_MS / 1000, options);
+      // Progress on stderr, so a run of hours shows where it stands and how fast it goes.
+      const minutes = (ms: number) => (ms / 60_000).toFixed(1);
+      console.error(
+        `[${PLANS[plan].label}, seed ${seed}] day ${day}/${days}: stage ${s.maxStageEver}, ${s.lifetime.ascensions} ascensions, ${s.descents} Descents` +
+          ` (day ${minutes(performance.now() - dayBegan)} min, total ${minutes(performance.now() - began)} min)`
+      );
+    }
     if (CHECKPOINTS.includes(day)) played.stages.push(s.maxStageEver);
   }
   played.descents = s.descents;

@@ -272,7 +272,8 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
   the bottom bar); the account chip comes back only to show the Ledger's trouble. Logo
   hidden, toasts across the scene, windows open as sheets.
 - **Touch**: the game is not a page. No double-tap zoom, no long-press menu on the art, no
-  pull to refresh, lists that scroll keep their scroll to themselves. Tooltips of powers
+  text selection anywhere (windows and the loading screen included, only form fields take
+  one), no pull to refresh, lists that scroll keep their scroll to themselves. Tooltips of powers
   are off and the keyboard shortcuts are not listed on touch screens. Where the browser can
   vibrate (Android), short pulses mark a critical blow of the walker's own hand, a purchase,
   a power, a loot, a guardian or elite down, a failed boss and an ascension or Descent; a
