@@ -463,6 +463,8 @@ button {
   gap: 18px;
   background: var(--bg);
   color: var(--muted);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .game-loading img {

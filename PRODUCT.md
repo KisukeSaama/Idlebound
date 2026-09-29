@@ -128,9 +128,14 @@ late game; mashing the mouse is never required.
 - **Known limit**: progress flattens over weeks (before the changes above, everyone
   converged toward stage 1500 to 1700 after two weeks; the one-week bot now stands at 2028,
   gaining about 30 stages an ascension). Late essence growth sits on a knife edge: 1.02 per stage
-  converges, 1.025 already runs away to stage 3000 within a week. Keeping players apart in
-  the long run needs a second prestige layer; until then the essence leaderboard (orders of
-  magnitude apart) is the long-run ranking.
+  converges, 1.025 already runs away to stage 3000 within a week.
+- **The long game** (`npx tsx packages/game/scripts/longrun.ts [weeks] [seeds] [clicks/s]`,
+  bot at 5 clicks/s around the clock, median of 5 seeds over 8 weeks): stage 1987 at day 7,
+  2323 at day 14, 2530 at day 28, 2687 at day 56 without a Descent. The first Descent opens
+  at day 8.7 (Eldra's Recognition 5 asks for 30 runs, the stage 1000 comes on day 2). It sets
+  the walker back for about two weeks (2083 at day 14), then pulls ahead: descending once the
+  threads reach 8 and the threads woven so far, 2 Descents and 2768 at day 56; at 4 threads
+  and half the threads woven so far, 4 Descents and 2816. No seed reaches the Dawn in 8 weeks.
 - The simulations above that go beyond `npm run balance -- <hours> <cps>` and `compare`
   (real schedules, ascension timing, altar leave-out runs, the 72 h bot) were run with the
   options of `packages/game/scripts/bot.ts` (`stagnationMs`, `altars`); they have no CLI
