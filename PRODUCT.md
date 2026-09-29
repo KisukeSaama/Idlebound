@@ -384,7 +384,7 @@ they begin and a fragment the first time.
 |---|---|---|
 | Crystal Storm | 1 crystal in 20 | The Lantern Queen crosses the sky; five crystals fall in turn, 3 s each. |
 | The Seam | Normal stage 60+, 1 spawn in 400 | A Seam Warden (elite HP, 20 s). Beaten: an elite's drop, an Age echo. Escaped: nothing lost. |
-| Pip's Wager | 1 golden rat in 10 | Pip stops: 13 strikes in 5 s and he pays ×30 instead of ×10; missed, he runs off. |
+| Pip's Wager | 1 golden rat in 10, then 3 min of rest | Pip stops, ringed in gold (a golden rat that just runs has no ring): 13 strikes in 5 s and he pays what the road would have paid in 45 s at the company's pace (golden rats included, one kill per respawn at most, so ×418 the stage's gold at best), never less than ×30; missed, he runs off. |
 | Echo of a Walker | From 5 ascensions, 1% per guardian's first clear | Another walker's shadow (a name from the Roll) fights beside the company: DPS ×1.25 for 30 s. |
 | The Caravan | From 3 ascensions, once a calendar week | The week's ware (the same for everyone, by ISO week): the Stallkeeper's Token (300), a Sealed Coffer (a legendary or better, 400), Bottled Night (2 h of gold, 100), Pip's Cheese (golden rats twice as often for 30 min, 45), a Moth Lantern (crystals every 45 to 90 s for 30 min, 60), an Ember Draught (rage and fortune, 35), Eldra's Thread (every power ready, 80), Three Crates (three relic chests, 75). |
 | The Quiet | Void stratum and deeper, 1 spawn in 1,000 | A colorless creature, 10 s; sounds drop. Beaten: an Age echo. |

@@ -713,7 +713,8 @@ export class ArenaRenderer {
       const halo = effectCache.get(`eclipse-ring:${radius}`, () => toSurface(eclipseRing(radius)));
       ctx.drawImage(halo, x + Math.round(w / 2) - Math.floor(halo.width / 2), place.y + Math.round(sheet.feet * 0.45) - Math.floor(halo.height / 2));
     }
-    const ring = monster.kind === "boss" || monster.kind === "miniboss" ? this.accent : monster.kind === "treasure" ? C.gold : null;
+    // Pip wears the gold ring only while he dares the walker: a rat that just runs asks nothing.
+    const ring = monster.kind === "boss" || monster.kind === "miniboss" ? this.accent : monster.still ? C.gold : null;
     if (ring !== null) {
       // The ring breathes by thinning to a dotted line and filling again, in whole steps.
       const pulse = this.reducedMotion ? 0.6 : 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(now * 4));

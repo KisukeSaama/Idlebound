@@ -1,7 +1,7 @@
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTAR_BY_ID, altarCost, altarEffect } from "./data/altars";
 import { WEAVE_BY_ID, type WeaveId } from "./data/descent";
-import { REMEMBRANCE_FRAGMENTS, WALKER_DPS, remembranceNight } from "./data/events";
+import { REMEMBRANCE_FRAGMENTS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WALKER_DPS, remembranceNight } from "./data/events";
 import { CLICK_HERO_ID, HEROES, UPGRADE_BY_ID } from "./data/heroes";
 import { EQUIPMENT_CAP, FORGE_STEP, forgeCost, relicDensity } from "./data/items";
 import { RECOGNITION_DPS, bestiaryGoldBonus, recognitionTier, rememberedCompanions } from "./data/lore";
@@ -81,6 +81,21 @@ export function stageGold(stage: number): number {
   const earlyBoost = 1 + Math.max(0, 11 - stage) / 10;
   return Math.max(1, stageHp(stage) * GOLD_PER_HP) * earlyBoost;
 }
+
+/** Golden rats come this often at most, however the walker courts Pip. */
+export const MAX_TREASURE_CHANCE = 0.25;
+
+/**
+ * A won Pip's Wager, in times the stage's gold: what the road would have paid in
+ * `WAGER_PAY_SECONDS` at the company's pace, golden rats included, three golden rats at least.
+ */
+export function wagerGold(stage: number, dps: number, treasureChance: number): number {
+  const road = dps > 0 ? (WAGER_PAY_SECONDS * (1 + treasureChance * 9)) / (stageHp(stage) / dps + RESPAWN_SECONDS) : 0;
+  return Math.max(WAGER_MIN_GOLD, road);
+}
+
+/** The most a won wager can pay: every kill at the fastest respawn, rats at their cap. */
+export const WAGER_MAX_GOLD = (WAGER_PAY_SECONDS * (1 + MAX_TREASURE_CHANCE * 9)) / RESPAWN_SECONDS;
 
 export function altarLevel(state: GameState, id: AltarId): number {
   return state.altars[id] ?? 0;
@@ -344,7 +359,7 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     // The Scales of Aurelion bite deeper into elites and guardians.
     bossDamage: (1 + equipmentBonus(state, "bossDamage")) * (1 + namedEffect(state, "bossDamage")),
     guardianGold: 1 + namedEffect(state, "guardianGold"),
-    treasureChance: Math.min(0.25, (treasure + altarValue(state, "treasure") + namedEffect(state, "treasure")) * cheese),
+    treasureChance: Math.min(MAX_TREASURE_CHANCE, (treasure + altarValue(state, "treasure") + namedEffect(state, "treasure")) * cheese),
     dpsMultiplier: dpsMultiplier * idleFactor,
     patienceDps: activeDps * idleBonus,
     essenceMultiplier: (1 + altarValue(state, "harvest")) * (1 + equipmentBonus(state, "essence")) * Math.pow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty")),

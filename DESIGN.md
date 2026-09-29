@@ -661,7 +661,9 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   2 px), so a monster struck down while it gathers is still seen, then come apart
   into their own pixels, which drift up and turn into gold motes flying to the gold counter
   (guardians shed violet ones too). Elites and guardians pulse a 1 px outline in the biome's
-  accent, Pip in gold: it thins to a dotted line and fills again in whole dither steps.
+  accent, Pip in gold only while he dares the walker (a golden rat that just runs has none,
+  so the ring alone asks for strikes): it thins to a dotted line and fills again in whole
+  dither steps.
   Nothing in motion is ever translucent: what comes, goes or wavers (the Lantern Queen,
   the Echo of a Walker, the Loom's flicker) drops or regains its pixels by eighths through
   an ordered 4 x 4 mask, each step cached. Only reduced motion fades, on a single frame.

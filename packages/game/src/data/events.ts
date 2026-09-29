@@ -32,10 +32,14 @@ export const SEAM_SECONDS = 20;
 
 /** Pip's Wager: one golden rat in this many stops and dares the walker. */
 export const WAGER_ODDS = 10;
+/** Pip does not dare twice in a row: this many seconds after a wager, his rats just run. */
+export const WAGER_REST_SECONDS = 180;
 export const WAGER_CLICKS = 13;
 export const WAGER_SECONDS = 5;
-/** A won wager pays this much more than a golden rat (×10 becomes ×30). */
-export const WAGER_GOLD = 3;
+/** A won wager pays this many seconds of the road's gold at the company's pace... */
+export const WAGER_PAY_SECONDS = 45;
+/** ...and never less than this many times the stage's gold (three golden rats). */
+export const WAGER_MIN_GOLD = 30;
 
 /** Echo of a Walker: from this many ascensions, a chance per first clear of a guardian. */
 export const WALKER_MIN_ASCENSIONS = 5;
