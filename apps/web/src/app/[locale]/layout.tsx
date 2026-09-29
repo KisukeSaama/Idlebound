@@ -1,12 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Alegreya_Sans, Cinzel } from "next/font/google";
+import localFont from "next/font/local";
 import { I18nProvider } from "@/i18n/client";
 import { assertLocale, getI18n, getPreference } from "@/i18n/server";
 import { SITE_NAME, isIndexable, pageAlternates, pageSocial, siteUrl } from "@/lib/site";
 import "../globals.css";
 
-const display = Cinzel({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display", display: "swap" });
-const body = Alegreya_Sans({ subsets: ["latin"], weight: ["400", "500", "700", "800"], style: ["normal", "italic"], variable: "--font-body", display: "swap" });
+// Self-hosted (src/fonts, OFL): the build never depends on reaching Google Fonts.
+const display = localFont({ src: "../../fonts/cinzel-latin-var.woff2", weight: "600 800", variable: "--font-display", display: "swap", adjustFontFallback: "Times New Roman" });
+const body = localFont({
+  src: [
+    { path: "../../fonts/alegreya-sans-latin-400.woff2", weight: "400", style: "normal" },
+    { path: "../../fonts/alegreya-sans-latin-500.woff2", weight: "500", style: "normal" },
+    { path: "../../fonts/alegreya-sans-latin-700.woff2", weight: "700", style: "normal" },
+    { path: "../../fonts/alegreya-sans-latin-800.woff2", weight: "800", style: "normal" },
+    { path: "../../fonts/alegreya-sans-latin-400-italic.woff2", weight: "400", style: "italic" },
+    { path: "../../fonts/alegreya-sans-latin-500-italic.woff2", weight: "500", style: "italic" },
+    { path: "../../fonts/alegreya-sans-latin-700-italic.woff2", weight: "700", style: "italic" },
+    { path: "../../fonts/alegreya-sans-latin-800-italic.woff2", weight: "800", style: "italic" }
+  ],
+  variable: "--font-body",
+  display: "swap"
+});
 
 // Every page is rendered per request: runtime env (one image for dev and prod) and the
 // per-request CSP nonce set by src/proxy.ts both require it.

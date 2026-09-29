@@ -66,9 +66,9 @@ Content colors live with the game data, not in CSS:
 
 ## Typography
 
-- **Display: Cinzel** (600, 700, 800) via `next/font`, variable `--font-display`. Headings,
-  the gold counter, big numbers, window titles. Serif, engraved, fantasy.
-- **Body: Alegreya Sans** (400, 500, 700, 800, italic) via `next/font`, variable
+- **Display: Cinzel** (600, 700, 800) self-hosted via `next/font/local` (`src/fonts`, OFL), variable
+  `--font-display`. Headings, the gold counter, big numbers, window titles. Serif, engraved, fantasy.
+- **Body: Alegreya Sans** (400, 500, 700, 800, italic) self-hosted via `next/font/local`, variable
   `--font-body`. Everything else: a humanist sans with calligraphic roots, very readable.
   Base 16px, line-height 1.5. Labels are sentence case, never tracked capitals (Cinzel is
   the only face in capitals, by design).
