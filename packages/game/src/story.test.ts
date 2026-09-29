@@ -6,7 +6,7 @@ import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
 import { KING_FORMS, guardianForStage } from "./data/biomes";
 import { CARAVAN_WARES, caravanWare, isoWeek } from "./data/caravan";
 import { WEAVES, threadsFor, weaveCost } from "./data/descent";
-import { ECLIPSE_EVERY, ECLIPSE_HP, EVENTS, SEAM_SECONDS, WAGER_CLICKS } from "./data/events";
+import { ECLIPSE_EVERY, ECLIPSE_HP, EVENTS, SEAM_SECONDS, WAGER_CLICKS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WAGER_REST_SECONDS } from "./data/events";
 import {
   AGE_ECHOES,
   BESTIARY,
@@ -21,7 +21,7 @@ import {
 import { NAMED_RELICS } from "./data/relics";
 import { ERA_COUNT, MILESTONES, keystonesFound } from "./data/strata";
 import { GameEngine, canDescend, descentPreview } from "./engine";
-import { bossHp, derive, skillCooldownMultiplier, stageHp, wandererSkip } from "./formulas";
+import { MAX_TREASURE_CHANCE, RESPAWN_SECONDS, WAGER_MAX_GOLD, bossHp, derive, skillCooldownMultiplier, stageGold, stageHp, wagerGold, wandererSkip } from "./formulas";
 import { LOCALES } from "./i18n";
 import { generateItem } from "./loot";
 import { seededRng, type Rng } from "./rng";
@@ -366,9 +366,8 @@ describe("events of the Long Night", () => {
     expect(engine.state.lifetime.bossFails).toBe(fails);
   });
 
-  it("lets Pip dare the walker: thirteen strikes in five seconds pay thirty times, a miss and he runs", () => {
+  it("lets Pip dare the walker: thirteen strikes in five seconds pay at least three rats, a miss and he runs", () => {
     const state = createInitialState(T0);
-    state.stage = 5;
     state.maxStage = 6;
     state.stage = 6;
     // Normal spawn: the creature, then the treasure roll (yes), then the wager roll (yes).
@@ -376,14 +375,14 @@ describe("events of the Long Night", () => {
     let now = respawn(engine, T0);
     expect(engine.state.monster).toMatchObject({ kind: "treasure" });
     expect(engine.state.monster!.wager).toBeDefined();
-    const carried = engine.state.monster!.gold;
     const gold = engine.state.gold;
     for (let strike = 0; strike < WAGER_CLICKS; strike += 1) {
       now += 50;
       engine.click(now);
     }
     expect(engine.state.monster).toBeNull();
-    expect(engine.state.gold - gold).toBeCloseTo(carried * 3 * engine.derived.goldMultiplier);
+    // A fresh company barely scratches the road: Pip pays his floor, three golden rats.
+    expect(engine.state.gold - gold).toBeCloseTo(stageGold(6) * WAGER_MIN_GOLD * engine.derived.goldMultiplier);
     expect(engine.state.lifetime.treasures).toBe(1);
     const missed = engineWith(createInitialState(T0), scripted([0, 0, 0]));
     missed.state.stage = 6;
@@ -392,6 +391,37 @@ describe("events of the Long Night", () => {
     at += 6_000;
     missed.tick(at);
     expect(missed.state.lifetime.treasures).toBe(0);
+  });
+
+  it("makes Pip pay what the road would have paid meanwhile, up to a bound, and rest between dares", () => {
+    // The road's pace: a company that kills at once earns a kill per respawn.
+    expect(wagerGold(300, Infinity, 0)).toBeCloseTo(WAGER_PAY_SECONDS / RESPAWN_SECONDS);
+    expect(wagerGold(300, Infinity, MAX_TREASURE_CHANCE)).toBeCloseTo(WAGER_MAX_GOLD);
+    expect(wagerGold(300, 1, 0.25)).toBe(WAGER_MIN_GOLD);
+    expect(wagerGold(300, 0, 0)).toBe(WAGER_MIN_GOLD);
+
+    // Every roll says yes: a golden rat each time, and Pip would dare each time.
+    const state = createInitialState(T0);
+    state.maxStage = 6;
+    state.stage = 6;
+    const engine = engineWith(state, scripted([], 0));
+    let now = respawn(engine, T0);
+    expect(engine.state.monster!.wager).toBeDefined();
+    now += 6_000;
+    engine.tick(now);
+    const restEnds = now - 6_000 + WAGER_REST_SECONDS * 1000;
+    let dares = 0;
+    while (now < restEnds - 1_000) {
+      now = respawn(engine, now);
+      if (engine.state.monster!.wager) dares += 1;
+      slay(engine, now);
+    }
+    expect(dares).toBe(0);
+    now = Math.max(now, restEnds);
+    engine.tick(now);
+    if (engine.state.monster) slay(engine, now);
+    now = respawn(engine, now);
+    expect(engine.state.monster!.wager).toBeDefined();
   });
 
   it("brings the Caravan once a week, the same ware for everyone, and the Token only once", () => {

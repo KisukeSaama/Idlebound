@@ -25,8 +25,8 @@ import {
   UNFINISHED_MIN_AGE,
   UNFINISHED_ODDS,
   WAGER_CLICKS,
-  WAGER_GOLD,
   WAGER_ODDS,
+  WAGER_REST_SECONDS,
   WAGER_SECONDS,
   WALKER_CHANCE,
   WALKER_MIN_ASCENSIONS,
@@ -114,6 +114,7 @@ import {
   stageGold,
   stageHp,
   upgradeCost,
+  wagerGold,
   weaveLevel,
   weaveValue
 } from "./formulas";
@@ -236,6 +237,8 @@ export class GameEngine {
    */
   afkAfterMs: number | null = null;
   private lastInputAt = 0;
+  /** Pip rests after a wager: until then his rats just run. */
+  private wagerRestUntil = 0;
   private autopilotTimer = 0;
   private events: GameEvent[] = [];
   private autoClickAccumulator = 0;
@@ -624,6 +627,7 @@ export class GameEngine {
     }
     if (s.crystal) s.crystal.expiresAt -= ms;
     if (s.monster?.wager) s.monster.wager.until -= ms;
+    this.wagerRestUntil -= ms;
     this.refresh(now);
   }
 
@@ -1070,8 +1074,11 @@ export class GameEngine {
     if (s.trail.wound?.stage === stage && (kind === "boss" || kind === "miniboss")) monster.hp = hp * (1 - s.trail.wound.share);
     if (event) monster.event = event;
     if (eclipse) monster.eclipse = true;
-    // Pip's Wager: one golden rat in ten stops and dares the walker.
-    if (kind === "treasure" && this.visible && this.rng() < 1 / WAGER_ODDS) monster.wager = { clicks: 0, until: now + WAGER_SECONDS * 1000 };
+    // Pip's Wager: one golden rat in ten stops and dares the walker, then rests a while.
+    if (kind === "treasure" && this.visible && now >= this.wagerRestUntil && this.rng() < 1 / WAGER_ODDS) {
+      monster.wager = { clicks: 0, until: now + WAGER_SECONDS * 1000 };
+      this.wagerRestUntil = now + WAGER_REST_SECONDS * 1000;
+    }
     s.monster = monster;
     this.emit({ type: "spawn", monster });
     if (event && event !== "unfinished") this.meetEvent(event);
@@ -1091,9 +1098,9 @@ export class GameEngine {
       s.lifetime.clicks += 1;
       monster.wager.clicks += 1;
       if (monster.wager.clicks >= WAGER_CLICKS) {
-        // Pip loses his bet, and pays three times what he carries.
+        // Pip loses his bet, and pays what the road would have in the meantime, and more.
         delete monster.wager;
-        monster.gold *= WAGER_GOLD;
+        monster.gold = stageGold(s.stage) * wagerGold(s.stage, this.derived.dps, this.derived.treasureChance);
         this.emit({ type: "event", id: "wager", won: true });
         monster.hp = 0;
         this.kill(now);

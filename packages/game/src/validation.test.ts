@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
 import { GameEngine } from "./engine";
 import { relicDensity } from "./data/items";
-import { crystalEssenceReward } from "./formulas";
+import { WAGER_MAX_GOLD, crystalEssenceReward, derive, stageGold } from "./formulas";
 import { generateItem } from "./loot";
 import { seededRng } from "./rng";
 import { parseState } from "./save";
@@ -124,6 +124,27 @@ describe("crystals, hourglasses and shards", () => {
     next.lifetime.hourglasses += 500;
     next.lifetime.kills += 500 * 3600 * 3;
     expect(codes(verifyTransition(previous, next, 60_000))).toContain("hourglasses");
+  });
+
+  it("bounds Pip's Wagers by the golden rats caught", () => {
+    const previous = veteran();
+    const kill = stageGold(previous.maxStageEver) * derive(previous, previous.lastTickAt, { ignoreTimed: true }).goldMultiplier;
+    // Beyond what two kills can pay at best (a boss at a wager's floor, every boon), a won
+    // wager at its best: accepted when one of the kills was a golden rat, refused otherwise.
+    const kills = 2 * 10 * 30 * 6 * kill;
+    const honest = structuredClone(previous);
+    honest.lifetime.kills += 1;
+    honest.lifetime.treasures += 1;
+    honest.lifetime.goldEarned += kills + kill * WAGER_MAX_GOLD * 6 * 0.99;
+    expect(codes(verifyTransition(previous, honest, 1_000))).not.toContain("gold");
+    const plain = structuredClone(previous);
+    plain.lifetime.kills += 1;
+    plain.lifetime.goldEarned += kills + kill * WAGER_MAX_GOLD * 0.1;
+    expect(codes(verifyTransition(previous, plain, 1_000))).toContain("gold");
+    // More golden rats than kills: refused.
+    const rats = veteran();
+    rats.lifetime.treasures = rats.lifetime.kills + 1;
+    expect(codes(verifyState(rats, LATER))).toContain("kills");
   });
 
   it("rejects shards no guardian, crystal or salvage could have paid", () => {

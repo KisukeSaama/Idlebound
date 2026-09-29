@@ -1244,7 +1244,7 @@ a new sound cue, a fragment on first occurrence.
 |---|---|---|---|---|---|
 | 1 | **The Seam** / La Brèche | Normal stage ≥ 60, 1 in 400 spawns | A Seam Warden replaces the monster: elite HP, 20 s timer. Failing costs nothing. | Elite drop rules, 1 Age echo fragment | A crack in the night; the walker holds it shut. |
 | 2 | **Crystal Storm** / Averse de cristaux (**shipped**) | 1 in 20 crystal spawns | 5 crystals over 15 s, the Lantern Queen flies across the sky. | 5 normal crystal rolls | Something looks at the world very hard for a moment. |
-| 3 | **Pip's Wager** / Le Pari de Pip | 1 in 10 golden rats | Pip stops; 13 clicks in 5 s turn ×10 gold into ×30. Miss and Pip leaves, laughing. | Gold ×30 once (raises the validation bound from ×10 to ×30) | Thorvald's debt, paid back one rat at a time. |
+| 3 | **Pip's Wager** / Le Pari de Pip (**shipped**) | 1 in 10 golden rats, then 3 min of rest | Pip stops; 13 clicks in 5 s and he pays 45 s of the road's gold (×30 at least). Miss and Pip leaves, laughing. | Gold of 45 s once (bounded per golden rat caught) | Thorvald's debt, paid back one rat at a time. Pip does not like to be taken for granted: he dares, then lets his rats run a while. |
 | 4 | **Echo of a Walker** / Écho d'un marcheur | From 5 ascensions, 1% per first clear of a guardian | A pixel ghost bearing a name from the top 100 of the Roll fights 30 s beside the company. | DPS ×1.25 for 30 s (below existing timed bounds) | The only moment two walkers' strands touch. |
 | 5 | **The Caravan** / La Roulotte | Once per calendar week, from 3 ascensions | The Stallkeeper's special offer, the same for everyone that week (seeded by ISO week): one of 8 rotating wares, including the Stallkeeper's Token. | Priced in shards | The Stallkeeper travels between nights. |
 | 6 | **The Quiet** / Le Silence | Void stratum or deeper, 1 in 1,000 spawns | A colorless monster; sounds drop; kill it within 10 s. | 1 Void fragment, a Deed | A piece of the Morning, leaking in. |
@@ -1752,7 +1752,7 @@ version 5):
 | `descents: number`, `threads: number`, `weaves: Record<id, number>` | Descent | Threads ledger (earned from essences collected ≥ spent + held), caps |
 | `lifetime.kings`, `lifetime.seams`, `lifetime.catchUps` | Deeds, fragments | Kings ≤ bosses on stages multiple of 50 reachable; seams ≤ kills / 400 with margin |
 
-**Validation constants that move:** `MAX_TIMED_GOLD` (Pip's Wager ×30), `MAX_TIMED_DPS`
+**Validation constants that move:** `WAGER_MAX_GOLD` (Pip's Wager, once per golden rat caught), `MAX_TIMED_DPS`
 (Echo of a Walker ×1.25), the offline cap (The Long Thread), crystal timing (Humming Loom,
 Garrick's Lodestone), the essence multiplier (Warp of Plenty). Each change keeps the
 "accepts a real multi-hour game saved regularly" test green, and the Descent needs a new

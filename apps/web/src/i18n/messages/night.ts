@@ -24,7 +24,7 @@ export const night = defineMessages({
       seam: { won: "La Brèche est refermée.", escaped: "La Brèche se referme sans toi." },
       quiet: { won: "Le Silence se défait.", escaped: "Le Silence passe son chemin." },
       stray: { won: "L'armure tombe, vide.", escaped: "L'armure s'éloigne, hors de vue." },
-      wager: { won: "Pip paie, trois fois.", escaped: "Pip détale en riant." }
+      wager: { won: "Pip paie, et perd le compte.", escaped: "Pip détale en riant." }
     },
     walkerNamed: (name: string, seconds: Count) => `L'écho de ${name} se bat à tes côtés pendant ${seconds} s.`,
     wager: {
@@ -83,7 +83,7 @@ export const night = defineMessages({
       seam: { won: "The Seam holds shut.", escaped: "The Seam closes without you." },
       quiet: { won: "The Quiet comes apart.", escaped: "The Quiet moves on." },
       stray: { won: "The armor falls, empty.", escaped: "The armor walks out of sight." },
-      wager: { won: "Pip pays up, three times over.", escaped: "Pip runs off, laughing." }
+      wager: { won: "Pip pays up, and loses count.", escaped: "Pip runs off, laughing." }
     },
     walkerNamed: (name: string, seconds: Count) => `The echo of ${name} fights beside you for ${seconds}s.`,
     wager: {

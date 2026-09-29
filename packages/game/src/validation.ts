@@ -15,13 +15,13 @@ import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTAR_BY_ID, altarTotalCost } from "./data/altars";
 import { BIOMES, KING_FORMS, GUARDIAN_IDS, isBossStage, isKingStage } from "./data/biomes";
 import { DESCENT_HERO, DESCENT_MIN_STAGE, WEAVE_BY_ID, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
-import { EVENTS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_GOLD, WALKER_DPS } from "./data/events";
+import { EVENTS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WALKER_DPS } from "./data/events";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
 import { CARAVAN_WARES } from "./data/caravan";
 import { BUFF_MAX_SECONDS, MARKET_BY_ID } from "./data/market";
 import { CRYSTAL_SHARDS_MAX } from "./engine";
-import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, wandererSkip, weaveLevel } from "./formulas";
+import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
 import { maxAffixValue } from "./loot";
 import {
   BESTIARY_BY_ID,
@@ -55,8 +55,8 @@ export interface Violation {
 const EPSILON = 1e-6;
 /** Highest stackable timed damage multiplier (rally × rage × overcharge × a walker's echo × Dawnbreak in a Seam × the Reunion). */
 const MAX_TIMED_DPS = 2 * 2 * 7 * WALKER_DPS * 1.25 * REUNION_DPS;
-/** Highest timed gold multiplier (golden rain × elixir) × golden rat × Pip's Wager. */
-const MAX_TIMED_GOLD = 3 * 2 * 10 * WAGER_GOLD;
+/** Highest timed gold multiplier (golden rain × elixir). */
+const MAX_TIMED_GOLD = 3 * 2;
 /** Human clicks + frenzy + scroll, with margin. */
 const MAX_CLICKS_PER_SECOND = 40;
 /** Minimum respawn 0.35 s → fewer than 3 kills per second. */
@@ -184,8 +184,9 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   // Crystals fall at a bounded pace, while the game has existed on the server's clock.
   if (state.lifetime.crystals > maxCrystals(Math.max(0, age), state.lore.dreams)) fail("crystals", "More crystals than time allows.");
   const bestGold = bestGoldPerKill(state);
-  const goldBound = (state.lifetime.kills + state.lifetime.crystals * 15 + state.lifetime.hourglasses * 12_000 + 1) * bestGold;
+  const goldBound = (state.lifetime.kills + state.lifetime.crystals * 15 + state.lifetime.hourglasses * 12_000 + 1) * bestGold + state.lifetime.treasures * bestWagerGold(state);
   if (!le(state.lifetime.goldEarned, goldBound)) fail("gold", "Too much gold earned.");
+  if (state.lifetime.treasures > state.lifetime.kills) fail("kills", "More golden rats than kills.");
 
   // Lifetime ledgers ≥ current-run ledgers.
   for (const key of ["clicks", "crits", "kills", "bosses", "treasures", "goldEarned", "crystals", "skillsUsed", "maxHit", "playTime"] as const) {
@@ -455,9 +456,14 @@ function verifyDescent(state: GameState, fail: (code: string, message: string) =
   if (!/^(\d{4}-W\d{2})?$/.test(state.caravanWeek)) fail("descent", "Unknown Caravan week.");
 }
 
-/** Best loot of a single kill: boss of the best stage, golden rat, every bonus active. */
+/** Best loot of a single kill: boss of the best stage, at a won wager's floor, every bonus active. */
 function bestGoldPerKill(state: GameState): number {
-  return stageGold(state.maxStageEver) * 10 * MAX_TIMED_GOLD * derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier;
+  return stageGold(state.maxStageEver) * 10 * WAGER_MIN_GOLD * MAX_TIMED_GOLD * derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier;
+}
+
+/** Best won Pip's Wager, beyond a kill: one at most per golden rat caught. */
+function bestWagerGold(state: GameState): number {
+  return stageGold(state.maxStageEver) * WAGER_MAX_GOLD * MAX_TIMED_GOLD * derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier;
 }
 
 function lastBossCleared(maxStage: number): number {
@@ -515,7 +521,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
 
   // Gold earned ≤ kills × best possible loot (+ crystals and hourglasses).
   const bestGold = bestGoldPerKill(next);
-  const goldBound = (kills + crystals * 15 + hourglasses * 12_000 + 1) * bestGold;
+  const goldBound = (kills + crystals * 15 + hourglasses * 12_000 + 1) * bestGold + Math.max(0, b.treasures - a.treasures) * bestWagerGold(next);
   if (!le(b.goldEarned - a.goldEarned, goldBound)) fail("gold", "Gold earned too fast.");
 
   // Essences: each ascension at most what the deepest stage pays, each crystal its share.
