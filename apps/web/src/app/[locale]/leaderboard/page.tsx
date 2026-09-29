@@ -6,7 +6,7 @@ import { href } from "@/i18n/routing";
 import { BOARD_IDS, type BoardId } from "@/lib/boards";
 import { getI18n } from "@/i18n/server";
 import { fetchLeaderboard } from "@/lib/server-api";
-import { pageAlternates } from "@/lib/site";
+import { fullTitle, pageAlternates, pageSocial } from "@/lib/site";
 import "../landing.css";
 import "./leaderboard.css";
 
@@ -17,7 +17,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: t.leaderboard.metaTitle,
     description: t.leaderboard.metaDescription,
-    alternates: pageAlternates(locale, "leaderboard")
+    alternates: pageAlternates(locale, "leaderboard"),
+    ...pageSocial(locale, "leaderboard", { title: fullTitle(t.leaderboard.metaTitle), description: t.leaderboard.metaDescription, imageAlt: t.site.meta.ogImageAlt })
   };
 }
 

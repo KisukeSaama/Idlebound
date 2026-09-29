@@ -7,7 +7,7 @@ import { defineMessages } from "../define";
  */
 export const leaderboard = defineMessages({
   fr: {
-    metaTitle: "Classement des marcheurs",
+    metaTitle: "Classement du clicker fantasy",
     metaDescription:
       "Le classement public d'Idlebound : étape maximale, ascensions, essences récoltées, succès et descentes des meilleurs aventuriers. Chaque score est vérifié par le serveur.",
     title: "Le Registre des Liés",
@@ -38,7 +38,7 @@ export const leaderboard = defineMessages({
     columns: { rank: "#", player: "Aventurier", stage: "Étape", ascensions: "Ascensions" }
   },
   en: {
-    metaTitle: "Leaderboard of walkers",
+    metaTitle: "Fantasy clicker leaderboard",
     metaDescription:
       "Idlebound's public leaderboard: highest stage, ascensions, essences collected, achievements and Descents of the best adventurers. Every score is verified by the server.",
     title: "The Roll of the Bound",

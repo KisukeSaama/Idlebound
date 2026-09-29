@@ -331,6 +331,7 @@ button {
   display: flex;
   flex-direction: column;
   min-height: calc(100 * var(--dvh));
+  padding-top: env(safe-area-inset-top);
   background: var(--bg);
 }
 

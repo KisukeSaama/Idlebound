@@ -33,20 +33,23 @@ import { currentLocale, currentMessages, useI18n } from "@/i18n/client";
 import { api } from "@/lib/api";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { audio } from "./audio";
+import { haptics } from "./haptics";
 import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
 import { SKILL_PICTO, type PictoName } from "./icons";
 import { ANNOUNCED, revealMark, stratumLabel, type RevealId } from "./shell";
+import { useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
 import { ReunionModal } from "./components/ReunionModal";
 import { GameHeader } from "./components/GameHeader";
 import { HeroPanel } from "./components/HeroPanel";
+import { InstallInvite } from "./components/InstallInvite";
 import { LedgerAway } from "./components/LedgerAway";
 import { NavRail } from "./components/NavRail";
 import { Scene } from "./components/Scene";
-import { Toasts, type Toast } from "./components/Toasts";
+import { PHONE_QUERY, Toasts, type Toast } from "./components/Toasts";
 import { WindowHost } from "./windows/WindowHost";
 import "./game.css";
 
@@ -67,7 +70,6 @@ const FRESH_MS = 4_000;
  * Toasts on screen at once: on a phone's layout two (the same test as the CSS), elsewhere
  * four. The others wait their turn in line, none dropped; a long line moves faster.
  */
-const PHONE_TOASTS_QUERY = "(max-width: 900px) and (min-height: 561px), (max-width: 599px)";
 const TOASTS_ON_PHONE = 2;
 const TOASTS_ON_DESKTOP = 4;
 const RUSHED_TOAST_MS = 2_600;
@@ -111,7 +113,7 @@ export default function GameApp() {
     let onScreen: Toast[] = [];
     const next = () => {
       if (holding.current) return;
-      const room = window.matchMedia(PHONE_TOASTS_QUERY).matches ? TOASTS_ON_PHONE : TOASTS_ON_DESKTOP;
+      const room = window.matchMedia(PHONE_QUERY).matches ? TOASTS_ON_PHONE : TOASTS_ON_DESKTOP;
       let changed = false;
       while (onScreen.length < room && line.length > 0) {
         const entry = line.shift() as Toast;
@@ -134,6 +136,8 @@ export default function GameApp() {
   }, [pump]);
 
   const covered = openWindow !== null || confirmRequest !== null || reunion !== null;
+  // A newer release waits for a calm screen: nothing open, no toast still to be read.
+  const fading = useNewRelease(cloud, !covered && toasts.length === 0);
   useEffect(() => {
     holding.current = covered;
     if (!covered) pump.next();
@@ -155,16 +159,23 @@ export default function GameApp() {
     // Dev tool: window.__idlebound.act((engine) => …) from the console.
     if (process.env.NODE_ENV !== "production") (window as unknown as { __idlebound?: GameStore }).__idlebound = store;
     let cancelled = false;
+    const see = () => {
+      const visible = document.visibilityState === "visible";
+      store.setVisible(visible);
+      audio.setHidden(!visible);
+      haptics.setHidden(!visible);
+      return visible;
+    };
+    // A page opened out of sight (a background tab, a reload onto a newer release while the
+    // walker was away) starts out of sight: what only happens under their eyes waits for them.
+    see();
     void cloud.init().finally(() => {
       if (cancelled) return;
       store.start();
       setReady(true);
     });
     const onVisibility = () => {
-      const visible = document.visibilityState === "visible";
-      store.setVisible(visible);
-      audio.setHidden(!visible);
-      if (!visible) void cloud.sync({ keepalive: true });
+      if (!see()) void cloud.sync({ keepalive: true });
     };
     const onLeave = (event: BeforeUnloadEvent) => {
       if (!cloud.user && store.state.lifetime.playTime > GUEST_WARNING_SECONDS) event.preventDefault();
@@ -284,9 +295,12 @@ export default function GameApp() {
       switch (event.type) {
         case "hit":
           audio.play(event.crit ? "crit" : "hit");
+          // Only the walker's own blows buzz: Frenzy's would never stop.
+          if (event.crit && event.source === "click") haptics.pulse("crit");
           break;
         case "kill":
           audio.play(event.monster.kind === "boss" || event.monster.kind === "miniboss" ? "kill" : "coin");
+          if (event.monster.kind === "boss" || event.monster.kind === "miniboss") haptics.pulse("kill");
           break;
         case "spawn":
           if (event.monster.kind === "boss") audio.play("boss");
@@ -296,6 +310,7 @@ export default function GameApp() {
           break;
         case "bossFailed":
           audio.play("fail");
+          haptics.pulse("fail");
           {
             // A guardian of the present night keeps its wounds: say how far down it stays.
             const wound = store.state.trail.wound;
@@ -318,6 +333,7 @@ export default function GameApp() {
         }
         case "loot": {
           audio.play("loot");
+          haptics.pulse("loot");
           const legend = event.item.named ? g.relics[event.item.named]?.legend : undefined;
           toast({
             tone: "loot",
@@ -336,9 +352,11 @@ export default function GameApp() {
         }
         case "skill":
           audio.play("skill");
+          haptics.pulse("power");
           break;
         case "heroBought": {
           audio.play("buy");
+          haptics.pulse("buy");
           // A companion met again this night says so, by how well they remember the walker.
           const line = event.firstTime ? hireLine(event.heroId, recognitionTier(store.state, event.heroId), locale) : null;
           if (line) toast({ tone: "info", title: g.heroes[event.heroId].name, text: line });
@@ -346,6 +364,7 @@ export default function GameApp() {
         }
         case "upgradeBought":
           audio.play("buy");
+          haptics.pulse("buy");
           break;
         case "crystal":
           audio.play("crystal");
@@ -357,6 +376,7 @@ export default function GameApp() {
           break;
         case "ascended": {
           audio.play("ascend");
+          haptics.pulse("ascend");
           // The confirmation carries the King's Word; in his Regalia, he knows the walker.
           const night = pendingWord;
           pendingWord = null;
@@ -366,6 +386,7 @@ export default function GameApp() {
         }
         case "descended":
           audio.play("descent");
+          haptics.pulse("ascend");
           toast({ tone: "violet", icon: "sparkle", title: n.descendedTitle, text: n.descendedText(fmt(event.threads)) });
           break;
         case "reunion":
@@ -486,17 +507,15 @@ export default function GameApp() {
           <main className="game-main">
             <Scene />
           </main>
-          <HeroPanel />
+          <HeroPanel folded={mobileTab === "scene"} onFold={(folded) => setMobileTab(folded ? "scene" : "heroes")} />
         </div>
-        <nav className="mobile-tabs" aria-label={t.hud.mobileTabs.label}>
-          <button type="button" aria-pressed={mobileTab === "heroes"} className={mobileTab === "heroes" ? "active" : ""} onClick={() => setMobileTab("heroes")}>{t.hud.mobileTabs.heroes}</button>
-          <button type="button" aria-pressed={mobileTab === "scene"} className={mobileTab === "scene" ? "active" : ""} onClick={() => setMobileTab("scene")}>{t.hud.mobileTabs.scene}</button>
-        </nav>
         {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
         <CloudChoiceModal />
         {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
         {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
         <Toasts toasts={toasts} held={covered} />
+        <InstallInvite covered={covered} />
+        {fading ? <div className="release-fade" aria-hidden="true" /> : null}
       </div>
     </GameContext.Provider>
   );

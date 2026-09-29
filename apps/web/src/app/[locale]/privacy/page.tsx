@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
 import { getI18n } from "@/i18n/server";
-import { pageAlternates } from "@/lib/site";
+import { fullTitle, pageAlternates, pageSocial } from "@/lib/site";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -10,7 +10,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: t.privacy.metaTitle,
     description: t.privacy.metaDescription,
-    alternates: pageAlternates(locale, "privacy")
+    alternates: pageAlternates(locale, "privacy"),
+    ...pageSocial(locale, "privacy", { title: fullTitle(t.privacy.metaTitle), description: t.privacy.metaDescription, imageAlt: t.site.meta.ogImageAlt })
   };
 }
 

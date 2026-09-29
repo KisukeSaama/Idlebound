@@ -6,6 +6,7 @@
 import { LOCALE_COOKIE, resolveLocale } from "@idlebound/game";
 import type { NextRequest } from "next/server";
 import { messages } from "@/i18n/messages";
+import { ownRelease, RELEASE_HEADER } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,13 @@ const UPSTREAM_TIMEOUT_MS = 15_000;
 /** The few errors produced by the proxy itself, in the language of the request. */
 function errors(request: NextRequest) {
   return messages(resolveLocale(request.cookies.get(LOCALE_COOKIE)?.value, request.headers.get("accept-language"))).hud.errors;
+}
+
+/** Every answer tells the page which release serves it: an older page moves to it (see game/newRelease.ts). */
+function stamped(response: Response): Response {
+  const release = ownRelease();
+  if (release) response.headers.set(RELEASE_HEADER, release);
+  return response;
 }
 
 /** Reads the body, stopping as soon as the limit is exceeded (missing or lying Content-Length). */
@@ -61,7 +69,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
 
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
   const body = hasBody ? await readBody(request) : undefined;
-  if (body === null) return Response.json({ error: errors(request).tooLarge }, { status: 413 });
+  if (body === null) return stamped(Response.json({ error: errors(request).tooLarge }, { status: 413 }));
 
   let upstream: Response;
   try {
@@ -74,7 +82,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
     });
   } catch {
-    return Response.json({ error: errors(request).unreachable }, { status: 502 });
+    return stamped(Response.json({ error: errors(request).unreachable }, { status: 502 }));
   }
 
   const responseHeaders = new Headers();
@@ -86,7 +94,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
       if (value) responseHeaders.set(name, value);
     }
   }
-  return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
+  return stamped(new Response(upstream.body, { status: upstream.status, headers: responseHeaders }));
 }
 
 export { proxy as GET, proxy as POST, proxy as PUT, proxy as DELETE };

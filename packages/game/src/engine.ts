@@ -501,7 +501,11 @@ export class GameEngine {
   tick(now: number): OfflineSummary | null {
     const s = this.state;
     const gapMs = now - s.lastTickAt;
-    if (gapMs <= 0) return null;
+    if (gapMs < 0) {
+      this.rewind(-gapMs, now);
+      return null;
+    }
+    if (gapMs === 0) return null;
     this.leave();
 
     if (gapMs > CATCH_UP_THRESHOLD_MS) {
@@ -599,6 +603,27 @@ export class GameEngine {
     this.lastInputAt = now;
     this.aloneSeconds = 0;
     if (away >= REUNION_MIN_AWAY_SECONDS) this.reunion(now, away, account);
+  }
+
+  /**
+   * The clock stands behind the last tick (a save written by a device running ahead, a clock
+   * set back): every deadline moves back with it. Waiting for the clock to catch up would
+   * freeze the game while the walker's strikes still count, and the server would refuse them.
+   */
+  private rewind(ms: number, now: number) {
+    const s = this.state;
+    s.lastTickAt = now;
+    s.lastClickAt = Math.min(s.lastClickAt, now);
+    s.nextCrystalAt -= ms;
+    for (const buff of s.buffs) buff.until -= ms;
+    for (const skill of Object.values(s.skills)) {
+      if (!skill) continue;
+      skill.activeUntil -= ms;
+      skill.readyAt -= ms;
+    }
+    if (s.crystal) s.crystal.expiresAt -= ms;
+    if (s.monster?.wager) s.monster.wager.until -= ms;
+    this.refresh(now);
   }
 
   /** After the player's last input: how things stand, to tell them later what changed. */

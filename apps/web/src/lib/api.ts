@@ -1,6 +1,7 @@
 import type { GameState } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
 import type { BoardId } from "./boards";
+import { noteServerRelease, RELEASE_HEADER } from "./release";
 
 export { BOARD_IDS, type BoardId } from "./boards";
 
@@ -48,6 +49,7 @@ async function request<T>(method: string, path: string, body?: unknown, options:
     clearTimeout(timeout);
     return { ok: false, status: 0, error: currentMessages().hud.errors.network };
   }
+  noteServerRelease(response.headers.get(RELEASE_HEADER));
   let json: Record<string, unknown> = {};
   let readable = true;
   try {

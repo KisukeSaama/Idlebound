@@ -13,6 +13,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY tsconfig.base.json ./
 COPY packages/game packages/game
 COPY apps/web apps/web
+# The release (commit) built: pages that run an older one move to it (src/game/newRelease.ts).
+ARG IDLEBOUND_RELEASE=""
 RUN npm run build -w @idlebound/web
 
 # Next "standalone" output: minimal Node server, without the full node_modules.

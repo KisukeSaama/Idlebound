@@ -91,7 +91,9 @@ Content colors live with the game data, not in CSS:
 - **Buttons** (`.btn`): default (a raised key: `--panel-3`, bevel), `.btn-gold` (primary:
   flat gold, a line of `--gold-2` light on top, dark text), `.btn-violet` (magic actions:
   ascension), `.btn-ghost` (secondary), `.btn-danger`; sizes `.btn-sm` and `.btn-lg`.
-  Minimum height 40px. Hover brightens, press sinks 1px and loses its bevel. One gold
+  Minimum height 40px. Hover brightens, press sinks 1px and loses its bevel; under a finger
+  (`pointer: coarse`) the game's keys (buttons, buy keys, powers, talents, rail, buy modes,
+  the essence and shard counters) also give a little (scale 0.95, 90 ms). One gold
   button per view at most. Secondary actions on public pages are underlined links.
 - **Counters** in the game header: fields sunk into the bar (black line, inset shadow): gold
   (largest, Cinzel, a gold thread), DPS, click damage, essences (only once the player has
@@ -115,6 +117,10 @@ Content colors live with the game data, not in CSS:
   motion). The market keeps its larger balance line in the body.
   Sizes `sm` (settings, confirmations), `md` (account, market, cloud save choice, Reunion), `lg`
   (map, equipment and inventory, ascension, achievements).
+  On a portrait phone a window is a **sheet**: full width, rising from the bottom edge in
+  200 ms (no bounce), a grip on its head, its foot above the home indicator. A finger pulling
+  the head down drags the sheet; past 96 px, or on a quick flick, it lets go and closes,
+  otherwise it settles back. The close key stays.
 - **The Hall**: achievements, then Chronicle and Bestiary once they have a first entry,
   statistics, leaderboard. The Chronicle opens on the Night list (one line per night, the
   King's Word in italics), then one section per source with its count and an "N new" pill,
@@ -168,9 +174,16 @@ Content colors live with the game data, not in CSS:
 - **Companions** (the roster): one line per companion, rows alternating like an old guild
   list, the portrait in its frame (thread in the companion's color), name, title, DPS and
   talents (small square keys: gold when owned, violet to buy), the buy key at the end: flat
-  gold when affordable, sunk back with its price still readable when not.
+  gold when affordable, sunk back with its price still readable when not. "Buy N talents"
+  floats over the foot of the list, full width under the thumb, only while one is
+  affordable; the list keeps room for it at its end, so no row moves when it comes or goes.
+  A buy key held down repeats: the first repeat after 380 ms, then each sooner than the last
+  (160 ms down to 55 ms) until the gold runs out or the finger lifts; a tap still buys once.
 - **Powers**: an action bar of square keys, the hotkey in the top corner, the cooldown
-  sweeping over, a gold rim while active, an item card as tooltip.
+  sweeping over, a gold rim while active, an item card as tooltip. A power that comes back
+  during play says so once: a gold ring closes on its key in 900 ms, the icon lit (a still
+  gold outline with reduced motion), and the phone buzzes; a key already ready at load
+  stays quiet.
 - **Navigation rail**: raised keys with bevel; the key of the open window is pressed in
   (sunk, gold label).
 - **Badges** on the navigation rail: `!` urgent (hops a pixel), `+` something to spend, a
@@ -244,12 +257,36 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
 - **≤ 1080px**: resource labels hidden, smaller logo, scene header centered.
 - **Desktop under 820px tall**: smaller rail icons so all eight buttons stay visible.
 - **Compact combat HUD** (≤ 900px wide or ≤ 560px tall): era and biome on one line, smaller
-  stage pips, powers and HP bar, so the monster keeps most of the scene.
+  stage pips, powers and HP bar, so the monster keeps most of the scene. Portrait phones
+  keep the stage keys at a thumb's size (36 px pips, 36 px tall arrows and Auto switch; 33 px
+  pips at 360 px and less); only the short landscape shrinks them.
 - **Portrait mobile** (≤ 900px wide and taller than 560px, or any width under 600px):
-  single column. Scene on top (at least 290px, 58%), companions below; a floating switch
-  toggles "Companions" / "Full combat view" (in full view the scene stops above it).
-  The rail becomes a fixed bottom bar that respects the safe-area insets. Logo hidden,
-  toasts centered, windows open as bottom sheets.
+  single column. Scene on top (at least 290px), companions below, their panel as tall as
+  its rows up to 42% of the room, so a small company leaves the monster the rest. The panel
+  carries a grip: a tap or a swipe down folds it to its heading ("Full combat view", the
+  scene takes the room), a tap or a swipe up opens it again. Folded, its heading counts the
+  purchases within reach (companions at the chosen mode and talents) on a square gold
+  label, and the grip turns gold. The rail becomes a fixed bottom
+  bar that respects the safe-area insets. The header is the purse alone: gold, DPS,
+  essences and shards across the width (the strike is read on Aldric's row, the account in
+  the bottom bar); the account chip comes back only to show the Ledger's trouble. Logo
+  hidden, toasts across the scene, windows open as sheets.
+- **Touch**: the game is not a page. No double-tap zoom, no long-press menu on the art, no
+  pull to refresh, lists that scroll keep their scroll to themselves. Tooltips of powers
+  are off and the keyboard shortcuts are not listed on touch screens. Where the browser can
+  vibrate (Android), short pulses mark a critical blow of the walker's own hand, a purchase,
+  a power, a loot, a guardian or elite down, a failed boss and an ascension or Descent; a
+  "Vibration" switch in Settings (shown only there) keeps the choice on the device, not in
+  the save.
+  Damage numbers of a burst of taps on one spot (within 40 px and 400 ms of each other)
+  climb one line per blow and zigzag aside for five blows, so each stays readable.
+- **Home screen**: added to a home screen, the game opens as an app (standalone, the status
+  bar translucent over the night); the game and the public pages keep clear of it with the
+  top safe-area inset. The manifest carries 192 and 512 px icons, so Chromium browsers
+  offer the install. On a touch device, after three minutes on the page and fifteen of play
+  in all, one card above the bottom bar invites the walker to install ("Keep the road within
+  reach"), never over a window; either answer is kept on the device and it never comes
+  back. Safari offers no install event: nothing is shown there.
 - **Short landscape** (≤ 560px tall, at least 600px wide, i.e. phones held sideways): the
   three desktop columns, tightened: 46px header, icon-only rail, narrower companions panel
   whose title is visually hidden to leave room for the buy modes.
@@ -611,7 +648,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   outline (lilac, paler on a critical, never white; outline and light pixels keep their
   color) and a 2 px knockback away from the blow. The monster flashes at most three times a
   second, companions' shots included (the photosensitivity threshold): faster blows keep
-  only their knockback. On death they come apart
+  only their knockback. On death they hold whole for 0.16 s (a pale light, then thrown back
+  2 px), so a monster struck down while it gathers is still seen, then come apart
   into their own pixels, which drift up and turn into gold motes flying to the gold counter
   (guardians shed violet ones too). Elites and guardians pulse a 1 px outline in the biome's
   accent, Pip in gold: it thins to a dotted line and fills again in whole dither steps.
@@ -683,9 +721,9 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   first; the dock follows the monster every 250 ms but keeps its spot (left, right or above)
   while toasts are shown and it still has room, so the stack never hops sides. While a window or a confirmation is
   open, new toasts wait and the shown ones are hidden; the waiting ones come when it closes.
-  On portrait phones two toasts at most are shown (the rest wait their turn): above the
-  companions / combat tabs while the companions are visible, under the top bar in
-  full-screen combat.
+  On portrait phones two compact toasts at most are shown (the rest wait their turn), docked
+  across the scene between its top bar and the monster's HP bar, in both tabs: never over
+  the companions' list and its buy buttons.
 - Capped equipment totals carry a small gold "MAX" pill whose tooltip explains that relic
   bonuses above the cap do not count.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%.
@@ -767,4 +805,9 @@ default 0.6), saved with the other settings.
   not answer"), the Ledger's voice in gold, the plain line with the next attempt's
   countdown (or "offline" while the device has no network), and a gold "Try now" button.
   The countdown is not read aloud; the state is.
+- **Newer release**: before a watched page reloads onto a newer release, a `--bg` veil
+  fades over everything in 0.7 s (ease-in) while every sound fades out, so the page lands
+  on the loading screen's own ground. No text. Input passes through the veil and cancels
+  it (the veil and the sound come back). A plain fade, kept under the reduced motion setting
+  (the system preference cuts it, like every animation).
 - `<html lang>` follows the current locale.

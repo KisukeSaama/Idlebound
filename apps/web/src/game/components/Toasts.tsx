@@ -17,12 +17,16 @@ const GAP = 8;
 const MIN_SIDE = 250;
 const MAX_WIDTH = 360;
 
+/** Portrait phones: the scene on top, the companions' list under it (the same test as the CSS). */
+export const PHONE_QUERY = "(max-width: 900px) and (min-height: 561px), (max-width: 599px)";
+
 /**
- * On a desktop layout, toasts never cover anything that matters: they dock in the free space
- * of the scene, beside the creature (the wider side) or in the sky above it, between the top
- * bar (or a tutorial hint) and the monster's panel; the toasts that do not fit wait hidden
- * until the others leave.
- * Phones keep their own placement (CSS).
+ * Toasts never cover anything the hand needs: they dock in the free space of the scene, between
+ * the top bar (or a tutorial hint) and the monster's panel. On a desktop layout they stand beside
+ * the creature (the wider side) or in the sky above it; on a portrait phone, across the scene,
+ * never over the companions' list and its buttons. The toasts that do not fit wait hidden until
+ * the others leave.
+ * Short landscape screens keep the CSS placement.
  */
 interface Room {
   start: number;
@@ -36,6 +40,7 @@ interface Room {
 type Spot = "left" | "right" | "above";
 
 let desktopQuery: MediaQueryList | null = null;
+let phoneQuery: MediaQueryList | null = null;
 
 /** The box of the first element matching `selector`, in page CSS pixels (the toasts' own). */
 function pageRectOf(selector: string): DOMRect | undefined {
@@ -44,16 +49,22 @@ function pageRectOf(selector: string): DOMRect | undefined {
 }
 
 /**
- * Where the stack docks on a desktop layout, only measured (reads, no write); null on phones.
+ * Where the stack docks, only measured (reads, no write); null on short landscape screens.
  * The creature stands near the middle, so both sides are often about as wide: the spot the
  * shown toasts already hold is kept while it still fits, or they would hop from side to side
  * with every new creature.
  */
 function measureRoom(top: number, held: Spot | null): Room | null {
-  if (!(desktopQuery ??= window.matchMedia("(min-width: 901px) and (min-height: 561px)")).matches) return null;
+  const desktop = (desktopQuery ??= window.matchMedia("(min-width: 901px) and (min-height: 561px)")).matches;
+  if (!desktop && !(phoneQuery ??= window.matchMedia(PHONE_QUERY)).matches) return null;
   const scene = pageRectOf(".scene");
   if (!scene) return null;
   const panel = pageRectOf(".monster-panel");
+  if (!desktop) {
+    // The scene is narrow: the stack spans it, over the creature rather than the list below.
+    const width = scene.width - 2 * GAP;
+    return { start: top, left: scene.left + GAP, width, limit: (panel?.top ?? scene.bottom) - GAP, spot: "above" };
+  }
   const monster = monsterOnPage();
   const bottom = (panel?.top ?? scene.bottom) - GAP;
   let left = scene.right - GAP - MAX_WIDTH;
@@ -83,7 +94,7 @@ function measureRoom(top: number, held: Spot | null): Room | null {
   return { start, left, width, limit, spot };
 }
 
-/** Places the stack in its room (phones: where the CSS puts it), then hides the toasts that do not fit. */
+/** Places the stack in its room (short landscape: where the CSS puts it), then hides the toasts that do not fit. */
 function dock(container: HTMLElement, top: number, room: Room | null) {
   const children = [...container.children] as HTMLElement[];
   container.style.setProperty("--toast-top", `${room ? room.start : top}px`);

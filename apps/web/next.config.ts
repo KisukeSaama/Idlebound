@@ -1,8 +1,16 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+/**
+ * The release (commit) this build comes from, set by the CI image build; empty elsewhere. A
+ * page compares it with the server's to move to a newer release (src/game/newRelease.ts).
+ */
+const release = process.env.IDLEBOUND_RELEASE ?? "";
+
 const config: NextConfig = {
   output: "standalone",
+  // Not deploymentId: with Turbopack it loads every chunk twice and the game never starts.
+  env: { IDLEBOUND_RELEASE: release },
   // Monorepo: file tracing starts at the repo root so @idlebound/game is bundled.
   outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
   transpilePackages: ["@idlebound/game"],

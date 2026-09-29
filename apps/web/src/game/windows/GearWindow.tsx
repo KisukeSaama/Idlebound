@@ -33,10 +33,13 @@ import { Picto, ShardIcon, SlotIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { relicSource } from "../pixel/sources";
+import { useRemembered } from "../remembered";
 import { formatAffix } from "../text";
 
 /** Rarities from the rarest down: the Bag sorts by it, and bulk salvage counts up to one. */
 const RARITY_ORDER: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
+const BAG_SORTS = ["recent", "rarity", "slot"] as const;
+type BagSort = (typeof BAG_SORTS)[number];
 
 const STATS: AffixStat[] = ["dps", "click", "gold", "bossDamage", "critChance", "critDamage", "essence"];
 
@@ -278,7 +281,7 @@ function Bag() {
   const text = t.windows.gear;
   const ui = useUi();
   const fmt = useFormat();
-  const [sort, setSort] = useState<"recent" | "rarity" | "slot">("recent");
+  const [sort, setSort] = useRemembered("bag-sort", BAG_SORTS, "recent");
   // The relics carried, by their ids: the sorted Bag is only built again when they change.
   const carried = state.inventory.map((item) => item.uid).join(",");
   const items = useMemo(() => {
@@ -308,7 +311,7 @@ function Bag() {
       <div className="bag-toolbar">
         <label>
           {text.sortLabel}
-          <select className="input input-sm" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}>
+          <select className="input input-sm" value={sort} onChange={(event) => setSort(event.target.value as BagSort)}>
             <option value="recent">{text.sortRecent}</option>
             <option value="rarity">{text.sortRarity}</option>
             <option value="slot">{text.sortSlot}</option>

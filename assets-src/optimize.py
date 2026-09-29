@@ -34,7 +34,7 @@ for folder, (size, quality) in RULES.items():
         print(f"{target.relative_to(OUT)}  {image.size}  {target.stat().st_size // 1024} KB")
 
 icon = Image.open(ROOT / "favicon.png").convert("RGBA")
-for s in (32, 180, 512):
+for s in (32, 180, 192, 512):
     copy = icon.copy(); copy.thumbnail((s, s), Image.LANCZOS)
     copy.save(OUT.parent / ("favicon.png" if s == 32 else f"icon-{s}.png"))
 

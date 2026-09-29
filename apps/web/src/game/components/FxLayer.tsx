@@ -17,6 +17,13 @@ export interface PointerMemo {
 const MAX_NODES = 36;
 /** Visible companion shots per "dps" event (one event per second). */
 const COMPANION_STRIKES = 3;
+/** Taps closer than this in space and time are one burst: their numbers fan out. */
+const BURST_PX = 40;
+const BURST_MS = 400;
+const BURST_STEPS = 5;
+/** Each number of a burst rises one line above the last and steps this far aside. */
+const BURST_RISE = 24;
+const BURST_ZIG = 26;
 
 /**
  * Effects over the arena. Numbers are the Ledger writing (DOM, Cinzel, tokens): damage,
@@ -70,6 +77,28 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
     };
 
     const center = () => ({ x: size.width / 2, y: size.height * 0.62 });
+
+    /**
+     * A thumb taps the same spot again and again: each number of the burst steps aside, left
+     * and right in turn and a little higher, so every blow stays readable.
+     */
+    const burst = { x: 0, y: 0, at: -Infinity, count: 0 };
+    const fanned = (x: number, y: number) => {
+      const now = performance.now();
+      const same = now - burst.at < BURST_MS && Math.abs(x - burst.x) < BURST_PX && Math.abs(y - burst.y) < BURST_PX;
+      burst.count = same ? burst.count + 1 : 0;
+      burst.at = now;
+      if (!same) {
+        burst.x = x;
+        burst.y = y;
+      }
+      // One line of text higher per blow, zigzagging, for five blows; then from the start.
+      const step = burst.count % BURST_STEPS;
+      return {
+        x: Math.min(size.width - 40, Math.max(40, x + (step === 0 ? 0 : step % 2 === 1 ? -BURST_ZIG : BURST_ZIG) + (roll() - 0.5) * 10)),
+        y: Math.max(24, y - 10 - step * BURST_RISE)
+      };
+    };
 
     /** Box of the monster's body inside the layer (the arena), from the renderer. */
     const spriteBox = () => {
@@ -141,9 +170,8 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
         const offset = renderer.current?.arenaBox();
         renderer.current?.hit(event.crit, recent && offset ? offset.x + pointer.current.x : undefined);
         if (!settings.damageNumbers) return;
-        const origin = recent ? { x: pointer.current.x, y: pointer.current.y } : center();
-        const x = origin.x + (recent ? 0 : (roll() - 0.5) * 120);
-        const y = origin.y + (recent ? -10 : (roll() - 0.5) * 60);
+        const origin = center();
+        const { x, y } = recent ? fanned(pointer.current.x, pointer.current.y) : { x: origin.x + (roll() - 0.5) * 120, y: origin.y + (roll() - 0.5) * 60 };
         spawn(`fx-damage ${event.crit ? "crit" : ""} ${event.source === "auto" ? "auto" : ""}`, fmtRef.current(event.damage), x, y, 900, event.crit ? currentMessages().hud.fx.crit : undefined);
       } else if (event.type === "dps") {
         // Companion strikes spread over the next second, then their total damage beside the

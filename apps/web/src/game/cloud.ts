@@ -67,7 +67,8 @@ export class CloudSync {
   private version = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
-  private inFlight = false;
+  /** The upload under way, if any. */
+  private flight: Promise<boolean> | null = null;
   private rejectedAt = 0;
   private lastUploadAt = 0;
   private unsubscribes: (() => void)[] = [];
@@ -259,19 +260,29 @@ export class CloudSync {
     await this.upload(cloud.revision, true);
   }
 
-  private async upload(baseRevision: number | null, replace: boolean, keepalive = false) {
-    if (!this.user || this.inFlight) return;
-    this.inFlight = true;
+  /**
+   * One upload at a time: a call while one is under way waits for it and sends nothing.
+   * Resolves true when the server kept the game.
+   */
+  private upload(baseRevision: number | null, replace: boolean, keepalive = false): Promise<boolean> {
+    if (this.flight) return this.flight;
+    if (!this.user) return Promise.resolve(false);
+    this.flight = this.send(baseRevision, replace, keepalive).finally(() => {
+      this.flight = null;
+    });
+    return this.flight;
+  }
+
+  private async send(baseRevision: number | null, replace: boolean, keepalive: boolean): Promise<boolean> {
     this.lastUploadAt = Date.now();
     if (!keepalive) this.set({ status: "syncing" });
     // The state is serialized as the request leaves, before any await: no copy is needed.
     // A keepalive request is capped at 64 KB by browsers: a larger save goes as a plain one.
     const lasting = keepalive && new TextEncoder().encode(JSON.stringify(this.store.state)).length <= KEEPALIVE_MAX_BYTES;
     const result = await api.putSave(this.store.state, baseRevision, replace, lasting);
-    this.inFlight = false;
     if (result.ok) {
       this.set({ status: "synced", revision: result.data.revision, lastSyncAt: Date.now(), message: null });
-      return;
+      return true;
     }
     switch (result.status) {
       case 401:
@@ -306,6 +317,7 @@ export class CloudSync {
       default:
         this.set({ status: "error", message: result.error });
     }
+    return false;
   }
 
   /** Schedules an early save after a player action or a milestone. */
@@ -314,7 +326,7 @@ export class CloudSync {
     const delay = Math.max(SAVE_DEBOUNCE_MS, this.lastUploadAt + MIN_UPLOAD_GAP_MS - Date.now());
     this.saveTimer = setTimeout(() => {
       this.saveTimer = null;
-      if (this.inFlight) this.requestSave();
+      if (this.flight) this.requestSave();
       else void this.sync();
     }, delay);
   }
@@ -325,7 +337,7 @@ export class CloudSync {
     // The account's game was never read (server away at sign-in): read it first, never
     // write over it blind. A page-hide save has no time for that.
     if (this.unread) {
-      if (!options.keepalive && !this.inFlight) await this.connect(this.user);
+      if (!options.keepalive && !this.flight) await this.connect(this.user);
       return;
     }
     if (this.status === "rejected" && !options.force && Date.now() - this.rejectedAt < RETRY_AFTER_REJECT_MS) return;
@@ -334,10 +346,36 @@ export class CloudSync {
     await this.upload(this.revision, false, options.keepalive);
   }
 
-  /** Starts a new game and explicitly replaces the server one. */
-  async newGame() {
+  /**
+   * The last save before the page moves to a newer release: the game stops, and everything
+   * played is on the server before the page goes. True once the server confirmed it (nothing
+   * syncs any more); false when it could not, and the game runs on. A guest's game only lives
+   * in this page, and a game the server refuses would lose what it played: never handed over.
+   * Nor before the account's game is loaded (no revision yet): the page holds nothing of it.
+   */
+  async handOver(): Promise<boolean> {
+    if (!this.keepsGame()) return false;
+    this.store.stop();
+    // An upload under way carries an older state: wait for it (its answer may change the
+    // check above), then send the last one. Keepalive: it lands even if the page closes.
+    if (this.flight) await this.flight;
+    if (this.keepsGame() && (await this.upload(this.revision, false, true))) {
+      this.dispose();
+      return true;
+    }
+    this.store.start();
+    return false;
+  }
+
+  /** The account's game is loaded, and the server takes its saves: it can be handed over. */
+  keepsGame() {
+    return this.user !== null && this.revision !== null && !this.unread && !this.pendingChoice && this.status !== "rejected" && this.status !== "unverified";
+  }
+
+  /** Starts a new guest game. An account's game is never erased: signed in, nothing happens. */
+  newGame() {
+    if (this.user) return;
     this.store.replaceState(createInitialState());
-    if (this.user) await this.upload(this.revision, true);
   }
 
   async logout() {
