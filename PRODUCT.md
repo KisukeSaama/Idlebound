@@ -576,7 +576,7 @@ rejects real play.
   the Descent (Descents, threads, Weaves, the essences mark), the Caravan's week, the
   Chronicle's new counters (Age echoes, songs, returns, sayings, Lessons, events, altar
   legends, readings, what was read per source), the run's trail for the secrets, event
-  creatures on the road and the "Keep the night dark" setting. An older save starts them
+  creatures on the road and the "Keep the Kingdom's sky" setting. An older save starts them
   from their defaults; its Kings beaten are the Fallen King's falls the Bestiary counted,
   one per stratum crossed at least. Proved on the running server: a save written by the
   last release (version 4, stage 78, one ascension) is accepted, loads as version 8,

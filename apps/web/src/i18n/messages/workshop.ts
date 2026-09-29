@@ -71,7 +71,7 @@ export const workshop = defineMessages({
       title: "Marques des Âges",
       text: "Chaque Âge laisse sa marque sur le lieu, en pixels pleins : les os d'un géant et une mer gelée, des temples ouverts au ciel, le ciel coulé comme du verre, les fils de la chaîne, le papier, les murs de runes, la lune basse dans la brume, une lampe et une fenêtre, le gris, le contour, puis un seul point de lumière.",
       biome: "Biome",
-      darkNight: "Garder la nuit noire"
+      darkNight: "Garder le ciel du Royaume"
     },
     places: {
       title: "Lieux",
@@ -176,7 +176,7 @@ export const workshop = defineMessages({
       title: "Age marks",
       text: "Every Age leaves its mark on the place, in solid pixels: a giant's bones and a frozen sea, temples open to the sky, the sky poured like glass, the warp threads, paper, walls of runes, the low moon in the mist, a lamp and a window, grey, outline, then a single point of light.",
       biome: "Biome",
-      darkNight: "Keep the night dark"
+      darkNight: "Keep the Kingdom's sky"
     },
     places: {
       title: "Places",

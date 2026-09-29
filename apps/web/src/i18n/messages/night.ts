@@ -62,8 +62,8 @@ export const night = defineMessages({
       lantern: "Lanterne aux phalènes : cristaux plus fréquents",
       reunion: "Retrouvailles : dégâts des compagnons ×3"
     },
-    darkNight: "Garder la nuit noire",
-    darkNightHint: "Les strates profondes gardent le ciel du Royaume.",
+    darkNight: "Garder le ciel du Royaume",
+    darkNightHint: "Plus bas, le ciel pâlit. Coché, il garde la nuit du premier Âge.",
     map: {
       stratum: "Strate",
       stratumOption: (label: string, start: Count, end: Count) => `${label} (étapes ${start} à ${end})`
@@ -120,8 +120,8 @@ export const night = defineMessages({
       lantern: "Moth Lantern: crystals come sooner",
       reunion: "Reunion: companion damage ×3"
     },
-    darkNight: "Keep the night dark",
-    darkNightHint: "The deep strata keep the Kingdom's sky.",
+    darkNight: "Keep the Kingdom's sky",
+    darkNightHint: "Deeper down, the sky grows pale. When checked, it keeps the night of the first Age.",
     map: {
       stratum: "Stratum",
       stratumOption: (label: string, start: Count, end: Count) => `${label} (stages ${start} to ${end})`

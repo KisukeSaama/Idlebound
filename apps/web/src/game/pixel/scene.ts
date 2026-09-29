@@ -154,7 +154,7 @@ export function sceneRecipe(id: string): SceneRecipe {
  * `sceneId` is a biome (`green-plains`, ...) drawn in the palette, wear and marks of `era`,
  * or a place, drawn the same in every era: `sanctum` (the Sanctum of Dusk), `loom` (Eldra's
  * Loom) or `dawn` (the edge of the night, behind the last stage). With `darkNight` (the
- * "Keep the night dark" setting) a biome keeps the Kingdom's backgrounds: its sky, wear and
+ * "Keep the Kingdom's sky" setting) a biome keeps the Kingdom's backgrounds: its sky, wear and
  * marks are those of the stratum of the Kingdom at the same place in the cycle (`era % 5`),
  * and the creatures, which keep their own Age, are not graded for that night. Places ignore it.
  */
