@@ -24,6 +24,7 @@ export * from "./data/lore";
 export * from "./data/relics";
 export * from "./data/descent";
 export * from "./data/caravan";
+export * from "./data/cutscenes";
 export * from "./chronicle";
 export * from "./data/strata";
 export * from "./data/events";

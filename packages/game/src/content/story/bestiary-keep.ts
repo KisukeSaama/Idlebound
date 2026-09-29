@@ -51,7 +51,7 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "It is looking for a knight. Every night it stops beside Kaelen, then decides it was wrong."
       ],
       "last-hound": [
-        "The King's hounds were loosed on the night of the Binding. They are still following the scent.",
+        "The King's hounds were loosed the night the keep went quiet. They are still following the scent.",
         "The scent leads out of the keep, across the Mire, into the forest. Then it simply stops.",
         "Near Kaelen they stop snarling. They sit, look up at him, and wait for an order he never gives."
       ],
@@ -202,7 +202,7 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "Il cherche un chevalier. Chaque nuit, il s'arrête près de Kaelen, puis décide qu'il s'est trompé."
       ],
       "last-hound": [
-        "Les chiens du roi ont été lâchés la nuit où l'on a noué la nuit. Ils suivent toujours la piste.",
+        "Les chiens du roi ont été lâchés la nuit où le donjon s'est tu. Ils suivent toujours la piste.",
         "La piste sort du donjon, traverse le marais, entre dans le Bois. Puis elle s'arrête, tout simplement.",
         "Près de Kaelen, ils cessent de gronder. Ils s'assoient, le regardent, et attendent un ordre qui ne vient pas."
       ],

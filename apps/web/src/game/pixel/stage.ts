@@ -8,7 +8,7 @@ import { BIOMES } from "@idlebound/game";
 import { SCENE_HEIGHT, SCENE_WIDTH } from "@idlebound/game/art";
 import { idleFrames, renderCreature } from "./creature";
 import { castShadow, gradeForNight } from "./night";
-import { blit, createPixels, type Pixels } from "./pixels";
+import { blit, createPixels, FADE_STEPS, veil, type Pixels } from "./pixels";
 import { compositeLayers, renderScene, type PlaceId, type Scene, type SceneLayer, type SceneOptions } from "./scene";
 import { lru } from "./surface";
 
@@ -27,12 +27,22 @@ function depthOf(layer: SceneLayer): Depth {
   return layer.anchor ? "near" : layer.depth <= 0.2 ? "far" : "middle";
 }
 
+/** Where a biome's guardian stands in a view `width` columns wide: its box, feet on the scene's ground. */
+export function guardianBox(biomeId: string, era: number, width = SCENE_WIDTH, options: SceneOptions = {}): { x: number; y: number; w: number; h: number } | null {
+  const boss = BIOMES.find((biome) => biome.id === biomeId)?.boss.id;
+  if (!boss) return null;
+  const still = renderCreature(boss, { era });
+  const x = Math.floor(width / 2) - Math.round(still.pixels.w / 2);
+  return { x, y: sceneOf(biomeId, era, options).ground - still.feet, w: still.pixels.w, h: still.pixels.h };
+}
+
 /**
  * One frame of a scene in an era (a biome, or a place: see `renderScene`), with its
  * biome's guardian in front when asked, in a view `width` columns wide centered on the
- * scene as the arena shows it (the frame at its edges).
+ * scene as the arena shows it (the frame at its edges). `guardianStep` leaves only that
+ * many eighths of the guardian and its shadow (a guardian going, pixel by pixel).
  */
-export function stageFrame(biomeId: string, era: number, frame: number, guardian: boolean, width = SCENE_WIDTH, options: SceneOptions = {}): Pixels {
+export function stageFrame(biomeId: string, era: number, frame: number, guardian: boolean, width = SCENE_WIDTH, options: SceneOptions = {}, guardianStep = FADE_STEPS): Pixels {
   const scene = sceneOf(biomeId, era, options);
   const out = createPixels(width, SCENE_HEIGHT);
   out.idx.fill(scene.skyTop);
@@ -41,15 +51,15 @@ export function stageFrame(biomeId: string, era: number, frame: number, guardian
   const front = scene.layers.findIndex((layer) => layer.anchor);
   compositeLayers(scene.layers.slice(0, front), width, frame, out, origin);
   const boss = BIOMES.find((biome) => biome.id === biomeId)?.boss.id;
-  if (guardian && boss) {
+  if (guardian && boss && guardianStep > 0) {
     const render = renderCreature(boss, { era, frame: frame % idleFrames(boss) });
     const pixels = scene.night ? gradeForNight(render.pixels, scene.night) : render.pixels;
     const left = Math.floor(width / 2) - Math.round(pixels.w / 2);
     const top = scene.ground - render.feet;
     const still = renderCreature(boss, { era });
     const shadow = castShadow(still.pixels, still.feet, scene.source ? Math.sign(scene.source.x - SCENE_WIDTH / 2) || 1 : 1, scene.shadow);
-    blit(out, shadow.pixels, left + shadow.dx, top + shadow.dy);
-    blit(out, pixels, left, top);
+    blit(out, veil(shadow.pixels, guardianStep), left + shadow.dx, top + shadow.dy);
+    blit(out, veil(pixels, guardianStep), left, top);
   }
   return compositeLayers(scene.layers.slice(front), width, frame, out, origin);
 }

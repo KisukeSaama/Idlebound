@@ -276,6 +276,11 @@ export const KEEP_DECOR: Record<string, DecorGrid> = {
     rows: ["..##....", ".#ab#...", "#abbb##.", "#abbbbb#", ".#bcc#c#", "..#c#.#.", "...#...."],
     legend: { "#": "outline", a: ["stone", 4], b: ["stone", 3], c: ["stone", 1] }
   },
+  // The same gargoyle once the Last Second secret is found: one claw broken off.
+  "keep-gargoyle-clawless": {
+    rows: ["..##....", ".#ab#...", "#abbb##.", "#abbbbb#", ".#bcc##.", "..#c#...", "...#...."],
+    legend: { "#": "outline", a: ["stone", 4], b: ["stone", 3], c: ["stone", 1] }
+  },
   // A banner with no colors left: grey cloth in tatters, stirring.
   "keep-banner": {
     rows: [

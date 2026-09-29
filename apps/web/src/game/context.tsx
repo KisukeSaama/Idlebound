@@ -1,6 +1,6 @@
 "use client";
 
-import { formatNumber } from "@idlebound/game";
+import { formatNumber, type CutsceneId } from "@idlebound/game";
 import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
 import { currentMessages } from "@/i18n/client";
 import type { CloudSync } from "./cloud";
@@ -24,6 +24,8 @@ export interface GameUi {
   openWindow: (id: WindowId, tab?: string) => void;
   closeWindow: () => void;
   toast: (toast: ToastInput) => void;
+  /** Plays one of the Ledger's scenes over everything. */
+  playCutscene: (id: CutsceneId) => void;
   confirm: (options: { title: string; text: string; confirmLabel: string; danger?: boolean }) => Promise<boolean>;
 }
 

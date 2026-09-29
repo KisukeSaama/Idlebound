@@ -19,7 +19,7 @@ const en: SystemsText = {
     "thousandth-arrow": { name: "The Thousandth Arrow", legend: "Maëlle fletched it the night she lost count of the nights. It has never missed, which bothers her." },
     quietus: { name: "Quietus", legend: "A scythe that has never been swung. Morgrath says it will be, once." },
     "unfinished-hammer": { name: "The Unfinished Hammer", legend: "Forged every night for a king who stopped needing it. Finished, at last, for you." },
-    "splinter-of-sky": { name: "Splinter of the Sky", legend: "A blade cut from the Sky-Glass. Look along its edge and you see a room with a lamp in it." },
+    "splinter-of-sky": { name: "Splinter of the Sky", legend: "A blade cut from the Sky-Glass. Brom will not sharpen it. He says the edge already belongs to the sky." },
     dawnbreak: { name: "Dawnbreak", legend: "It is warm to the touch, like a window in the morning." },
     "hollow-plate": { name: "The Hollow Plate", legend: "It walked here on its own. It will leave the same way, once you are done with it." },
     mosshide: { name: "Mosshide", legend: "The Alpha's winter coat. Still warm. Still growing moss." },
@@ -48,7 +48,7 @@ const en: SystemsText = {
     quietStrike: (pct) => `Your strikes take ${p(pct)}% less of the Patience bonus's place`,
     guardianShards: (pct) => `+${pct} ${sEn(pct, "shard")} on every guardian kill`,
     seamDps: (pct) => `+${p(pct)}% DPS while a Seam is open`,
-    bossTimer: (pct) => `+${pct} s on the boss timer`,
+    bossTimer: (pct) => `+${pct} s on the timer of elites and guardians`,
     idleBonus: (pct) => `+${p(pct)}% Patience bonus`,
     bossDamage: (pct) => `+${p(pct)}% damage to elites and guardians`,
     rainSeconds: (pct) => `Golden Rain lasts ${pct} s`,
@@ -102,7 +102,7 @@ const en: SystemsText = {
     },
     "night-owl": {
       name: "Night Owl",
-      riddle: "Walk when the real night is darkest.",
+      riddle: "Walk at the darkest hour.",
       line: { by: "The Ledger", text: "Someone crossed the Hearthfields at the darkest hour. The moon came out to see who." }
     },
     "thousandth-notch": {
@@ -167,7 +167,7 @@ const en: SystemsText = {
     },
     "behind-the-glass": {
       name: "Behind the Glass",
-      riddle: "In the room with the lamp, look out the window.",
+      riddle: "Find the window that looks back.",
       line: { by: "The Ledger", text: "The window in the Keep holds a reflection. You blinked. So did it, a little after." }
     },
     "two-tongues": {
@@ -185,7 +185,7 @@ const en: SystemsText = {
     storm: {
       name: "Crystal Storm",
       text: "The Lantern Queen crosses the sky. Catch the light!",
-      line: { by: "The Ledger", text: "Something looked at the world very hard. The moths rose to meet it, and their queen with them." }
+      line: { by: "The Ledger", text: "The sky shook loose a handful of light. The moths rose to catch it, and their queen with them." }
     },
     seam: {
       name: "The Seam",
@@ -200,7 +200,7 @@ const en: SystemsText = {
     walker: {
       name: "Echo of a Walker",
       text: `Another walker's echo fights beside you for ${WALKER_SECONDS} s.`,
-      line: { by: "The Ledger", text: "Two strands touched. For thirty seconds the Ledger had to write two names on one line." }
+      line: { by: "The Ledger", text: "Two strands touched. For a few breaths the Ledger had to write two names on one line." }
     },
     caravan: {
       name: "The Caravan",
@@ -220,7 +220,7 @@ const en: SystemsText = {
     eclipse: {
       name: "The King's Eclipse",
       text: "The King rises in shadow, heavier. Same time to beat him.",
-      line: { by: "The King", text: "I had a sword like yours. I walked this road once, the other way." }
+      line: { by: "The King", text: "Tonight the dark sits on me too. Strike hard. I won't mind." }
     },
     tide: {
       name: "The Slow Tide",
@@ -300,12 +300,12 @@ const fr: SystemsText = {
     "thousandth-arrow": { name: "La Millième Flèche", legend: "Maëlle l'a empennée le soir où elle a perdu le compte des soirs. Elle n'a jamais manqué sa cible, et ça l'agace." },
     quietus: { name: "Quiétus", legend: "Une faux qui n'a jamais fauché. Morgrath dit qu'elle servira, une fois." },
     "unfinished-hammer": { name: "Le Marteau inachevé", legend: "Forgé chaque nuit pour un roi qui n'en a plus eu besoin. Enfin achevé, pour toi." },
-    "splinter-of-sky": { name: "Éclat de voûte", legend: "Une lame taillée dans la Voûte de verre. Regarde le long du fil : tu verras une chambre, et une lampe allumée." },
+    "splinter-of-sky": { name: "Éclat de voûte", legend: "Une lame taillée dans la Voûte de verre. Brom refuse de l'affûter : il dit que le fil appartient déjà au ciel." },
     dawnbreak: { name: "Point-du-jour", legend: "Tiède au toucher, comme une fenêtre au matin." },
     "hollow-plate": { name: "Le Harnois creux", legend: "Il est venu ici tout seul. Il repartira de même, quand tu en auras fini avec lui." },
     mosshide: { name: "Peau-de-mousse", legend: "Le manteau d'hiver de l'Alpha. Encore chaud. La mousse y pousse toujours." },
     "briar-mantle": { name: "Manteau de ronces", legend: "Tissé par l'arbre-mère pour le premier hiver de Séraphine. Il se souvient d'avoir été un cadeau." },
-    "aurelion-scales": { name: "Écailles d'Aurelion", legend: "Muées dans la strate du Wyrm, il y a mille mondes. Il aimerait bien les récupérer, un jour." },
+    "aurelion-scales": { name: "Écailles d'Aurelion", legend: "Muées dans la strate de la Guivre, il y a mille mondes. Il aimerait bien les récupérer, un jour." },
     "ash-vestment": { name: "Robe des cendres", legend: "Portée par le premier Moine des braises, entré dans le feu du Bûcher pour en ressortir avec une seule flamme." },
     "mantle-of-the-last-court": { name: "Manteau de la dernière cour", legend: "Pourpre, jadis. La couleur est partie quelque part. La cour aussi." },
     "eldra-locket": { name: "Médaillon d'Eldra", legend: "Un sablier gros comme une larme. Le sable tombe vers le haut." },
@@ -329,7 +329,7 @@ const fr: SystemsText = {
     quietStrike: (pct) => `Tes frappes prennent ${p(pct)} % de place en moins au bonus de Patience`,
     guardianShards: (pct) => `+${pct} ${sFr(pct, "éclat")} à chaque gardien vaincu`,
     seamDps: (pct) => `+${p(pct)} % de DPS tant qu'une Brèche est ouverte`,
-    bossTimer: (pct) => `+${pct} s au chrono des boss`,
+    bossTimer: (pct) => `+${pct} s au chrono des élites et gardiens`,
     idleBonus: (pct) => `+${p(pct)} % au bonus de Patience`,
     bossDamage: (pct) => `+${p(pct)} % de dégâts contre les élites et les gardiens`,
     rainSeconds: (pct) => `La Pluie d'or dure ${pct} s`,
@@ -383,7 +383,7 @@ const fr: SystemsText = {
     },
     "night-owl": {
       name: "Oiseau de nuit",
-      riddle: "Marche quand la vraie nuit est la plus noire.",
+      riddle: "Marche à l'heure la plus noire.",
       line: { by: "Le Grand Livre", text: "Quelqu'un a traversé les Plaines à l'heure la plus noire. La lune est sortie voir qui c'était." }
     },
     "thousandth-notch": {
@@ -448,7 +448,7 @@ const fr: SystemsText = {
     },
     "behind-the-glass": {
       name: "De l'autre côté",
-      riddle: "Dans la chambre à la lampe, regarde par la fenêtre.",
+      riddle: "Trouve la fenêtre qui te rend ton regard.",
       line: { by: "Le Grand Livre", text: "La fenêtre du donjon a un reflet. Tu as cligné des yeux. Lui aussi, un peu après." }
     },
     "two-tongues": {
@@ -466,7 +466,7 @@ const fr: SystemsText = {
     storm: {
       name: "Averse de cristaux",
       text: "La Reine-lanterne traverse le ciel. Attrape la lumière !",
-      line: { by: "Le Grand Livre", text: "Quelque chose a regardé le monde très fort. Les phalènes se sont levées à sa rencontre, et leur reine avec elles." }
+      line: { by: "Le Grand Livre", text: "Le ciel a laissé tomber une poignée de lumière. Les phalènes se sont levées pour l'attraper, et leur reine avec elles." }
     },
     seam: {
       name: "La Brèche",
@@ -481,7 +481,7 @@ const fr: SystemsText = {
     walker: {
       name: "Écho d'un marcheur",
       text: `L'écho d'un autre marcheur se bat à tes côtés pendant ${WALKER_SECONDS} s.`,
-      line: { by: "Le Grand Livre", text: "Deux fils se sont touchés. Trente secondes durant, le Grand Livre a dû écrire deux noms sur une même ligne." }
+      line: { by: "Le Grand Livre", text: "Deux fils se sont touchés. L'espace de quelques souffles, le Grand Livre a dû écrire deux noms sur une même ligne." }
     },
     caravan: {
       name: "La Roulotte",
@@ -501,7 +501,7 @@ const fr: SystemsText = {
     eclipse: {
       name: "L'Éclipse du roi",
       text: "Le roi se lève dans l'ombre, plus lourd. Même temps pour l'abattre.",
-      line: { by: "Le Roi", text: "J'avais une épée comme la tienne. J'ai marché sur cette route, une fois, dans l'autre sens." }
+      line: { by: "Le Roi", text: "Ce soir, le noir pèse sur moi aussi. Frappe fort. Je ne t'en voudrai pas." }
     },
     tide: {
       name: "La Marée lente",

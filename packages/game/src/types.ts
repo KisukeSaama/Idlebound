@@ -415,7 +415,8 @@ export type ChronicleEntry =
   | { source: "keystone"; era: number; reading?: number }
   | { source: "milestone"; id: MilestoneId }
   /** The King's Word of the n-th night (1-based). */
-  | { source: "king"; night: number }
+  /** A night's Word; with `eclipse`, what he said when the Eclipse armed at that dusk fell. */
+  | { source: "king"; night: number; eclipse?: boolean }
   | { source: "echo"; biome: string; index: number }
   | { source: "age"; age: number; index: number }
   | { source: "wanderer"; id: string }

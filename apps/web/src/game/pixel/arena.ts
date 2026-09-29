@@ -81,12 +81,13 @@ export interface Stretch {
   era: number;
   fullMoon: boolean;
   darkNight: boolean;
+  clawless: boolean;
   creatures: string[];
 }
 
 /** Names a scene in the sprite cache: its creatures are graded for its night under this key. */
-function sceneKeyOf(sceneId: string, era: number, fullMoon: boolean, darkNight: boolean) {
-  return `${sceneId}:${era}:${fullMoon}:${darkNight}`;
+function sceneKeyOf(sceneId: string, era: number, fullMoon: boolean, darkNight: boolean, clawless: boolean) {
+  return `${sceneId}:${era}:${fullMoon}:${darkNight}:${clawless}`;
 }
 
 export class ArenaRenderer {
@@ -182,12 +183,12 @@ export class ArenaRenderer {
    * behind the last stage; `sanctum` and `loom` too). `darkNight` keeps the backgrounds of the
    * Kingdom in every stratum ("Keep the night dark"); the creatures keep their own Age.
    */
-  setScene(sceneId: string, era: number, fullMoon = false, darkNight = false) {
-    const key = sceneKeyOf(sceneId, era, fullMoon, darkNight);
+  setScene(sceneId: string, era: number, fullMoon = false, darkNight = false, clawless = false) {
+    const key = sceneKeyOf(sceneId, era, fullMoon, darkNight, clawless);
     if (key === this.sceneKey) return;
     this.sceneKey = key;
-    this.sceneArgs = { id: sceneId, era, options: { fullMoon, darkNight } };
-    this.scene = sceneSheet(sceneId, era, { fullMoon, darkNight }, this.quiet);
+    this.sceneArgs = { id: sceneId, era, options: { fullMoon, darkNight, clawless } };
+    this.scene = sceneSheet(sceneId, era, { fullMoon, darkNight, clawless }, this.quiet);
     this.accent = sceneRecipe(sceneId).accent;
     const light = this.scene.scene.light;
     this.motes = [];
@@ -335,8 +336,8 @@ export class ArenaRenderer {
     for (const stretch of stretches) {
       let night: { key: string; grade: NightGrade } | undefined;
       queue.push(() => {
-        const grade = sceneSheet(stretch.sceneId, stretch.era, { fullMoon: stretch.fullMoon, darkNight: stretch.darkNight }).scene.night;
-        night = grade ? { key: sceneKeyOf(stretch.sceneId, stretch.era, stretch.fullMoon, stretch.darkNight), grade } : undefined;
+        const grade = sceneSheet(stretch.sceneId, stretch.era, { fullMoon: stretch.fullMoon, darkNight: stretch.darkNight, clawless: stretch.clawless }).scene.night;
+        night = grade ? { key: sceneKeyOf(stretch.sceneId, stretch.era, stretch.fullMoon, stretch.darkNight, stretch.clawless), grade } : undefined;
       });
       for (const id of stretch.creatures) queue.push(() => creatureSheet(id, stretch.era, night));
     }

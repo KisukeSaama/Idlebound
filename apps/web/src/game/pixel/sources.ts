@@ -4,6 +4,7 @@
 import type { Item, Locale, Notation } from "@idlebound/game";
 import { ALTAR_ICONS, CARAVAN_ICONS, MARKET_ICONS, POWER_ICONS } from "@idlebound/game/art";
 import { idleFrames, renderCreature } from "./creature";
+import { renderEvenRat } from "./mask";
 import { CRYSTAL_FRAMES } from "./objects";
 import { hash2, type Pixels } from "./pixels";
 import type { PixelSource } from "./PixelSprite";
@@ -31,6 +32,11 @@ export function awakenedSeed(notation: Notation, sound: boolean, locale: Locale)
 
 export function portraitSource(heroId: string, seed?: number): PixelSource {
   return { key: `portrait:${heroId}:${seed ?? ""}`, frames: () => [portraitPixels(heroId, seed)] };
+}
+
+/** The tiny gold rat on Thorvald's medallion (the Even secret). */
+export function evenRatSource(): PixelSource {
+  return { key: "even-rat", frames: () => [stillCache.get("even-rat-px", renderEvenRat)] };
 }
 
 export function emblemSource(heroId: string): PixelSource {

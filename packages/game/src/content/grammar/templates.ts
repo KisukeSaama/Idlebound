@@ -103,7 +103,7 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
   "king-night": { voice: "king", line: (s) => `Night ${s.night}. I ${s.verb} while you walked.` },
   "king-nights": { voice: "king", line: (s, h) => `${s.night} nights, and ${h.the(s.object)} ${h.is(s.object)} no lighter.` },
   "king-mind": { voice: "king", line: (s, h) => `Mind ${h.the(s.object)}. ${h.it(s.object)} ${h.was(s.object)} my father's.` },
-  "king-stop": { voice: "king", line: (s, h) => `Don't stop ${h.in(s.place)}. I did.` },
+  "king-stop": { voice: "king", line: (s, h) => `I rested ${h.in(s.place)}, once. Walk past it.` },
   "king-again": { voice: "king", line: (s, h) => `Again, then. ${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.state}, and so am I.` },
   "king-carry": { voice: "king", line: (s) => `You carry my ${s.object.s} better than I did.` },
   "king-tell": { voice: "king", line: (s, h) => `Tell ${s.companion} I kept ${h.the(s.object)}.` },
@@ -131,7 +131,7 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
     voice: "companion",
     line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.color} here. ${h.it(s.object)} ${h.was(s.object)} not, the night before.`
   },
-  "companion-every": { voice: "companion", line: (s) => `Every night, ${s.remnant} ${s.verb}. Every night, I act as if it were the first time.` },
+  "companion-every": { voice: "companion", line: (s) => `Last night, ${s.remnant} ${s.verb}. The night before, too. Both times, I acted as if it were new.` },
 
   // A Remnant, remembering out loud.
   "remnant-then": {
@@ -169,16 +169,16 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
   },
 
   // Célestine's songs: sound words, soft.
-  "song-hummed": { voice: "celestine", line: (s, h) => `${h.cap(s.sound)}, ${s.sound}. ${h.cap(h.the(s.object))} ${s.verb} ${h.in(s.place)}. I hummed back.` },
-  "song-listen": { voice: "celestine", line: (s, h) => `Listen. ${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.state} today. ${h.cap(s.sound)}. That means you're here.` },
-  "song-tonight": { voice: "celestine", line: (s, h) => `The crystals are ${s.color} tonight. Their song is ${s.state}. ${h.cap(s.sound)}, ${s.sound2}, ${s.sound}.` },
+  "song-hummed": { voice: "celestine", line: (s, h) => `${s.sound}, ${s.sound}. ${h.the(s.object)} ${s.verb} ${h.in(s.place)}. i hummed back.` },
+  "song-listen": { voice: "celestine", line: (s, h) => `listen. ${h.the(s.object)} ${h.is(s.object)} ${s.state} tonight. ${s.sound}. that means you're here.` },
+  "song-tonight": { voice: "celestine", line: (s) => `the crystals are ${s.color} tonight. their song is ${s.state}. ${s.sound}, ${s.sound2}, ${s.sound}.` },
   "song-name": {
     voice: "celestine",
-    line: (s, h) => `Shh. ${h.cap(h.the(s.object))} ${h.is(s.object)} singing your name. ${h.cap(s.sound)}, ${s.sound2}. That's the whole song.`
+    line: (s, h) => `shh. ${h.the(s.object)} ${h.is(s.object)} singing your name. ${s.sound}, ${s.sound2}. that's the whole song.`
   },
   "song-taught": {
     voice: "celestine",
-    line: (s, h) => `I taught ${h.the(s.object)} a new note. ${h.it(s.object)} ${s.verb}. I think ${h.pron(s.object)} liked it.`
+    line: (s, h) => `i taught ${h.the(s.object)} a new note. ${h.pron(s.object)} ${s.verb}. i think ${h.pron(s.object)} liked it.`
   },
 
   // What stays after an absence: nobody speaks. Second person, past, one image.
@@ -214,7 +214,7 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
     line: (s, h) =>
       `${h.cap(h.in(s.place))}, for the ${enOrdinal(s.descent + 1)} time. ${h.cap(h.the(s.object))} ${h.is(s.object)} still there. ${h.it(s.object)} ${h.is(s.object)} ${s.state} now.`
   },
-  "reading-slower": { voice: "ledger", line: (s, h) => `Again, deeper. ${h.cap(s.remnant)} ${s.verb} ${h.in(s.place)}, as the first time, only slower.` }
+  "reading-slower": { voice: "ledger", line: (s, h) => `Again, deeper. ${h.cap(s.remnant)} ${s.verb} ${h.in(s.place)}, as it did the first time, only slower.` }
 };
 
 // ---------------------------------------------------------------------------------------
@@ -280,7 +280,7 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
     line: (s, h) => `${s.night} nuits, et ${h.the(s.object)} ${s.object.p ? "ne sont" : "n'est"} pas plus ${form(LIGHT, s.object)}.`
   },
   "king-mind": { voice: "king", line: (s, h) => `Attention ${h.at(s.object)}. ${h.it(s.object)} ${h.was(s.object)} à mon père.` },
-  "king-stop": { voice: "king", line: (s, h) => `Ne t'arrête pas ${h.in(s.place)}. Moi, je l'ai fait.` },
+  "king-stop": { voice: "king", line: (s, h) => `Je me suis reposé ${h.in(s.place)}, une fois. Passe sans t'arrêter.` },
   "king-again": { voice: "king", line: (s, h) => `Encore, donc. ${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)}, et moi aussi.` },
   "king-carry": { voice: "king", line: (s) => `Tu portes ${my(s.object)} mieux que moi.` },
   "king-tell": { voice: "king", line: (s, h) => `Dis à ${s.companion} que j'ai gardé ${h.the(s.object)}.` },
@@ -315,7 +315,7 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
     voice: "companion",
     line: (s, h) => `Ici, ${h.the(s.object)} ${h.is(s.object)} ${h.agree(s.color, s.object)}. ${h.it(s.object)} ne l'${h.was(s.object)} pas, la nuit d'avant.`
   },
-  "companion-every": { voice: "companion", line: (s) => `Chaque nuit, ${s.remnant} ${s.verb}. Chaque nuit, je fais comme si c'était la première fois.` },
+  "companion-every": { voice: "companion", line: (s) => `Hier soir, ${s.remnant} ${s.verb}. La veille aussi. Les deux fois, j'ai fait comme si c'était nouveau.` },
 
   "remnant-then": { voice: "remnant", line: (s, h) => `${h.cap(h.a(s.object))}. ${h.cap(h.a(s.object))}. Puis toi. Puis encore ${h.a(s.object)}.` },
   "remnant-yet": { voice: "remnant", line: (s, h) => `${h.cap(h.first(s.verb))} ${h.in(s.place)}. Tu n'étais pas encore là. Tu ne l'es jamais.` },
@@ -349,23 +349,23 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
 
   "song-hummed": {
     voice: "celestine",
-    line: (s, h) => `${h.cap(s.sound)}, ${s.sound}. ${h.cap(h.the(s.object))} ${h.does(s.object, s.verb)} ${h.in(s.place)}. J'ai répondu tout bas.`
+    line: (s, h) => `${s.sound}, ${s.sound}. ${h.the(s.object)} ${h.does(s.object, s.verb)} ${h.in(s.place)}. j'ai répondu tout bas.`
   },
   "song-listen": {
     voice: "celestine",
-    line: (s, h) => `Écoute. ${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)} aujourd'hui. ${h.cap(s.sound)}. Ça veut dire que tu es là.`
+    line: (s, h) => `écoute. ${h.the(s.object)} ${h.is(s.object)} ${h.agree(s.state, s.object)} ce soir. ${s.sound}. ça veut dire que tu es là.`
   },
   "song-tonight": {
     voice: "celestine",
-    line: (s, h) => `Les cristaux sont ${form(s.color, { g: "m", p: true })} ce soir. Leur chanson est ${form(s.state, { g: "f" })}. ${h.cap(s.sound)}, ${s.sound2}, ${s.sound}.`
+    line: (s) => `les cristaux sont ${form(s.color, { g: "m", p: true })} ce soir. leur chanson est ${form(s.state, { g: "f" })}. ${s.sound}, ${s.sound2}, ${s.sound}.`
   },
   "song-name": {
     voice: "celestine",
-    line: (s, h) => `Chut. ${h.cap(h.the(s.object))} ${s.object.p ? "chantent" : "chante"} ton nom. ${h.cap(s.sound)}, ${s.sound2}. C'est toute la chanson.`
+    line: (s, h) => `chut. ${h.the(s.object)} ${s.object.p ? "chantent" : "chante"} ton nom. ${s.sound}, ${s.sound2}. c'est toute la chanson.`
   },
   "song-taught": {
     voice: "celestine",
-    line: (s, h) => `J'ai appris une nouvelle note ${h.at(s.object)}. ${h.it(s.object)} ${h.does(s.object, s.verb)}. Je crois que ça ${s.object.p ? "leur" : "lui"} a plu.`
+    line: (s, h) => `j'ai appris une nouvelle note ${h.at(s.object)}. ${h.pron(s.object)} ${h.does(s.object, s.verb)}. je crois que ça ${s.object.p ? "leur" : "lui"} a plu.`
   },
 
   "dream-whose": { voice: "none", line: (s, h) => `Tu étais ${h.in(s.place)}. Il y avait ${h.a(s.object)}, et tu savais à qui c'était.` },

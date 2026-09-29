@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
-import { chronicleCount, chronicleEntries, milestoneReached, sourceCount, unreadChronicle } from "./chronicle";
-import { chronicleText, gameText, kingWord, monsterName, regaliaWord } from "./content";
+import { chronicleCount, chronicleEntries, milestoneReached, sourceCount, sourceEntries, unreadChronicle } from "./chronicle";
+import { chronicleText, eclipseWord, gameText, kingWord, monsterName, regaliaWord } from "./content";
 import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
 import { KING_FORMS, guardianForStage } from "./data/biomes";
 import { CARAVAN_WARES, caravanWare, isoWeek } from "./data/caravan";
@@ -116,13 +116,27 @@ describe("the strata and the King's forms", () => {
 });
 
 describe("the King's Words", () => {
-  it("gives one Word a night, in order, then the grammar, and every seventh night a word of his Eclipse", () => {
+  it("keeps an Eclipse's words in the Chronicle once it has fallen, never before", () => {
+    const state = createInitialState(T0);
+    const eclipses = () => sourceEntries(state, "king").filter((entry) => entry.source === "king" && entry.eclipse).map((entry) => (entry.source === "king" ? entry.night : 0));
+    state.lifetime.ascensions = 14;
+    expect(eclipses()).toEqual([7]);
+    state.lifetime.ascensions = 15;
+    expect(eclipses()).toEqual([7, 14]);
+    expect(sourceCount(state, "king")).toBe(17);
+    expect(chronicleText({ source: "king", night: 14, eclipse: true }, "en").text).toBe(eclipseWord(14, "en"));
+  });
+
+  it("gives one Word a night, in order, then the grammar; his Eclipse speaks when it falls", () => {
     for (const locale of LOCALES) {
       const words = gameText(locale).voices.kingWords;
       expect(words).toHaveLength(50);
       expect(kingWord(1, locale)).toBe(words[0]);
       expect(kingWord(50, locale)).toBe(words[49]);
-      expect(kingWord(7, locale)).toBe(gameText(locale).voices.eclipseWords[0]);
+      // Every written Word is spoken, the seventh night too; the Eclipse has words of its own.
+      expect(kingWord(7, locale)).toBe(words[6]);
+      expect(eclipseWord(7, locale)).toBe(gameText(locale).voices.eclipseWords[0]);
+      expect(eclipseWord(14, locale)).toBe(gameText(locale).voices.eclipseWords[1]);
       expect(kingWord(51, locale).length).toBeGreaterThan(3);
       expect(kingWord(52, locale)).not.toBe(kingWord(53, locale));
       expect(regaliaWord(13, locale)).toBe(gameText(locale).voices.regaliaWords[0]);
@@ -230,7 +244,8 @@ describe("the Chronicle", () => {
     const entries = chronicleEntries(state);
     expect(entries.length).toBe(chronicleCount(state));
     expect(sourceCount(state, "keystone")).toBe(5);
-    expect(sourceCount(state, "king")).toBe(80);
+    // Eighty Words, and the eleven Eclipses fallen before the eightieth dusk.
+    expect(sourceCount(state, "king")).toBe(91);
     expect(sourceCount(state, "saying")).toBe(12);
     // Past the written pools, the grammar speaks.
     for (const locale of LOCALES) {

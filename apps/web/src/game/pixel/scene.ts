@@ -12,7 +12,7 @@
  * a room, then paper, grey, outline and a single light). The same pipeline draws the three
  * places of the story (places.ts): the Sanctum of Dusk, Eldra's Loom and the Dawn.
  */
-import { C, ORVANE_64, PLACES, SCENES, SCENE_FLOOR, SCENE_HEIGHT, SCENE_WIDTH, palLuma, palRgb, type Pal, type SceneRecipe } from "@idlebound/game/art";
+import { C, DECOR, ORVANE_64, PLACES, SCENES, SCENE_FLOOR, SCENE_HEIGHT, SCENE_WIDTH, palLuma, palRgb, type Pal, type SceneRecipe } from "@idlebound/game/art";
 import type { Built } from "./architecture";
 import { paintClouds, paintLandmark, paintRange, paintShafts, paintSky } from "./backdrop";
 import { dottedCircle } from "./draw";
@@ -77,9 +77,13 @@ export interface SceneOptions {
   fullMoon?: boolean;
   /** "Keep the night dark": every stratum keeps the backgrounds of the Kingdom (see `renderScene`). */
   darkNight?: boolean;
+  /** The Keep's gargoyle has lost a claw (the Last Second secret). */
+  clawless?: boolean;
 }
 
 const H = SCENE_HEIGHT;
+/** The decor once the Keep's gargoyle has lost its claw. */
+const CLAWLESS_DECOR = { ...DECOR, "keep-gargoyle": DECOR["keep-gargoyle-clawless"] };
 // ------------------------------------------------------------------ Age treatments
 
 function mapLayer(layer: SceneLayer, fn: (source: Pixels) => Pixels): SceneLayer {
@@ -202,7 +206,7 @@ function composeScene(sceneId: string, recipe: SceneRecipe, era: number, options
     { frames: groundFrames, drift: 0, depth: 0.7, ground: true, period: 0.4 },
     ...(hazed ? [{ frames: hazed, drift: 0, depth: 0.7, period: 0.45 }] : []),
     ...(mist ? [{ frames: [mist], drift: recipe.mistDrift ?? 0, depth: 0.3 }] : []),
-    { frames: [0, 1, 2, 3].map((frame) => paintProps(recipe, frame, { wear, water: ground.water, memo })), drift: 0, depth: 0.7, period: 0.45 },
+    { frames: [0, 1, 2, 3].map((frame) => paintProps(recipe, frame, { wear, water: ground.water, memo, decor: options.clawless ? CLAWLESS_DECOR : DECOR })), drift: 0, depth: 0.7, period: 0.45 },
     { frames: [0, 1].map((frame) => paintForeground(recipe, "left", frame)), drift: 0, depth: 1.3, period: 1.1, anchor: "left" },
     { frames: [0, 1].map((frame) => paintForeground(recipe, "right", frame)), drift: 0, depth: 1.3, period: 1.1, anchor: "right" }
   ];

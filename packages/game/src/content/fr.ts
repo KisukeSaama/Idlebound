@@ -2,6 +2,7 @@ import { AGE_ECHOES_TEXT } from "./story/ages";
 import { BESTIARY_TEXT } from "./story/bestiary";
 import { BESTIARY_KEEP_TEXT } from "./story/bestiary-keep";
 import { COMPANY_TEXT } from "./story/company";
+import { CUTSCENES_TEXT } from "./story/cutscenes";
 import { COMPANY_LATE_TEXT } from "./story/company-late";
 import { PLACES_TEXT } from "./story/places";
 import { STRATA_TEXT } from "./story/strata";
@@ -129,7 +130,7 @@ export const fr: GameText = {
     blade: { name: "Autel de la lame", description: "Chaque niveau multiplie toute ta frappe par 1,1, sa part de tes DPS comprise." },
     fortune: { name: "Autel de fortune", description: "Chaque niveau multiplie ton or par 1,12." },
     patience: { name: "Autel de la patience", description: "Chaque niveau multiplie le bonus de Patience de tes compagnons par 1,14. Tes frappes le remplacent, coup pour coup." },
-    time: { name: "Autel du temps", description: "+1 s au chrono des boss par niveau." },
+    time: { name: "Autel du temps", description: "+1 s au chrono des élites et des gardiens par niveau." },
     fate: { name: "Autel du destin", description: "+20 % de dégâts critiques par niveau." },
     precision: { name: "Autel de précision", description: "+1 % de chances de critique par niveau." },
     treasure: { name: "Autel du trésor", description: "+0,5 % d'apparition de rats dorés par niveau." },
@@ -178,7 +179,7 @@ export const fr: GameText = {
     clicks: (t) => `Frappe ${n(t)} fois.`,
     crits: (t) => `Inflige ${n(t)} coups critiques.`,
     kills: (t) => `Vaincs ${n(t)} monstres.`,
-    bosses: (t) => `Vaincs ${n(t)} boss.`,
+    bosses: (t) => `Vaincs ${n(t)} ${t > 1 ? "élites et gardiens" : "élite ou gardien"}.`,
     gold: (t) => `Gagne ${exp(t)} pièces d'or au total.`,
     treasure: (t) => `Vaincs ${n(t)} ${s(t, "rat")} ${s(t, "doré")}.`,
     crystal: (t) => `Attrape ${n(t)} ${t > 1 ? "cristaux errants" : "cristal errant"}.`,
@@ -192,7 +193,7 @@ export const fr: GameText = {
     mythic: (t) => `Trouve ${t} ${s(t, "objet")} ${s(t, "mythique")}.`,
     hit: (t) => `Inflige un coup de ${exp(t)} dégâts.`,
     time: (t) => `Marche ${Math.round(t / 3600)} h dans la nuit, en tout.`,
-    fails: (t) => `Échoue ${t} fois contre un boss.`,
+    fails: (t) => `Laisse une élite ou un gardien te repousser ${t} fois.`,
     ...SYSTEMS_TEXT.fr.achievementDescriptions
   },
   slots: { weapon: "Arme", armor: "Armure", amulet: "Amulette", ring: "Anneau" },
@@ -203,7 +204,7 @@ export const fr: GameText = {
     gold: "Or",
     critChance: "Chance de critique",
     critDamage: "Dégâts critiques",
-    bossDamage: "Dégâts aux boss",
+    bossDamage: "Dégâts aux élites et gardiens",
     essence: "Essences d'ascension"
   },
   itemBases: {
@@ -246,7 +247,7 @@ export const fr: GameText = {
     "lantern-moth": [
       "Attirée par la lumière du marcheur. Tout, dans la nuit, l'est.",
       "Elle meurt tournée vers ce qu'il y a de plus clair. Ces temps-ci, c'est toi.",
-      "Les phalènes ont une reine. Elle vient quand on regarde la lumière très fort."
+      "Les phalènes ont une reine. Les nuits d'averse, elle descend les compter."
     ],
     "dusk-hare": [
       "Il court toujours vers le crépuscule. Il n'arrive jamais.",
@@ -274,7 +275,7 @@ export const fr: GameText = {
       "Le Grand Livre ne tient qu'une entrée pour Pip. Elle est de la main de Pip."
     ],
     "lantern-queen": [
-      "Reine des phalènes. Elle suit la lumière partout où quelqu'un regarde.",
+      "Reine des phalènes. Là où elle passe, les cristaux tombent plus vite, comme secoués d'une branche.",
       "Elle ne se pose jamais. Le Grand Livre n'a jamais noté où elle se repose, ni si elle se repose.",
       "Ses ailes sont faites de toutes les lampes qu'on a laissées allumées pour quelqu'un."
     ],
@@ -305,11 +306,11 @@ export const fr: GameText = {
   },
   memories: {
     maelle: [
-      { by: "Maëlle", text: "Maëlle te dévisage par-dessus son arc. « On se connaît ? Tu as une tête que je manque toujours de reconnaître. »" },
+      { by: "Maëlle", text: "Maëlle te dévisage par-dessus son arc. « On se connaît ? Ta tête me dit quelque chose. Presque. »" },
       { by: "Maëlle", text: "Elle t'appelle par ton nom avant que tu le lui donnes. Puis elle fronce les sourcils, comme si le mot était entré tout seul." },
       { by: "Maëlle", text: "Elle te montre le poteau au bord de la route, couvert d'encoches. « Il y en a de ma main. Je ne me souviens pas de les avoir faites. »" },
       { by: "Maëlle", text: "Quand tu arrives au feu, une place t'attend déjà, et un bol encore chaud. Elle ne lève pas les yeux." },
-      { by: "Maëlle", text: "« Ne me dis rien. Je préfère te rencontrer encore. C'est mon moment préféré. »" }
+      { by: "Maëlle", text: "« Ne me dis rien. J'aime mieux te rencontrer encore. C'est le moment que j'aime. »" }
     ],
     brom: [
       { by: "Brom", text: "Il retourne ta relique entre ses mains. « C'est mon travail. Je reconnaîtrais mes plis n'importe où. Quand est-ce que je l'ai faite ? »" },
@@ -349,5 +350,6 @@ export const fr: GameText = {
   weaves: SYSTEMS_TEXT.fr.weaves,
   caravan: SYSTEMS_TEXT.fr.caravan,
   crown: SYSTEMS_TEXT.fr.crown,
+  cutscenes: CUTSCENES_TEXT.fr,
   speakers: { king: "Le Roi", stallkeeper: "Le Comptoir", ledger: "Le Grand Livre" }
 };

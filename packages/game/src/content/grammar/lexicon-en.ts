@@ -11,7 +11,7 @@ export const EN_STRATA: readonly EnLexicon[] = [
   en("lantern|cracked crown|milestone|cloak", "wheat|keep|on@road|throne room", "waited|counted the steps|bowed|looked up", "cold|worn|still lit", "violet"),
   en("echo|bell|miner's pick|second shadow", "vaults#p|gallery|well|chapel", "screamed|answered|repeated a name|spoke too soon", "hollow|familiar|doubled", "grey"),
   en("ember|torch|sheaf|sun mask", "ash#m|burned field|at@pyre|old forest", "burned|prayed for the sun|sang to the fire|kept the flame", "warm|smoking|blackened", "red"),
-  en("map|broken door|boot|empty frame", "hole|at@edge|fog|missing field", "vanished|forgot a word|stopped walking|kept silent", "missing|mute|unfinished", "colourless"),
+  en("map|broken door|boot|empty frame", "hole|at@edge|fog|missing field", "vanished|forgot a word|stopped walking|kept silent", "missing|mute|unfinished", "colorless"),
   en("star-shard|fallen star|piece of sky|spyglass", "crater|mine|sky|vein", "looked up|shone|counted the stars|dug for the sky", "cold|bright|still warm", "silver"),
   // Age II: the Elder World
   en("first pebble|root|seed|clay tablet", "mud#m|at@bottom|deep ground|first cave", "dug|stopped digging|wrote BOTTOM|gave up", "ancient|final|wrong", "brown"),
@@ -38,7 +38,7 @@ export const EN_STRATA: readonly EnLexicon[] = [
   en("knot|name tied in thread|ball of yarn|rope end", "great knot|snarl|heart of the knot|loop", "tied a knot|pulled tight|held fast|picked at a knot", "tight|tangled|stubborn", "dark red"),
   en("loose thread|worn patch|hem|hole of light", "thin place|tear|threadbare cloth|loose weave", "let go|let the light through|split|gave way", "thin|threadbare|see-through", "pale gold"),
   // Age VI: the Draft
-  en("outline of a tree|pencil|unfinished bird|sketch of a house", "sketch|blank field|first draft|pencilled wood", "drew a bird|waited for colour|left a gap|drew a line", "uncoloured|light|rough", "sepia"),
+  en("outline of a tree|pencil|unfinished bird|sketch of a house", "sketch|blank field|first draft|pencilled wood", "drew a bird|waited for color|left a gap|drew a line", "uncolored|light|rough", "sepia"),
   en("stick of charcoal|smudge|thumbprint|rag", "soot#m|black dust#m|hatching#m|corner", "left a mark|rubbed out a hill|blackened|shaded", "smudged|sooty|rough", "charcoal"),
   en("second keep|unfinished well|dotted line|tower barely drawn", "other kingdom|outline|unfinished field|plans#p", "began a wall|put the pen down|traced a road|left it for later", "unfinished|empty|provisional", "umber"),
   en("crumbs of rubber#p|ghost of a house|rubbed-out name|handprint", "erased field|pale patch|hollow of the paper|space left behind", "faded|took something back|rubbed out a line|half vanished", "erased|ghostly|almost there", "off-white"),
@@ -77,7 +77,7 @@ export const EN_STRATA: readonly EnLexicon[] = [
   en("point of light|pinprick|lone star|grain of light", "dark#m|at@centre|at@very beginning|smallest place", "looked|shone|appeared|waited to be seen", "small|alone|keen", "pearl"),
   en("spark|flint|warmth#m|wisp of straw", "warm dark|cupped hands#p|first fire|kindling#m", "warmed|caught|crackled|lit something", "warm|small|alive", "ember red"),
   en("breath|bubble of air|mist of a breath|small wind", "lungs#p|pause before|calm|inward breath", "breathed in|held a breath|breathed out|waited", "held|full|suspended", "misty"),
-  en("plain cloak|lowered sword|open hand|brow without a crown", "eyes#p|long look|at@end of the road|last room", "looked at you|said thank you|lowered the sword|said go back", "kind|tired|plain", "hazel"),
+  en("plain cloak|lowered sword|open hand|brow without a crown", "quiet room|on@last step|at@end of the road|last room", "looked up|said thank you|lowered the sword|turned away", "kind|tired|plain", "hazel"),
   en("line of light|last star|first bird|gold thread", "dawn#m|at@edge of everything|seam of the day|not-yet", "grew|waited|halted|said not yet", "pale|growing|near", "dawn pink")
 ];
 
@@ -87,7 +87,7 @@ export const EN_BIOMES: Record<string, EnLexicon> = {
   "dark-forest": en("thorn|owl feather|root|carved name", "brambles#p|hollow oak|clearing|roots#p", "whispered a name|grew a thorn|bled|asked who", "thorny|mossy|listening", "dark green"),
   "forgotten-caves": en("pick|sky-shard|rune lamp|canary cage", "vault|gallery|mine shaft|deep vein", "dug|echoed|struck a vein|heard tomorrow", "frozen|echoing|deep", "glacier blue"),
   "corrupted-marsh": en("wedding ring|guttering flame|brick of peat|drowned letter", "mire|on@drowned road|sinking manor|reeds#p", "sank an inch|bowed|croaked|tried a cure", "sodden|rotting|faithful", "verdigris"),
-  "fallen-king-ruins": en("faded banner|cracked bell|guard's spear|hound's collar", "great hall|throne room|on@stair|at@window", "saluted|kept watch|climbed the stair|faced the window", "colourless|cracked|loyal", "violet")
+  "fallen-king-ruins": en("faded banner|cracked bell|guard's spear|hound's collar", "great hall|throne room|on@stair|at@window", "saluted|kept watch|climbed the stair|faced the window", "colorless|cracked|loyal", "violet")
 };
 
 /** The King's own words (40). His deeds are said by him: "I sat down". */

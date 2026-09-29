@@ -34,6 +34,7 @@ export const night = defineMessages({
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds} s`,
     descendedTitle: "La Descente",
     descendedText: (threads: string) => `+${threads} fils. La nuit reprend, un fil plus bas.`,
+    cutscene: { skip: "Passer", next: "Continuer" },
     reunionTitle: "Retrouvailles",
     reunionText: (duration: string) => `La compagnie a tenu la route sans toi. Elle frappe trois fois plus fort pendant ${duration}.`,
     /** What the company tells the walker back at the Reunion. */
@@ -92,6 +93,7 @@ export const night = defineMessages({
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds}s`,
     descendedTitle: "The Descent",
     descendedText: (threads: string) => `+${threads} threads. The night begins again, one thread lower.`,
+    cutscene: { skip: "Skip", next: "Continue" },
     reunionTitle: "Reunion",
     reunionText: (duration: string) => `The company held the road without you. It strikes three times harder for ${duration}.`,
     account: {

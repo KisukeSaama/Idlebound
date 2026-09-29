@@ -21,12 +21,16 @@ import {
   hireLine,
   isSkillUnlocked,
   itemName,
+  eclipseWord,
+  isKingStage,
   kingWord,
   recognitionTier,
   regaliaWord,
   wearsRegalia,
+  witnessedCutscenes,
   type AbsenceAccount,
   type ChronicleEntry,
+  type CutsceneId,
   type GameEvent
 } from "@idlebound/game";
 import { currentLocale, currentMessages, useI18n } from "@/i18n/client";
@@ -42,6 +46,7 @@ import { useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
+import { Cutscene } from "./components/Cutscene";
 import { ReunionModal } from "./components/ReunionModal";
 import { GameHeader } from "./components/GameHeader";
 import { HeroPanel } from "./components/HeroPanel";
@@ -62,6 +67,10 @@ const FRAGMENT_TOAST_GAP_MS = 60_000;
  * the King's Word, what stays after an absence, the sayings read at the stall).
  */
 const OWN_TOAST: ReadonlySet<ChronicleEntry["source"]> = new Set(["memory", "relic", "secret", "crown", "king", "dream", "saying"]);
+/** The night whose dusk is told in a scene: the first. */
+const FIRST_DUSK_NIGHT = 1;
+/** Chronicle sources rare and weighty enough to always be told, whatever came just before. */
+const ALWAYS_TOLD: ReadonlySet<ChronicleEntry["source"]> = new Set(["keystone", "milestone"]);
 /** Events told by their own window rather than a toast (the Caravan is bought at the stall). */
 const QUIET_EVENTS: ReadonlySet<string> = new Set(["caravan"]);
 /** How long a newly earned element of the shell glows. */
@@ -86,7 +95,7 @@ const REVEAL_PICTO: Partial<Record<RevealId, PictoName>> = {
   caravan: "stall"
 };
 /** Creatures whose new Bestiary lines are worth a toast: the great ones and the wanderers. */
-const HERALDED = new Set([...BIOMES.flatMap((biome) => [biome.boss.id, biome.miniBoss.id]), ...Object.keys(WANDERER_BY_ID)]);
+const HERALDED = new Set([...BIOMES.flatMap((biome) => [biome.boss.id, biome.miniBoss.id]), ...Object.keys(WANDERER_BY_ID), "echo-bat"]);
 
 export default function GameApp() {
   const store = useMemo(() => new GameStore(createInitialState()), []);
@@ -95,6 +104,7 @@ export default function GameApp() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
   const [reunion, setReunion] = useState<{ account: AbsenceAccount; seconds: number } | null>(null);
+  const [cutscene, setCutscene] = useState<CutsceneId | null>(null);
   const [mobileTab, setMobileTab] = useState<"heroes" | "scene">("heroes");
   const [ready, setReady] = useState(false);
   const toastId = useRef(0);
@@ -128,14 +138,26 @@ export default function GameApp() {
       }
       if (changed) setToasts(onScreen);
     };
-    return { add: (entry: Toast) => { line.push(entry); next(); }, next };
+    /**
+     * What a scene says is not told twice: a toast, waiting or shown, whose text is one of
+     * `lines` goes; one that only quotes one of them keeps its text and loses the quote.
+     */
+    const forget = (lines: ReadonlySet<string>) => {
+      const keep = (entries: Toast[]) =>
+        entries.filter((entry) => entry.text === undefined || !lines.has(entry.text)).map((entry) => (entry.quote && lines.has(entry.quote.text) ? { ...entry, quote: undefined } : entry));
+      line.splice(0, line.length, ...keep(line));
+      onScreen = keep(onScreen);
+      setToasts(onScreen);
+      next();
+    };
+    return { add: (entry: Toast) => { line.push(entry); next(); }, next, forget };
   }, []);
   const toast = useCallback((input: ToastInput) => {
     toastId.current += 1;
     pump.add({ ...input, id: toastId.current });
   }, [pump]);
 
-  const covered = openWindow !== null || confirmRequest !== null || reunion !== null;
+  const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null;
   // A newer release waits for a calm screen: nothing open, no toast still to be read.
   const fading = useNewRelease(cloud, !covered && toasts.length === 0);
   useEffect(() => {
@@ -150,6 +172,7 @@ export default function GameApp() {
     openWindow: (id, tab) => setOpenWindow({ id, tab }),
     closeWindow: () => setOpenWindow(null),
     toast,
+    playCutscene: setCutscene,
     confirm: (options) => new Promise<boolean>((resolve) => setConfirmRequest({ ...options, resolve }))
   }), [toast]);
 
@@ -253,6 +276,30 @@ export default function GameApp() {
     };
   }, [ready, store, toast, fresh]);
 
+  // The Ledger's scenes: one plays when the walker lives its moment during play. A load (a
+  // new engine) only takes note of the moments already lived; several lived at once (a long
+  // road walked alone) play only the last, the others wait in the Chronicle.
+  useEffect(() => {
+    if (!ready) return;
+    let engine = store.engine;
+    let known = new Set(witnessedCutscenes(store.state));
+    const check = () => {
+      const lived = witnessedCutscenes(store.state);
+      if (store.engine !== engine) {
+        engine = store.engine;
+        known = new Set(lived);
+        return;
+      }
+      const fresh = lived.filter((id) => !known.has(id));
+      if (fresh.length === 0) return;
+      known = new Set(lived);
+      const id = fresh[fresh.length - 1];
+      pump.forget(new Set(gameText(currentLocale()).cutscenes[id].lines));
+      setCutscene(id);
+    };
+    return store.subscribe(check);
+  }, [ready, store, pump]);
+
   // Audio settings, and the place that colours every sound.
   useEffect(() => {
     const sync = () => {
@@ -286,6 +333,10 @@ export default function GameApp() {
     let pendingWord: number | null = null;
     /** Remembrance Night is told once a day, however often the calendar is read. */
     let rememberedOn = "";
+    /** Companions who remembered at the same dusk, told together. */
+    let remembered: { heroId: string; tier: number }[] = [];
+    /** The King's seam closing on a walker who never passed him is told once a session. */
+    let repelled = false;
     return store.onFx((event: GameEvent) => {
       const locale = currentLocale();
       const m = currentMessages().hud.toasts;
@@ -300,6 +351,8 @@ export default function GameApp() {
           break;
         case "kill":
           audio.play(event.monster.kind === "boss" || event.monster.kind === "miniboss" ? "kill" : "coin");
+          // The Eclipse falls: shadowed, the King says what he remembers.
+          if (event.monster.eclipse) toast({ tone: "violet", icon: "crown", title: g.events.eclipse.name, quote: { by: g.speakers.king, text: eclipseWord(store.state.lifetime.ascensions, locale) } });
           if (event.monster.kind === "boss" || event.monster.kind === "miniboss") haptics.pulse("kill");
           break;
         case "spawn":
@@ -315,7 +368,10 @@ export default function GameApp() {
             // A guardian of the present night keeps its wounds: say how far down it stays.
             const wound = store.state.trail.wound;
             const text = wound && wound.stage === event.stage && wound.share > 0 ? m.bossFailedWounded(Math.round(wound.share * 100)) : m.bossFailedText;
-            toast({ tone: "danger", icon: "hourglass", title: m.bossFailedTitle, text });
+            // The King, to a walker who never passed him: once a session.
+            const first = isKingStage(event.stage) && store.state.lifetime.ascensions === 0 && !repelled;
+            if (first) repelled = true;
+            toast({ tone: "danger", icon: "hourglass", title: m.bossFailedTitle, text, quote: first ? { by: g.speakers.king, text: g.voices.kingRepels[0] } : undefined });
           }
           break;
         case "stage":
@@ -371,15 +427,18 @@ export default function GameApp() {
           toast({ tone: "violet", icon: "gem", title: m.crystalTitle, text: event.reward === "gold" ? m.crystal.gold(fmt(event.amount)) : m.crystal[event.reward](event.amount) });
           break;
         case "kingWord":
-          audio.play("kingWord");
+          // The first Word is spoken in the scene of the first dusk, with its own sound.
+          if (event.night !== FIRST_DUSK_NIGHT) audio.play("kingWord");
           pendingWord = event.night;
           break;
         case "ascended": {
-          audio.play("ascend");
           haptics.pulse("ascend");
-          // The confirmation carries the King's Word; in his Regalia, he knows the walker.
           const night = pendingWord;
           pendingWord = null;
+          // The first dusk is told in a scene (BIBLE 12.10), which plays its own sounds.
+          if (night !== FIRST_DUSK_NIGHT) audio.play("ascend");
+          // The confirmation carries the King's Word; in his Regalia, he knows the walker. A
+          // scene that speaks the Word takes the quote back (see `forget`).
           const word = night === null ? "" : wearsRegalia(store.state) ? regaliaWord(store.state.lore.regalia, locale) : kingWord(night, locale);
           toast({ tone: "gold", icon: "crown", title: m.ascendedTitle, text: m.ascendedText(fmt(event.essences)), quote: word ? { by: g.speakers.king, text: word } : undefined });
           break;
@@ -440,8 +499,24 @@ export default function GameApp() {
           break;
         }
         case "recognition":
-          audio.play("recognition");
-          toast({ tone: "gold", icon: "sparkle", title: m.recognition(g.heroes[event.heroId].name, event.tier), text: chronicleText({ source: "memory", hero: event.heroId, tier: event.tier }, locale).text });
+          // Everyone who remembers at the same dusk is told in one toast; one alone, with their memory.
+          remembered.push({ heroId: event.heroId, tier: event.tier });
+          if (remembered.length > 1) break;
+          setTimeout(() => {
+            const all = remembered;
+            remembered = [];
+            const words = currentMessages().hud.toasts;
+            const text = gameText(currentLocale());
+            audio.play("recognition");
+            if (all.length === 1) {
+              const [one] = all;
+              toast({ tone: "gold", icon: "sparkle", title: words.recognition(text.heroes[one.heroId].name, one.tier), text: chronicleText({ source: "memory", hero: one.heroId, tier: one.tier }, currentLocale()).text });
+              return;
+            }
+            const names = all.map((entry) => text.heroes[entry.heroId].name);
+            const list = `${names.slice(0, -1).join(", ")}${words.and}${names[names.length - 1]}`;
+            toast({ tone: "gold", icon: "sparkle", title: words.recognitionManyTitle, text: words.recognitionMany(list, all.every((entry) => entry.tier === 1)) });
+          }, 0);
           break;
         case "secret":
           audio.play("fragment");
@@ -454,7 +529,7 @@ export default function GameApp() {
         case "fragment": {
           if (OWN_TOAST.has(event.entry.source)) break;
           const now = performance.now();
-          if (now - lastFragmentAt < FRAGMENT_TOAST_GAP_MS) break;
+          if (!ALWAYS_TOLD.has(event.entry.source) && now - lastFragmentAt < FRAGMENT_TOAST_GAP_MS) break;
           lastFragmentAt = now;
           audio.play("fragment");
           const line = chronicleText(event.entry, locale);
@@ -512,6 +587,7 @@ export default function GameApp() {
         {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
         <CloudChoiceModal />
         {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
+        {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
         {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
         <Toasts toasts={toasts} held={covered} />
         <InstallInvite covered={covered} />

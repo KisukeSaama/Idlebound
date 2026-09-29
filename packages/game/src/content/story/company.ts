@@ -37,7 +37,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         { by: "Séraphine", text: "Séraphine kneels and speaks to a root. It uncurls from the soil and points, very slowly, at you. She frowns at the root, not at you." },
         { by: "Séraphine", text: "\"The heart of the Grove is expecting you,\" Séraphine says. \"It does not expect anyone. It has not needed to in a long time.\"" },
         { by: "Séraphine", text: "At the Old Grove, Séraphine stays at the edge, one hand on the bark of a younger tree. \"Go on. I'll be here after.\"" },
-        { by: "Séraphine", text: "\"It taught me my first root. The first night, it asked me to help you. I said no. It asked again. It is patient.\"" },
+        { by: "Séraphine", text: "\"She taught me my first root. The first night, she asked me to help you. I said no. She asked again. She is patient.\"" },
         { by: "Séraphine", text: "\"She says thank you. Every time.\" She presses a seed into your hand, still warm. \"Her last. It won't grow here. It's waiting.\"" }
       ],
       thorvald: [
@@ -147,7 +147,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         { by: "Séraphine", text: "Séraphine s'agenouille et parle à une racine. Elle se déroule hors de la terre et te désigne, très lentement. Séraphine la regarde de travers, elle, pas toi." },
         { by: "Séraphine", text: "« Le cœur du bosquet t'attend, dit Séraphine. Il n'attend personne. Il n'en a plus eu besoin depuis longtemps. »" },
         { by: "Séraphine", text: "Au vieux bosquet, Séraphine reste à la lisière, une main sur l'écorce d'un arbre plus jeune. « Vas-y. Je serai là, après. »" },
-        { by: "Séraphine", text: "« Il m'a appris ma première racine. Le premier soir, il m'a demandé de t'aider. J'ai dit non. Il a redemandé. Il est patient. »" },
+        { by: "Séraphine", text: "« Elle m'a appris ma première racine. Le premier soir, elle m'a demandé de t'aider. J'ai dit non. Elle a redemandé. Elle est patiente. »" },
         { by: "Séraphine", text: "« Elle dit merci. À chaque fois. » Elle te met une graine dans la main, encore tiède. « Sa dernière. Elle ne poussera pas ici. Elle attend. »" }
       ],
       thorvald: [
@@ -172,7 +172,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         { by: "Kaelen", text: "« Laisse-moi porter le dernier coup. Une fois. Je lui dois cette nuit-là. »" }
       ],
       oriane: [
-        { by: "Oriane", text: "« ...de loin pour arriver jusqu'ici », achève Oriane avant toi. C'est exactement ce que tu allais dire." },
+        { by: "Oriane", text: "« ...un long chemin jusqu'ici », achève Oriane avant toi. C'est exactement ce que tu allais dire." },
         { by: "Oriane", text: "« ...et tu as faim », achève-t-elle. Ce n'est pas du tout ce que tu allais dire. Elle le sait. Elle veut t'entendre rire." },
         { by: "Oriane", text: "Oriane compte à mi-voix pendant que vous marchez. Les nombres sont immenses. Quand tu la regardes, elle ne s'arrête pas." },
         { by: "Oriane", text: "Elle s'arrête au milieu d'un nombre. « Je l'ai perdu. Je ne le perds jamais. » Elle ne recommence pas." },

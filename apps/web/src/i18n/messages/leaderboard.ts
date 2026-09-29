@@ -35,7 +35,7 @@ export const leaderboard = defineMessages({
     unavailable: "Le classement est momentanément indisponible. Réessaie dans un instant.",
     empty: "Aucun nom n'est encore inscrit. ",
     emptyCta: "Inscris le premier nom !",
-    columns: { rank: "#", player: "Aventurier", stage: "Étape", ascensions: "Ascensions" }
+    columns: { rank: "#", player: "Marcheur", stage: "Étape", ascensions: "Ascensions" }
   },
   en: {
     metaTitle: "Fantasy clicker leaderboard",
@@ -66,6 +66,6 @@ export const leaderboard = defineMessages({
     unavailable: "The leaderboard is temporarily unavailable. Try again in a moment.",
     empty: "No name is inscribed yet. ",
     emptyCta: "Write the first one!",
-    columns: { rank: "#", player: "Adventurer", stage: "Stage", ascensions: "Ascensions" }
+    columns: { rank: "#", player: "Walker", stage: "Stage", ascensions: "Ascensions" }
   }
 });

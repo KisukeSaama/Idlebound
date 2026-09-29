@@ -308,3 +308,12 @@ const SIGILS: Record<string, PixelMask> = {
 };
 
 export const EMBLEMS: Record<string, PixelMask> = lookup(Object.entries(SIGILS));
+
+/** The tiny gold rat that sits on Thorvald's medallion once he and Pip are even (secret 2). */
+export const EVEN_RAT: PixelMask = sigil([
+  "......cc..",
+  "..bbbbcac.",
+  ".abbbbbbcw",
+  "a.abbbbbb.",
+  "a..b...b.."
+]);

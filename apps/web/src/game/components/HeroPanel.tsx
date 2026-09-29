@@ -2,6 +2,7 @@
 
 import {
   CLICK_HERO_ID,
+  givingAllAway,
   HEROES,
   UPGRADE_BY_ID,
   heroCost,
@@ -20,7 +21,7 @@ import type { Messages } from "@/i18n/messages";
 import { useFormat, useGame, useReveals } from "../context";
 import { GoldIcon, Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
-import { awakenedSeed, emblemSource, portraitSource } from "../pixel/sources";
+import { awakenedSeed, emblemSource, evenRatSource, portraitSource } from "../pixel/sources";
 import { describeEffect } from "../text";
 
 const MODES: BuyMode[] = [1, 10, 25, 100, "max"];
@@ -255,6 +256,8 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
               onTalent={onTalent}
               onPortrait={hero.id === "nyx" && level > 0 ? onPortrait : undefined}
               starfield={hero.id === "nyx" && starfield}
+              fading={hero.id === CLICK_HERO_ID && givingAllAway(state)}
+              even={hero.id === "thorvald" && state.secrets.includes("even")}
             />
           );
         })}
@@ -319,14 +322,18 @@ interface HeroRowProps {
   onPortrait?: (heroId: string) => void;
   /** The Faceless was just found: the medallion shows the stars. */
   starfield: boolean;
+  /** Aldric, once the walker gave all of themselves away: the name and the face go grey. */
+  fading: boolean;
+  /** Thorvald and Pip are even: a tiny gold rat sits on his medallion. */
+  even: boolean;
 }
 
-const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent, onPortrait, starfield }: HeroRowProps) {
+const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent, onPortrait, starfield, fading, even }: HeroRowProps) {
   const isClick = hero.id === CLICK_HERO_ID;
   const hired = level > 0;
   const hold = useHoldRepeat(() => onBuy(hero.id));
   return (
-    <li className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}`} style={{ ["--hero" as string]: hero.color }}>
+    <li className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}${fading ? " is-fading" : ""}`} style={{ ["--hero" as string]: hero.color }}>
       <div
         className={`hero-medallion ${recognition > 0 ? `recognized recognition-${recognition}` : ""} ${starfield ? "starfield" : ""}`}
         aria-hidden="true"
@@ -334,6 +341,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
       >
         <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size={64} nearest /></span>
         {starfield ? <span className="medallion-stars" /> : null}
+        {even ? <PixelSprite source={evenRatSource()} scale={1} className="medallion-rat" /> : null}
         {hired ? <span className="hero-level">{level}</span> : null}
       </div>
       <div className="hero-info">

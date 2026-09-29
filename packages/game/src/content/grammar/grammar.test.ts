@@ -52,7 +52,8 @@ function checkLine(text: string, by: string, locale: Locale, deep: boolean): str
   if (!deep && FORBIDDEN_WORDS.test(text)) problems.push("forbidden word");
   if (locale === "fr" && FR_BROKEN.test(text)) problems.push("elision");
   if (locale === "en" && EN_BROKEN.test(text)) problems.push("article");
-  if (!/^[\p{Lu}0-9]/u.test(text)) problems.push("capital");
+  // Célestine sings in lower case, like every song written for her (BIBLE 20); everyone else opens on a capital.
+  if (by === "Célestine" ? /^\p{Lu}/u.test(text) : !/^[\p{Lu}0-9]/u.test(text)) problems.push("capital");
   if (!/[.!?]$/.test(text)) problems.push("end");
   return problems;
 }

@@ -44,7 +44,7 @@ const en: StrataText = {
     { by: "The Ledger", text: "Garrick held a star-shard up to the sky. It fit." },
     // Age II: the Elder World
     { by: "The Ledger", text: "Lysandre's map ends here, with one word: BOTTOM." },
-    { by: "The Ledger", text: "The ground kept going. Lysandre has not spoken since." },
+    { by: "The Ledger", text: "The ground kept going. For once, Lysandre had nothing to add." },
     { by: "The Ledger", text: "Aurelion bowed to a bone the size of a valley." },
     { by: "Aurelion", text: "There was a sea here, before there was a here." },
     { by: "Kaelen", text: "Frozen in the ice: a crown, smaller than his." },
@@ -126,7 +126,7 @@ const en: StrataText = {
     "remember-five": { by: "Maëlle", text: "\"Five of us now. We keep a seat for you by the fire, and argue over who sits next to it.\"" },
     "remember-ten": { by: "Morgrath", text: "\"Ten of them remember you. I have been dead a very long time, and nobody ever remembered me that hard.\"" },
     "remember-all": { by: "The Ledger", text: "Twenty names, and every one of them knows yours. The night has never been this crowded, or this warm." },
-    "kaelen-ran": { by: "The King", text: "\"I don't blame the boy. Somebody had to be afraid. It left me free to be the other thing.\"" },
+    "kaelen-ran": { by: "The King", text: "\"The boy was afraid for both of us. It left me free to be the other thing.\"" },
     "nameless-speaks": { by: "The Nameless", text: "The helmet turns toward you. A voice like a door unopened for years: \"Still walking?\"" },
     "eldra-loom": { by: "The Ledger", text: "Behind Eldra's curtain: a loom as tall as the sky, and on it, half woven, tonight." },
     "awakened-hello": { by: "Oriane", text: "\"It spoke. I did not hear it coming. I always hear things coming.\"" }
@@ -171,7 +171,7 @@ const fr: StrataText = {
     { by: "Le Grand Livre", text: "Garrick a levé un éclat d'étoile vers le ciel. Il s'y emboîtait." },
     // Âge II : le Monde ancien
     { by: "Le Grand Livre", text: "La carte de Lysandre s'arrête ici, sur un seul mot : FOND." },
-    { by: "Le Grand Livre", text: "Le sol a continué. Lysandre n'a plus dit un mot depuis." },
+    { by: "Le Grand Livre", text: "Le sol a continué. Pour une fois, Lysandre n'avait rien à ajouter." },
     { by: "Le Grand Livre", text: "Aurelion s'est incliné devant un os grand comme une vallée." },
     { by: "Aurelion", text: "Il y avait une mer ici, avant qu'il y ait un ici." },
     { by: "Kaelen", text: "Prise dans la glace : une couronne, plus petite que la sienne." },
@@ -201,8 +201,8 @@ const fr: StrataText = {
     { by: "Eldra", text: "Sous ce monde, les lignes d'un autre." },
     // Âge VII : les Mots
     { by: "Lysandre", text: "Chaque pierre est une lettre. La route est une phrase." },
-    { by: "Le Grand Livre", text: "Le glyphe « roi » et le glyphe « fatigué » sont le même." },
-    { by: "Célestine", text: "Ici, les Vestiges parlent en rimes. Ils essaient qu'on se souvienne d'eux." },
+    { by: "Le Grand Livre", text: "Le glyphe « roi » et le glyphe « fatigué » ne font qu'un." },
+    { by: "Célestine", text: "Ici, les Vestiges parlent en rimes. Ils voudraient qu'on se souvienne d'eux." },
     { by: "Le Grand Livre", text: "Le Sans-Nom s'est arrêté. Il a entendu un mot, ici. Il ne le dira pas." },
     { by: "Oriane", text: "Quelque chose raconte ce monde à lui-même, tout bas, pour qu'il ne s'arrête pas." },
     // Âge VIII : la Lisière du sommeil
@@ -253,7 +253,7 @@ const fr: StrataText = {
     "remember-five": { by: "Maëlle", text: "« On est cinq, maintenant. On te garde une place près du feu, et on se dispute pour savoir qui s'assoit à côté. »" },
     "remember-ten": { by: "Morgrath", text: "« Dix d'entre eux se souviennent de toi. Je suis mort depuis très longtemps, et personne ne s'est jamais souvenu de moi aussi fort. »" },
     "remember-all": { by: "Le Grand Livre", text: "Vingt noms, et chacun connaît le tien. La nuit n'a jamais été aussi peuplée, ni aussi tiède." },
-    "kaelen-ran": { by: "Le Roi", text: "« Je n'en veux pas au petit. Il fallait bien que quelqu'un ait peur. Ça m'a laissé libre d'être l'autre chose. »" },
+    "kaelen-ran": { by: "Le Roi", text: "« Le petit a eu peur pour nous deux. Ça m'a laissé libre d'être l'autre chose. »" },
     "nameless-speaks": { by: "Le Sans-Nom", text: "Le heaume se tourne vers toi. Une voix comme une porte fermée depuis des années : « Encore debout ? »" },
     "eldra-loom": { by: "Le Grand Livre", text: "Derrière le rideau d'Eldra : un métier aussi haut que le ciel, et dessus, à moitié tissée, cette nuit." },
     "awakened-hello": { by: "Oriane", text: "« Il a parlé. Je ne l'ai pas entendu venir. J'entends toujours tout venir. »" }

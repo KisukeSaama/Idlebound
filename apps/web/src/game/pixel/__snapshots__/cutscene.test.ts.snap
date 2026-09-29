@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the shots of the Ledger's scenes > matches the recorded snapshots of the shots 1`] = `
+{
+  "almost 0": "2894fd2f 2894fd2f 2894fd2f",
+  "almost 1": "c45957b9 c45957b9 c45957b9",
+  "almost 2": "2894fd2f 2894fd2f 2894fd2f",
+  "empty-throne 0": "ea666447 ea666447 ea666447",
+  "empty-throne 1": "ea666447 ea666447 ea666447",
+  "empty-throne 2": "ea14e84a ea14e84a ea14e84a",
+  "first-dusk 0": "ea666447 ea666447 ea666447",
+  "first-dusk 1": "ea666447 ea666447 ea666447",
+  "first-dusk 2": "ea666447 0c3a0a06 ea14e84a",
+  "first-dusk 3": "c195a9de c195a9de c195a9de",
+  "first-dusk 4": "2894fd2f 2894fd2f 2894fd2f",
+}
+`;

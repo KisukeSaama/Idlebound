@@ -3,7 +3,7 @@
  * by hand pixel by pixel (the scarecrow), the buildings (architecture.ts), and the
  * Hearthfields' milestone stone.
  */
-import { DECOR, SCENES, SCENE_HEIGHT, SCENE_WIDTH, STRUCTURES, palLuma, type Pal, type PropKind, type SceneRecipe, type Shape, type StructurePlacement } from "@idlebound/game/art";
+import { DECOR, SCENES, SCENE_HEIGHT, SCENE_WIDTH, STRUCTURES, palLuma, type DecorGrid, type Pal, type PropKind, type SceneRecipe, type Shape, type StructurePlacement } from "@idlebound/game/art";
 import { buildStructure, NO_WEAR, type BuildColors, type Built, type Wear } from "./architecture";
 import { dottedCircle, inside, moonlit, stamp, towardMoon } from "./draw";
 import { TUFTS } from "./ground";
@@ -167,6 +167,8 @@ export interface PropContext {
   water: Uint8Array | null;
   /** Structures already drawn for another frame of the same scene, by placement and frame of their own cycle. */
   memo?: Map<string, Built | null>;
+  /** The small hand-drawn details the structures are dressed in (a secret can change one). */
+  decor?: Readonly<Record<string, DecorGrid>>;
 }
 
 /**
@@ -210,7 +212,7 @@ export function paintProps(recipe: SceneRecipe, frame: number, context: PropCont
         const key = `${index}:${own}`;
         let built = context.memo?.get(key);
         if (built === undefined) {
-          built = structurePixels(recipe, placement, context.wear, own);
+          built = structurePixels(recipe, placement, context.wear, own, context.decor);
           context.memo?.set(key, built);
         }
         if (!built) return;
@@ -311,13 +313,13 @@ function buildColors(recipe: SceneRecipe, side: -1 | 1): BuildColors {
 }
 
 /** A structure of the scene drawn in its colors, lit from the moon's side, mirrored on demand. */
-function structurePixels(recipe: SceneRecipe, placement: StructurePlacement, wear: Wear, frame: number): Built | null {
+function structurePixels(recipe: SceneRecipe, placement: StructurePlacement, wear: Wear, frame: number, decor: Readonly<Record<string, DecorGrid>> = DECOR): Built | null {
   const structure = STRUCTURES[placement.id];
   if (!structure || !recipe.build) return null;
   const moon = towardMoon(recipe, placement.x) as -1 | 1;
   // A mirrored structure is built lit from the other side, so once mirrored the moon is right.
   const side = (placement.flip ? -moon : moon) as -1 | 1;
-  const built = buildStructure(structure, buildColors(recipe, side), DECOR, wear, frame);
+  const built = buildStructure(structure, buildColors(recipe, side), decor, wear, frame);
   if (!placement.flip) return built;
   const { pixels } = built;
   const mirrored = createPixels(pixels.w, pixels.h);

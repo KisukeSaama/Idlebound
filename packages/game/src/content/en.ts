@@ -2,6 +2,7 @@ import { AGE_ECHOES_TEXT } from "./story/ages";
 import { BESTIARY_TEXT } from "./story/bestiary";
 import { BESTIARY_KEEP_TEXT } from "./story/bestiary-keep";
 import { COMPANY_TEXT } from "./story/company";
+import { CUTSCENES_TEXT } from "./story/cutscenes";
 import { COMPANY_LATE_TEXT } from "./story/company-late";
 import { PLACES_TEXT } from "./story/places";
 import { STRATA_TEXT } from "./story/strata";
@@ -117,7 +118,7 @@ export const en: GameText = {
     blade: { name: "Altar of the Blade", description: "Each level multiplies your whole strike by 1.1, its share of your DPS included." },
     fortune: { name: "Altar of Fortune", description: "Each level multiplies your gold by 1.12." },
     patience: { name: "Altar of Patience", description: "Each level multiplies your companions' Patience bonus by 1.14. Your strikes stand in for it, blow for blow." },
-    time: { name: "Altar of Time", description: "+1 s on the boss timer per level." },
+    time: { name: "Altar of Time", description: "+1 s on the timer of elites and guardians per level." },
     fate: { name: "Altar of Fate", description: "+20% critical damage per level." },
     precision: { name: "Altar of Precision", description: "+1% critical hit chance per level." },
     treasure: { name: "Altar of Treasure", description: "+0.5% golden rat spawn chance per level." },
@@ -166,7 +167,7 @@ export const en: GameText = {
     clicks: (t) => `Strike ${n(t)} times.`,
     crits: (t) => `Land ${n(t)} critical hits.`,
     kills: (t) => `Defeat ${n(t)} monsters.`,
-    bosses: (t) => `Defeat ${n(t)} ${s(t, "boss", "bosses")}.`,
+    bosses: (t) => `Defeat ${n(t)} ${s(t, "elite or guardian", "elites and guardians")}.`,
     gold: (t) => `Earn ${exp(t)} gold in total.`,
     treasure: (t) => `Defeat ${n(t)} golden ${s(t, "rat")}.`,
     crystal: (t) => `Catch ${n(t)} wandering ${s(t, "crystal")}.`,
@@ -180,7 +181,7 @@ export const en: GameText = {
     mythic: (t) => `Find ${t} mythic ${s(t, "item")}.`,
     hit: (t) => `Deal a single hit of ${exp(t)} damage.`,
     time: (t) => `Walk the night for ${Math.round(t / 3600)} h in total.`,
-    fails: (t) => `Fail against a boss ${t} ${s(t, "time")}.`,
+    fails: (t) => `Be pushed back by an elite or a guardian ${t} ${s(t, "time")}.`,
     ...SYSTEMS_TEXT.en.achievementDescriptions
   },
   slots: { weapon: "Weapon", armor: "Armor", amulet: "Amulet", ring: "Ring" },
@@ -191,7 +192,7 @@ export const en: GameText = {
     gold: "Gold",
     critChance: "Critical chance",
     critDamage: "Critical damage",
-    bossDamage: "Boss damage",
+    bossDamage: "Damage to elites and guardians",
     essence: "Ascension essences"
   },
   itemBases: {
@@ -233,7 +234,7 @@ export const en: GameText = {
     "lantern-moth": [
       "Drawn to the walker's light. Everything in the night is.",
       "It dies facing the brightest thing in sight. Lately, that has been you.",
-      "The moths have a queen. She comes when the light is looked at very hard."
+      "The moths have a queen. On storm nights, she comes down to count them."
     ],
     "dusk-hare": [
       "It is always running toward dusk. It never arrives.",
@@ -261,7 +262,7 @@ export const en: GameText = {
       "The Ledger keeps a single entry for Pip. It is in Pip's handwriting."
     ],
     "lantern-queen": [
-      "Queen of the moths. She follows the light to wherever someone is looking.",
+      "Queen of the moths. Where she passes, the crystals fall faster, as if shaken from a branch.",
       "She never lands. The Ledger has never recorded where she rests, or whether.",
       "Her wings are made of every lamp that was ever left burning for someone."
     ],
@@ -336,5 +337,6 @@ export const en: GameText = {
   weaves: SYSTEMS_TEXT.en.weaves,
   caravan: SYSTEMS_TEXT.en.caravan,
   crown: SYSTEMS_TEXT.en.crown,
+  cutscenes: CUTSCENES_TEXT.en,
   speakers: { king: "The King", stallkeeper: "The Stallkeeper", ledger: "The Ledger" }
 };

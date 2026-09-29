@@ -70,6 +70,8 @@ export function SceneCanvas({
   const darkNight = darkNightProp ?? state.settings.darkNight ?? false;
   const canvas = useRef<HTMLCanvasElement>(null);
   const reducedSetting = state.settings.reducedMotion;
+  // The Last Second: the Keep's gargoyle has lost a claw.
+  const clawless = state.secrets.includes("last-second");
   const stage = state.stage;
 
   useEffect(() => {
@@ -114,8 +116,8 @@ export function SceneCanvas({
 
   const sceneId = state.stage >= MAX_STAGE ? "dawn" : biomeId;
   useEffect(() => {
-    renderer.current?.setScene(sceneId, era, fullMoon, darkNight);
-  }, [renderer, sceneId, era, fullMoon, darkNight]);
+    renderer.current?.setScene(sceneId, era, fullMoon, darkNight, clawless);
+  }, [renderer, sceneId, era, fullMoon, darkNight, clawless]);
 
   // A Crystal Storm: the Lantern Queen crosses the sky.
   useEffect(() => store.onFx((event) => {
@@ -164,11 +166,11 @@ export function SceneCanvas({
     const creatures = (biome: BiomeDef) => [...biome.monsters, biome.miniBoss, biome.boss].map((def) => def.id);
     const current = BIOMES.find((biome) => biome.id === biomeId);
     const stretches: Stretch[] = [
-      ...(current ? [{ sceneId, era, fullMoon, darkNight, creatures: creatures(current) }] : []),
-      { sceneId: nextSceneId, era: nextEra, fullMoon, darkNight, creatures: creatures(nextBiome) }
+      ...(current ? [{ sceneId, era, fullMoon, darkNight, clawless, creatures: creatures(current) }] : []),
+      { sceneId: nextSceneId, era: nextEra, fullMoon, darkNight, clawless, creatures: creatures(nextBiome) }
     ];
     renderer.current?.prepare(stretches);
-  }, [renderer, biomeId, sceneId, era, nextBiome, nextSceneId, nextEra, fullMoon, darkNight]);
+  }, [renderer, biomeId, sceneId, era, nextBiome, nextSceneId, nextEra, fullMoon, darkNight, clawless]);
 
   return <canvas ref={canvas} className="scene-canvas" aria-hidden="true" />;
 }

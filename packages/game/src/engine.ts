@@ -47,6 +47,7 @@ import {
   GOOD_BOY_LEVEL,
   GOOD_BOY_RUNS,
   KEEP_SOME_ESSENCES,
+  givingAllAway,
   LAST_SECOND_LEFT,
   LAST_SECOND_TIMES,
   LESSONS,
@@ -1711,7 +1712,7 @@ export class GameEngine {
       this.fragment({ source: "altar", id });
     }
     // That's How It Starts: everything given away in one visit to the Sanctum.
-    if (s.essences < 1 && s.trail.offered >= KEEP_SOME_ESSENCES) this.discover("how-it-starts");
+    if (givingAllAway(s)) this.discover("how-it-starts");
     this.refresh(now);
     return true;
   }
