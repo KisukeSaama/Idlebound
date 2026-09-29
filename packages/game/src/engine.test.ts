@@ -695,6 +695,20 @@ describe("anti-cheat", () => {
     expect(verifyState(endless, now).map((violation) => violation.code)).toContain("buff");
   });
 
+  it("stacks stall potions past an hour, as long as shards were earned for them", () => {
+    const engine = newGame(4);
+    const now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
+    engine.state.shards += 200;
+    engine.state.lifetime.shardsEarned += 200;
+    for (let draught = 0; draught < 9; draught += 1) expect(engine.buyOffer("rage", now)).toBe(true);
+    const rage = engine.state.buffs.find((buff) => buff.id === "rage")!;
+    expect(rage.until).toBe(now + 90 * 60_000);
+    expect(verifyState(engine.state, now).map((violation) => violation.code)).not.toContain("buff");
+    const forged = structuredClone(engine.state);
+    forged.buffs.find((buff) => buff.id === "rage")!.until += 24 * 3600_000;
+    expect(verifyState(forged, now).map((violation) => violation.code)).toContain("buff");
+  });
+
   it("pushes on while away even when auto-advance was paused by a failed boss", () => {
     const engine = newGame(4);
     let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });

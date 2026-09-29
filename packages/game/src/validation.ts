@@ -19,7 +19,7 @@ import { EVENTS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WALKER_DPS } f
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
 import { CARAVAN_WARES } from "./data/caravan";
-import { BUFF_MAX_SECONDS, MARKET_BY_ID } from "./data/market";
+import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFFS, MARKET_BY_ID } from "./data/market";
 import { CRYSTAL_SHARDS_MAX } from "./engine";
 import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
 import { maxAffixValue } from "./loot";
@@ -95,6 +95,17 @@ const MIN_HOURGLASS_SHARDS = (() => {
   const discount = 1 - namedMax("marketDiscount");
   const night = CARAVAN_WARES.find((ware) => ware.id === "bottled-night")!;
   return Math.min(Math.max(1, Math.ceil(MARKET_BY_ID.hourglass.cost * discount)), Math.max(1, Math.ceil(night.cost * discount)) / 2);
+})();
+
+/**
+ * Cheapest ten minutes of a stall boon, in shards: a potion, an elixir, a scroll, or half an
+ * Ember Draught (which pours both), every discount worn.
+ */
+const MIN_BOON_SHARDS = (() => {
+  const discount = 1 - namedMax("marketDiscount");
+  const draught = CARAVAN_WARES.find((ware) => ware.id === "ember-draught")!;
+  const potions = MARKET_BUFFS.map((id) => Math.max(1, Math.ceil(MARKET_BY_ID[id].cost * discount)));
+  return Math.min(...potions, Math.max(1, Math.ceil(draught.cost * discount)) / 2);
 })();
 
 /** Most shards salvaging one item returns before its forge levels (a mythic). */
@@ -356,8 +367,12 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   if (trail.offered > lifetime.essencesEarned + 1) fail("trail", "More essences offered than gathered.");
   if (trail.migration && !BIOMES.some((biome) => biome.id === trail.migration!.biome)) fail("trail", "Unknown migration.");
   // Wounds stay only on a boss of the present night, at the head of the run, up to their cap.
-  // Boons (the Reunion included) last an hour at most from the last tick.
-  if (state.buffs.some((buff) => buff.until > state.lastTickAt + (BUFF_MAX_SECONDS + CLOCK_SLACK_SECONDS) * 1000)) fail("buff", "A boon lasts too long.");
+  // Boons (the Reunion included) last an hour at most from the last tick; the stall's pile up,
+  // but never past what every shard ever earned could have bought.
+  const lasting = (buff: GameState["buffs"][number]) => Math.max(0, buff.until - state.lastTickAt) / 1000;
+  if (state.buffs.some((buff) => !isMarketBuff(buff.id) && lasting(buff) > BUFF_MAX_SECONDS + CLOCK_SLACK_SECONDS)) fail("buff", "A boon lasts too long.");
+  const bottled = state.buffs.filter((buff) => isMarketBuff(buff.id)).reduce((sum, buff) => sum + lasting(buff), 0);
+  if (bottled > (state.lifetime.shardsEarned / MIN_BOON_SHARDS) * BUFF_DURATION_SECONDS + CLOCK_SLACK_SECONDS) fail("buff", "More boon time than shards could buy.");
   if (trail.wound && (trail.wound.share > WOUND_CAP + EPSILON || trail.wound.stage > WOUND_LAST_STAGE || trail.wound.stage !== state.maxStage || !isBossStage(trail.wound.stage) || lifetime.bossFails === 0)) fail("trail", "Impossible wounds.");
 
   const lore = state.lore;
