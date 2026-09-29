@@ -12,7 +12,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
     [
       { by: "Lysandre", text: "Stratum the first, which I name Echo. The caves repeat what is said in them. Acoustics, nothing more.* *Checked twice." },
       { by: "Lysandre", text: "Note: the Echo bats flinch before the blow lands. Poor hearing, surely. Or excellent hearing. To be revised." },
-      { by: "The Ledger", text: "Under the ash, a fence post. Notches on it, older than the fire. The fire was a very long time ago." },
+      { by: "The Ledger", text: "Under the ash, a fence post. Notches on it, older than the fire." },
       { by: "Lysandre", text: "Ash: the Pyre burned the Wychwood to call the sun back.* One does not call a sun. *They swear it answered. Zealots swear." },
       { by: "An unknown hand", text: "Under the scholar's note, in a smaller hand: the sun did not come. Something paler did." },
       { by: "Lysandre", text: "Void: a third of the land, gone. Not burned, not drowned. I have classified it as an absence. It resents this." },
@@ -26,7 +26,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "An unknown hand", text: "The map, torn along the fold. On the back, in charcoal: it keeps going." },
       { by: "The Ledger", text: "Titan stratum. A footprint wide enough to hold a village. The village is inside it, and does not know." },
       { by: "Aurelion", text: "Small one, this bone was my grandmother. She remembered a sky before this one. So do I, when I am careless." },
-      { by: "Aurelion", text: "Wyrms were not made for your world. We are what was left of the last one, like chairs after a feast." },
+      { by: "Aurelion", text: "Wyrms were not made for your world. We were here before the table was laid." },
       { by: "An unknown hand", text: "Tide stratum. Salt on the rocks, shells in the walls. The sea left and took its shore, and did not say where." },
       { by: "The Ledger", text: "Rime stratum. Under the ice, an empty throne. Beside it, frost in the shape of someone who sat down for a moment." },
     ],
@@ -39,7 +39,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "Oriane", text: "The Hymn has one verse. It goes on after the last singer stops. It is going on now." },
       { by: "An unknown hand", text: "The priests of the Eclipse asked for one more night, then one more. Their prayer has no amen." },
       { by: "The Ledger", text: "In the Eclipse temple, a bell with no tongue. The Ledger records that it rings at dusk anyway." },
-      { by: "An unknown hand", text: "Someone answered the Eclipse priests. The answer is cut above the door, worn by a thumb. One word is left: yes." },
+      { by: "An unknown hand", text: "Someone answered the Eclipse priests. The answer is cut above the door, worn smooth by hands. One word is left: yes." },
     ],
     // Age IV: the Making of the Stars (Nebula, Comet, Zenith, Nadir, Aurora)
     [
@@ -98,7 +98,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
     ],
     // Age IX: the Dreamer's Room (Lantern, Hearth, Lullaby, Window, Glass)
     [
-      { by: "An unknown hand", text: "Lantern stratum. A lamp, far above the sky, left on. Someone meant to put it out, and did not." },
+      { by: "An unknown hand", text: "Lantern stratum. The Remnants cast two shadows here: one from the stars, one from somewhere above them." },
       { by: "Célestine", text: "The lamp hums. Not like the crystals. Lower. Like someone breathing right beside it." },
       { by: "The Ledger", text: "Hearth stratum. Warmth without a direction. The Remnants turn toward it, the way cats do, and forget to fight." },
       { by: "Célestine", text: "The tune here is mine, only slower. Someone is humming it to someone. I stopped to listen. They did not stop." },
@@ -116,7 +116,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "An unknown hand", text: "Here, Maëlle's fence post has no notches. It has the grain of a post that was about to have some." },
       { by: "Eldra", text: "If the Morning comes, it will not burn. It will be like this: a soft grey, and no one left to call it grey." },
       { by: "The Ledger", text: "Oblivion stratum. The Ledger finds a page it does not remember writing. The hand is its own. The ink is fading." },
-      { by: "An unknown hand", text: "Absence. Where the King should stand, a chair, still warm. On the arm, the print of a hand, and of a crown." },
+      { by: "An unknown hand", text: "Absence. On the arm of the empty throne, the print of a hand, and of a crown. Nothing else." },
     ],
     // Age XI: the Blank (Pale, Faint, Margin, Blank, Ink)
     [
@@ -146,7 +146,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
     [
       { by: "Lysandre", text: "Première strate, que je nomme Écho. Les cavernes répètent ce qu'on y dit. Acoustique, rien de plus.* *Vérifié deux fois." },
       { by: "Lysandre", text: "Note : à l'Écho, les chauves-souris sursautent avant le coup. Mauvaise ouïe, sans doute. Ou excellente. À revoir." },
-      { by: "Le Grand Livre", text: "Sous la cendre, un poteau de clôture. Des encoches dessus, plus vieilles que l'incendie. L'incendie date de très longtemps." },
+      { by: "Le Grand Livre", text: "Sous la cendre, un poteau de clôture. Des encoches dessus, plus vieilles que l'incendie." },
       { by: "Lysandre", text: "Cendre : le Bûcher a brûlé le Bois pour rappeler le soleil.* On ne rappelle pas un soleil. *Ils jurent qu'il a répondu. Les zélotes jurent." },
       { by: "Une main inconnue", text: "Sous la note du savant, d'une écriture plus petite : le soleil n'est pas venu. Quelque chose de plus pâle, si." },
       { by: "Lysandre", text: "Néant : un tiers du pays, disparu. Ni brûlé ni noyé. Je l'ai classé comme une absence. Il le prend mal." },
@@ -160,7 +160,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "Une main inconnue", text: "La carte, déchirée le long du pli. Au dos, au fusain : ça continue." },
       { by: "Le Grand Livre", text: "Strate du Titan. Une empreinte de pied assez large pour un village. Le village est dedans. Il ne le sait pas." },
       { by: "Aurelion", text: "Petit être, cet os était ma grand-mère. Elle se souvenait d'un ciel d'avant celui-ci. Moi aussi, quand je suis distrait." },
-      { by: "Aurelion", text: "Les guivres n'ont pas été faites pour ton monde. Nous sommes les restes du précédent, comme les chaises après un banquet." },
+      { by: "Aurelion", text: "Les guivres n'ont pas été faites pour ton monde. Nous étions là avant qu'on mette la table." },
       { by: "Une main inconnue", text: "Strate de la Marée. Du sel sur les rochers, des coquillages dans les murs. La mer est partie avec son rivage, sans adresse." },
       { by: "Le Grand Livre", text: "Strate du Givre. Sous la glace, un trône vide. À côté, du givre en forme de quelqu'un qui s'est assis un instant." },
     ],
@@ -173,7 +173,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "Oriane", text: "L'Hymne n'a qu'un couplet. Il continue quand le dernier chanteur se tait. Il continue en ce moment." },
       { by: "Une main inconnue", text: "Les prêtres de l'Éclipse ont demandé une nuit de plus, puis encore une. Leur prière n'a pas d'amen." },
       { by: "Le Grand Livre", text: "Dans le temple de l'Éclipse, une cloche sans battant. Le Grand Livre note qu'elle sonne quand même, au crépuscule." },
-      { by: "Une main inconnue", text: "Quelqu'un a répondu aux prêtres de l'Éclipse. La réponse est gravée au linteau, usée par un pouce. Il reste un mot : oui." },
+      { by: "Une main inconnue", text: "Quelqu'un a répondu aux prêtres de l'Éclipse. La réponse est gravée au linteau, usée par les mains. Il reste un mot : oui." },
     ],
     // Âge IV : la Naissance des étoiles
     [
@@ -232,14 +232,14 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
     ],
     // Âge IX : la Chambre
     [
-      { by: "Une main inconnue", text: "Strate de la Lanterne. Une lampe, très loin au-dessus du ciel, restée allumée. Quelqu'un voulait l'éteindre, et ne l'a pas fait." },
+      { by: "Une main inconnue", text: "Strate de la Lanterne. Ici, les Vestiges ont deux ombres : l'une vient des étoiles, l'autre de plus haut." },
       { by: "Célestine", text: "La lampe fredonne. Pas comme les cristaux. Plus bas. Comme quelqu'un qui respire juste à côté." },
       { by: "Le Grand Livre", text: "Strate de l'Âtre. Une chaleur sans direction. Les Vestiges se tournent vers elle, comme des chats, et oublient de se battre." },
       { by: "Célestine", text: "Ici, l'air est le mien, en plus lent. Quelqu'un le fredonne à quelqu'un. Je me suis arrêtée pour écouter. Eux, non." },
       { by: "Une main inconnue", text: "Une couverture grande comme les Plaines, remontée jusqu'au bord du ciel. Dessous, la forme de la route." },
       { by: "Le Grand Livre", text: "Strate de la Fenêtre. Un rectangle pâle dans le noir. Le roi se tient devant, de dos. Il ne se retourne pas." },
       { by: "Célestine", text: "Les cristaux brillent plus fort quand ça regarde. Je crois que ça nous aime bien. J'ai fait coucou. Ne le dis pas à Morgrath." },
-      { by: "Une main inconnue", text: "Vitre. De l'autre côté du ciel, une forme, immense, immobile. Elle cligne des yeux. Toi aussi. Qui a commencé?" },
+      { by: "Une main inconnue", text: "Vitre. De l'autre côté du ciel, une forme, immense, immobile. Elle cligne des yeux. Toi aussi. Qui a commencé ?" },
     ],
     // Âge X : le Défaire
     [
@@ -250,7 +250,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "Une main inconnue", text: "Ici, le poteau de Maëlle n'a pas d'encoches. Il a le grain d'un poteau qui allait en avoir." },
       { by: "Eldra", text: "Si le Matin vient, il ne brûlera pas. Ce sera comme ici : un gris très doux, et plus personne pour dire que c'est gris." },
       { by: "Le Grand Livre", text: "Strate de l'Oubli. Le Grand Livre trouve une page qu'il n'a pas le souvenir d'avoir écrite. L'écriture est la sienne. L'encre pâlit." },
-      { by: "Une main inconnue", text: "Absence. À la place du roi, un fauteuil encore tiède. Sur l'accoudoir, l'empreinte d'une main, et celle d'une couronne." },
+      { by: "Une main inconnue", text: "Absence. Sur l'accoudoir du trône vide, l'empreinte d'une main, et celle d'une couronne. Rien d'autre." },
     ],
     // Âge XI : le Vierge
     [

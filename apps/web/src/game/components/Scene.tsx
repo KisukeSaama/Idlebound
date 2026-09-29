@@ -1,6 +1,6 @@
 "use client";
 
-import { WAGER_CLICKS, WAGER_SECONDS, biomeForStage, biomeName, chronicleText, eraForStage, isBossStage, isBiomeBossStage, monsterName, MONSTERS_PER_STAGE } from "@idlebound/game";
+import { WAGER_CLICKS, WAGER_SECONDS, biomeForStage, biomeName, chronicleText, eraForStage, isBossStage, isBiomeBossStage, monsterName, MONSTERS_PER_STAGE, type MonsterState } from "@idlebound/game";
 import { useEffect, useRef, useState } from "react";
 import type { ArenaRenderer } from "../pixel/arena";
 import { uiZoom } from "../pixel/surface";
@@ -34,9 +34,21 @@ export function Scene() {
   const renderer = useRef<ArenaRenderer | null>(null);
   const biome = biomeForStage(state.stage);
   const monster = state.monster;
-  const name = monster ? monsterName(monster, state.stage, locale) : "…";
+  // The panel names the last monster the road brought or took, heard as it happens: React
+  // hears the engine at most every 100 ms, and a monster struck down within one tick would
+  // otherwise never be read. The one just slain keeps its name and its emptied life until
+  // the next comes.
+  const [last, setLast] = useState<{ monster: MonsterState; stage: number } | null>(null);
+  const [spawns, setSpawns] = useState(0);
+  useEffect(() => store.onFx((event) => {
+    if (event.type !== "kill" && event.type !== "spawn") return;
+    setLast({ monster: { ...event.monster }, stage: store.state.stage });
+    if (event.type === "spawn") setSpawns((count) => count + 1);
+  }), [store]);
+  const named = monster ?? last?.monster ?? null;
+  const name = named ? monsterName(named, monster ? state.stage : last!.stage, locale) : "…";
   const zone = biomeName(state.stage, locale);
-  const hpRatio = monster ? Math.max(0, monster.hp / monster.maxHp) : 0;
+  const hpRatio = named ? Math.max(0, named.hp / named.maxHp) : 0;
   const isBoss = monster?.kind === "boss" || monster?.kind === "miniboss";
   // Timed event creatures (the Seam's Warden, the Quiet, the Stray Armor) run on the boss
   // timer, with their own length: the longest time seen for this creature.
@@ -168,11 +180,11 @@ export function Scene() {
       <div className="monster-panel">
         <div className="monster-meta">
           <span className="monster-name">
-            {monster && m.kinds[monster.kind] ? <span className={`kind-badge kind-${monster.kind}`}>{m.kinds[monster.kind]}</span> : null}
+            {named && m.kinds[named.kind] ? <span className={`kind-badge kind-${named.kind}`}>{m.kinds[named.kind]}</span> : null}
             {name}
           </span>
           <span className="monster-hp">
-            {wager ? t.night.wager.strikes(wager.clicks, WAGER_CLICKS) : monster ? `${fmt(Math.max(0, monster.hp))} / ${fmt(monster.maxHp)}` : ""}
+            {wager ? t.night.wager.strikes(wager.clicks, WAGER_CLICKS) : named ? `${fmt(Math.max(0, named.hp))} / ${fmt(named.maxHp)}` : ""}
           </span>
         </div>
         {wager ? (
@@ -187,10 +199,7 @@ export function Scene() {
             </div>
           </>
         ) : (
-          <div className="hp-bar" aria-hidden="true">
-            <div className="hp-ghost" style={{ transform: `scaleX(${hpRatio})` }} />
-            <div className="hp-fill" style={{ transform: `scaleX(${hpRatio})` }} />
-          </div>
+          <HpBar key={spawns} ratio={hpRatio} />
         )}
         {wager ? null : timed ? (
           <div className={`boss-timer ${timedEvent ? "event-timer" : ""} ${timerRatio < 0.3 ? "urgent" : ""}`}>
@@ -216,5 +225,23 @@ export function Scene() {
       <SkillBar />
       <TutorialHint placement="below" />
     </section>
+  );
+}
+
+/**
+ * The life bar of one monster (remounted for each). Its pale trail starts full, so a monster
+ * slain before the panel ever showed it alive still drains its whole life away.
+ */
+function HpBar({ ratio }: { ratio: number }) {
+  const [trail, setTrail] = useState(1);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setTrail(ratio));
+    return () => cancelAnimationFrame(frame);
+  }, [ratio]);
+  return (
+    <div className="hp-bar" aria-hidden="true">
+      <div className="hp-ghost" style={{ transform: `scaleX(${trail})` }} />
+      <div className="hp-fill" style={{ transform: `scaleX(${ratio})` }} />
+    </div>
   );
 }

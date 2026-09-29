@@ -74,10 +74,10 @@ export const FR_STRATA: readonly FrLexicon[] = [
   fr("empreinte de pas:f|feuille blanche:f|premier mot:m|plume neuve:f", "neige fraîche:f|rien:m|étendue blanche:f|endroit vierge:m", "a laissé la première trace|a fait un pas|a commencé|a attendu dans le blanc", "intact|neuf/neuve|immaculé", "blanc/blanche"),
   fr("goutte d'encre:f|plume d'oie:f|encrier:m|pâté:m", "encre:f|à@pointe de la plume:f|à@bord de l'encrier:m|blanc en dessous:m", "a pendu au bout|a tremblé|a attendu de tomber|a gonflé", "noir|humide|sur le point de tomber=", "bleu-noir="),
   // Âge XII : la Première Marque
-  fr("point de lumière:m|piqûre d'épingle:f|étoile seule:f|grain de lumière:m", "noir:m|à@centre:m|à@tout début:m|plus petit endroit:m", "a regardé|a brillé|a paru|a attendu qu'on le voie", "petit|seul|vif/vive", "nacré"),
+  fr("point de lumière:m|piqûre d'épingle:f|étoile seule:f|grain de lumière:m", "noir:m|à@centre:m|à@tout début:m|plus petit endroit:m", "a regardé|a brillé|a paru|a attendu un regard", "petit|seul|vif/vive", "nacré"),
   fr("étincelle:f|silex:m|chaleur:f|brin de paille:m", "noir tiède:m|creux des mains:m|premier feu:m|petit bois:m", "a chauffé|a pris|a crépité|a allumé quelque chose", "chaud|petit|vivant", "rouge braise="),
   fr("souffle:m|bulle d'air:f|buée d'une haleine:f|petit vent:m", "poumons:mp|pause d'avant:f|calme:m|inspiration:f", "a inspiré|a retenu un souffle|a expiré|a attendu", "retenu|plein|suspendu", "embrumé"),
-  fr("manteau simple:m|épée baissée:f|main ouverte:f|front sans couronne:m", "yeux:mp|long regard:m|à@bout de la route:m|dernière salle:f", "a posé les yeux sur toi|a dit merci|a baissé l'épée|a dit de rentrer", "bienveillant|fatigué|simple", "noisette="),
+  fr("manteau simple:m|épée baissée:f|main ouverte:f|front sans couronne:m", "salle silencieuse:f|sur@dernière marche:f|à@bout de la route:m|dernière salle:f", "a levé les yeux|a dit merci|a baissé l'épée|a fait demi-tour", "bienveillant|fatigué|simple", "noisette="),
   fr("trait de lumière:m|dernière étoile:f|premier oiseau:m|fil d'or:m", "aube:f|à@bord de tout:m|lisière du jour:f|pas-encore:m", "a grandi|a attendu|a fait halte|a dit pas encore", "pâle|grandissant|proche", "rose aurore=")
 ];
 

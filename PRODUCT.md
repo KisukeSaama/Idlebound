@@ -280,7 +280,7 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   - 20 **milestones** of the walker's own story (ascensions 1, 5, 10, 25, 50, 100;
     Descents 1, 3, 5, 10; the first companions who remember, and whole companies);
   - the **King's Words**, one per ascension: 50 written, then his voice through the
-    grammar; every seventh night a word of his Eclipse; in his Regalia, 12 words of their
+    grammar (every night keeps its own); the seven words of his Eclipse, as it falls; in his Regalia, 12 words of their
     own (as a toast);
   - the **echoes** of the road: 12 per biome, then the grammar (a guardian's first clear
     brings the next back: always the first, then 15% + 5% per era);
@@ -292,16 +292,29 @@ line of text: it stores counters, and the n-th fragment of a source is always th
     return after an hour or more in a hidden tab or a sleeping computer: one line over the
     scene for 6 s, no numbers), the Stallkeeper's twelve sayings (one per visit to the
     stall), named relic legends, altar legends (level 5), secrets and the Crown.
-  - A fragment toast at most once a minute; the others wait in the Chronicle. The
+  - A fragment toast at most once a minute (keystones and milestones are always told); the
+    others wait in the Chronicle. The
     Frayed Edge, Oriane's Ear (guardians) and Remembrance Nights make fragments more
     frequent.
+- **The King's first refusals**: until the first ascension, the first time a session's King
+  fight is lost, the failure toast carries his line "Come back when your hands stop shaking."
 - **The Night list**: the ascension history written as one line per night, with the King's
   Word of that night.
+- **The Ledger's scenes** (BIBLE 12.10): at a few key moments, a short scene of pixel shots
+  with one line each plays over everything while the game runs on beneath (toasts wait for
+  it). A press moves to the next shot, Escape or "Skip" ends it. One ships: **the First
+  Dusk**, at the first ascension ever (the Keep and its King, "Night one", the King's first
+  Word, the King going up in violet lights, the Sanctum's thirteen stones, the fields at
+  dusk: about 25 s); its ascension toast then carries no quote. Whether a scene was lived
+  derives from the state (the first dusk: one ascension or more), so the Chronicle's "What
+  the Ledger saw" lists it on every device, to be watched again; saves already past it see
+  it there at once.
 - **Recognition**: a companion who reached level 100 in a run remembers the walker a
   little; tiers at 1, 3, 7, 15 and 30 such runs (one run less per level of Kinship), each a
   memory and a gold ring on the medallion, the fifth +10% DPS for that companion. Every
   companion greets the walker when hired, as a stranger, half remembered (tier 1 or 2) or
-  remembered (tier 3 or more). Eight give a named relic at tier 5.
+  remembered (tier 3 or more). Eight give a named relic at tier 5. Companions who remember
+  at the same dusk share one toast; the one alone shows their memory.
 - **Named relics** (24, legendary or mythic, found once per save, locked on arrival, room
   made for them even in a full pack, rolled at the level of the best stage), each with a
   fixed source and one unique effect:
@@ -339,15 +352,15 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   cannot be filled.
 - **Secrets** (20, no power): each a secret deed, hidden as "???" with its riddle until
   found, worth no bonus: Let Him Rest (the King's timer run out three times in a row at
-  stage 50 without an attack), Even (100 golden rats in a run with Thorvald at level 50),
+  stage 50 without an attack), Even (100 golden rats in a run with Thorvald at level 50: a tiny gold rat sits on his medallion),
   Faceless (Nyx's portrait touched seven times in three seconds), Small Change (a mythic
   salvaged), Night Owl (an hour between midnight and 4 a.m.: the Hearthfields' moon turns
   full), the Thousandth Notch (1,000 kills on stages 1 to 10 in a run), Same Road (three
   ascensions in a row from the same stage), Keep Some (ascending with 1,000 essences and no
   altar bought since the last dusk), That's How It Starts (1,000 essences offered and none
-  left), Empty Hands (the King at stage 50 beaten with no relic), Pacifist (stage 50 reached
+  left; while none is held again, Aldric's face and name go grey in the companions panel), Empty Hands (the King at stage 50 beaten with no relic), Pacifist (stage 50 reached
   with Brother Cinder the strongest), the Last Second (a guardian beaten with half a second
-  left, seven times), Listening (an hour in the Forgotten Caves, watched and untouched), Good
+  left, seven times: the Keep's gargoyle loses a claw), Listening (an hour in the Forgotten Caves, watched and untouched), Good
   Boy (Vorn at level 150 in ten runs), Till Death (the Baron beaten wearing Mirelle's ring),
   the Last Blow (the King beaten with Kaelen, who fully remembers, the strongest), It Wears
   You (the fifth slot held five seconds after the tenth Descent), Behind the Glass (the
@@ -369,7 +382,7 @@ they begin and a fragment the first time.
 | The Caravan | From 3 ascensions, once a calendar week | The week's ware (the same for everyone, by ISO week): the Stallkeeper's Token (300), a Sealed Coffer (a legendary or better, 400), Bottled Night (2 h of gold, 100), Pip's Cheese (golden rats twice as often for 30 min, 45), a Moth Lantern (crystals every 45 to 90 s for 30 min, 60), an Ember Draught (rage and fortune, 35), Eldra's Thread (every power ready, 80), Three Crates (three relic chests, 75). |
 | The Quiet | Void stratum and deeper, 1 spawn in 1,000 | A colorless creature, 10 s; sounds drop. Beaten: an Age echo. |
 | Stray Armor | Once the Nameless is hired, 1 spawn in 2,000 | An empty armor walks across the road (30 s). The first defeat gives the Hollow Plate. |
-| The King's Eclipse | Every 7th ascension, the next King | Shadowed, +50% HP, same timer; he always leaves a relic, and a word of his own. |
+| The King's Eclipse | Every 7th ascension, the next King | Shadowed, +50% HP, same timer; he always leaves a relic, and as he falls a word of his own (seven, in turn). |
 | The Slow Tide | A return after 4 h or more | The next crystal comes within 20 s. |
 | Remembrance Night | October 1st and December 21st | Fragments twice as often. No power. |
 | The Migration | Era 1+, 1 new stage in 50 | For that stage, another biome's Remnants cross it. |

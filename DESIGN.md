@@ -674,6 +674,18 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   lit lanterns in dotted gold halos, never over the middle. Pip holds still (no breath, no
   blink) while he dares the walker. With reduced motion each holds a single frame, and the
   Seam fades instead of shrinking.
+- **The Ledger's scenes** (`components/Cutscene.tsx`, `pixel/cutscene.ts`): a fixed layer
+  over everything on the night ink (`--bg`), the picture on the scene's own 320 x 180 grid
+  at the largest whole scale of device pixels that fits, one line under it in Cinzel
+  `--gold-2` (the King's lines under a small muted uppercase "The King"), then "Continue"
+  and "Skip" as small ghost buttons. Shots are the road's scenes (their guardian standing,
+  falling or gone) and the places of the story, in their own motion; one gives way to the
+  next through the ordered 4 x 4 mask, an eighth every 80 ms, from the night ink at the
+  start and back to it at the end. A falling guardian loses its pixels by eighths while
+  forty violet lights leave its body and climb, wavering, dimming, then blink out. The
+  line rises in 0.9 s once the shot is in. With reduced motion every shot holds its first
+  frame (the guardian already gone) and fades in over 0.4 s. Keys go to the scene first:
+  Enter or Space moves on, Escape ends, Tab moves between the two buttons.
 - **Opening line**: a new run opens on "Dusk again." centered over the scene in Cinzel gold,
   fading in and out over 7 s (a plain hold then fade with reduced motion).
 - Damage numbers float up from the pointer; crits are bigger and gold; gold gains rise.
@@ -726,7 +738,9 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   the companions' list and its buy buttons.
 - Capped equipment totals carry a small gold "MAX" pill whose tooltip explains that relic
   bonuses above the cap do not count.
-- HP bar has a trailing "ghost" bar; the boss timer turns red under 30%.
+- HP bar has a trailing "ghost" bar; the boss timer turns red under 30%. The panel keeps the
+  monster just slain (its name, `0 / max`, an empty bar) until the next arrives, and each
+  monster's ghost bar starts full, so one struck down in a single blow still reads and drains.
 - Crystals float, turn their facets to the light and blink before expiring; affordable talents pulse; the urgent
   badge pops.
 - Durations are short (120 ms for UI feedback, under 1 s for effects). Motion never blocks
@@ -762,8 +776,8 @@ default 0.6), saved with the other settings.
 
 ## Voice and copy
 
-- **French**: warm, epic, playful, always *tutoiement* ("Recrute Maëlle : elle attaque même quand tu ne cliques pas.").
-- **English**: the same energy, direct second person ("Hire Maëlle: she attacks even when you don't click."), idiomatic
+- **French**: warm, epic, playful, always *tutoiement* ("Recrute Maëlle : elle attaque même quand ta lame se repose.").
+- **English**: the same energy, direct second person ("Hire Maëlle: she attacks even while your blade rests."), idiomatic
   rather than literal.
 - Short sentences, verbs first on buttons ("Prendre la route" / "Take the road").
 - Sell the wish to start, never a price: no "free", "no ads", "no purchase", "no sign-up"
@@ -771,7 +785,10 @@ default 0.6), saved with the other settings.
 - **Never use an em dash (—)** in any user-facing string, in either language. Use " : " (FR)
   or ": " (EN), " · " or a comma.
 - Game terms are consistent: gold, essences, shards, companions, powers, altars, relics,
-  ascension, stage, era, elite, guardian.
+  ascension, stage, era, elite, guardian. The game says guardian (FR *gardien*), never boss;
+  deeds (FR *hauts faits*), never achievements; a run is a night, never a life; the walker
+  who stays on a cleared stage **stays** (FR *Rester*), never farms. Public pages may say boss
+  and achievements where a search looks for them.
 - Every user-facing string exists in both languages (see AGENTS.md for where they live).
 - **The Ledger's voice** (account window, save errors, the Roll): a diegetic line in Cinzel
   gold (`.ledger-voice`), its plain meaning always next to it (`.ledger-plain`, or the

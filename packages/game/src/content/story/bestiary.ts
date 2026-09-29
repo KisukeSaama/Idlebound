@@ -70,7 +70,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       "blind-crawler": [
         "It has no eyes because nothing down here was ever meant to be seen.",
         "It turns its head toward the walker anyway. The Ledger cannot say what it follows. Not the light.",
-        "Once it stopped and faced upward, toward the surface, for a long time. Something up there was looking."
+        "Once it stopped and faced upward, toward the surface, for a long time. The Ledger does not know what it heard."
       ],
       "echo-bat": [
         "It screeches a moment before you swing.",
@@ -232,7 +232,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       "blind-crawler": [
         "Il n'a pas d'yeux, car rien ici-bas n'a jamais été fait pour être vu.",
         "Il tourne quand même la tête vers le marcheur. Le Grand Livre ignore ce qu'il suit. Pas la lumière.",
-        "Une fois, il s'est arrêté, tourné vers le haut, longtemps. Là-haut, quelque chose regardait."
+        "Une fois, il s'est arrêté, tourné vers le haut, longtemps. Le Grand Livre ignore ce qu'il a entendu."
       ],
       "echo-bat": [
         "Elle crie un instant avant que tu frappes.",

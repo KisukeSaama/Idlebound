@@ -253,6 +253,14 @@ export const FACELESS_WINDOW_MS = 3_000;
 export const SAME_ROAD_NIGHTS = 3;
 /** Keep Some / That's How It Starts: essences held at dusk, or spent in one visit to the Sanctum. */
 export const KEEP_SOME_ESSENCES = 1_000;
+
+/**
+ * The walker gave all of themselves away this night: a thousand essences offered, none
+ * kept. The road to the Nameless (BIBLE 4): the name starts to go, until one is held again.
+ */
+export function givingAllAway(state: GameState): boolean {
+  return state.essences < 1 && state.trail.offered >= KEEP_SOME_ESSENCES;
+}
 /** The Last Second: guardians beaten with this little time left, this many times. */
 export const LAST_SECOND_LEFT = 0.5;
 export const LAST_SECOND_TIMES = 7;

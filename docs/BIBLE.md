@@ -973,7 +973,9 @@ talent names are kept; the dossier reads them as history.
 - **Personality:** proud, ancient, courteous, amused by everything.
 - **Story:** the last dragon, who chose your side.
 - **Secret:** dragons are from the Wyrm stratum, before Orvane. Aurelion remembers a Dawn
-  that already came once, for another world. "This is not the first world to be dreamed."
+  that already came once, for another world. In play he says it without the forbidden word
+  (his R3): "Yours is not the first world someone has left a lamp burning for." The
+  "dreamed" of section 4 is for writers only.
 - **Recognition arc:** 1 he calls you "small one" · 2 he calls you by name · 3 he speaks
   of other worlds · 4 of the Dawn he saw · 5 "I chose your side because you keep coming
   back. The last world did not have anyone who did."
@@ -1125,10 +1127,14 @@ Needs a per-monster kill counter (section 21).
 
 ### 12.4 The King's Words
 
-Each ascension, the confirmation toast carries one line from the King, in order: the
+Each ascension, the confirmation toast carries one line from the King, in order (the first
+and the thirteenth are spoken in the Ledger's scenes, section 12.10): the
 King's Words (FR: *les Paroles du roi*). 50 are written by hand (the arc below), then they
 come from the fragment grammar (section 17), in the King's voice. They are the one thread
 every player follows.
+
+> **Shipped**: every night keeps its written Word. The seven Eclipse words (section 13) are
+> spoken when the eclipsed King falls, and join the Chronicle from the next dusk on.
 
 **The arc of the first 50 Words:**
 
@@ -1206,6 +1212,27 @@ the plain meaning next to it (the product must stay clear): "Your name is not ye
 (confirm your e-mail within 3 days)", "The Ledger could not write this night (save
 refused)". Guests see "Unnamed walker" instead of "Guest".
 
+### 12.10 The Ledger's scenes
+
+> **Shipped**: the First Dusk, Almost, the Empty Throne (`data/cutscenes.ts`,
+> `content/story/cutscenes.ts`).
+
+A few times in the whole game, never more, the Ledger tells a moment in pictures: a scene
+of three to six shots of the world, one image and one line each, 20 to 40 seconds, the
+night going on beneath. Every scene can be skipped and seen again in the Chronicle. The
+same rules as every line: reveal, never explain; the Truth is never stated.
+
+| Scene | When | What it shows |
+|---|---|---|
+| **The First Dusk** (shipped) | Ascension 1 | The Keep and its King; "Night one."; "You're early."; the King going up in violet lights; the Sanctum's thirteen stones; "Dusk again." |
+| **Almost** (shipped) | Maëlle hired again after she first half remembers (~3 h) | The road at dusk; Maëlle's face in the dark: "You again? No. I'd remember. Wouldn't I?"; she keeps looking back. |
+| **The Empty Throne** (shipped) | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; the throne, its arms worn like a step. |
+| The Crown in the Ice | Stage 500 | A smaller crown under the rime. There were other kings. |
+| The Rehearsal | Stage 1,000 | The aurora: not the Dawn, its rehearsal. |
+| The Loom | Descent 1 | Eldra at her loom, the woven night on its beam. |
+| The Threshold | Stage 2,000 | Morgrath says the word nobody says. |
+| Not Yet | Stage 3,000 | The line of light, and the road ending. |
+
 ---
 
 ## 13. Events
@@ -1222,7 +1249,7 @@ a new sound cue, a fragment on first occurrence.
 | 5 | **The Caravan** / La Roulotte | Once per calendar week, from 3 ascensions | The Stallkeeper's special offer, the same for everyone that week (seeded by ISO week): one of 8 rotating wares, including the Stallkeeper's Token. | Priced in shards | The Stallkeeper travels between nights. |
 | 6 | **The Quiet** / Le Silence | Void stratum or deeper, 1 in 1,000 spawns | A colorless monster; sounds drop; kill it within 10 s. | 1 Void fragment, a Deed | A piece of the Morning, leaking in. |
 | 7 | **Stray Armor** / L'Armure errante | The Nameless hired, 1 in 2,000 spawns | An empty armor walks across the arena; defeat it. | The Hollow Plate (first time) | The Nameless's old armor, or one like it. |
-| 8 | **The King's Eclipse** / L'Éclipse du roi | Every 7th ascension, next King fight | The King's form is shadowed; +50% HP, same timer. | A guaranteed relic roll, a special King's Word | The King, briefly, remembers being a walker. |
+| 8 | **The King's Eclipse** / L'Éclipse du roi | Every 7th ascension, next King fight | The King's form is shadowed; +50% HP, same timer. | A guaranteed relic roll, and as he falls one of seven Eclipse words (**shipped**) | The King, briefly, remembers being a walker. |
 | 9 | **Dream-tide** / Marée des rêves | After a catch-up ≥ 4 h | The Dream line (12.8); the next crystal comes after 20 s. | One crystal, sooner | The dreamer, waking slowly. |
 | 10 | **Remembrance Night** / Nuit du souvenir | Real dates: launch anniversary and the winter solstice (longest night of the year) | 24 h: lanterns in every biome, fragment chance ×2, a special keystone. No power bonus. | Fragments only (keeps the Roll fair) | The Long Night celebrates itself. |
 | 11 | **The Migration** / La Migration | Era ≥ 1, 1 in 50 stages | For one stage, Remnants of another biome cross this one. | Bestiary progress for both | Memories wander when the weave is thin. |
@@ -1303,7 +1330,7 @@ the Roll. They live in a `secrets` list in the save (bounded ids).
 | # | Secret | Trigger | Reward |
 |---|---|---|---|
 | 1 | Let him rest | At stage 50, let the King's timer run out 3 times in a row without a single attack click | King's line: "You could stay. I did." |
-| 2 | Even | 100 golden rats caught with Thorvald hired at level 50 or more in the same run | Thorvald: "Tell him we're even." (A tiny gold rat appears on his medallion.) |
+| 2 | Even (**shipped**) | 100 golden rats caught with Thorvald hired at level 50 or more in the same run | Thorvald: "Tell him we're even." (A tiny gold rat appears on his medallion.) |
 | 3 | Faceless | Click Nyx's portrait in the companions panel 7 times in 3 s | Her portrait shows a starfield for a second. Nyx memory bonus line. |
 | 4 | Small change | Salvage a mythic relic | Lysandre: "You broke a star to make change." |
 | 5 | Night owl (**shipped**) | Play 1 h in total between 00:00 and 04:00 local time | The Hearthfields' crescent moon is full from then on. |
@@ -1313,7 +1340,7 @@ the Roll. They live in a `secrets` list in the save (bounded ids).
 | 9 | That's how it starts | Spend essences on altars down to 0 held, with ≥ 1,000 spent in one visit to the Sanctum | The Nameless: "That's how it starts." |
 | 10 | Empty hands | Beat the King at stage 50 with no relic equipped | Kaelen: "He'd have liked that." |
 | 11 | Pacifist | Reach stage 50 with Brother Cinder as the highest-DPS companion | Cinder: "I didn't hit anyone. I just stood very firmly in their way." |
-| 12 | The last second | Beat a guardian with ≤ 0.5 s left on the timer, 7 times | The Gargoyle of the Hours loses a claw on the Keep background. |
+| 12 | The last second (**shipped**) | Beat a guardian with ≤ 0.5 s left on the timer, 7 times | The Gargoyle of the Hours loses a claw on the Keep background. |
 | 13 | Listening | Stay 1 h in a visible tab, idle (no attack click), in the Deepvaults | The echo bats fall silent; Oriane speaks. |
 | 14 | Good boy | Vorn at level 150 in 10 different runs | Biscuit's page in the bestiary (a blank page with a paw print). |
 | 15 | Till death | Beat the Baron of Rot wearing Mirelle's Wedding Ring | The Baron speaks, once: "M.?" |
@@ -1338,34 +1365,34 @@ is what carries players, so the late Ages are paced by Descents.
 | Stage 1 | 0 min | Opening line in the scene | "Dusk again." / « Le crépuscule, encore. » The word "again" on minute one. | 2 |
 | Stage 10 | ~2 min | Moss Alpha bestiary | "It lets her win. It always has." | 2 |
 | Maëlle hired | ~3 min | Hire line | "You look like someone who needs a bow and a friend." | 1 |
-| Stage 30 | ~40 min | Deepvaults, Echo Bat bestiary | Bats screech before you swing. | 2 |
+| Stage 21 to 30 | ~10 to 40 min | Deepvaults, Echo Bat bestiary (a toast, shipped) | Bats screech before you swing. | 2 |
 | Stage 40 | ~1 h | Baron of Rot bestiary | His ring is not rotting. | 1 |
-| Stage 50 | 1.5 to 2 h | Stratum 0 keystone | "He looked at you as if you were late." | 2 |
-| Ascension 1 | ~3 h | King's Word 1, Oriane fragment | "You're early." / Oriane: "You've done this before." | 2 |
-| Ascension 1 | ~3 h | Sanctum of Dusk opens | The altars have legends; someone built them from memories. | 2 |
+| Stage 50 | the King's first fall, ~2.4 h | Stratum 0 keystone (always toasted, shipped) | "He looked at you as if you were late." | 2 |
+| Ascension 1 | ~3 h | The First Dusk (scene, shipped): King's Word 1; Oriane fragment | "You're early." / Oriane: "You've done this before." | 2 |
+| Ascension 1, altar level 5 | ~3 to 5 h | Sanctum of Dusk opens; each altar's legend at its level 5 | The altars have legends; someone built them from memories. | 2 |
 | Stage 100 | 4 to 6 h | Echo keystone | Echoes, remembered kills. | 2 |
-| Ascension 3 | day 1 | First Recognition (Maëlle) | "Have we met?" / « On se connaît ? » | 2 |
+| Ascension 1, then Maëlle hired again | ~3 h | First Recognition (R1, one run at level 100), then Almost (scene, shipped) | "Have we met?" / « On se connaît ? »; "You again? No. I'd remember. Wouldn't I?" | 2 |
 | Stage 150 to 200 | day 1 to 2 | Ash and Void keystones | Someone burned the fields to call the sun. A third of the map is missing. | 3 |
-| Ascension 5 | day 2 | Echo of a Walker unlocks | Other walkers exist. The Roll is their only meeting place. | 2 |
+| Ascension 5, then rare | day 2 onward (1% per guardian's first clear) | Echo of a Walker unlocks | Other walkers exist. The Roll is their only meeting place. | 2 |
 | Stage 250 | day 2 | Astral keystone | The sky is glass. Shards fit it. | 3 |
-| Ascension 10 | day 2 to 3 | King's Words turn to confession; Kaelen R2 | "I sat down for a moment." / « Je me suis assis un instant. » | 3 |
+| Ascension 13 | day 3 to 4 | King's Words turn to confession: The Empty Throne (scene, shipped) | "I sat down for a moment." / « Je me suis assis un instant. » | 3 |
 | Stage 300 | day 2 to 3 | Primordial keystone | Lysandre's map ends at BOTTOM. | 3 |
-| Stage 301 | day 3 | Titan keystone | The ground kept going. The sages were wrong. | 5 |
+| Stage 350 | day 2 to 3 | Titan keystone (the stratum's last stage) | The ground kept going. The sages were wrong. | 5 |
 | Stage 500 | day 3 to 4 | Rime keystone | A crown in the ice, smaller than his. There were other kings. | 4 |
 | Kaelen R4 | ~week 1 | Recognition | The night he ran. The Binding had a price. | 3 |
-| Ascension 25 | ~week 1 | King's Words: warning; the Nameless R3 | "Never spend all of yourself." | 4 |
+| Ascension 25 | ~week 1 | King's Words: warning (the Nameless asks "How many?" at R3, ~ascension 7; "Keep some." at R4) | "Never spend all of yourself." | 4 |
 | Stage 750 | ~week 1 | Eclipse keystone | Priests prayed for a night that would never end. Someone answered. | 3 |
 | Stage 1,000 | ~day 3 (engaged) to week 2 | Aurora keystone; Descent possible | "Not the Dawn. Its rehearsal." The word Dawn appears. | 5 |
-| Eldra R5 / Descent 1 | week 2 | The Loom | She wove the Long Night. "I am sorry. I am not sorry." | 3 |
+| Eldra R4, then R5 / Descent 1 | week 2 | Recognition, then the Loom | She wove the Long Night. "I am sorry. I am not sorry." (R4) | 3 |
 | Stage 1,250 | week 2 | Frayed keystone | The weave is thin enough to see light through. | 5 |
 | Stage 1,300 to 1,500 | weeks 2 to 3 | Age VI, the Draft | The world as a drawing; art turns to charcoal. | 5 |
 | The Nameless R5 | weeks 2 to 4 | Recognition | His helmet bears your name. | 4 |
 | Stage 1,500 to 1,750 | Descents 1 to 3 | Age VII, the Words | The world is being told to itself so it will not stop. | 5 |
 | Ascension 50 | month 1 | King's Word 50 | "Don't stop. I did." / « Ne t'arrête pas. Moi, je l'ai fait. » | 4 |
-| Stage 2,000 | Descents 3 to 5 | Threshold keystone | The word "dream" is spoken for the first time (by Morgrath). | 5 |
-| Aurelion R5 | Descents 3 to 5 | Recognition | "This is not the first world to be dreamed." | 5 |
+| Stage 2,000 | week 1 or later, often before the first Descent | Threshold keystone | The word "dream" is spoken for the first time (by Morgrath). | 5 |
+| Aurelion R3 to R5 | Descents 3 to 5 | Recognition | "Yours is not the first world someone has left a lamp burning for." (R3) | 5 |
 | Stage 2,001 to 2,250 | Descents 5+ | Age IX, the Dreamer's Room | Lantern, hearth, lullaby, window, glass. Something blinks when you do. | 6 |
-| Célestine R5 | Descents 5+ | Recognition | "They only come when someone is looking." | 6 |
+| Célestine R4 | Descents 5+ | Recognition | "someone is watching us. isn't it nice?" | 6 |
 | Stage 2,250 to 2,750 | Descents 7+ | Ages X and XI | The Unmaking, then the Blank page. | 5 |
 | Stage 2,950 | Descents 10+ | Gaze keystone | Aldemar without his crown: "Thank you. Go back." | 4 |
 | Stage 3,000 | the far end | Dawn keystone | "Not yet." / « Pas encore. » | 6 |

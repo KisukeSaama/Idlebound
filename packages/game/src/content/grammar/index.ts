@@ -24,6 +24,12 @@ const ERAS = 60;
 const AGES = 12;
 /** Dreams draw on Ages I to VII only: nothing of the Truth may surface in them. */
 const DREAM_ERAS = 35;
+/**
+ * The first grammar dreams keep to the Kingdom; every `DREAMS_PER_AGE` more reach one Age
+ * deeper, so the Loom, the Draft and the Words surface in dreams only weeks into the night.
+ */
+const DREAMS_PER_AGE = 8;
+const ERAS_PER_AGE = 5;
 
 const KING_POOL: readonly TemplateId[] = [
   "king-tonight",
@@ -60,7 +66,7 @@ const AGE_POOL: readonly TemplateId[] = [
   "oriane-tomorrow",
   "oriane-about"
 ];
-/** Lysandre writes the notes of the first Ages; past the Titan he has not spoken since. */
+/** Lysandre writes the notes of the first Ages; past the Titan, his notes stop (he still speaks elsewhere). */
 const LYSANDRE_AGES = 3;
 const AGE_POOL_EARLY: readonly TemplateId[] = ["lysandre-ornament", "lysandre-certain", ...AGE_POOL];
 const SONG_POOL: readonly TemplateId[] = ["song-hummed", "song-listen", "song-tonight", "song-name", "song-taught"];
@@ -182,7 +188,8 @@ function plan(source: GrammarSource): Plan {
     }
     case "dream": {
       const n = Math.max(0, Math.floor(source.index));
-      return { key: "dream", n, pool: DREAM_POOL, lexicons: DREAM_ERAS, lexiconBase: 0, ...all, night: n, descent: 0 };
+      const lexicons = Math.min(DREAM_ERAS, ERAS_PER_AGE * (1 + Math.floor(n / DREAMS_PER_AGE)));
+      return { key: "dream", n, pool: DREAM_POOL, lexicons, lexiconBase: 0, ...all, night: n, descent: 0 };
     }
     case "reading": {
       const era = Math.min(ERAS - 1, Math.max(0, Math.floor(source.era)));

@@ -19,6 +19,7 @@ import {
   chronicleCount,
   chronicleText,
   formatDuration,
+  gameText,
   intlLocale,
   kingWord,
   seenOf,
@@ -26,6 +27,7 @@ import {
   sourceEntries,
   stratumTag,
   unreadChronicle,
+  witnessedCutscenes,
   type AchievementCategory,
   type AscensionRecord,
   type ChronicleEntry,
@@ -235,9 +237,35 @@ function Chronicle() {
   return (
     <div className="chronicle">
       <p className="modal-hint">{t.windows.hall.chronicleIntro}</p>
+      <SceneList />
       {state.ascensions.length > 0 ? <NightList nights={state.lifetime.ascensions} descents={state.descents} records={state.ascensions.length} /> : null}
       {CHRONICLE_SOURCES.map((source, index) => (counts[index] > 0 ? <ChronicleSection key={source} source={source} count={counts[index]} seen={seenBefore[index]} /> : null))}
     </div>
+  );
+}
+
+/** The Ledger's scenes the walker has lived, each to be seen again. */
+function SceneList() {
+  const { state } = useGame();
+  const ui = useUi();
+  const { t, locale } = useI18n();
+  const scenes = witnessedCutscenes(state);
+  if (scenes.length === 0) return null;
+  const names = gameText(locale).cutscenes;
+  return (
+    <section className="scene-list">
+      <h3 className="section-heading">{t.chronicle.scenes} <span className="chronicle-count">{t.chronicle.scenesHint}</span></h3>
+      <ul>
+        {scenes.map((id) => (
+          <li key={id}>
+            <button type="button" className="btn btn-ghost btn-sm" aria-label={t.chronicle.watch(names[id].name)} onClick={() => ui.playCutscene(id)}>
+              <Picto name="moon" size={16} />
+              {names[id].name}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

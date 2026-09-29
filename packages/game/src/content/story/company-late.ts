@@ -104,8 +104,8 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         "Back again, Aldric. Good. Someone has to watch you do this properly."
       ],
       celestine: [
-        "Shh. Listen. The light is humming.",
-        "oh! your song. I know your song. don't I?",
+        "shh. listen. the light is humming.",
+        "oh! your song. i know your song. don't i?",
         "there you are. the crystals have been humming you all dusk."
       ],
       aurelion: [
@@ -139,7 +139,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         { by: "Vorn", text: "Vorn dit le nom. Ce n'est pas un mot." }
       ],
       lysandre: [
-        { by: "Lysandre", text: "Tu n'as rien dit, et Lysandre te corrige quand même. « Une strate, des strates. Tu le pensais de travers. »" },
+        { by: "Lysandre", text: "Tu n'as rien dit, et Lysandre te corrige quand même. « Une strate, pas un strate. Tu le pensais de travers. »" },
         { by: "Lysandre", text: "Il déroule sa carte sur le feu et cale les coins avec tes bottes. « Écho, Cendre, Néant, Astral, Primordial. Tout est de moi. Tu peux admirer. »" },
         { by: "Lysandre", text: "Au pied de la carte, de sa plus belle écriture : FOND. Souligné deux fois. Dans la marge, un sort recopié à l'envers, arrêté au milieu. Il replie tout." },
         { by: "Lysandre", text: "Il déchire la carte en deux, lentement, en plein milieu du mot FOND. « Le sol a continué. C'est d'une impolitesse. »" },
@@ -169,7 +169,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
       morgrath: [
         { by: "Morgrath", text: "« Toi. L'épée sans conversation. Tâche de ne pas mourir avant que j'aie fini de te mépriser. »" },
         { by: "Morgrath", text: "« Aldric. Oui, je l'ai retenu. On aime savoir précisément qui l'on insulte. »" },
-        { by: "Morgrath", text: "« La mort est une porte. Il l'a clouée, et il s'est assis devant. Chaque âme d'Orvane me doit un matin, et il le garde sous sa couronne. »" },
+        { by: "Morgrath", text: "« La mort est une porte. Il l'a clouée, et il s'est assis devant. Chaque âme d'Orvane a droit à un matin, et il le garde sous sa couronne. »" },
         { by: "Morgrath", text: "Il regarde longtemps la Voûte de verre. « C'est beau. La nuit. Ne le répète pas. J'ai une réputation. »" },
         { by: "Morgrath", text: "« Quand ça finira, et ça finira, je serai là pour te raccompagner. Poliment. »" }
       ],
@@ -227,7 +227,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         "Encore là, Aldric. Bien. Il faut quelqu'un pour te regarder faire correctement."
       ],
       celestine: [
-        "Chut. Écoute. La lumière fredonne.",
+        "chut. écoute. la lumière fredonne.",
         "oh ! ta chanson. je connais ta chanson. non ?",
         "te voilà. les cristaux t'ont fredonné tout le crépuscule."
       ],
@@ -248,7 +248,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
       "aldric-50": { by: "La Mère-des-Épées", text: "Chaque Vestige a une couture, comme un manteau cousu trop vite. Ne coupe pas le manteau. Coupe le fil." },
       "aldric-75": { by: "Kaelen", text: "Une frappe héroïque, c'est une frappe ordinaire devant laquelle on n'a pas fui." },
       "aldric-100": { by: "La Mère-des-Épées", text: "Chaque coup que tu as porté est encore dans ton bras. Les mauvaises nuits, laisse-les tous frapper avec toi." },
-      "aldric-150": { by: "La Mère-des-Épées", text: "N'importe quelle épée fera l'affaire. « Maître », c'est ce que l'épée t'appelle, jamais ce que tu te fais appeler." },
+      "aldric-150": { by: "La Mère-des-Épées", text: "N'importe quelle épée fera l'affaire. Maître, c'est le nom que l'épée te donne, jamais celui que tu te donnes." },
       "aldric-200": { by: "Le Roi", text: "Une légende, ce n'est que quelqu'un qui a continué de marcher après la fin de la chanson." }
     }
   }

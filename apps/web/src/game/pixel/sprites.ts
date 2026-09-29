@@ -137,7 +137,7 @@ export interface SceneSheet {
 
 /** A scene ready to draw: a biome in an era, or a place (see `renderScene`); in greys while the Quiet stands. */
 export function sceneSheet(sceneId: string, era: number, options: SceneOptions = {}, grey = false): SceneSheet {
-  return sceneCache.get(`scene:${sceneId}:${era}:${options.fullMoon ? "full" : ""}:${options.darkNight ? "dark" : ""}:${grey ? "grey" : ""}`, () => {
+  return sceneCache.get(`scene:${sceneId}:${era}:${options.fullMoon ? "full" : ""}:${options.darkNight ? "dark" : ""}:${options.clawless ? "clawless" : ""}:${grey ? "grey" : ""}`, () => {
     const scene = grey ? greyScene(sceneSheet(sceneId, era, options).scene) : renderScene(sceneId, era, options);
     return {
       scene,

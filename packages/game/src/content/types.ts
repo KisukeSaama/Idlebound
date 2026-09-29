@@ -1,5 +1,6 @@
 import type { AchievementCategory } from "../data/achievements";
 import type { CaravanWareId } from "../data/caravan";
+import type { CutsceneId } from "../data/cutscenes";
 import type { WeaveId } from "../data/descent";
 import type { EventId } from "../data/events";
 import type { AffixStat, AltarId, ItemSlot, Rarity, SkillId } from "../types";
@@ -47,6 +48,8 @@ export interface StrataText {
 export interface VoicesText {
   /** The King's Words, one per ascension, in order (50). The King speaks them. */
   kingWords: readonly string[];
+  /** What the King says when his seam first closes on a walker who never passed him (1). */
+  kingRepels: readonly string[];
   /** What the King says instead while the walker wears the Regalia (12). */
   regaliaWords: readonly string[];
   /** The King's Eclipse: what he says, shadowed (7). */
@@ -57,6 +60,12 @@ export interface VoicesText {
   songs: readonly string[];
   /** The Stallkeeper's sayings, one per visit to the stall (12). */
   sayings: readonly string[];
+}
+
+/** One of the Ledger's scenes: its name in the Hall, and one line per shot ("" for silence). */
+export interface CutsceneText {
+  name: string;
+  lines: readonly string[];
 }
 
 /** An event of the Long Night: its name, the toast when it happens, the fragment it leaves. */
@@ -131,6 +140,8 @@ export interface GameText {
   caravan: Record<CaravanWareId, NameText>;
   /** The Crown of Orvane: it cannot be worn (BIBLE 11.5). */
   crown: { name: string; hover: string; legend: LoreLine };
+  /** The Ledger's scenes, told at a few moments of the Long Night. */
+  cutscenes: Record<CutsceneId, CutsceneText>;
   /** Names of the voices that speak without a line of their own: the King, the Stallkeeper, Célestine. */
   speakers: { king: string; stallkeeper: string; ledger: string };
 }

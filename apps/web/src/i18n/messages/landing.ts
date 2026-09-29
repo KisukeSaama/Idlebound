@@ -68,12 +68,12 @@ export const landing = defineMessages({
       boss: "Boss : "
     },
     board: {
-      title: "Les plus grands aventuriers",
+      title: "Les marcheurs les plus profonds",
       rank: "Rang",
       walker: "Marcheur",
       depth: "Profondeur",
       value: (stage: string) => `Étape ${stage}`,
-      empty: "Le classement attend ses premiers héros. ",
+      empty: "Le classement attend ses premiers marcheurs. ",
       emptyCta: "Et si c'était toi ?",
       join: "Pour y graver ton nom : prends la route, puis crée ton compte.",
       more: "Classement complet"
@@ -160,12 +160,12 @@ export const landing = defineMessages({
       boss: "Boss: "
     },
     board: {
-      title: "The greatest adventurers",
+      title: "The deepest walkers",
       rank: "Rank",
       walker: "Walker",
       depth: "Depth",
       value: (stage: string) => `Stage ${stage}`,
-      empty: "The leaderboard is waiting for its first heroes. ",
+      empty: "The leaderboard is waiting for its first walkers. ",
       emptyCta: "Why not you?",
       join: "To carve your name here: take the road, then create your account.",
       more: "Full leaderboard"

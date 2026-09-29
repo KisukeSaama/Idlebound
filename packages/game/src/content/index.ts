@@ -10,7 +10,7 @@ import { fr } from "./fr";
 import { grammarLine } from "./grammar";
 import type { GameText, LoreLine } from "./types";
 
-export type { Gender, GameText, HeroText, LoreLine, Memories, NameText } from "./types";
+export type { CutsceneText, Gender, GameText, HeroText, LoreLine, Memories, NameText } from "./types";
 export { roman } from "./roman";
 
 const TEXT: Record<Locale, GameText> = { fr, en };
@@ -93,13 +93,21 @@ const NOBODY: LoreLine = { by: "", text: "" };
 
 /**
  * The King's Word of the n-th night (1-based): the fifty written ones, then the grammar in
- * his voice; every seventh night, a word of his Eclipse.
+ * his voice.
  */
 export function kingWord(night: number, locale: Locale): string {
   const text = TEXT[locale];
-  if (night > 0 && night % ECLIPSE_EVERY === 0) return text.voices.eclipseWords[(night / ECLIPSE_EVERY - 1) % ECLIPSE_WORDS] ?? "";
   if (night <= KING_WORDS) return text.voices.kingWords[night - 1] ?? "";
   return grammarLine({ kind: "king", night }, locale).text;
+}
+
+/**
+ * What the King says, shadowed, when his Eclipse falls: the Eclipse armed at the dusk of
+ * night `night` (a multiple of seven), in turn.
+ */
+export function eclipseWord(night: number, locale: Locale): string {
+  const index = Math.max(0, Math.floor(night / ECLIPSE_EVERY) - 1) % ECLIPSE_WORDS;
+  return TEXT[locale].voices.eclipseWords[index] ?? "";
 }
 
 /** What the King says to a walker in his Regalia, the n-th time (1-based), in turn. */
@@ -117,7 +125,7 @@ export function chronicleText(entry: ChronicleEntry, locale: Locale): LoreLine {
     case "milestone":
       return own(text.strata.milestones, entry.id) ?? NOBODY;
     case "king":
-      return { by: text.speakers.king, text: kingWord(entry.night, locale) };
+      return { by: text.speakers.king, text: entry.eclipse ? eclipseWord(entry.night, locale) : kingWord(entry.night, locale) };
     case "echo":
       if (entry.index >= (own(BIOME_ECHOES, entry.biome) ?? 0)) return grammarLine({ kind: "echo", biome: entry.biome, index: entry.index }, locale);
       return own(text.echoes, entry.biome)?.[entry.index] ?? NOBODY;

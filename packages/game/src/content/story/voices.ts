@@ -80,6 +80,7 @@ export const VOICES_TEXT: Record<Locale, VoicesText> = {
       "You wear them better than I did. Don't let them wear you.",
       "If anyone asks who holds the night, tell them: you. Not the chair."
     ],
+    kingRepels: ["Come back when your hands stop shaking."],
     eclipseWords: [
       "The third step. Mind it. Who told me that?",
       "My feet hurt. They have not hurt in years. Is it dusk already?",
@@ -97,7 +98,7 @@ export const VOICES_TEXT: Record<Locale, VoicesText> = {
       "You walked a road with nothing on it. It was the longest road you ever walked.",
       "A bell rang in a village that had no tower.",
       "You were small, and a hand much bigger than yours held the sword with you.",
-      "There was a table set for one. The chair was still warm.",
+      "A table was set for one. The spoon lay on the left, where you would reach for it.",
       "A horse grazed by the keep, saddled for someone who never came down.",
       "You counted the stars, and there was one too many.",
       "There was the sound of a sea, very close. Orvane never had a sea.",
@@ -184,7 +185,7 @@ export const VOICES_TEXT: Record<Locale, VoicesText> = {
       "Ce siège n'a pas toujours été si lourd. Ou c'est moi qui ne l'étais pas.",
       "J'ai demandé cette nuit. Je la redemanderais. Je crois.",
       "Quelqu'un devait marcher devant moi. Je lui ai pardonné. Presque toutes les nuits.",
-      "J'ai marché cette route avant toi. Chaque pierre. Chaque nuit.",
+      "J'ai parcouru cette route avant toi. Chaque pierre. Chaque nuit.",
       "La couronne pesait moins qu'une épée. C'était bien ça, le problème.",
       "Je me suis dit : encore une nuit, et je me repose. Et je me suis reposé.",
       "Je ne me souviens plus de mon visage. Je me souviens de chaque fêlure de ce trône.",
@@ -215,11 +216,11 @@ export const VOICES_TEXT: Record<Locale, VoicesText> = {
       "Merci. Pour les rats, les racines, le noir. Pour la troisième marche.",
       "La salle est plus calme quand tu n'es pas là. Avant, ça m'était égal.",
       "Tu les portes tous, et tu montes encore mes marches. Merci.",
-      "J'entends les pierres, au crépuscule. Certaines, ce sont des marcheurs que j'ai connus. Merci de les garder.",
+      "J'entends les pierres, au crépuscule. Des marcheurs que j'ai connus en ont dressé certaines. Merci de les garder.",
       "Chaque nuit où tu viens, la voûte tient un peu plus. Je le sens.",
       "Je n'ai pas toujours été content de te voir. Maintenant, si.",
       "Tu ne m'as jamais demandé de me lever. Merci pour ça aussi.",
-      "Merci. Je le pense. Il y a longtemps que je n'ai rien pensé de ce que je dis.",
+      "Merci. Je le pense. Ça faisait longtemps que je ne pensais plus ce que je disais.",
       // 50 : la demande
       "Ne t'arrête pas. Moi, je l'ai fait."
     ],
@@ -237,11 +238,12 @@ export const VOICES_TEXT: Record<Locale, VoicesText> = {
       "Tu les portes mieux que moi. Ne les laisse pas te porter.",
       "Si on te demande qui tient la nuit, réponds : toi. Pas le siège."
     ],
+    kingRepels: ["Reviens quand tes mains ne trembleront plus."],
     eclipseWords: [
       "La troisième marche. Attention. Qui m'a dit ça ?",
       "J'ai mal aux pieds. Ça fait des années. C'est déjà le crépuscule ?",
       "J'ai une épée. Pourquoi j'ai une épée ? Ah. La route.",
-      "Les rats dans le blé. Les racines. Les chauves-souris. Je connais cette route. Je l'ai marchée.",
+      "Les rats dans le blé. Les racines. Les chauves-souris. Je connais cette route. Je l'ai parcourue.",
       "Attends. Je devais monter ces marches. Pas m'asseoir en haut.",
       "Qui est assis là-haut ? Il a l'air fatigué. Quelqu'un devrait lui dire de se lever.",
       "Encore une nuit. Je peux encore une nuit. Je peux."
@@ -251,10 +253,10 @@ export const VOICES_TEXT: Record<Locale, VoicesText> = {
       "Une rivière coulait à rebours sous un pont, et tu savais le nom de chaque pierre.",
       "Une porte ouverte dans un mur, et pas de maison derrière.",
       "La neige montait d'un puits. Quelqu'un avait laissé un seau au fond.",
-      "Tu marchais sur une route où il n'y avait rien. La plus longue que tu aies jamais marchée.",
+      "Tu marchais sur une route où il n'y avait rien. La plus longue que tu aies jamais parcourue.",
       "Une cloche sonnait dans un village sans clocher.",
       "Tu étais petit, et une main bien plus grande que la tienne tenait l'épée avec toi.",
-      "Une table mise pour un seul. La chaise était encore tiède.",
+      "Une table mise pour un seul. La cuillère était à gauche, là où ta main l'aurait cherchée.",
       "Un cheval broutait au pied du donjon, sellé pour quelqu'un qui n'est jamais descendu.",
       "Tu comptais les étoiles, et il y en avait une de trop.",
       "On entendait la mer, toute proche. Orvane n'a jamais eu de mer.",

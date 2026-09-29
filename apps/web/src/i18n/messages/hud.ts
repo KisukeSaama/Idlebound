@@ -16,7 +16,7 @@ export const hud = defineMessages({
       inventory: { label: "Inventaire", shortLabel: "Sac" },
       market: { label: "Marché d'éclats", shortLabel: "Marché" },
       ascension: { label: "Ascension", shortLabel: "Ascension" },
-      hall: { label: "Hall des héros", shortLabel: "Succès" },
+      hall: { label: "Hall des héros", shortLabel: "Hauts faits" },
       account: { label: "Compte & progression", shortLabel: "Compte" },
       settings: { label: "Paramètres", shortLabel: "Options" }
     },
@@ -51,21 +51,21 @@ export const hud = defineMessages({
       attack: "Attaquer le monstre",
       appears: (name: string, hp: string) => `${name} surgit, ${hp} points de vie.`,
       falls: (name: string) => `${name} tombe.`,
-      kinds: { boss: "Boss", miniboss: "Élite", treasure: "Trésor", rare: "Errant", normal: "" },
+      kinds: { boss: "Gardien", miniboss: "Élite", treasure: "Trésor", rare: "Errant", normal: "" },
       killProgressTitle: "Monstres à vaincre pour débloquer l'étape suivante",
       killProgress: (kills: Count, total: Count) => `${kills} / ${total} monstres`,
-      bossBeaten: "Boss vaincu : tu peux le combattre à nouveau",
-      farming: "Étape déjà franchie : farm en cours",
+      bossBeaten: "Gardien vaincu : tu peux le combattre à nouveau",
+      farming: "Étape déjà franchie : tu restes pour l'or",
       seconds: (value: string) => `${value} s`
     },
     stageBar: {
       previous: "Étape précédente",
       next: "Étape suivante",
-      stage: (stage: Count, boss: boolean) => `Étape ${stage}${boss ? " (boss)" : ""}`,
+      stage: (stage: Count, boss: boolean) => `Étape ${stage}${boss ? " (élite ou gardien)" : ""}`,
       autoOn: "Progression automatique activée",
-      autoOff: "Progression automatique désactivée : tu restes sur cette étape pour farmer",
+      autoOff: "Progression automatique désactivée : tu restes sur cette étape pour l'or",
       auto: "Auto",
-      farm: "Farm"
+      farm: "Rester"
     },
     buffs: {
       label: "Effets actifs",
@@ -121,7 +121,7 @@ export const hud = defineMessages({
       critChance: (pct: Count) => `+${pct} % de chances de critique`,
       critDamage: (add: Count) => `Multiplicateur des critiques +${add} (×10 de base)`,
       gold: (pct: Count) => `Or gagné +${pct} %`,
-      bossTimer: (seconds: Count) => `+${seconds} s au chrono des boss`,
+      bossTimer: (seconds: Count) => `+${seconds} s au chrono des élites et gardiens`,
       treasure: (pct: Count) => `+${pct} % de chances de rat doré`
     },
     altarValue: {
@@ -137,9 +137,9 @@ export const hud = defineMessages({
       okLabel: "Compris",
       hire: "Tu as assez d'or : monte Aldric de niveau pour frapper plus fort.",
       companion: (hero: string) => `Recrute ${hero} : elle attaque même quand ta lame se repose.`,
-      boss: "Un boss ! Terrasse-le avant la fin du chrono, sinon tu recules d'une étape.",
+      boss: "Élites et gardiens doivent tomber avant la fin du chrono. Quand la brèche se referme, la nuit te repousse d'une étape.",
       skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou sur son bouton en bas.`,
-      farm: "Tu farmes l'étape précédente. Renforce-toi, puis réactive la progression (bouton Farm → Auto).",
+      farm: "Tu restes sur l'étape précédente. Renforce-toi, puis reprends la route (bouton Rester → Auto).",
       ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu pour rejoindre le Sanctuaire du Crépuscule.",
       altarRework: "Les autels ont été refondus : chaque niveau des autels illimités multiplie désormais son effet, et le voyageur fait sauter les premières étapes. Tous tes niveaux t'ont été rendus en essences : choisis de nouveau tes autels dans la fenêtre d'ascension."
     },
@@ -149,11 +149,11 @@ export const hud = defineMessages({
       shards: (count: number) => `+${count} éclat${count > 1 ? "s" : ""}`
     },
     toasts: {
-      bossFailedTitle: "Le boss a résisté",
+      bossFailedTitle: "La nuit te repousse",
       bossFailedText: "Renforce tes compagnons puis relance la progression.",
       bossFailedWounded: (pct: number) => `Il garde ses blessures : il reviendra entamé de ${pct} %. Relance la progression, il cédera.`,
       biome: (era: string, stage: Count) => `${era} · étape ${stage}`,
-      achievement: (name: string) => `Succès : ${name}`,
+      achievement: (name: string) => `Haut fait : ${name}`,
       achievementText: (description: string, pct: Count) => `${description} +${pct} % DPS`,
       loot: (rarity: string, level: Count) => `${rarity} · niveau ${level}`,
       skillUnlocked: (name: string) => `Nouveau pouvoir : ${name}`,
@@ -167,7 +167,7 @@ export const hud = defineMessages({
         essence: (amount: number) => `+${amount} essence${amount > 1 ? "s" : ""}`
       },
       ascendedTitle: "Ascension accomplie",
-      ascendedText: (essences: string) => `+${essences} essences. Une nouvelle vie commence.`,
+      ascendedText: (essences: string) => `+${essences} essences. La nuit recommence.`,
       inventoryFull: (item: string, shards: number) => `Inventaire plein : ${item} recyclé (+${shards} éclats).`,
       hourglass: (kills: string) => `Le sablier s'écoule : ${kills} monstres vaincus en un instant.`,
       fragmentTitle: "Un fragment refait surface",
@@ -175,6 +175,9 @@ export const hud = defineMessages({
       bestiary: (name: string) => `Bestiaire : ${name}`,
       recognition: (name: string, tier: number) =>
         tier === 1 ? `${name} te regarde d'un drôle d'air.` : tier === 5 ? `${name} se souvient de toi.` : `${name} se souvient un peu plus de toi.`,
+      recognitionManyTitle: "Des visages familiers",
+      recognitionMany: (names: string, first: boolean) => `${names} ${first ? "te regardent d'un drôle d'air" : "se souviennent un peu plus de toi"}. Leurs souvenirs t'attendent dans la Chronique.`,
+      and: " et ",
       secretTitle: "Secret découvert",
       namedTitle: (name: string) => `Relique nommée : ${name}`,
       wandererTitle: (name: string) => `${name} croise ta route`
@@ -236,7 +239,7 @@ export const hud = defineMessages({
       inventory: "Le Grand Livre refuse : inventaire trop grand.",
       item: "Le Grand Livre refuse : objet invalide.",
       achievement: "Le Grand Livre refuse : succès non mérité.",
-      power: "Le Grand Livre refuse : boss impossible à vaincre avec cette puissance.",
+      power: "Le Grand Livre refuse : élite ou gardien impossible à vaincre avec cette puissance.",
       identity: "Le Grand Livre refuse : cette partie ne prolonge pas celle du compte.",
       rollback: "Le Grand Livre refuse : la progression a reculé.",
       stage: "Le Grand Livre refuse : étapes franchies sans combattre.",
@@ -259,7 +262,7 @@ export const hud = defineMessages({
       inventory: { label: "Inventory", shortLabel: "Bag" },
       market: { label: "Shard market", shortLabel: "Market" },
       ascension: { label: "Ascension", shortLabel: "Ascension" },
-      hall: { label: "Hall of heroes", shortLabel: "Feats" },
+      hall: { label: "Hall of heroes", shortLabel: "Deeds" },
       account: { label: "Account & progress", shortLabel: "Account" },
       settings: { label: "Settings", shortLabel: "Settings" }
     },
@@ -294,21 +297,21 @@ export const hud = defineMessages({
       attack: "Attack the monster",
       appears: (name: string, hp: string) => `${name} appears, ${hp} health.`,
       falls: (name: string) => `${name} falls.`,
-      kinds: { boss: "Boss", miniboss: "Elite", treasure: "Treasure", rare: "Wanderer", normal: "" },
+      kinds: { boss: "Guardian", miniboss: "Elite", treasure: "Treasure", rare: "Wanderer", normal: "" },
       killProgressTitle: "Monsters to defeat to unlock the next stage",
       killProgress: (kills: Count, total: Count) => `${kills} / ${total} monsters`,
-      bossBeaten: "Boss defeated: you can fight it again",
-      farming: "Stage already cleared: farming",
+      bossBeaten: "Guardian defeated: you can fight it again",
+      farming: "Stage already cleared: staying for gold",
       seconds: (value: string) => `${value}s`
     },
     stageBar: {
       previous: "Previous stage",
       next: "Next stage",
-      stage: (stage: Count, boss: boolean) => `Stage ${stage}${boss ? " (boss)" : ""}`,
+      stage: (stage: Count, boss: boolean) => `Stage ${stage}${boss ? " (elite or guardian)" : ""}`,
       autoOn: "Auto-advance on",
-      autoOff: "Auto-advance off: you stay on this stage to farm",
+      autoOff: "Auto-advance off: you stay on this stage for gold",
       auto: "Auto",
-      farm: "Farm"
+      farm: "Stay"
     },
     buffs: {
       label: "Active effects",
@@ -364,7 +367,7 @@ export const hud = defineMessages({
       critChance: (pct: Count) => `+${pct}% critical hit chance`,
       critDamage: (add: Count) => `Critical multiplier +${add} (×10 base)`,
       gold: (pct: Count) => `Gold earned +${pct}%`,
-      bossTimer: (seconds: Count) => `+${seconds}s on the boss timer`,
+      bossTimer: (seconds: Count) => `+${seconds}s on the timer of elites and guardians`,
       treasure: (pct: Count) => `+${pct}% golden rat chance`
     },
     altarValue: {
@@ -380,9 +383,9 @@ export const hud = defineMessages({
       okLabel: "Got it",
       hire: "You have enough gold: level up Aldric to hit harder.",
       companion: (hero: string) => `Hire ${hero}: she attacks even while your blade rests.`,
-      boss: "A boss! Defeat it before the timer runs out, or you'll fall back one stage.",
+      boss: "Elites and guardians must fall before the timer runs out. When the seam closes, the night pushes you back one stage.",
       skill: (key: string) => `New power unlocked: press ${key} or use its button at the bottom.`,
-      farm: "You're farming the previous stage. Get stronger, then turn progression back on (Farm → Auto button).",
+      farm: "You're staying on the previous stage. Get stronger, then take the road again (Stay → Auto button).",
       ascend: "The Fallen King has fallen! Open “Ascension” in the menu to reach the Sanctum of Dusk.",
       altarRework: "The altars have been reworked: each level of an open-ended altar now multiplies its effect, and the Wanderer skips the first stages. All your levels were refunded in essences: pick your altars again in the ascension window."
     },
@@ -392,11 +395,11 @@ export const hud = defineMessages({
       shards: (count: number) => `+${count} shard${count > 1 ? "s" : ""}`
     },
     toasts: {
-      bossFailedTitle: "The boss held on",
+      bossFailedTitle: "The night pushes you back",
       bossFailedText: "Strengthen your companions, then resume progression.",
       bossFailedWounded: (pct: number) => `It keeps its wounds: it will come back ${pct}% down. Resume progression, it will give way.`,
       biome: (era: string, stage: Count) => `${era} · stage ${stage}`,
-      achievement: (name: string) => `Achievement: ${name}`,
+      achievement: (name: string) => `Deed: ${name}`,
       achievementText: (description: string, pct: Count) => `${description} +${pct}% DPS`,
       loot: (rarity: string, level: Count) => `${rarity} · level ${level}`,
       skillUnlocked: (name: string) => `New power: ${name}`,
@@ -410,7 +413,7 @@ export const hud = defineMessages({
         essence: (amount: number) => `+${amount} essence${amount > 1 ? "s" : ""}`
       },
       ascendedTitle: "Ascension complete",
-      ascendedText: (essences: string) => `+${essences} essences. A new life begins.`,
+      ascendedText: (essences: string) => `+${essences} essences. The night begins again.`,
       inventoryFull: (item: string, shards: number) => `Inventory full: ${item} salvaged (+${shards} shards).`,
       hourglass: (kills: string) => `The hourglass runs out: ${kills} monsters defeated in an instant.`,
       fragmentTitle: "A fragment surfaces",
@@ -418,6 +421,9 @@ export const hud = defineMessages({
       bestiary: (name: string) => `Bestiary: ${name}`,
       recognition: (name: string, tier: number) =>
         tier === 1 ? `${name} looks at you strangely.` : tier === 5 ? `${name} remembers you.` : `${name} remembers you a little more.`,
+      recognitionManyTitle: "Familiar faces",
+      recognitionMany: (names: string, first: boolean) => `${names} ${first ? "look at you strangely" : "remember you a little more"}. Their memories wait in the Chronicle.`,
+      and: " and ",
       secretTitle: "Secret found",
       namedTitle: (name: string) => `Named relic: ${name}`,
       wandererTitle: (name: string) => `${name} crosses your path`
@@ -478,7 +484,7 @@ export const hud = defineMessages({
       inventory: "The Ledger refuses: inventory too large.",
       item: "The Ledger refuses: invalid item.",
       achievement: "The Ledger refuses: unearned achievement.",
-      power: "The Ledger refuses: boss impossible to beat with this power.",
+      power: "The Ledger refuses: elite or guardian impossible to beat with this power.",
       identity: "The Ledger refuses: this game does not continue the account's game.",
       rollback: "The Ledger refuses: progress went backwards.",
       stage: "The Ledger refuses: stages cleared without fighting.",

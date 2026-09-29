@@ -34,7 +34,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
       "dark-forest": [
         { by: "The Ledger", text: "In the Wychwood the roots hang from the branches like ropes. Nobody has ever climbed down one." },
         { by: "Ysolde", text: "Stand still. That owl has asked the same question since before I was born. Whatever you do, don't answer it." },
-        { by: "A whispering bramble", text: "Aldric. Aldric. Aldric. We have so many of you. Hold still. We are adding one." },
+        { by: "A whispering bramble", text: "Aldric. We know that name. It has bled here before." },
         { by: "The Ledger", text: "A druid's lantern hangs from a low branch, still lit. The oil in it has not gone down in a very long time." },
         { by: "A toadstool", text: "La. La. La. We almost have the song now. Come back tomorrow and hear it. You will." },
         { by: "Séraphine", text: "I asked the roots nicely, once. They still remember. Roots are the only ones in this wood who do." },
@@ -54,10 +54,10 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
         { by: "Garrick", text: "The canary stopped singing, so we left. It sings again now. None of us came back to hear it." },
         { by: "The Ledger", text: "The Runeguild's tally board: shards dug, forty years of chalk. Shards fallen since: the chalk ran out." },
         { by: "Oriane", text: "You come down this gallery. You stop at the third rune. You always stop at the third rune." },
-        { by: "Garrick", text: "Most shards show your own face. One showed a face from nowhere near here. I put it back. Rock keeps secrets better than me." },
+        { by: "Garrick", text: "Most shards show your own face. Some show mine, younger. I stopped looking. Rock keeps secrets better than me." },
         { by: "Thorvald", text: "The Devourer ate a mountain to reach the sky. Found it. Couldn't keep it down. I know the feeling." },
         { by: "Oriane", text: "The deepest vault is quiet. I hear tomorrow from here. Tomorrow sounds like tonight." },
-        { by: "The Ledger", text: "Oriane's walls are covered in tallies. The oldest are in her own hand. Oriane is young." }
+        { by: "The Ledger", text: "Oriane's cell has two stools. She sits on one and answers the other." }
       ],
       "corrupted-marsh": [
         { by: "The Ledger", text: "The causeway goes under the water and comes up again further on. Walkers have learned to hold their breath." },
@@ -148,7 +148,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
       "dark-forest": [
         { by: "Le Grand Livre", text: "Dans la forêt, les racines pendent des branches comme des cordes. Personne n'y est jamais descendu." },
         { by: "Ysolde", text: "Ne bouge pas. Cette chouette pose la même question depuis avant ma naissance. Surtout, n'y réponds pas." },
-        { by: "Une ronce qui murmure", text: "Aldric. Aldric. Aldric. On en a tant, de toi. Ne bouge pas. On en ajoute un." },
+        { by: "Une ronce qui murmure", text: "Aldric. On connaît ce nom. Il a déjà saigné ici." },
         { by: "Le Grand Livre", text: "Une lanterne de druide pend à une branche basse, allumée. L'huile n'y a pas baissé depuis très longtemps." },
         { by: "Un champignon", text: "La. La. La. On y est presque, pour la chanson. Reviens demain l'écouter. Tu reviendras." },
         { by: "Séraphine", text: "J'ai demandé poliment aux racines, une fois. Elles s'en souviennent. Dans ce bois, il n'y a qu'elles pour se souvenir." },
@@ -168,10 +168,10 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
         { by: "Garrick", text: "Le canari s'est tu, alors on est partis. Il chante de nouveau. Aucun de nous n'est revenu l'écouter." },
         { by: "Le Grand Livre", text: "Le tableau de la Guilde : éclats extraits, quarante ans de craie. Éclats tombés depuis : la craie a manqué." },
         { by: "Oriane", text: "Tu descends cette galerie. Tu t'arrêtes à la troisième rune. Tu t'arrêtes toujours à la troisième rune." },
-        { by: "Garrick", text: "La plupart des éclats te renvoient ta tête. Un m'a montré un visage de très loin d'ici. Je l'ai remis. La roche se tait mieux que moi." },
+        { by: "Garrick", text: "La plupart des éclats te renvoient ta tête. Certains me montrent plus jeune. J'ai arrêté de regarder. La roche se tait mieux que moi." },
         { by: "Thorvald", text: "Le Dévorateur a mangé une montagne pour atteindre le ciel. Il l'a trouvé. Il l'a pas digéré. Je connais ça." },
         { by: "Oriane", text: "Le caveau le plus profond est calme. D'ici, j'entends demain. Demain ressemble à ce soir." },
-        { by: "Le Grand Livre", text: "Les murs d'Oriane sont couverts de bâtons. Les plus anciens sont de sa main. Oriane est jeune." }
+        { by: "Le Grand Livre", text: "La cellule d'Oriane a deux tabourets. Elle s'assied sur l'un et répond à l'autre." }
       ],
       "corrupted-marsh": [
         { by: "Le Grand Livre", text: "La chaussée passe sous l'eau et ressort plus loin. Les marcheurs ont appris à retenir leur souffle." },
@@ -179,7 +179,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
         { by: "Un feu follet", text: "Suis-moi. Suis-moi. Non, par là. Tout le monde finit par aller par là." },
         { by: "Le Grand Livre", text: "Le manoir d'Osric s'enfonce d'un pouce chaque nuit. La salle de bal est sous l'eau. Les bougies y sont allumées." },
         { by: "Un courtisan noyé", text: "Monseigneur va te recevoir sous peu. Monseigneur reçoit sous peu depuis très, très longtemps." },
-        { by: "Vorn", text: "J'ai trouvé Biscuit par ici. Enfin. C'est lui qui m'a trouvé. Ne le caresse pas. Ne le caresse pas pas non plus." },
+        { by: "Vorn", text: "J'ai trouvé Biscuit par ici. Enfin. C'est lui qui m'a trouvé. Ne le caresse pas. Ne l'ignore pas non plus." },
         { by: "Un tourbier", text: "Couper la tourbe. Empiler la tourbe. Le baron voudra du feu ce soir. Le baron veut toujours du feu." },
         { by: "Mirelle", text: "Le remède de ce soir : belladone, sel, une cuillère de mon sang. Celui de demain : tout ce que celui-ci n'était pas." },
         { by: "Le Grand Livre", text: "Le marais avait été asséché pour la tourbe et le riz. L'eau est revenue en une seule nuit. Elle n'est jamais repartie." },

@@ -1,5 +1,5 @@
 import { ALTARS } from "./data/altars";
-import { EVENTS } from "./data/events";
+import { ECLIPSE_EVERY, EVENTS } from "./data/events";
 import {
   BESTIARY,
   RECOGNITION_HEROES,
@@ -70,7 +70,11 @@ export function sourceEntries(state: GameState, source: ChronicleSource): Chroni
       for (const id of MILESTONES) if (milestoneReached(state, id)) entries.push({ source, id });
       break;
     case "king":
-      for (let night = 1; night <= state.lifetime.ascensions; night += 1) entries.push({ source, night });
+      for (let night = 1; night <= state.lifetime.ascensions; night += 1) {
+        entries.push({ source, night });
+        // The Eclipse armed at this dusk fell before the next one could come.
+        if (night % ECLIPSE_EVERY === 0 && night < state.lifetime.ascensions) entries.push({ source, night, eclipse: true });
+      }
       break;
     case "echo":
       for (const biome of BIOMES) {
@@ -124,11 +128,16 @@ export function sourceEntries(state: GameState, source: ChronicleSource): Chroni
   return entries;
 }
 
+/** Eclipses of the King fallen so far: each armed at a seventh dusk falls during the next night. */
+export function eclipsesFallen(state: GameState): number {
+  return Math.max(0, Math.floor((state.lifetime.ascensions - 1) / ECLIPSE_EVERY));
+}
+
 /** How many entries a source holds, without building them. */
 export function sourceCount(state: GameState, source: ChronicleSource): number {
   switch (source) {
     case "keystone": return keystonesFound(state.maxStageEver) + state.lore.readings.reduce((total, strata) => total + strata, 0);
-    case "king": return state.lifetime.ascensions;
+    case "king": return state.lifetime.ascensions + eclipsesFallen(state);
     case "echo": return BIOMES.reduce((total, biome) => total + echoesFound(state, biome.id), 0);
     case "age": {
       let total = 0;

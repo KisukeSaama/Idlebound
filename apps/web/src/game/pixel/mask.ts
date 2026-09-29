@@ -3,7 +3,7 @@
  * ramp, then outlined like every sprite.
  */
 import { HERO_BY_ID } from "@idlebound/game";
-import { EMBLEMS, RAMPS, rampFor, type Pal, type PixelMask } from "@idlebound/game/art";
+import { EMBLEMS, EVEN_RAT, RAMPS, rampFor, type Pal, type PixelMask } from "@idlebound/game/art";
 import { createPixels, type Pixels } from "./pixels";
 import { outline } from "./shade";
 
@@ -31,6 +31,11 @@ export function paintMask(mask: PixelMask, ramp: readonly Pal[], emissive = ""):
     }
   });
   return out;
+}
+
+/** The tiny gold rat on Thorvald's medallion (the Even secret), in the gold ramp. */
+export function renderEvenRat(): Pixels {
+  return outline(paintMask(EVEN_RAT, RAMPS.gold));
 }
 
 /** A companion's 12 × 12 sigil in the ramp of its color. */
