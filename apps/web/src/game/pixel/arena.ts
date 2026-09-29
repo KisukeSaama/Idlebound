@@ -72,8 +72,8 @@ const FLICKER_SECONDS = 0.18;
 const WALKER_FADE_SECONDS = 0.6;
 const WALKER_BOB = [0, 1, 1, 0];
 const WALKER_BOB_SECONDS = 0.3;
-/** Under a window the scene barely shows through its veil: one frame a second is enough. */
-const COVERED_FRAME_SECONDS = 1;
+/** The scene's cadence when nothing moves fast, and always under a window: its veil hides the effects. */
+const CALM_REDRAW_SECONDS = 1 / 12;
 
 /** A stretch of road to warm ahead: its scene as `setScene` will ask for it, and its creatures. */
 export interface Stretch {
@@ -579,8 +579,8 @@ export class ArenaRenderer {
   private loop = () => {
     this.frame = 0;
     const now = this.now();
-    // Idle scenes redraw a few times a second, effects every frame; under a window, once a second.
-    const gap = this.covered ? COVERED_FRAME_SECONDS : this.busy(now) ? 0 : 1 / 12;
+    // Idle scenes redraw a few times a second, effects every frame; under a window, never faster than idle.
+    const gap = !this.covered && this.busy(now) ? 0 : CALM_REDRAW_SECONDS;
     if (now - this.lastDraw > gap) this.draw(false);
     if (!this.reducedMotion || this.busy(now)) this.frame = requestAnimationFrame(this.loop);
   };
