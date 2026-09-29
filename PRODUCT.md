@@ -255,7 +255,9 @@ The second layer of rebirth, for the long run (it keeps players apart after week
 - **Forge** (up to +20, +10% per level) costs `ceil(rarity shards × 2 × 1.35^forge)`;
   **salvaging** returns the rarity's shards (1, 3, 8… from common up) plus 50% per forge
   level. Items can be locked, salvaged in bulk up to a rarity, and unequipped. Inventory
-  holds 48 items (full inventory auto-salvages new drops). The equipment window shows the
+  holds 48 items (full inventory auto-salvages new drops) and sorts by most recent, by
+  slot, or by rarity (rarest first, then the strongest: density, then affixes against their
+  nominal values, forge included). The equipment window shows the
   shard balance beside its title on both tabs, once shards are revealed.
 - **Shard market** (the Stallkeeper's stall; one of their twelve sayings at each visit):
   relic chest (30), great chest (160, epic or better), rage potion (20, DPS ×2), fortune
@@ -486,7 +488,8 @@ rejects real play.
 - The inventory sort and the board picked on the in-game Roll are remembered in this browser
   (closing the window or reloading keeps them); they are view conveniences, never game state.
 - Settings: language, number notation (letters, scientific, engineering), sound and its volume,
-  damage numbers, reduced motion, ascension confirmation.
+  damage numbers, reduced motion, colorblind colors (rarities, gains and losses in hues that
+  red-green blindness keeps apart), ascension confirmation.
 - One-time tutorial hints guide the first minutes; saves that had ascended before version 4
   get a one-time notice about the altar rework.
 

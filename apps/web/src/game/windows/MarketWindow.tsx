@@ -73,7 +73,7 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
               <h3>{copy.name}</h3>
               <p>{copy.description}</p>
               {offer.id === "hourglass" ? <p className="market-preview"><GoldIcon size={14} /> {hourglass > 0 ? fmt(hourglass) : text.hireFirst}</p> : null}
-              {chest && state.inventory.length >= INVENTORY_LIMIT ? <p className="market-preview warn">{text.inventoryFull}</p> : null}
+              {chest && state.inventory.length >= INVENTORY_LIMIT ? <p className="market-preview warn"><Picto name="warning" size={14} /> {text.inventoryFull}</p> : null}
               <button
                 type="button"
                 className="btn btn-gold btn-sm"
@@ -121,8 +121,8 @@ function Caravan({ now, hourglass }: { now: number; hourglass: number }) {
         <h3>{copy.name}</h3>
         <p>{copy.description}</p>
         {owned ? <p className="market-preview">{text.tokenOwned}</p> : null}
-        {packFull ? <p className="market-preview warn">{text.packFull(room)}</p> : null}
-        {noGold ? <p className="market-preview warn">{t.windows.market.hireFirst}</p> : null}
+        {packFull ? <p className="market-preview warn"><Picto name="warning" size={14} /> {text.packFull(room)}</p> : null}
+        {noGold ? <p className="market-preview warn"><Picto name="warning" size={14} /> {t.windows.market.hireFirst}</p> : null}
       </div>
       {owned ? null : (
         <button

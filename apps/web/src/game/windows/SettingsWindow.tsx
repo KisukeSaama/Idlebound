@@ -71,6 +71,7 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
         ) : null}
         <Toggle label={text.damageNumbers} hint={text.damageNumbersHint} checked={settings.damageNumbers} onChange={(value) => update({ damageNumbers: value })} />
         <Toggle label={text.reducedMotion} hint={text.reducedMotionHint} checked={settings.reducedMotion} onChange={(value) => update({ reducedMotion: value })} />
+        <Toggle label={text.colorblind} hint={text.colorblindHint} checked={settings.colorblind} onChange={(value) => update({ colorblind: value })} />
         <Toggle label={text.confirmAscension} hint={text.confirmAscensionHint} checked={settings.confirmAscension} onChange={(value) => update({ confirmAscension: value })} />
         {/* Only once the walker has seen a sky other than the Kingdom's (Age II and deeper). */}
         {ageForStage(state.maxStageEver) > 0 || settings.darkNight ? (

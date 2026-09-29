@@ -21,6 +21,9 @@
   --shard: #7fd8ff;
   --danger: #e8566f;
   --success: #5fcf80;
+  --success-soft: #c4f5d2;
+  /* A loss or a warning in small print: softer than --danger, readable on every panel. */
+  --danger-soft: #ff9db0;
   --companion: #8ff0c4;
   /* Item tooltips: the ink and rim of an old game's item card. */
   --tip-bg: #090b19;
@@ -43,6 +46,16 @@
   /* Viewport units inside the zoomed page: a zoom scales vw and dvh too, this undoes it. */
   --vw: calc(1vw / var(--ui-zoom));
   --dvh: calc(1dvh / var(--ui-zoom));
+}
+
+/*
+ * Colorblind colors (a setting): success turns blue and losses orange, so red and green never
+ * carry a meaning alone. Rarities change with them (rarityColor in the game package).
+ */
+:root.colorblind {
+  --success: #5aa9ff;
+  --success-soft: #cfe2ff;
+  --danger-soft: #ff8a4c;
 }
 
 /* Gentle steps: once zoomed the page keeps at least 1920 x 960 CSS pixels, a full HD screen. */
@@ -303,7 +316,7 @@ button {
 
 .field-error {
   font-size: 0.8rem;
-  color: #ff9db0;
+  color: var(--danger-soft);
 }
 
 .form-error {

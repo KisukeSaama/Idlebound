@@ -75,7 +75,9 @@ export const hud = defineMessages({
       overcharge: "Surcharge : DPS ×7",
       sharpness: "Affûtage : frappe ×10",
       ritual: (pct: Count) => `Rituel : +${pct} % DPS`,
+      ritualShort: (pct: Count) => `+${pct} %`,
       patience: (pct: Count) => `Patience : DPS +${pct} %`,
+      patienceShort: (pct: Count) => `+${pct} %`,
       patienceTaken: (full: Count, taken: Count) => `Tes frappes remplacent ${taken} % du bonus de Patience (DPS +${full} %)`
     },
     skills: {
@@ -321,7 +323,9 @@ export const hud = defineMessages({
       overcharge: "Overcharge: DPS ×7",
       sharpness: "Sharpness: strike ×10",
       ritual: (pct: Count) => `Ritual: +${pct}% DPS`,
+      ritualShort: (pct: Count) => `+${pct}%`,
       patience: (pct: Count) => `Patience: DPS +${pct}%`,
+      patienceShort: (pct: Count) => `+${pct}%`,
       patienceTaken: (full: Count, taken: Count) => `Your strikes stand in for ${taken}% of the Patience bonus (DPS +${full}%)`
     },
     skills: {

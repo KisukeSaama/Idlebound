@@ -4,7 +4,6 @@ import {
   ACHIEVEMENT_BY_ID,
   BESTIARY_BY_ID,
   BIOMES,
-  RARITY_INFO,
   SKILLS,
   SKILL_BY_ID,
   WALKER_MIN_ASCENSIONS,
@@ -24,6 +23,7 @@ import {
   eclipseWord,
   isKingStage,
   kingWord,
+  rarityColor,
   recognitionTier,
   regaliaWord,
   wearsRegalia,
@@ -307,6 +307,7 @@ export default function GameApp() {
       audio.setVolume(store.state.settings.volume);
       audio.setStage(store.state.stage);
       document.documentElement.classList.toggle("reduced-motion", store.state.settings.reducedMotion);
+      document.documentElement.classList.toggle("colorblind", store.state.settings.colorblind);
     };
     sync();
     // Any input also tells the engine the player is here (the autopilot waits for them to leave),
@@ -396,7 +397,7 @@ export default function GameApp() {
             icon: "chest",
             title: legend ? m.namedTitle(itemName(event.item, locale)) : itemName(event.item, locale),
             text: legend ?? m.loot(g.rarities[event.item.rarity], event.item.level),
-            color: RARITY_INFO[event.item.rarity].color
+            color: rarityColor(event.item.rarity, store.state.settings.colorblind)
           });
           break;
         }

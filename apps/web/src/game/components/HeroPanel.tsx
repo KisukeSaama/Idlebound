@@ -339,7 +339,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
         aria-hidden="true"
         onPointerDown={onPortrait ? () => onPortrait(hero.id) : undefined}
       >
-        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size={64} nearest /></span>
+        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size="parent" nearest /></span>
         {starfield ? <span className="medallion-stars" /> : null}
         {even ? <PixelSprite source={evenRatSource()} scale={1} className="medallion-rat" /> : null}
         {hired ? <span className="hero-level">{level}</span> : null}

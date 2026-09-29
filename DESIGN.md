@@ -47,6 +47,7 @@ Defined once on `:root` in `globals.css`. Never hardcode a color that has a toke
 | `--essence` | `#c38bff` | Essences and ascension |
 | `--shard` | `#7fd8ff` | Shards and the market |
 | `--danger` / `--success` | `#e8566f` / `#5fcf80` | HP, errors, boss timer urgency / confirmations |
+| `--danger-soft` / `--success-soft` | `#ff9db0` / `#c4f5d2` | Losses and warnings in small print / cleared stages, Auto |
 | `--companion` | `#8ff0c4` | Companion (passive) damage numbers and their label |
 | `--tip-bg` / `--tip-border` | `#090b19` / `#8b93b5` | Item cards (tooltips of powers, talents, relics) |
 | `--bevel` | `inset 0 1px 0 rgba(255,255,255,.08)` | The one bevel of raised things |
@@ -56,6 +57,8 @@ Content colors live with the game data, not in CSS:
 - **Rarity** (`RARITY_INFO` in `packages/game/src/data/items.ts`): common `#b8c0cc`, rare
   `#5aa9ff`, epic `#b86bff`, legendary `#ffb347`, mythic `#ff5c7a`. Item cards take a
   thread of `--rarity` around a black line; legendary and mythic wear a second thread.
+  `rarityColor(rarity, colorblind)` gives the color to show; with colorblind colors it is
+  common `#e6ecef`, rare `#96b5ec`, epic `#8e69fb`, legendary `#fcb902`, mythic `#ff2259`.
 - **Biome accent** (`BIOMES[].accent`): passed as `--accent` to the scene and biome cards.
 - **Hero color** (`HEROES[].color`): the thread of each companion's portrait frame, an
   accent of their pixel portrait (its `hero` slot, used sparingly under the moonlight) and
@@ -120,7 +123,8 @@ Content colors live with the game data, not in CSS:
   On a portrait phone a window is a **sheet**: full width, rising from the bottom edge in
   200 ms (no bounce), a grip on its head, its foot above the home indicator. A finger pulling
   the head down drags the sheet; past 96 px, or on a quick flick, it lets go and closes,
-  otherwise it settles back. The close key stays.
+  otherwise it settles back. The close key stays. A window is never wider than the screen:
+  a row of tabs too long for it scrolls sideways.
 - **The Hall**: achievements, then Chronicle and Bestiary once they have a first entry,
   statistics, leaderboard. The Chronicle opens on the Night list (one line per night, the
   King's Word in italics), then one section per source with its count and an "N new" pill,
@@ -172,7 +176,8 @@ Content colors live with the game data, not in CSS:
   powers, still and full width; the arena shrinks a little while it shows and the monster is
   never covered.
 - **Companions** (the roster): one line per companion, rows alternating like an old guild
-  list, the portrait in its frame (thread in the companion's color), name, title, DPS and
+  list, the portrait in its frame (thread in the companion's color, the bust at the whole
+  scale nearest the frame, so a phone's smaller frame still shows the face), name, title, DPS and
   talents (small square keys: gold when owned, violet to buy), the buy key at the end: flat
   gold when affordable, sunk back with its price still readable when not. "Buy N talents"
   floats over the foot of the list, full width under the thumb, only while one is
@@ -266,7 +271,9 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
   carries a grip: a tap or a swipe down folds it to its heading ("Full combat view", the
   scene takes the room), a tap or a swipe up opens it again. Folded, its heading counts the
   purchases within reach (companions at the chosen mode and talents) on a square gold
-  label, and the grip turns gold. The rail becomes a fixed bottom
+  label, and the grip turns gold. Open, the scene is short: the effect chips keep their
+  icon and their timer (or their value for Ritual and Patience), the name only in the
+  title. The rail becomes a fixed bottom
   bar that respects the safe-area insets. The header is the purse alone: gold, DPS,
   essences and shards across the width (the strike is read on Aldric's row, the account in
   the bottom bar); the account chip comes back only to show the Ledger's trouble. Logo
@@ -815,6 +822,16 @@ default 0.6), saved with the other settings.
   to confirm) the account chip replaces its dot with a bordered badge, the `warning` picto
   and the status word (the word visually hidden under 900 px, still in the button's name),
   and a polite live region reads it once.
+- **Colorblind colors** (setting, `.colorblind` on `<html>`): `--success` turns `#5aa9ff`,
+  `--success-soft` `#cfe2ff`, `--danger-soft` `#ff8a4c`, and the rarities take their colorblind
+  set. Chosen by simulating protanopia, deuteranopia and tritanopia (Machado 2009) and
+  measuring OKLab distance: the closest two rarities go from 5.1 to 19.1 for deuteranopes,
+  success and gold from 5.7 to 26.7 for protanopes (`colorblind.test.ts` holds the rarities
+  above 15 for every eye). Tritanopes already read the usual colors apart. The pixel world
+  keeps its palette: hits differ by lightness and length, relics by silhouette.
+- Meaning never rests on hue alone: a rarity is named on its card, a gain or loss carries
+  ▲ or ▼, the stage still to clear wears a dashed ring, the Ledger's dot is full once
+  written and a ring while waiting, and market warnings carry the `warning` picto.
 - Text keeps the `--text` / `--muted` contrast on panel backgrounds. `--faint` (#8c86a0)
   holds 4.5:1 on every background it sits on: 5.65 on `--bg`, 5.23 on `--panel-solid`,
   4.91 on `--panel-2`, 5.29 on the bestiary and fragment cards (#151126), 5.80 on the

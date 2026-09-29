@@ -196,11 +196,12 @@ button.resource:hover .resource-label {
   flex: none;
 }
 
+/* Written to the Ledger is a full dot; not yet written is a ring, whatever the colors. */
 .sync-synced { background: var(--success); }
-.sync-syncing { background: var(--shard); animation: blink 1s ease-in-out infinite; }
+.sync-syncing { background: none; box-shadow: inset 0 0 0 2px var(--shard); animation: blink 1s ease-in-out infinite; }
 .sync-error,
 .sync-rejected { background: var(--danger); }
-.sync-idle { background: var(--gold); }
+.sync-idle { background: none; box-shadow: inset 0 0 0 2px var(--gold); }
 .sync-unverified { background: var(--gold); box-shadow: 0 0 0 2px var(--gold-deep); }
 
 /* The Ledger in trouble (server away, refused, address to confirm): a sign and a word, not a dot. */
@@ -450,8 +451,14 @@ button.resource:hover .resource-label {
 }
 
 .stage-pip.cleared {
-  box-shadow: 0 0 0 1px rgba(95, 207, 128, 0.6);
-  color: #c4f5d2;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 60%, transparent);
+  color: var(--success-soft);
+}
+
+/* The stage still to clear wears a broken ring: cleared and uncleared differ by shape too. */
+.stage-pip.frontier {
+  outline: 1px dashed var(--muted);
+  outline-offset: 2px;
 }
 
 .stage-pip.boss {
@@ -497,8 +504,8 @@ button.resource:hover .resource-label {
 }
 
 .auto-toggle.on {
-  border-color: rgba(111, 220, 140, 0.5);
-  color: #c4f5d2;
+  border-color: color-mix(in srgb, var(--success) 50%, transparent);
+  color: var(--success-soft);
 }
 
 .auto-toggle.off {
@@ -542,6 +549,11 @@ button.resource:hover .resource-label {
 
 .buff-time {
   color: var(--violet-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.buff-short {
+  display: none;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1336,7 +1348,7 @@ button.resource:hover .resource-label {
 .hero-medallion.recognition-4 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold); }
 .hero-medallion.recognition-5 { box-shadow: 0 0 0 1px var(--hero), 0 0 0 3px #0b0a14, 0 0 0 4px var(--gold-2), 0 0 0 6px #0b0a14, 0 0 0 7px var(--gold); }
 
-/* Portraits are 64 px busts at the nearest whole scale: a frame crops their edges or holds them whole. */
+/* Portraits are 64 px busts at the whole scale nearest the frame (a phone's small frame too): it crops their edges or holds them whole. */
 .medallion-clip {
   position: absolute;
   inset: 0;
@@ -1633,6 +1645,8 @@ button.resource:hover .resource-label {
   inset: 0;
   z-index: 50;
   display: grid;
+  /* One column no wider than the room: a long row of tabs scrolls instead of widening the window. */
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   padding: 16px;
   background: rgba(5, 4, 10, 0.74);
@@ -2200,7 +2214,7 @@ button.resource:hover .resource-label {
 }
 
 .item-delta.up { color: var(--success); }
-.item-delta.down { color: #ff9db0; }
+.item-delta.down { color: var(--danger-soft); }
 
 .item-actions {
   display: flex;
@@ -2305,7 +2319,7 @@ button.resource:hover .resource-label {
 }
 
 .market-preview.warn {
-  color: #ff9db0 !important;
+  color: var(--danger-soft) !important;
 }
 
 /* ------------------------------------------------ ascension */
@@ -3726,6 +3740,19 @@ kbd {
   .game-body[data-mobile-tab="scene"] {
     grid-template-rows: minmax(0, 1fr) auto;
   }
+  /* The panel open, the scene is short: a buff keeps its icon and its timer (or its value),
+     the name stays for screen readers and in the chip's title. */
+  .game-body[data-mobile-tab="heroes"] .buff-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .game-body[data-mobile-tab="heroes"] .buff-short {
+    display: inline;
+  }
   .hero-panel.folded .hero-autospend,
   .hero-panel.folded .hero-list,
   .hero-panel.folded .talents-all {
@@ -4028,6 +4055,8 @@ kbd {
 .reduced-motion .crystal .pixel-sprite,
 .reduced-motion .tutorial-hint,
 .reduced-motion .talent-buyable,
+.reduced-motion .boss-timer.urgent .boss-timer-fill,
+.reduced-motion .sync-syncing,
 .reduced-motion .skill.active,
 .reduced-motion .nav-badge.urgent {
   animation: none !important;
