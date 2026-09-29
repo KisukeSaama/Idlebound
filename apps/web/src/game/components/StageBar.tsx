@@ -22,7 +22,8 @@ export function StageBar() {
         {pips.map((stage) => {
           const locked = stage > state.maxStage;
           const cleared = stage < state.maxStage;
-          const classes = ["stage-pip", stage === current ? "current" : "", cleared ? "cleared" : "", locked ? "locked" : "", isBossStage(stage) ? "boss" : "", isBiomeBossStage(stage) ? "biome-boss" : ""].join(" ");
+          const frontier = stage === state.maxStage && stage !== current;
+          const classes = ["stage-pip", stage === current ? "current" : "", cleared ? "cleared" : "", frontier ? "frontier" : "", locked ? "locked" : "", isBossStage(stage) ? "boss" : "", isBiomeBossStage(stage) ? "biome-boss" : ""].join(" ");
           return (
             <li key={stage}>
               <button type="button" className={classes} disabled={locked} onClick={() => travel(stage)} aria-label={m.stage(stage, isBossStage(stage))} aria-current={stage === current ? "step" : undefined}>

@@ -63,7 +63,7 @@ export const night = defineMessages({
       reunion: "Retrouvailles : dégâts des compagnons ×3"
     },
     darkNight: "Garder le ciel du Royaume",
-    darkNightHint: "Plus bas, le ciel pâlit. Coché, il garde la nuit du premier Âge.",
+    darkNightHint: "En descendant, le ciel pâlit : c'est la route. Coche pour garder la nuit du premier Âge.",
     map: {
       stratum: "Strate",
       stratumOption: (label: string, start: Count, end: Count) => `${label} (étapes ${start} à ${end})`
@@ -121,7 +121,7 @@ export const night = defineMessages({
       reunion: "Reunion: companion damage ×3"
     },
     darkNight: "Keep the Kingdom's sky",
-    darkNightHint: "Deeper down, the sky grows pale. When checked, it keeps the night of the first Age.",
+    darkNightHint: "The sky pales as you descend, as the road intends. Check to keep the night of the first Age.",
     map: {
       stratum: "Stratum",
       stratumOption: (label: string, start: Count, end: Count) => `${label} (stages ${start} to ${end})`

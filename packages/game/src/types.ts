@@ -210,6 +210,8 @@ export interface Settings {
   offlineSpending: boolean;
   /** Keep the night of the Kingdom: deeper Ages keep the first Age's sky and scenes. */
   darkNight: boolean;
+  /** Colors that eyes blind to red and green still tell apart (rarities, gains and losses). */
+  colorblind: boolean;
 }
 
 export interface TutorialState {

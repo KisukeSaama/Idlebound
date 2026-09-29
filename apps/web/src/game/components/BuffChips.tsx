@@ -12,7 +12,8 @@ export function BuffChips() {
   const m = t.hud.buffs;
   const labels: Record<BuffId, string> = { rage: m.rage, fortune: m.fortune, autoclick: m.autoclick, overcharge: m.overcharge, sharpness: m.sharpness, ...t.night.buffs };
   const now = Date.now();
-  const chips: { key: string; icon: PictoName; label: string; seconds: number; title?: string; fill?: number }[] = [];
+  // `short` stands in for the label on a crowded phone screen: a chip without a timer keeps its value.
+  const chips: { key: string; icon: PictoName; label: string; short?: string; seconds: number; title?: string; fill?: number }[] = [];
   for (const buff of state.buffs) {
     if (buff.until > now) chips.push({ key: buff.id, icon: BUFF_PICTO[buff.id], label: labels[buff.id], seconds: (buff.until - now) / 1000 });
   }
@@ -20,14 +21,15 @@ export function BuffChips() {
     const def = SKILL_BY_ID[id as SkillId];
     if (skill && def.duration > 0 && skill.activeUntil > now) chips.push({ key: id, icon: SKILL_PICTO[def.id], label: g.skills[def.id].name, seconds: (skill.activeUntil - now) / 1000 });
   }
-  if (state.ritualStacks > 0) chips.push({ key: "ritual", icon: SKILL_PICTO.ritual, label: m.ritual(state.ritualStacks * 5), seconds: -1 });
+  if (state.ritualStacks > 0) chips.push({ key: "ritual", icon: SKILL_PICTO.ritual, label: m.ritual(state.ritualStacks * 5), short: m.ritualShort(state.ritualStacks * 5), seconds: -1 });
   if (derived.idleBonus > 0) {
     // While the walker's strikes stand in for part of the bonus, the chip shows the company's
     // share and fills with it.
     const full = Math.round(derived.idleBonus * 100);
     const share = store.engine.patienceShare;
-    if (share >= 0.995) chips.push({ key: "idle", icon: "lotus", label: m.patience(full), seconds: -1 });
-    else chips.push({ key: "idle", icon: "lotus", label: m.patience(Math.round(full * share)), seconds: -1, title: m.patienceTaken(full, Math.round((1 - share) * 100)), fill: share });
+    const whole = share >= 0.995;
+    const shown = whole ? full : Math.round(full * share);
+    chips.push({ key: "idle", icon: "lotus", label: m.patience(shown), short: m.patienceShort(shown), seconds: -1, ...(whole ? {} : { title: m.patienceTaken(full, Math.round((1 - share) * 100)), fill: share }) });
   }
 
   if (chips.length === 0) return <div className="buff-chips" />;
@@ -42,6 +44,7 @@ export function BuffChips() {
         >
           <Picto name={chip.icon} size={16} />
           <span className="buff-label">{chip.label}</span>
+          {chip.short ? <span className="buff-short" aria-hidden="true">{chip.short}</span> : null}
           {chip.seconds >= 0 ? <span className="buff-time">{formatTime(chip.seconds)}</span> : null}
         </li>
       ))}

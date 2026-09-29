@@ -118,7 +118,8 @@ export const gameStateSchema = z.object({
     confirmAscension: z.boolean(),
     buyMode: z.union([z.literal(1), z.literal(10), z.literal(25), z.literal(100), z.literal("max")]),
     offlineSpending: z.boolean(),
-    darkNight: z.boolean()
+    darkNight: z.boolean(),
+    colorblind: z.boolean()
   }),
   tutorial: z.object({ done: z.array(z.string().max(40)).max(50) }),
   bestiary: idRecord(count, 300),

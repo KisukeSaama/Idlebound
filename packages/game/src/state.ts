@@ -79,7 +79,8 @@ export function createInitialState(now = Date.now()): GameState {
       confirmAscension: true,
       buyMode: 1,
       offlineSpending: true,
-      darkNight: false
+      darkNight: false,
+      colorblind: false
     },
     // A new game never needs the notice of the altar rework (save version 4).
     tutorial: { done: [ALTAR_REWORK_NOTICE] },

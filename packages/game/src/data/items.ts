@@ -26,6 +26,23 @@ export const RARITY_INFO: Record<Rarity, { color: string; affixes: number; power
   mythic: { color: "#ff5c7a", affixes: 4, power: 4.5, weight: 3, shards: 80 }
 };
 
+/**
+ * The rarities for eyes blind to red and green: blue and violet part by lightness, gold and
+ * crimson by hue, so no two tiers merge under protanopia or deuteranopia (nor tritanopia).
+ */
+const COLORBLIND_RARITY_COLOR: Record<Rarity, string> = {
+  common: "#e6ecef",
+  rare: "#96b5ec",
+  epic: "#8e69fb",
+  legendary: "#fcb902",
+  mythic: "#ff2259"
+};
+
+/** The color a rarity is shown in, following the colorblind setting. */
+export function rarityColor(rarity: Rarity, colorblind: boolean): string {
+  return colorblind ? COLORBLIND_RARITY_COLOR[rarity] : RARITY_INFO[rarity].color;
+}
+
 /** Base value of an affix (common item, level 1). */
 export const AFFIX_BASE: Record<AffixStat, number> = {
   dps: 0.1,

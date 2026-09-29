@@ -1,19 +1,20 @@
 "use client";
 
 import {
+  AFFIX_BASE,
   CROWN_DESCENTS,
   CROWN_HOLD_MS,
   EQUIPMENT_CAP,
   FORGE_MAX,
   FORGE_STEP,
   INVENTORY_LIMIT,
-  RARITY_INFO,
   REGALIA_KING_DAMAGE,
   SLOTS,
   affixValue,
   NAMED_BY_ID,
   equipmentBonus,
   equipmentDensity,
+  rarityColor,
   relicDensity,
   relicStratum,
   forgePrice,
@@ -40,6 +41,16 @@ import { formatAffix } from "../text";
 const RARITY_ORDER: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
 const BAG_SORTS = ["recent", "rarity", "slot"] as const;
 type BagSort = (typeof BAG_SORTS)[number];
+
+/**
+ * How strong a relic is, to rank relics of one rarity: its density first (the stratum it
+ * came from), then its affixes, each against its nominal value so every stat weighs alike,
+ * forge included.
+ */
+function compareStrength(a: Item, b: Item): number {
+  const power = (item: Item) => item.affixes.reduce((total, affix) => total + affixValue(item, affix.stat) / AFFIX_BASE[affix.stat], 0);
+  return relicDensity(b) - relicDensity(a) || power(b) - power(a);
+}
 
 const STATS: AffixStat[] = ["dps", "click", "gold", "bossDamage", "critChance", "critDamage", "essence"];
 
@@ -114,7 +125,7 @@ export function RelicIcon({ item }: { item: Item }) {
 
 export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?: Item; children?: React.ReactNode }) {
   const { t, g, locale } = useI18n();
-  const info = RARITY_INFO[item.rarity];
+  const { state } = useGame();
   const main = item.affixes[0];
   const named = item.named ? NAMED_BY_ID[item.named] : undefined;
   const legend = item.named ? g.relics[item.named] : undefined;
@@ -122,7 +133,7 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
   const density = relicDensity(item);
   const mult = useMultiplier();
   return (
-    <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: info.color }}>
+    <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: rarityColor(item.rarity, state.settings.colorblind) }}>
       <header className="item-head">
         <RelicIcon item={item} />
         <div>
@@ -286,7 +297,7 @@ function Bag() {
   const carried = state.inventory.map((item) => item.uid).join(",");
   const items = useMemo(() => {
     const sorted = [...store.state.inventory];
-    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || b.level - a.level);
+    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || compareStrength(a, b));
     if (sort === "slot") sorted.sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
     if (sort === "recent") sorted.reverse();
     return sorted;
