@@ -36,8 +36,13 @@ export const hud = defineMessages({
       hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
       unread: (count: number) => `${count} ${count > 1 ? "fragments non lus" : "fragment non lu"}`
     },
+    install: {
+      title: "Garde la route à portée de main",
+      text: "Installe Idlebound : la nuit s'ouvrira d'un seul geste.",
+      install: "Installer",
+      decline: "Non merci"
+    },
     mobileTabs: {
-      label: "Affichage mobile",
       heroes: "Compagnons",
       scene: "Combat en grand"
     },
@@ -91,6 +96,7 @@ export const hud = defineMessages({
       autoSpendHint: "Tes compagnons dépensent l'or gagné en niveaux et talents pour continuer à progresser. Désactive-le pour garder ton or.",
       max: "Max",
       buyAllTalents: (count: number) => `Acheter ${count} talent${count > 1 ? "s" : ""} disponible${count > 1 ? "s" : ""}`,
+      ready: (count: number) => `${count} achat${count > 1 ? "s" : ""} à ta portée`,
       click: "Frappe : ",
       dps: "DPS : ",
       dpsPerLevel: (value: string) => `${value} DPS par niveau`,
@@ -273,8 +279,13 @@ export const hud = defineMessages({
       hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
       unread: (count: number) => `${count} unread ${count > 1 ? "fragments" : "fragment"}`
     },
+    install: {
+      title: "Keep the road within reach",
+      text: "Install Idlebound: the night will open in a single gesture.",
+      install: "Install",
+      decline: "No thanks"
+    },
     mobileTabs: {
-      label: "Mobile view",
       heroes: "Companions",
       scene: "Full combat view"
     },
@@ -328,6 +339,7 @@ export const hud = defineMessages({
       autoSpendHint: "Your companions spend the gold they earn on levels and talents to keep progressing. Turn it off to keep your gold.",
       max: "Max",
       buyAllTalents: (count: number) => `Buy ${count} available talent${count > 1 ? "s" : ""}`,
+      ready: (count: number) => `${count} ${count > 1 ? "purchases" : "purchase"} within reach`,
       click: "Strike: ",
       dps: "DPS: ",
       dpsPerLevel: (value: string) => `${value} DPS per level`,

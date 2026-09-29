@@ -8,11 +8,23 @@
   inset: 0;
   display: grid;
   grid-template-rows: var(--header-height) minmax(0, 1fr);
+  /* Opened from a home screen, the status bar lies over the night: the header stays under it. */
+  padding-top: env(safe-area-inset-top);
   background: var(--bg);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* A game, not a page: no double-tap zoom, no long-press menu on the art, no pull to
+     refresh under a thumb that attacks fast. */
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+html:has(.game-root),
+body:has(.game-root) {
+  overscroll-behavior: none;
 }
 
 .game-root input,
@@ -33,10 +45,6 @@
   display: flex;
   min-width: 0;
   min-height: 0;
-}
-
-.mobile-tabs {
-  display: none;
 }
 
 /* ====================================================================== header */
@@ -971,6 +979,45 @@ button.resource:hover .resource-label {
   translate: 0 1px;
 }
 
+/* A power comes back: a gold ring closes on the key once, the icon lit, then settles. */
+.skill.just-ready {
+  animation: skill-ready 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skill.just-ready .skill-icon {
+  animation: skill-ready-icon 900ms ease-out;
+}
+
+@keyframes skill-ready {
+  0% { scale: 1.14; box-shadow: 0 0 0 4px var(--gold-2), inset 0 0 0 2px var(--gold); }
+  35% { scale: 1; box-shadow: 0 0 0 2px var(--gold), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
+}
+
+@keyframes skill-ready-icon {
+  0%, 30% { filter: brightness(1.8); }
+}
+
+.reduced-motion .skill.just-ready,
+.reduced-motion .skill.just-ready .skill-icon {
+  animation: none;
+}
+
+.reduced-motion .skill.just-ready {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skill.just-ready,
+  .skill.just-ready .skill-icon {
+    animation: none;
+  }
+  .skill.just-ready {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+}
+
 .skill.active {
   box-shadow: 0 0 0 2px var(--gold), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: skill-active 0.9s steps(2, jump-none) infinite;
@@ -1052,6 +1099,7 @@ button.resource:hover .resource-label {
 /* ====================================================================== companions */
 
 .hero-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1059,6 +1107,73 @@ button.resource:hover .resource-label {
   border: 1px solid var(--border);
   background: var(--panel);
   box-shadow: var(--bevel);
+}
+
+/* The one invitation to install: a card over the corner, never over a window. */
+.install-invite {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px 12px;
+  width: min(380px, calc(100 * var(--vw) - 32px));
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid #000;
+  background: var(--panel-solid);
+  box-shadow: 0 0 0 1px var(--gold-deep), var(--bevel), var(--shadow);
+  animation: modal-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.install-invite img {
+  border-radius: var(--radius-sm);
+}
+
+.install-copy strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--gold);
+}
+
+.install-copy p {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.install-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* The phone's grip (portrait layout only). */
+.hero-grip {
+  display: none;
+}
+
+/* Folded, the heading counts what the gold can buy: a square gold label, like a badge. */
+.hero-ready {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #000;
+  background: var(--gold);
+  box-shadow: inset 0 1px 0 var(--gold-2);
+  color: #241603;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 800;
+  vertical-align: 3px;
+  font-variant-numeric: tabular-nums;
 }
 
 .hero-panel-head {
@@ -1134,12 +1249,21 @@ button.resource:hover .resource-label {
   transform: translateX(16px);
 }
 
+/* Floats over the foot of the list, under the thumb; the list keeps room for it at its end. */
 .talents-all {
-  margin: 8px 12px 0;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
   animation: nudge 2s ease-in-out infinite;
 }
 
-/* Nothing affordable: the slot stays, empty, so the list below never moves. */
+.hero-list.has-talents-all {
+  padding-bottom: 56px;
+}
+
+/* Nothing affordable: hidden, and nothing under it moves. */
 .talents-all.idle {
   visibility: hidden;
   animation: none;
@@ -1154,6 +1278,7 @@ button.resource:hover .resource-label {
   overflow-y: auto;
   display: grid;
   align-content: start;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
@@ -1443,6 +1568,11 @@ button.resource:hover .resource-label {
 .modal-sm { max-width: 460px; }
 .modal-md { max-width: 680px; }
 .modal-lg { max-width: 980px; }
+
+/* The sheet's grip (portrait phones only). */
+.modal-grip {
+  display: none;
+}
 
 .modal-head {
   display: flex;
@@ -3104,7 +3234,7 @@ kbd {
  * Four layouts share this file:
  * - desktop (default), with a compact rail when the window is not tall;
  * - portrait mobile (≤ 900px wide, or any phone narrower than 600px): one column,
- *   scene on top, companions below, rail as a bottom bar, a pill to go full-screen;
+ *   scene on top, companions below with a grip to fold them, rail as a bottom bar;
  * - short landscape (≤ 560px tall): the desktop three columns, tightened;
  * - both small layouts share a compact combat HUD.
  */
@@ -3202,6 +3332,46 @@ kbd {
 /* Touch screens have no hover: tooltips would stick after a tap. */
 @media (hover: none) {
   .skill-tip {
+    display: none;
+  }
+}
+
+/* Under a finger, a key answers the moment it is touched: it sinks and gives a little. A
+   phone has no keyboard to list shortcuts for. */
+@media (pointer: coarse) {
+  .btn {
+    transition: transform 80ms ease, filter 120ms ease, background 120ms ease, border-color 120ms ease, scale 90ms ease-out;
+  }
+  .hero-buy {
+    transition: translate 80ms ease, filter 90ms ease, scale 90ms ease-out;
+  }
+  .skill {
+    transition: translate 80ms ease, scale 90ms ease-out;
+  }
+  .nav-button {
+    transition: background 120ms ease, border-color 120ms ease, scale 90ms ease-out;
+  }
+  .talent,
+  .buy-modes button,
+  .resource-essence,
+  .resource-shard {
+    transition: scale 90ms ease-out;
+  }
+  .btn:active:not(:disabled),
+  .hero-buy:active:not(:disabled),
+  .skill:active:not(:disabled),
+  .nav-button:active,
+  .talent:active:not(:disabled),
+  .buy-modes button:active,
+  .resource-essence:active,
+  .resource-shard:active {
+    scale: 0.95;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .shortcut-heading,
+  .shortcut-list {
     display: none;
   }
 }
@@ -3377,7 +3547,6 @@ kbd {
   .game-root {
     --header-height: 54px;
     --nav-height: 62px;
-    --tabs-space: 50px;
     padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
   }
   .game-header {
@@ -3387,36 +3556,108 @@ kbd {
   .game-logo {
     display: none;
   }
+  /* The purse takes the whole bar: the account lives in the bottom bar, and the strike is
+     read on Aldric's row. The chip only comes back to say the Ledger is in trouble. */
   .resource-bar {
     justify-content: flex-start;
+    gap: 5px;
   }
   .resource {
     height: 34px;
-    padding: 0 9px;
+    gap: 5px;
+    padding: 0 8px;
+  }
+  .resource-gold {
+    padding: 0 12px 0 8px;
+  }
+  .resource-value {
+    font-size: 0.95rem;
+  }
+  .resource:not(.resource-gold) .resource-value-fixed {
+    min-width: 5.2ch;
+  }
+  .resource-click {
+    display: none;
   }
   .account-chip {
     height: 34px;
-    padding: 0 10px;
+    padding: 0 9px;
+  }
+  .account-chip:not(.has-trouble) {
+    display: none;
   }
   .account-name {
-    max-width: 90px;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .game-body {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(290px, 58%) minmax(0, 1fr);
+    /* The panel is as tall as its companions, up to 42% of the room: while the company is
+       small, the monster has the rest. */
+    grid-template-rows: minmax(290px, 1fr) auto;
     gap: 8px;
     padding: 8px;
   }
-  /* Full-screen combat: the scene stops above the floating pill. */
-  .game-body[data-mobile-tab="scene"] {
-    grid-template-rows: minmax(0, 1fr);
-    padding-bottom: var(--tabs-space);
+  .hero-panel {
+    max-height: calc((100 * var(--dvh) - env(safe-area-inset-top) - var(--header-height) - var(--nav-height) - env(safe-area-inset-bottom) - 24px) * 0.42);
   }
-  .game-body[data-mobile-tab="scene"] .hero-panel {
+  /* Portrait has the height the compact HUD saves elsewhere: the stage keys keep a thumb's
+     size (the short landscape keeps them small). */
+  .stage-pip {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+  .stage-arrow {
+    width: 32px;
+    height: 36px;
+  }
+  .auto-toggle {
+    height: 36px;
+  }
+  /* Full combat view: the panel folds to its grip and heading, the scene takes the rest. */
+  .game-body[data-mobile-tab="scene"] {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .hero-panel.folded .hero-autospend,
+  .hero-panel.folded .hero-list,
+  .hero-panel.folded .talents-all {
     display: none;
   }
-  .hero-list {
-    padding-bottom: var(--tabs-space);
+  .hero-grip {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 26px;
+    margin-bottom: -8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    touch-action: none;
+  }
+  .hero-grip span {
+    width: 44px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border-strong);
+    transition: background 120ms ease;
+  }
+  .hero-grip:active span,
+  .hero-grip:focus-visible span {
+    background: var(--gold);
+  }
+  .hero-panel-head {
+    padding-top: 6px;
+  }
+  .hero-panel.folded .hero-panel-head {
+    border-bottom: 0;
+  }
+  .hero-panel.has-ready .hero-grip span {
+    background: var(--gold);
   }
   .nav-rail {
     position: fixed;
@@ -3457,56 +3698,69 @@ kbd {
     top: 1px;
     right: 1px;
   }
-  /* Portrait phones, two toasts at most. With the companions shown, the scene is too short to
-     host them without hiding the fight: they rise from above the tabs, over the list. In
-     full-screen combat the sky under the top bar is free: they sit there. */
+  /* Portrait phones, two toasts at most, docked across the scene by Toasts.tsx: never over
+     the companions' list, whose buttons are the phone's whole game. Compact, so two fit in
+     the sky. Fallback before the scene exists: centered under the header. */
   .toasts {
-    top: auto;
-    bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 62px);
+    top: var(--toast-top, calc(var(--header-height) + 8px));
     right: auto;
     left: 50%;
     transform: translateX(-50%);
   }
-  .game-body[data-mobile-tab="scene"] ~ .toasts {
-    top: var(--toast-top, calc(var(--header-height) + 8px));
-    bottom: auto;
+  .toasts.docked {
+    transform: none;
   }
-  .mobile-tabs {
-    position: fixed;
+  .toast {
+    gap: 8px;
+    padding: 7px 10px;
+  }
+  .toast-title {
+    font-size: 0.84rem;
+  }
+  .toast-text {
+    font-size: 0.74rem;
+  }
+  .install-invite {
     left: 50%;
-    bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 8px);
-    z-index: 25;
-    display: flex;
-    width: max-content;
-    max-width: calc(100 * var(--vw) - 24px);
-    transform: translateX(-50%);
-    padding: 3px;
-    border-radius: var(--radius-pill);
-    background: rgba(14, 12, 26, 0.94);
-    border: 1px solid var(--border-strong);
-    box-shadow: var(--shadow);
+    right: auto;
+    bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 10px);
+    translate: -50% 0;
   }
-  .mobile-tabs button {
-    padding: 7px 14px;
-    border: 0;
-    border-radius: var(--radius-pill);
-    background: transparent;
-    color: var(--muted);
-    font-weight: 700;
-    font-size: 0.78rem;
-    white-space: nowrap;
-  }
-  .mobile-tabs button.active {
-    background: var(--gold);
-    color: #241603;
-  }
+  /* Windows are sheets: they rise from the bottom edge, carry a grip, and a pull down on
+     their head lets them go. */
   .modal-backdrop {
-    padding: 8px;
+    padding: max(16px, env(safe-area-inset-top)) 0 0;
     align-items: end;
   }
   .modal {
-    max-height: calc(100 * var(--dvh) - 16px);
+    max-width: none;
+    max-height: calc(100 * var(--dvh) - max(16px, env(safe-area-inset-top)));
+    padding-bottom: env(safe-area-inset-bottom);
+    border-radius: var(--radius) var(--radius) 0 0;
+    animation: sheet-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
   }
+  .modal-head {
+    position: relative;
+    padding-top: 20px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .modal-grip {
+    display: block;
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    width: 44px;
+    height: 4px;
+    margin-left: -22px;
+    border-radius: 2px;
+    background: var(--border-strong);
+  }
+}
+
+@keyframes sheet-in {
+  from { translate: 0 100%; }
 }
 
 /* ------------------------------------------------ short landscape (phones held sideways) */
@@ -3641,12 +3895,12 @@ kbd {
 
 @media (max-width: 360px) {
   .stage-pip {
-    width: 27px;
-    height: 27px;
-    font-size: 0.68rem;
+    width: 33px;
+    height: 33px;
+    font-size: 0.72rem;
   }
   .stage-arrow {
-    width: 22px;
+    width: 28px;
   }
   .skill {
     width: 40px;
@@ -3667,6 +3921,8 @@ kbd {
   }
 }
 
+.reduced-motion .modal,
+.reduced-motion .install-invite,
 .reduced-motion .crystal,
 .reduced-motion .crystal .pixel-sprite,
 .reduced-motion .tutorial-hint,
@@ -4137,4 +4393,22 @@ kbd {
 .map-strata select {
   flex: 1 1 240px;
   min-width: 0;
+}
+
+/* ------------------------------------------------ newer release */
+
+/* The page is about to reload onto a newer release: the scene fades to the loading screen's
+   ground. Input still passes through: any of it keeps the page (see newRelease.ts). */
+.release-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--bg);
+  pointer-events: none;
+  animation: release-fade 700ms ease-in forwards;
+}
+
+@keyframes release-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

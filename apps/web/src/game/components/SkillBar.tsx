@@ -1,17 +1,26 @@
 "use client";
 
 import { SKILLS, isSkillUnlocked } from "@idlebound/game";
+import { useRef } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
 import { audio } from "../audio";
 import { useGame } from "../context";
+import { haptics } from "../haptics";
 import { Picto, SKILL_PICTO } from "../icons";
+
+/** How long a key shines when its power comes back. */
+const READY_FLASH_MS = 900;
 
 export function SkillBar() {
   const { state, store } = useGame();
   const { t, g } = useI18n();
   const m = t.hud.skills;
   const now = Date.now();
+  // A power that comes back during play says so once: its key shines and the phone buzzes.
+  // Only a cooldown seen running ends in a shine, never a key found ready at load.
+  const cooled = useRef(new Map<string, boolean>());
+  const shine = useRef(new Map<string, number>());
   // Only the powers the walker holds: the others appear the day they are earned.
   const skills = SKILLS.filter((skill) => isSkillUnlocked(state, skill.id));
   if (skills.length === 0) return null;
@@ -22,6 +31,12 @@ export function SkillBar() {
         const skillState = state.skills[skill.id];
         const active = Boolean(skillState && skillState.activeUntil > now);
         const cooling = Boolean(skillState && skillState.readyAt > now);
+        if (cooled.current.get(skill.id) && !cooling) {
+          shine.current.set(skill.id, now + READY_FLASH_MS);
+          haptics.pulse("ready");
+        }
+        cooled.current.set(skill.id, cooling);
+        const shining = (shine.current.get(skill.id) ?? 0) > now;
         const total = skillState ? Math.max(1, skillState.readyAt - (skillState.activeUntil - skill.duration * 1000)) : 1;
         const remaining = skillState ? Math.max(0, skillState.readyAt - now) : 0;
         const cooldownRatio = cooling ? remaining / total : 0;
@@ -32,7 +47,7 @@ export function SkillBar() {
           <button
             key={skill.id}
             type="button"
-            className={`skill ${active ? "active" : ""} ${cooling && !active ? "cooling" : ""} ${!cooling ? "ready" : ""}`}
+            className={`skill ${active ? "active" : ""} ${cooling && !active ? "cooling" : ""} ${!cooling ? "ready" : ""}${shining ? " just-ready" : ""}`}
             aria-label={label}
             onClick={() => {
               const used = store.act((engine, time) => engine.useSkill(skill.id, time));

@@ -41,6 +41,7 @@ import { Picto, TrophyIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { creatureSource } from "../pixel/sources";
+import { useRemembered } from "../remembered";
 
 const CATEGORIES: AchievementCategory[] = ["progression", "combat", "wealth", "companions", "ascension", "secrets"];
 /** A new save moves the walker on the Roll: the board is read again, at most once a minute. */
@@ -428,7 +429,7 @@ function Leaderboard() {
   // The Night board (Descents) appears with the Descent itself.
   const night = state.descents > 0 || canDescend(state);
   const boards = BOARD_IDS.filter((id) => id !== "descents" || night);
-  const [board, setBoard] = useState<BoardId>("stage");
+  const [board, setBoard] = useRemembered<BoardId>("roll-board", boards, "stage");
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fetched = useRef<{ board: BoardId; at: number } | null>(null);

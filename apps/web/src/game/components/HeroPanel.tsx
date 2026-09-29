@@ -14,7 +14,7 @@ import {
   type BuyMode,
   type HeroDef
 } from "@idlebound/game";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
 import { useFormat, useGame, useReveals } from "../context";
@@ -29,7 +29,57 @@ const STARFIELD_MS = 1_000;
 /** Every talent of every companion, with what opens it. */
 const TALENTS = Object.values(UPGRADE_BY_ID).map(({ hero, upgrade }) => ({ id: upgrade.id, heroId: hero.id, level: upgrade.level }));
 
-export function HeroPanel() {
+/** Holding a buy key: the first repeat after this long, then faster down to the floor. */
+const HOLD_DELAY_MS = 380;
+const HOLD_START_MS = 160;
+const HOLD_FLOOR_MS = 55;
+const HOLD_EASE = 0.85;
+
+/**
+ * A key that repeats while held, the way a thumb wants to level a companion: one buy on
+ * release of a tap, a run of buys while the finger stays, each sooner than the last, until
+ * the gold runs out or the finger lifts. A run ends without the click that follows it.
+ */
+function useHoldRepeat(fire: () => boolean) {
+  const run = useRef<{ timer: ReturnType<typeof setTimeout> | null; held: boolean }>({ timer: null, held: false });
+  const fireRef = useRef(fire);
+  fireRef.current = fire;
+  const stop = useCallback(() => {
+    if (run.current.timer) clearTimeout(run.current.timer);
+    run.current.timer = null;
+  }, []);
+  useEffect(() => stop, [stop]);
+  const start = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0 || event.currentTarget.disabled) return;
+    stop();
+    run.current.held = false;
+    let wait = HOLD_START_MS;
+    const tick = () => {
+      run.current.held = true;
+      if (!fireRef.current()) {
+        run.current.timer = null;
+        return;
+      }
+      run.current.timer = setTimeout(tick, wait);
+      wait = Math.max(HOLD_FLOOR_MS, wait * HOLD_EASE);
+    };
+    run.current.timer = setTimeout(tick, HOLD_DELAY_MS);
+  }, [stop]);
+  const click = useCallback(() => {
+    if (run.current.held) run.current.held = false;
+    else fireRef.current();
+  }, []);
+  return { onPointerDown: start, onPointerUp: stop, onPointerLeave: stop, onPointerCancel: stop, onClick: click, onContextMenu: (event: ReactMouseEvent) => event.preventDefault() };
+}
+
+/** A drag on the phone's grip longer than this folds or unfolds the panel; shorter is a tap. */
+const SWIPE_PX = 24;
+
+/**
+ * The companions' panel. On a phone it sits under the scene with a grip on top: a tap or a
+ * swipe down folds it to its heading (the combat takes the room), a swipe up brings it back.
+ */
+export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded: boolean) => void }) {
   const { state, derived, store } = useGame();
   const { shown, freshClass } = useReveals();
   const fmt = useFormat();
@@ -76,6 +126,9 @@ export function HeroPanel() {
     return talents;
   };
 
+  // A swipe decides on release; the click that follows it must not toggle again.
+  const grip = useRef<{ y: number; swiped: boolean }>({ y: 0, swiped: false });
+
   // Stable handlers: each row binds its own companion, so the memoized rows bail out.
   const onBuy = useCallback((heroId: string) => store.act((engine, now) => engine.buyHero(heroId, mode, now)), [store, mode]);
   const onTalent = useCallback((id: string) => store.act((engine, now) => engine.buyUpgrade(id, now)), [store]);
@@ -89,6 +142,11 @@ export function HeroPanel() {
   const next = HEROES.find((hero) => hero.id !== CLICK_HERO_ID && (state.heroLevels[hero.id] ?? 0) === 0);
   if (next && (next.index < state.lifetime.bestHired || heroCost(next, 0, 1, costMultiplier) <= state.gold)) offered.current.ids.add(next.id);
   const visible = HEROES.filter((hero) => hero.id === CLICK_HERO_ID || (state.heroLevels[hero.id] ?? 0) > 0 || (hero === next && offered.current.ids.has(hero.id)));
+
+  // Folded, the panel still says what the gold can buy: a count on its heading.
+  const ready = folded
+    ? visible.filter((hero) => heroCost(hero, state.heroLevels[hero.id] ?? 0, mode === "max" ? 1 : mode, costMultiplier) <= state.gold).length + affordableTalents
+    : 0;
 
   // The Faceless: when Nyx's secret is found, her medallion shows the stars for a moment.
   const [starfield, setStarfield] = useState(false);
@@ -107,9 +165,31 @@ export function HeroPanel() {
   }, [store]);
 
   return (
-    <aside className="hero-panel" aria-label={m.title}>
+    <aside className={`hero-panel${folded ? " folded" : ""}${ready > 0 ? " has-ready" : ""}`} aria-label={m.title}>
+      <button
+        type="button"
+        className="hero-grip"
+        aria-expanded={!folded}
+        aria-label={folded ? (ready > 0 ? `${t.hud.mobileTabs.heroes}, ${m.ready(ready)}` : t.hud.mobileTabs.heroes) : t.hud.mobileTabs.scene}
+        onPointerDown={(event) => { grip.current = { y: event.clientY, swiped: false }; }}
+        onPointerUp={(event) => {
+          const dy = event.clientY - grip.current.y;
+          if (Math.abs(dy) < SWIPE_PX) return;
+          grip.current.swiped = true;
+          onFold(dy > 0);
+        }}
+        onClick={() => {
+          if (grip.current.swiped) grip.current.swiped = false;
+          else onFold(!folded);
+        }}
+      >
+        <span aria-hidden="true" />
+      </button>
       <div className="hero-panel-head">
-        <h2>{m.title}</h2>
+        <h2>
+          {m.title}
+          {ready > 0 ? <span className="hero-ready" title={m.ready(ready)}>{ready}</span> : null}
+        </h2>
         {shown.buyModes ? (
           <div className={`buy-modes${freshClass("buyModes")}`} role="radiogroup" aria-label={m.buyAmount}>
             {MODES.map((entry) => (
@@ -146,20 +226,7 @@ export function HeroPanel() {
           <span id="autospend-hint" className="visually-hidden">{m.autoSpendHint}</span>
         </>
       ) : null}
-      {/* Once talents exist, the button keeps its place, hidden while none is affordable: the
-          gold rising and falling must not shift the list under the walker's eyes. */}
-      {ownedCount > 0 || reachable.length > 0 ? (
-        <button
-          type="button"
-          className={`btn btn-violet btn-sm talents-all${affordableTalents > 0 ? "" : " idle"}`}
-          disabled={affordableTalents === 0}
-          aria-hidden={affordableTalents === 0}
-          onClick={() => store.act((engine, now) => engine.buyAllUpgrades(now))}
-        >
-          {m.buyAllTalents(Math.max(1, affordableTalents))}
-        </button>
-      ) : null}
-      <ol className="hero-list">
+      <ol className={`hero-list${ownedCount > 0 || reachable.length > 0 ? " has-talents-all" : ""}`}>
         {visible.map((hero) => {
           const level = state.heroLevels[hero.id] ?? 0;
           const purchase = mode === "max"
@@ -192,6 +259,20 @@ export function HeroPanel() {
           );
         })}
       </ol>
+      {/* Once talents exist, the button floats over the foot of the list, under the thumb,
+          and the list keeps room for it at its end: it comes and goes as the gold rises and
+          falls without ever moving a row under the walker's eyes. */}
+      {ownedCount > 0 || reachable.length > 0 ? (
+        <button
+          type="button"
+          className={`btn btn-violet btn-sm talents-all${affordableTalents > 0 ? "" : " idle"}`}
+          disabled={affordableTalents === 0}
+          aria-hidden={affordableTalents === 0}
+          onClick={() => store.act((engine, now) => engine.buyAllUpgrades(now))}
+        >
+          {m.buyAllTalents(Math.max(1, affordableTalents))}
+        </button>
+      ) : null}
     </aside>
   );
 }
@@ -231,7 +312,8 @@ interface HeroRowProps {
   text: { name: string; title: string; lore: string };
   m: Messages["hud"]["heroes"];
   fmt: (value: number) => string;
-  onBuy: (heroId: string) => void;
+  /** Buys at the chosen mode; false when nothing could be bought. */
+  onBuy: (heroId: string) => boolean;
   onTalent: (id: string) => void;
   /** Touching the portrait (only Nyx listens: the Faceless). */
   onPortrait?: (heroId: string) => void;
@@ -242,6 +324,7 @@ interface HeroRowProps {
 const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent, onPortrait, starfield }: HeroRowProps) {
   const isClick = hero.id === CLICK_HERO_ID;
   const hired = level > 0;
+  const hold = useHoldRepeat(() => onBuy(hero.id));
   return (
     <li className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}`} style={{ ["--hero" as string]: hero.color }}>
       <div
@@ -294,7 +377,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
           </div>
         ) : null}
       </div>
-      <button type="button" className="hero-buy" disabled={!affordable} onClick={() => onBuy(hero.id)}aria-label={m.buyLabel(hired, text.name, count, fmt(cost))}>
+      <button type="button" className="hero-buy" disabled={!affordable} {...hold} aria-label={m.buyLabel(hired, text.name, count, fmt(cost))}>
         <span className="hero-buy-label">{hired ? `+${count}` : isClick ? m.train : m.hire}</span>
         <span className="hero-buy-cost"><GoldIcon size={14} /> {fmt(cost)}</span>
       </button>

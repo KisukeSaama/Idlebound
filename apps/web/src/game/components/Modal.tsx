@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { useI18n } from "@/i18n/client";
 import { Picto } from "../icons";
 import { coverScene } from "./SceneCanvas";
+import { PHONE_QUERY } from "./Toasts";
+
+/** On a phone the window is a sheet: pulled down past this, it lets go and closes. */
+const DISMISS_PX = 96;
+/** A quick flick closes it too, however short (px per ms). */
+const DISMISS_SPEED = 0.6;
+const SHEET_OUT_MS = 160;
 
 interface ModalProps {
   title: string;
@@ -62,6 +69,47 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, asi
     };
   }, []);
 
+  /**
+   * The sheet follows a finger pulled down from its head and closes past a threshold (or on a
+   * flick); released short, it settles back. Mouse and desktop windows keep their close key.
+   */
+  const pull = useRef<{ y: number; at: number } | null>(null);
+  const sheet = () => dialog.current?.style;
+  const onPullStart = (event: ReactPointerEvent<HTMLElement>) => {
+    if (!onClose || event.pointerType === "mouse" || !window.matchMedia(PHONE_QUERY).matches) return;
+    if ((event.target as HTMLElement).closest("button, a, input, select")) return;
+    pull.current = { y: event.clientY, at: performance.now() };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const style = sheet();
+    if (style) style.transition = "none";
+  };
+  const onPullMove = (event: ReactPointerEvent<HTMLElement>) => {
+    const style = sheet();
+    if (!pull.current || !style) return;
+    style.transform = `translateY(${Math.max(0, event.clientY - pull.current.y)}px)`;
+  };
+  const onPullEnd = (event: ReactPointerEvent<HTMLElement>) => {
+    const style = sheet();
+    const from = pull.current;
+    pull.current = null;
+    if (!from || !style) return;
+    const dy = Math.max(0, event.clientY - from.y);
+    const speed = dy / Math.max(1, performance.now() - from.at);
+    const still = document.documentElement.classList.contains("reduced-motion") || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (event.type === "pointerup" && (dy > DISMISS_PX || (dy > 24 && speed > DISMISS_SPEED))) {
+      if (still) {
+        onClose?.();
+        return;
+      }
+      style.transition = `transform ${SHEET_OUT_MS}ms cubic-bezier(0.4, 0, 1, 1)`;
+      style.transform = "translateY(100%)";
+      setTimeout(() => closeRef.current?.(), SHEET_OUT_MS);
+      return;
+    }
+    style.transition = still ? "none" : "transform 180ms cubic-bezier(0.16, 1, 0.3, 1)";
+    style.transform = "";
+  };
+
   /** Arrow keys, Home and End move between the tabs and open the one reached. */
   const onTabKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (!tabs || tabs.length === 0) return;
@@ -82,7 +130,8 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, asi
   return (
     <div className="modal-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) onClose?.(); }}>
       <div ref={dialog} className={`modal modal-${size}${tabs ? " modal-tabbed" : ""}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <header className="modal-head">
+        <header className="modal-head" onPointerDown={onPullStart} onPointerMove={onPullMove} onPointerUp={onPullEnd} onPointerCancel={onPullEnd}>
+          {onClose ? <span className="modal-grip" aria-hidden="true" /> : null}
           {icon ? <span className="modal-icon" aria-hidden="true">{icon}</span> : null}
           <h2 id={titleId}>{title}</h2>
           {aside}

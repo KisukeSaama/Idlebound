@@ -1,10 +1,8 @@
-import { LOCALES } from "@idlebound/game";
 import type { Metadata, Viewport } from "next";
 import { Alegreya_Sans, Cinzel } from "next/font/google";
 import { I18nProvider } from "@/i18n/client";
 import { assertLocale, getI18n, getPreference } from "@/i18n/server";
-import { OG_LOCALE, SITE_NAME, isIndexable, pageAlternates, siteUrl } from "@/lib/site";
-import { href } from "@/i18n/routing";
+import { SITE_NAME, isIndexable, pageAlternates, pageSocial, siteUrl } from "@/lib/site";
 import "../globals.css";
 
 const display = Cinzel({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display", display: "swap" });
@@ -27,28 +25,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     applicationName: SITE_NAME,
     keywords: t.site.meta.keywords,
     alternates: pageAlternates(locale, "home"),
-    openGraph: {
-      type: "website",
-      locale: OG_LOCALE[locale],
-      alternateLocale: LOCALES.filter((entry) => entry !== locale).map((entry) => OG_LOCALE[entry]),
-      url: href(locale, "home"),
-      siteName: SITE_NAME,
-      title,
-      description: t.site.meta.description,
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: t.site.meta.ogImageAlt }]
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description: t.site.meta.description,
-      images: ["/og.png"]
-    },
+    ...pageSocial(locale, "home", { title, description: t.site.meta.description, imageAlt: t.site.meta.ogImageAlt }),
     robots: isIndexable() ? { index: true, follow: true } : { index: false, follow: false },
     icons: {
       icon: [{ url: "/favicon.png", type: "image/png" }],
       apple: [{ url: "/icon-180.png" }]
     },
-    manifest: "/manifest.webmanifest"
+    manifest: "/manifest.webmanifest",
+    // Added to a home screen, the game opens as an app: full screen, the night under the
+    // status bar (every page keeps clear of it with the safe-area inset).
+    appleWebApp: { title: SITE_NAME, statusBarStyle: "black-translucent" }
   };
 }
 

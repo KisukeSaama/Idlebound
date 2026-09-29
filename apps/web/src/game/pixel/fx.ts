@@ -30,6 +30,8 @@ export interface Particle {
   ty?: number;
   /** Fades out over its life (spawn particles do not). */
   fade: boolean;
+  /** The gathering it belongs to, so a monster struck down while gathering can end it. */
+  group?: number;
 }
 
 export class Particles {
@@ -54,6 +56,11 @@ export class Particles {
 
   clear() {
     this.list = [];
+  }
+
+  /** Ends a gathering at once: its pixels are already where they were heading. */
+  dismiss(group: number) {
+    this.list = this.list.filter((particle) => particle.group !== group);
   }
 
   /**
@@ -86,8 +93,8 @@ export class Particles {
     }
   }
 
-  /** The reverse: pixels gather from the dark into the silhouette. */
-  gather(pixels: Pixels, left: number, top: number, now: number, duration: number) {
+  /** The reverse: pixels gather from the dark into the silhouette, under `group`. */
+  gather(pixels: Pixels, left: number, top: number, now: number, duration: number, group: number) {
     const step = pixels.w * pixels.h > 5000 ? 2 : 1;
     for (let y = 0; y < pixels.h; y += step) {
       for (let x = 0; x < pixels.w; x += step) {
@@ -106,7 +113,8 @@ export class Particles {
           color: css(pixels.idx[at]),
           born: now,
           life: duration,
-          fade: false
+          fade: false,
+          group
         });
       }
     }

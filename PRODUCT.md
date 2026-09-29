@@ -465,6 +465,8 @@ rejects real play.
   account and settings. Badges (`!`, `+` or a count) flag an available ascension or altar,
   a nearly full inventory, enough shards for the market, an unconfirmed e-mail and the
   number of unread Chronicle fragments.
+- The inventory sort and the board picked on the in-game Roll are remembered in this browser
+  (closing the window or reloading keeps them); they are view conveniences, never game state.
 - Settings: language, number notation (letters, scientific, engineering), sound and its volume,
   damage numbers, reduced motion, ascension confirmation.
 - One-time tutorial hints guide the first minutes; saves that had ascended before version 4
@@ -514,8 +516,9 @@ rejects real play.
   stored game had been credited, plus the time the server saw pass since that save. Two
   first saves sent at once keep the first written; the other gets the conflict. A save
   never goes back to an older version than the stored one.
-- Logging out leaves a fresh guest game in the browser; the account window also offers a
-  new game, which replaces the server save.
+- Logging out leaves a fresh guest game in the browser. A guest can start a new game from
+  the account window; a signed-in player cannot erase the account's game (a save refused by
+  the anti-cheat is left behind by reloading, which reads the last accepted one).
 - The client syncs every 30 s, when the tab is hidden and when the player logs out. A player
   action (purchase, gear, ascension, settings…; not attack clicks), an achievement, a loot
   drop or a new biome also triggers a save 3 s later, with at least 15 s between uploads to
@@ -531,6 +534,18 @@ rejects real play.
   uploads over it: the next sync reads it first. If the server goes away mid-session, the
   game keeps playing, the header shows "Server unreachable", syncs retry every 30 s and at
   once when the network returns, and leaving the page asks for confirmation.
+- **A newer release moves open games onto it.** The CI builds the web image with the commit
+  as its release; the `/api` proxy stamps every answer with it
+  (`X-Idlebound-Release`). A page that sees another release than its own reloads onto it,
+  but only a signed-in game the server keeps (never a guest's, never a game refused or
+  waiting on its address, never while the account's game loads or a choice is open), and
+  only once a last save is confirmed: the game loop stops, the save goes as keepalive, and
+  input is held until the reload. A hidden tab goes at once. A watched one waits for 30 s
+  without input with nothing open (window, dialog, Reunion) and no toast on screen, then
+  fades out in 0.7 s; any input during the fade keeps the page, and a failed save leaves it
+  playing (checked again every 5 s). A tab reloads at most once per release (session
+  storage), so a stale cache cannot loop it. The reloaded page catches up the seconds the
+  hand-over took, like any reload, and a page opened out of sight starts out of sight.
 - In the choice between two games, keeping the current one when the account's game is
   further along (best stage, then play time) asks for confirmation, naming what will be
   erased (stage, ascensions, play time).
@@ -621,6 +636,10 @@ language.
 
 - Landing page rendered on the server, full metadata, OpenGraph image, `VideoGame` and
   `FAQPage` JSON-LD, sitemap, robots, web manifest, `hreflang` alternates per language.
+- Every public page carries its own Open Graph and Twitter card (URL, title, description),
+  so a shared link previews that page. The game page (`/play`) renders in the browser only:
+  it answers `noindex, follow` and stays out of the sitemap, the landing carries searches.
+  The sitemap states no `lastmod`.
 - Public, indexable leaderboard. Only production is indexable; the dev environment answers
   `noindex`.
 - Hosted on the owner's platform (Traefik, GitLab CI). Production:

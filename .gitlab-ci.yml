@@ -217,7 +217,8 @@ build:
   script:
     # Monorepo: the build context is the repository root (npm workspaces + shared engine).
     - docker build --pull -t "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}" -f apps/api/Dockerfile .
-    - docker build --pull -t "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}" -f apps/web/Dockerfile .
+    # The commit names the release: open pages move to it once their game is saved.
+    - docker build --pull --build-arg IDLEBOUND_RELEASE="${CI_COMMIT_SHA}" -t "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}" -f apps/web/Dockerfile .
     - docker push "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}"
     - docker push "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}"
   rules:

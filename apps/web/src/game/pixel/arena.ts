@@ -29,6 +29,8 @@ interface MonsterView {
   key: string;
   sheet: CreatureSheet;
   spawnedAt: number;
+  /** Its gathering particles' group. */
+  group: number;
   event?: MonsterState["event"];
   eclipse: boolean;
   /** Pip's Wager: he stands still and dares the walker. */
@@ -47,6 +49,14 @@ export type ArenaMonster = Pick<MonsterState, "id" | "kind" | "event" | "eclipse
  */
 const IDLE_FRAME_SECONDS = 0.55;
 const SPAWN_SECONDS = 0.25;
+/**
+ * A slain monster holds whole this long, lit then thrown back, before it comes apart: struck
+ * down as it gathers, it is still seen. Well inside the respawn gap, so two never overlap.
+ */
+const HOLD_SECONDS = 0.16;
+const HOLD_FLASH_SECONDS = 0.06;
+/** With reduced motion a slain monster fades out instead, over this. */
+const FADE_OUT_SECONDS = 0.4;
 /** The monster flashes at most three times a second, however fast the blows land: never a strobe. */
 const FLASH_GAP_SECONDS = 1 / 3;
 /** The Lantern Queen's flight across the sky during a Crystal Storm. */
@@ -93,7 +103,9 @@ export class ArenaRenderer {
   private monster: MonsterView | null = null;
   /** The monster that just left the state: a kill reported after it still comes apart. */
   private leaving: { view: MonsterView; at: number } | null = null;
-  private dying: { sheet: CreatureSheet; x: number; y: number; at: number } | null = null;
+  /** The monster just slain: it holds whole (in motion) or fades (reduced motion). */
+  private dying: { sheet: CreatureSheet; x: number; y: number; at: number; dx: number; target: { x: number; y: number }; guardian: boolean; lit: boolean; fade: boolean } | null = null;
+  private gathers = 0;
   private particles = new Particles(7);
   private shots: Shot[] = [];
   private motes: Mote[] = [];
@@ -297,7 +309,8 @@ export class ArenaRenderer {
     const eclipse = Boolean(monster.eclipse);
     const sheet = creatureSheet(monster.id, monster.kind === "treasure" ? 0 : era, this.night(), eclipse ? "eclipse" : this.tone());
     const now = this.now();
-    this.monster = { id: monster.id, kind: monster.kind, key, sheet, spawnedAt: now, event: monster.event, eclipse, still, share };
+    this.gathers += 1;
+    this.monster = { id: monster.id, kind: monster.kind, key, sheet, spawnedAt: now, group: this.gathers, event: monster.event, eclipse, still, share };
     if (monster.event === "seam") {
       // The crack stands behind the Warden, from the ground to well above its head.
       const place = this.placement(sheet);
@@ -306,7 +319,7 @@ export class ArenaRenderer {
     }
     if (!this.reducedMotion) {
       const place = this.placement(sheet);
-      this.particles.gather(sheet.pixels, place.x, place.y, now, SPAWN_SECONDS);
+      this.particles.gather(sheet.pixels, place.x, place.y, now, SPAWN_SECONDS, this.gathers);
     }
     this.kick();
   }
@@ -402,26 +415,40 @@ export class ArenaRenderer {
     this.kick();
   }
 
-  /** The monster comes apart into its pixels, which become gold motes flying to `goldAt`. */
+  /**
+   * The monster holds whole for a beat, then comes apart into its pixels, which become gold
+   * motes flying to `goldAt`.
+   */
   kill(goldAt: { x: number; y: number } | null) {
     const now = this.now();
     const monster = this.monster ?? (this.leaving && now - this.leaving.at < 0.5 ? this.leaving.view : null);
     this.leaving = null;
     if (!monster) return;
+    this.release(now);
     const place = this.placement(monster.sheet);
-    if (this.reducedMotion) {
-      this.dying = { sheet: monster.sheet, x: place.x, y: place.y, at: now };
-    } else {
-      const target = goldAt ? this.toGrid(goldAt.x, goldAt.y) : { x: place.x, y: 0 };
-      const guardian = monster.kind === "boss" || monster.kind === "miniboss";
-      this.particles.scatter(monster.sheet.pixels, place.x, place.y, now, target, guardian);
-    }
+    const target = goldAt ? this.toGrid(goldAt.x, goldAt.y) : { x: place.x, y: 0 };
+    const guardian = monster.kind === "boss" || monster.kind === "miniboss";
+    // Its gathering ends: it stands whole at once, however soon it fell.
+    this.particles.dismiss(monster.group);
+    const dx = this.knock && now < this.knock.until ? this.knock.dx : 2;
+    // Its last light counts toward the three flashes a second, unless it carries on the blow's own.
+    const carried = this.flash !== null && now < this.flash.until;
+    const lit = carried || this.canFlash(now);
+    this.dying = { sheet: monster.sheet, x: place.x, y: place.y, at: now, dx, target, guardian, lit, fade: this.reducedMotion };
     this.monster = null;
-    this.flash = null;
+    if (lit) this.flash = { at: carried ? this.flash!.at : now, until: now + HOLD_FLASH_SECONDS, color: C.pale };
     this.knock = null;
     this.closeSeam();
     this.setQuiet(false);
     this.kick();
+  }
+
+  /** The held monster comes apart now (its beat is over, or another falls). */
+  private release(now: number) {
+    const dying = this.dying;
+    if (!dying || dying.fade) return;
+    this.dying = null;
+    this.particles.scatter(dying.sheet.pixels, dying.x, dying.y, now, dying.target, dying.guardian);
   }
 
   /** The Seam's Warden is gone: the crack closes. */
@@ -527,7 +554,7 @@ export class ArenaRenderer {
       this.shots.length > 0 ||
       (this.flash !== null && now < this.flash.until) ||
       (this.knock !== null && now < this.knock.until) ||
-      (this.dying !== null && now - this.dying.at < 0.4) ||
+      this.dying !== null ||
       (this.monster !== null && now - this.monster.spawnedAt < SPAWN_SECONDS) ||
       (this.seam !== null && this.seam.closing !== null) ||
       (this.walker !== null && (this.walker.leaving !== null || now - this.walker.at < WALKER_FADE_SECONDS))
@@ -637,17 +664,33 @@ export class ArenaRenderer {
     }
   }
 
+  /** A creature's shadow: its own silhouette laid on the ground, away from the moon. */
+  private drawShadow(sheet: CreatureSheet, x: number, y: number) {
+    const source = this.scene?.scene.source ?? null;
+    const shadow = sheet.shadow(source ? Math.sign(source.x - 160) || 1 : 1, this.scene?.scene.shadow ?? C.ink);
+    this.ctx.drawImage(shadow.surface, x + shadow.dx, y + shadow.dy);
+  }
+
   private drawMonster(now: number) {
     const ctx = this.ctx;
     const monster = this.monster;
-    if (this.dying) {
-      const k = (now - this.dying.at) / 0.4;
+    const dying = this.dying;
+    if (dying?.fade) {
+      // Reduced motion: a still frame fading out.
+      const k = (now - dying.at) / FADE_OUT_SECONDS;
       if (k >= 1) this.dying = null;
       else {
-        // Only with reduced motion (in motion the monster comes apart into its pixels): a still frame fading out.
         ctx.globalAlpha = 1 - k;
-        ctx.drawImage(this.dying.sheet.frames[0], this.dying.x, this.dying.y);
+        ctx.drawImage(dying.sheet.frames[0], dying.x, dying.y);
         ctx.globalAlpha = 1;
+      }
+    } else if (dying) {
+      // In motion: lit, then thrown back, then it comes apart.
+      const age = now - dying.at;
+      if (age >= HOLD_SECONDS) this.release(now);
+      else {
+        this.drawShadow(dying.sheet, dying.x, dying.y);
+        ctx.drawImage(dying.lit && age < HOLD_FLASH_SECONDS ? dying.sheet.flash(C.pale) : dying.sheet.frames[0], dying.x + dying.dx, dying.y);
       }
     }
     if (!monster) return;
@@ -656,10 +699,7 @@ export class ArenaRenderer {
     const place = this.placement(sheet);
     const w = sheet.pixels.w;
     const h = sheet.pixels.h;
-    // Its shadow: its own silhouette laid on the ground, away from the moon.
-    const source = this.scene?.scene.source ?? null;
-    const shadow = sheet.shadow(source ? Math.sign(source.x - 160) || 1 : 1, this.scene?.scene.shadow ?? C.ink);
-    ctx.drawImage(shadow.surface, place.x + shadow.dx, place.y + shadow.dy);
+    this.drawShadow(sheet, place.x, place.y);
     if (age < SPAWN_SECONDS && !this.reducedMotion) return;
     // Reduced motion: the monster fades in instead of gathering (the only translucency, and a fade).
     const alpha = this.reducedMotion ? Math.min(1, age / SPAWN_SECONDS) : 1;

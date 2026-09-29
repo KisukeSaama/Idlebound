@@ -813,6 +813,23 @@ describe("anti-cheat", () => {
     expect(now).toBeGreaterThan(T0);
   });
 
+  it("keeps playing when the clock stands behind the save", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    // Written by a device running three minutes ahead, opened on one that is on time.
+    const previous = structuredClone(engine.state);
+    previous.lastTickAt = now + 180_000;
+    previous.buffs.push({ id: "rage", until: previous.lastTickAt + 30_000 });
+    const loaded = new GameEngine(structuredClone(previous), seededRng(2), now);
+    loaded.tick(now);
+    expect(loaded.state.buffs.find((buff) => buff.id === "rage")?.until).toBe(now + 30_000);
+    // The walker hammers a guardian: time runs, and the server takes the strikes.
+    loaded.state.monster = { id: "guardian", hp: 1e30, maxHp: 1e30, kind: "boss", gold: 1 };
+    run(loaded, now, 20, 5);
+    expect(loaded.state.lifetime.playTime - previous.lifetime.playTime).toBeGreaterThan(19);
+    expect(verifyTransition(previous, loaded.state, 20_000)).toEqual([]);
+  });
+
   it("detects an unearned achievement", () => {
     const cheated = createInitialState(T0);
     cheated.achievements.push("stage-9");

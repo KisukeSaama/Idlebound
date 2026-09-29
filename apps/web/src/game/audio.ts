@@ -29,6 +29,7 @@ type Sound =
   | "quiet"
   | "pip";
 
+const MASTER_GAIN = 0.5;
 /** Share of the volume left to every other sound while the Quiet passes. */
 const DUCKED = 0.06;
 /** Age X, the Unmaking (index 9): sounds arrive late and muffled. */
@@ -102,7 +103,7 @@ class AudioEngine {
       this.context = ctx;
       // effects → bus (Quiet) → fx (volume) → muffle → late → master
       this.master = ctx.createGain();
-      this.master.gain.value = 0.5;
+      this.master.gain.value = MASTER_GAIN;
       this.master.connect(ctx.destination);
       this.late = ctx.createDelay(1);
       this.late.delayTime.value = this.place.muffled ? MUFFLED_DELAY : 0;
@@ -149,6 +150,13 @@ class AudioEngine {
     this.fx.gain.setTargetAtTime(place.dawn ? 0 : this.volume, now, 0.3);
     this.muffle.frequency.setTargetAtTime(place.muffled ? MUFFLED_CUTOFF : OPEN_CUTOFF, now, 0.6);
     this.late.delayTime.setTargetAtTime(place.muffled ? MUFFLED_DELAY : 0, now, 0.6);
+  }
+
+  /** Every sound fades out (the page is about to move on), or comes back. */
+  hush(hushed: boolean) {
+    const ctx = this.context;
+    if (!ctx || !this.master) return;
+    this.master.gain.setTargetAtTime(hushed ? 0 : MASTER_GAIN, ctx.currentTime, 0.15);
   }
 
   /** Everything else goes quiet for a while, then comes back. */

@@ -38,7 +38,7 @@ export function GameHeader() {
           </div>
         ) : null}
         {shown.click ? (
-          <div className={`resource${freshClass("click")}`} title={m.clickTitle}>
+          <div className={`resource resource-click${freshClass("click")}`} title={m.clickTitle}>
             <ClickIcon />
             <span className="resource-label">{m.clickLabel}</span>
             <span className="resource-value resource-value-fixed">{fmt(derived.click)}</span>
@@ -59,7 +59,7 @@ export function GameHeader() {
       </div>
       <button
         type="button"
-        className={`account-chip ${cloud.user ? "is-online" : ""}`}
+        className={`account-chip${cloud.user ? " is-online" : ""}${trouble ? " has-trouble" : ""}`}
         title={cloud.user ? undefined : t.account.ledger.guestPlain}
         onClick={() => ui.openWindow("account")}
       >

@@ -15,8 +15,12 @@ export function AccountWindow({ onClose }: { onClose: () => void }) {
   const { t } = useI18n();
   return (
     <Modal title={t.hud.windowTitles.account.label} icon={<WindowIcon id="account" />} onClose={onClose} size="md">
-      {cloud.user ? <Profile /> : <AuthForms />}
-      <NewGame />
+      {cloud.user ? <Profile /> : (
+        <>
+          <AuthForms />
+          <NewGame />
+        </>
+      )}
     </Modal>
   );
 }
@@ -364,6 +368,7 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
   );
 }
 
+/** Guests only: an account's game is never erased from here. */
 function NewGame() {
   const cloud = useCloud();
   const ui = useUi();
@@ -372,7 +377,7 @@ function NewGame() {
     <section className="account-section">
       <h3 className="section-heading">{text.restart}</h3>
       <p className="modal-hint">
-        {cloud.user ? text.restartHintAccount : text.restartHintGuest}
+        {text.restartHint}
       </p>
       <div className="account-actions">
         <button
@@ -381,12 +386,12 @@ function NewGame() {
           onClick={async () => {
             const ok = await ui.confirm({
               title: text.restartConfirmTitle,
-              text: cloud.user ? text.restartConfirmAccount : text.restartConfirmGuest,
+              text: text.restartConfirmText,
               confirmLabel: text.restartConfirmLabel,
               danger: true
             });
             if (!ok) return;
-            await cloud.newGame();
+            cloud.newGame();
             ui.toast({ tone: "info", title: text.restartDone });
           }}
         >

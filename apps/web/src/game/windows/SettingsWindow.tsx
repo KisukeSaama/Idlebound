@@ -4,6 +4,7 @@ import { LOCALES, SKILLS, ageForStage, formatNumber, isSkillUnlocked, negotiateL
 import { useEffect, useState } from "react";
 import { useI18n, type LocalePreference } from "@/i18n/client";
 import { audio } from "../audio";
+import { haptics } from "../haptics";
 import { useGame } from "../context";
 import { WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
@@ -20,6 +21,9 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
   // Language the browser asks for, shown next to "Automatic". Read after mount (no navigator on the server).
   const [detected, setDetected] = useState<(typeof LOCALES)[number] | null>(null);
   useEffect(() => setDetected(negotiateLocale(navigator.languages)), []);
+  // Vibration is a choice of this device, offered only where the browser can vibrate.
+  const [vibration, setVibration] = useState<boolean | null>(null);
+  useEffect(() => setVibration(haptics.supported ? haptics.on : null), []);
 
   return (
     <Modal title={t.hud.windowTitles.settings.label} icon={<WindowIcon id="settings" />} onClose={onClose} size="sm">
@@ -62,6 +66,9 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
+        {vibration !== null ? (
+          <Toggle label={text.vibration} hint={text.vibrationHint} checked={vibration} onChange={(value) => { haptics.setEnabled(value); setVibration(value); if (value) haptics.pulse("buy"); }} />
+        ) : null}
         <Toggle label={text.damageNumbers} hint={text.damageNumbersHint} checked={settings.damageNumbers} onChange={(value) => update({ damageNumbers: value })} />
         <Toggle label={text.reducedMotion} hint={text.reducedMotionHint} checked={settings.reducedMotion} onChange={(value) => update({ reducedMotion: value })} />
         <Toggle label={text.confirmAscension} hint={text.confirmAscensionHint} checked={settings.confirmAscension} onChange={(value) => update({ confirmAscension: value })} />
@@ -70,7 +77,7 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
           <Toggle label={t.night.darkNight} hint={t.night.darkNightHint} checked={settings.darkNight} onChange={(value) => update({ darkNight: value })} />
         ) : null}
       </div>
-      <h3 className="section-heading">{text.shortcuts}</h3>
+      <h3 className="section-heading shortcut-heading">{text.shortcuts}</h3>
       <ul className="shortcut-list">
         {SKILLS.filter((skill) => isSkillUnlocked(state, skill.id)).map((skill) => (
           <li key={skill.id}><kbd>{skill.hotkey}</kbd> {g.skills[skill.id].name}</li>

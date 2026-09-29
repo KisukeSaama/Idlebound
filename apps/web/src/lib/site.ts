@@ -31,3 +31,31 @@ export function languageAlternates(route: RouteId): Record<string, string> {
 export function pageAlternates(locale: Locale, route: RouteId): Metadata["alternates"] {
   return { canonical: href(locale, route), languages: languageAlternates(route) };
 }
+
+type Social = { title: string; description: string; imageAlt: string };
+
+/**
+ * Open Graph and Twitter card of a localized page. Next replaces the layout's objects
+ * instead of merging them, so every page passes its own: a shared link then shows that
+ * page, not the landing.
+ */
+export function pageSocial(locale: Locale, route: RouteId, { title, description, imageAlt }: Social): Pick<Metadata, "openGraph" | "twitter"> {
+  return {
+    openGraph: {
+      type: "website",
+      locale: OG_LOCALE[locale],
+      alternateLocale: LOCALES.filter((entry) => entry !== locale).map((entry) => OG_LOCALE[entry]),
+      url: href(locale, route),
+      siteName: SITE_NAME,
+      title,
+      description,
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: imageAlt }]
+    },
+    twitter: { card: "summary_large_image", title, description, images: ["/og.png"] }
+  };
+}
+
+/** Title as the layout's template renders it, for the social cards that skip the template. */
+export function fullTitle(title: string): string {
+  return `${title} · ${SITE_NAME}`;
+}
