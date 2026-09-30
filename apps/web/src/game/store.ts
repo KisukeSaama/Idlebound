@@ -112,6 +112,15 @@ export class GameStore {
     this.notify(summary !== null);
   }
 
+  /**
+   * Brings the game up to the clock, outside the loop. A page waking from a freeze (a sleeping
+   * device, a suspended tab) may run other timers before the loop's: what leaves for the
+   * server is caught up first.
+   */
+  advance() {
+    this.step();
+  }
+
   /** Runs a player action on the engine. */
   act<T>(action: (engine: GameEngine, now: number) => T, options: ActOptions = {}): T {
     const now = Date.now();

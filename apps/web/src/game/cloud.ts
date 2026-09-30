@@ -276,6 +276,9 @@ export class CloudSync {
   private async send(baseRevision: number | null, replace: boolean, keepalive: boolean): Promise<boolean> {
     this.lastUploadAt = Date.now();
     if (!keepalive) this.set({ status: "syncing" });
+    // The server counts the time of the next save from the moment this one arrives: a game
+    // sent before it caught up (the page just woke) would have that catch-up refused later.
+    this.store.advance();
     // The state is serialized as the request leaves, before any await: no copy is needed.
     // A keepalive request is capped at 64 KB by browsers: a larger save goes as a plain one.
     const lasting = keepalive && new TextEncoder().encode(JSON.stringify(this.store.state)).length <= KEEPALIVE_MAX_BYTES;
