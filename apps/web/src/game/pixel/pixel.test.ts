@@ -1,5 +1,5 @@
 import { ALTARS, BESTIARY, BIOMES, CARAVAN_WARES, HEROES, MARKET_OFFERS, NAMED_RELICS, RARITIES, SKILLS, SLOTS, SLOT_BASE_COUNT, TREASURE_MONSTER } from "@idlebound/game";
-import { ALTAR_ICONS, ARENA_ROWS, C, CARAVAN_ICONS, CREATURE_HEIGHTS, DECOR, LOW_BODY_LENGTH, NAMED_RELIC_SHAPES, CREATURE_RECIPES, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, SCENE_FLOOR, STRUCTURES, resolveCreature } from "@idlebound/game/art";
+import { ALTAR_ICONS, ARENA_ROWS, C, CARAVAN_ICONS, CREATURE_HEIGHTS, DECOR, LOW_BODY_LENGTH, NAMED_RELIC_SHAPES, CREATURE_RECIPES, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLab, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, SCENE_FLOOR, STRUCTURES, resolveCreature } from "@idlebound/game/art";
 import { describe, expect, it } from "vitest";
 import { renderCreature } from "./creature";
 import { AGE_COUNT, ERAS_PER_AGE, ageOf } from "./eras";
@@ -333,6 +333,47 @@ describe("pixel generator", () => {
           for (const pal of renderCreature(monster.id).pixels.idx) if (pal !== EMPTY) withCreature.add(pal);
           expect(withCreature.size, `${biome.id} + ${monster.id}`).toBeLessThanOrEqual(24);
         }
+      }
+    }
+  });
+
+  it("gives every biome a night of its own: any two differ at a glance in their sky or their ground", () => {
+    // The mean color of a region, in CIELAB, weighted by area: what the eye keeps of a place.
+    const mean = (flat: Pixels, from: number, to: number) => {
+      const sum = [0, 0, 0];
+      let count = 0;
+      for (let at = from * flat.w; at < to * flat.w; at += 1) {
+        if (flat.idx[at] === EMPTY) continue;
+        const lab = palLab(flat.idx[at]);
+        for (let k = 0; k < 3; k += 1) sum[k] += lab[k];
+        count += 1;
+      }
+      return sum.map((value) => value / count);
+    };
+    const shares = (flat: Pixels) => {
+      const share = new Array<number>(ORVANE_64.length).fill(0);
+      for (const pal of flat.idx) if (pal !== EMPTY) share[pal] += 1 / flat.idx.length;
+      return share;
+    };
+    const distance = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    const nights = BIOMES.map((biome) => {
+      const flat = flattenScene(renderScene(biome.id, 0));
+      const horizon = SCENES[biome.id].horizon;
+      return { id: biome.id, sky: mean(flat, 0, horizon), ground: mean(flat, horizon, flat.h), shares: shares(flat) };
+    });
+    for (const [index, a] of nights.entries()) {
+      for (const b of nights.slice(index + 1)) {
+        // 8 is three and a half times what the eye just notices, over half a screen.
+        expect(Math.max(distance(a.sky, b.sky), distance(a.ground, b.ground)), `${a.id} / ${b.id}`).toBeGreaterThanOrEqual(8);
+        // Two open skies of the Kingdom may share their violets; never most of the picture.
+        const shared = a.shares.reduce((total, share, pal) => total + Math.min(share, b.shares[pal]), 0);
+        expect(shared, `${a.id} / ${b.id} shared pixels`).toBeLessThan(0.4);
+      }
+    }
+    // The ramps themselves: no dark step of the vaults is the night's or the Keep's twin.
+    for (const vault of [C.vaultNight, C.vault1, C.vault2]) {
+      for (const violet of [C.night1, C.night2, C.night3, C.night4, C.dusk, C.plum, C.keepStone]) {
+        expect(distance(palLab(vault), palLab(violet)), `${ORVANE_64[vault]} / ${ORVANE_64[violet]}`).toBeGreaterThanOrEqual(8);
       }
     }
   });

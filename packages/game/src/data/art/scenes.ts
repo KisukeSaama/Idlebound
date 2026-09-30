@@ -212,7 +212,7 @@ export const SCENES: Record<string, SceneRecipe> = {
     ranges: [
       { kind: "mountains", color: C.night4, base: 74, height: 22, rim: C.keepStone },
       { kind: "hills", color: C.night3, base: 74, height: 10, rim: C.night4 },
-      { kind: "treeline", color: C.woodNight2, base: 74, height: 9 }
+      { kind: "treeline", color: C.woodFloor, base: 74, height: 9 }
     ],
     // Far across the fields, on its hill, the Keep: one window still lit.
     landmark: { kind: "keep", x: 206, base: 76, color: C.night3, rim: C.keepStone },
@@ -254,18 +254,19 @@ export const SCENES: Record<string, SceneRecipe> = {
       },
       outline: C.ink,
       rim: C.lilac,
-      growth: [C.woodFloor2, C.field2, C.woodLeaf],
+      growth: [C.field1, C.field2, C.field3],
       far: [C.night3, C.keepStone],
       haze: [C.night3, C.night4, C.keepStone]
     },
     glow: C.goldLight,
-    // The fields at night: dark, dull, pulled toward blue-green; only the lights warm them.
-    ground: { edge: C.woodFloor2, fill: C.woodFloor2, near: C.woodNight2, road: C.keepStone, rut: C.night4 },
+    // The fields at night, on the plains' own greens (BIBLE 18.3): dark and dull, but moss, not
+    // the wood's teal; only the lights warm them.
+    ground: { edge: C.field1, fill: C.field1, near: C.woodFloor, road: C.keepStone, rut: C.night4 },
     shadow: C.ink,
     night: { rim: C.lilac },
     grass: {
-      blades: [C.woodLeaf, C.woodLeaf, C.woodFloor2],
-      tip: C.woodLeaf,
+      blades: [C.field2, C.field2, C.field1],
+      tip: C.field3,
       heart: C.lilac,
       rim: C.lilac,
       stone: [C.keepStone, C.night4],

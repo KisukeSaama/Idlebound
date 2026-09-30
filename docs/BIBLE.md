@@ -1630,9 +1630,15 @@ and more violet, highlights warmer), never pure black: the darkest outline is `#
 |---|---|---|---|---|---|
 | Hearthfields | `#1a1633` `#2b2450` | `#2e3a24` `#4a5a2a` | `#5f8a3a` `#8bd46a` | `#ffe29a` (lanterns, fireflies) | `#8bd46a` |
 | Wychwood | `#0e1420` `#172a2c` | `#1d2a22` `#2c3f30` | `#2f6b58` `#4fd1a5` | `#c9ffe8` (wisps) | `#4fd1a5` |
-| Deepvaults | `#0b0a14` `#16182e` | `#23264a` `#3a3f70` | `#5a64b8` `#8f9cff` | `#7fd8ff` (runes, shards) | `#8f9cff` |
+| Deepvaults | `#0b0a14` `#12202f` | `#1e324c` `#334d73` | `#5470b8` `#8f9cff` | `#7fd8ff` (runes, shards) | `#8f9cff` |
 | Mire of Osric | `#121410` `#1f2616` | `#2f3318` `#4d5222` | `#7d8f2f` `#b6d94c` | `#e8ff9a` (will-o'-wisps) | `#b6d94c` |
 | Orvane Keep | `#140f24` `#221a3d` | `#2a2347` `#3f3566` | `#7a5bb8` `#c58cff` | `#c9a6ff` (violet fire) | `#c58cff` |
+
+> **Shipped**: the five scenes are held apart by a test (mean color of sky or ground 8 apart
+> in CIELAB for any two biomes). The Hearthfields' ground is drawn on its own ramp above
+> (it had borrowed the Wychwood's teal), and the Deepvaults' dark steps were moved from
+> indigo (`#16182e` `#23264a` `#3a3f70` `#5a64b8`, near twins of the night ramp) to the true
+> blue of the table.
 
 Rarity colors stay those of `RARITY_INFO`; relic icons take their highlight from them.
 

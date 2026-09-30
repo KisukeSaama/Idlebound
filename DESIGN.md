@@ -551,8 +551,15 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   turning; the farm's graves, stooks and fence painted in their own colors, each material
   a lit color and a shade, the moon rimming their tops and lit side in pale lilac; grass
   tuft by tuft (three hand-drawn variants per size, mirrored at random); the horizon high
-  (row 74) under a thin mist; night grading the ground dark and dull, its greens pulled
-  toward blue-green.
+  (row 74) under a thin mist; night grading the ground dark and dull, on the plains' own
+  moss greens (`#2e3a24`, tufts in `#4a5a2a` tipped `#5f8a3a`), never the Wychwood's teal.
+
+  **A night of its own for each biome**: violet sky over moss fields (Hearthfields), teal
+  (Wychwood), deep blue (Deepvaults), olive (Mire), violet stone (Keep). A test measures
+  it: the mean color (CIELAB, by area) of any two biomes' skies or grounds stands 8 apart
+  at least, and two scenes never share 40% of their pixels by color. The vault ramp's dark
+  steps are true blue (`#12202f`, `#1e324c`, `#334d73`), warming to the periwinkle accent:
+  they were the night ramp's near twins, and the Deepvaults read as the Keep.
 
   **Night**: at the first Age, the arena sets each creature into its scene, keeping it the
   most readable thing in it (`night.ts`): its lights keep their own colors; its darkest

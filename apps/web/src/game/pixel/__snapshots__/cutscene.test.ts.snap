@@ -2,9 +2,9 @@
 
 exports[`the shots of the Ledger's scenes > matches the recorded snapshots of the shots 1`] = `
 {
-  "almost 0": "d0c9502f d0c9502f d0c9502f",
+  "almost 0": "64c25f13 64c25f13 64c25f13",
   "almost 1": "c45957b9 c45957b9 c45957b9",
-  "almost 2": "d0c9502f d0c9502f d0c9502f",
+  "almost 2": "64c25f13 64c25f13 64c25f13",
   "empty-throne 0": "a2f3051d a2f3051d a2f3051d",
   "empty-throne 1": "a2f3051d a2f3051d a2f3051d",
   "empty-throne 2": "1351528c 1351528c 1351528c",
@@ -12,6 +12,6 @@ exports[`the shots of the Ledger's scenes > matches the recorded snapshots of th
   "first-dusk 1": "a2f3051d a2f3051d a2f3051d",
   "first-dusk 2": "a2f3051d 64b61cc4 1351528c",
   "first-dusk 3": "c195a9de c195a9de c195a9de",
-  "first-dusk 4": "d0c9502f d0c9502f d0c9502f",
+  "first-dusk 4": "64c25f13 64c25f13 64c25f13",
 }
 `;

@@ -15,8 +15,9 @@ export const ORVANE_64 = [
   "#3f1a7a", "#7a3fd6", "#b57bff", "#e6d0ff",
   // 22-26 royal violets of the Keep and the plains sky
   "#2b2450", "#3f3566", "#7a5bb8", "#c58cff", "#c9a6ff",
-  // 27-33 deep blues, stone of the vaults, shard light
-  "#16182e", "#23264a", "#3a3f70", "#5a64b8", "#8f9cff", "#7fd8ff", "#dff6ff",
+  // 27-33 deep blues, stone of the vaults (true blue in the dark, away from the night's
+  // violet, warming to periwinkle in the light), shard light
+  "#12202f", "#1e324c", "#334d73", "#5470b8", "#8f9cff", "#7fd8ff", "#dff6ff",
   // 34-40 forest teals and companion mint
   "#0e1420", "#172a2c", "#1d2a22", "#2c3f30", "#2f6b58", "#4fd1a5", "#c9ffe8",
   // 41-44 plains greens
@@ -126,6 +127,23 @@ const RGB = ORVANE_64.map(hexToRgb);
 /** Channels of a palette entry. */
 export function palRgb(index: Pal): readonly [number, number, number] {
   return RGB[index];
+}
+
+/**
+ * A palette entry in CIELAB (D65): distances there are the ones the eye sees, which is how
+ * two scenes are told apart (pixel.test.ts).
+ */
+export function palLab(index: Pal): [number, number, number] {
+  const linear = (channel: number) => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = RGB[index].map(linear);
+  const curve = (value: number) => (value > 0.008856 ? Math.cbrt(value) : 7.787 * value + 16 / 116);
+  const x = curve((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047);
+  const y = curve(0.2126 * r + 0.7152 * g + 0.0722 * b);
+  const z = curve((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
 }
 
 /** Perceived lightness of a palette entry, 0 to 255. */
