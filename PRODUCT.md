@@ -394,8 +394,8 @@ line of text: it stores counters, and the n-th fragment of a source is always th
     (what each companion said the first time a promise to them was kept, 20), **Aldric's
     Lessons** (the first purchase of each of his seven talents), **Célestine's songs** (5%
     of the crystals caught once she has been met), **what stays after an absence** (a
-    return after an hour or more in a hidden tab or a sleeping computer: one line over the
-    scene for 6 s, no numbers), the Stallkeeper's twelve sayings (one per visit to the
+    return after an hour or more in a hidden tab or a sleeping computer: one line in the
+    band at the top of the scene for 6 s, no numbers), the Stallkeeper's twelve sayings (one per visit to the
     stall), named relic legends, altar legends (level 5), secrets and the Crown.
   - A fragment toast at most once a minute (keystones and milestones are always told); the
     others wait in the Chronicle. The
@@ -474,7 +474,8 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   You (the fifth slot held five seconds after the tenth Descent), Behind the Glass (the
   Keep's window, in the Dreamer's Room), Two Tongues (an hour in each language), Welcome
   Back (the game opened again after thirty days).
-- Each run opens on stage 1 with one line in the scene: "Dusk again."
+- Each run opens on stage 1 with one line in the band at the top of the scene, above the
+  creature: "Dusk again."
 
 ### Events of the Long Night
 

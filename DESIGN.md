@@ -744,8 +744,13 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   line rises in 0.9 s once the shot is in. With reduced motion every shot holds its first
   frame (the guardian already gone) and fades in over 0.4 s. Keys go to the scene first:
   Enter or Space moves on, Escape ends, Tab moves between the two buttons.
-- **Opening line**: a new run opens on "Dusk again." centered over the scene in Cinzel gold,
-  fading in and out over 7 s (a plain hold then fade with reduced motion).
+- **Lines over the scene** (the opening line, what stays after an absence): one line in a
+  band at the top of the arena, right under the scene's top bar, in the sky above the
+  creature's head, never over it: small Cinzel (0.82 to 1 rem), centered, on a strip of night
+  ink that fades out downward. It follows the bar as the bar grows (the arena's grid row), a
+  tutorial hint stands under it and the toasts start under it. A new run opens on "Dusk
+  again." in gold, fading in and out over 7 s (a plain hold then fade with reduced motion,
+  from the setting or the system).
 - Damage numbers float up from the pointer; crits are bigger and gold; gold gains rise.
   Companion damage shows once per second beside the monster's body, in `--companion` mint under a
   small "COMPANIONS" label (same pattern as the "CRITICAL" label), as large as a click
@@ -784,7 +789,7 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   within seconds of the last strike.
 - Toasts never cover the stages or the effect chips: they sit right under the scene's top
   bar, whose bottom edge is measured (it grows with the chips and moves when the page
-  scrolls). On a computer they never cover the monster, its HP bar, the powers or a
+  scrolls), or under the band of a line being told. On a computer they never cover the monster, its HP bar, the powers or a
   tutorial hint either (the stack starts under a hint it would cross):
   they dock beside the monster when a side has room (250 px at least, 360 px wide at most),
   else in the sky band above its drawn box, and a toast that does not fit is hidden, newest
@@ -812,8 +817,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   outcome. Timed event creatures (the Seam Warden, the Quiet, the Stray Armor) use the boss
   timer bar, violet and labelled with the event; Pip's Wager replaces the HP bar with 13
   notches and its 5 s timer. The King's Word rides in the gold ascension toast as a quote,
-  signed by the King, for 8 s. What stays after an absence is one line over the scene for
-  6 s, like the opening line.
+  signed by the King, for 8 s. What stays after an absence is one line in the scene's top
+  band for 6 s, like the opening line, in italic violet.
 
 ## Sound
 

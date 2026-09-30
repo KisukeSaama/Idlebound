@@ -140,8 +140,8 @@ export function Scene() {
         darkNight={state.settings.darkNight}
       />
       <p className="visually-hidden" role="status" aria-live="polite">{told}</p>
-      {opening ? <p className="scene-opening" aria-live="polite">{g.openingLine}</p> : null}
-      {dream && !opening ? <p key={dream.key} className="scene-opening scene-dream" aria-live="polite">{dream.text}</p> : null}
+      {opening ? <p className="scene-line" aria-live="polite">{g.openingLine}</p> : null}
+      {dream && !opening ? <p key={dream.key} className="scene-line scene-dream" aria-live="polite">{dream.text}</p> : null}
       <header className="scene-top">
         <div className="scene-zone">
           <span className="scene-era">{stratumLabel(state.stage, locale)}</span>

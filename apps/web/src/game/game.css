@@ -317,34 +317,49 @@ button.resource:hover .resource-label {
   box-shadow: 0 0 0 1px var(--border);
 }
 
-/* The line every run opens with, over the fields at dusk. */
-.scene-opening {
+/*
+ * A line of the Chronicle over the night (the one every run opens with, what stays after an
+ * absence): a band at the top of the arena, right under the scene's top bar, in the sky above
+ * the creature's head. Its grid row is the arena's, so it follows the bar as it grows.
+ */
+.scene-line {
   position: absolute;
-  inset: 34% 0 auto;
+  grid-row: 2;
+  grid-column: 1;
+  inset: 0 0 auto;
   z-index: 4;
   margin: 0;
+  padding: 8px 16px 16px;
   text-align: center;
+  text-wrap: balance;
   font-family: var(--font-display);
-  font-size: clamp(1.2rem, calc(3 * var(--vw)), 1.9rem);
+  font-size: clamp(0.82rem, calc(1.3 * var(--vw)), 1rem);
   font-weight: 600;
+  line-height: 1.3;
   letter-spacing: 0.06em;
   color: var(--gold-2);
-  text-shadow: 0 2px 12px rgba(6, 5, 12, 0.9);
+  text-shadow: 0 1px 6px rgba(6, 5, 12, 0.95);
+  background: linear-gradient(rgba(7, 6, 12, 0.62), rgba(7, 6, 12, 0.45) 55%, rgba(7, 6, 12, 0));
   pointer-events: none;
-  animation: scene-opening 7s ease-in-out forwards;
+  animation: scene-line 7s ease-in-out forwards;
 }
 
-@keyframes scene-opening {
+/* A tutorial hint stands under the band while a line is told. */
+.scene:has(.scene-line) .tutorial-hint.hint-arena {
+  top: calc(8% + 2.6rem);
+}
+
+@keyframes scene-line {
   0% { opacity: 0; }
   18%, 70% { opacity: 1; }
   100% { opacity: 0; }
 }
 
-.reduced-motion .scene-opening {
-  animation: scene-opening-still 7s linear forwards;
+.reduced-motion .scene-line {
+  animation: scene-line-still 7s linear forwards;
 }
 
-@keyframes scene-opening-still {
+@keyframes scene-line-still {
   0%, 85% { opacity: 1; }
   100% { opacity: 0; }
 }
@@ -4056,8 +4071,10 @@ kbd {
   .tutorial-hint {
     animation: none !important;
   }
-  .scene-opening {
-    animation: scene-opening-still 7s linear forwards;
+  /* The page-wide rule cuts every animation short: the line keeps its seven seconds, still. */
+  .scene-line {
+    animation: scene-line-still 7s linear forwards;
+    animation-duration: 7s !important;
   }
 }
 
@@ -4436,9 +4453,8 @@ kbd {
   }
 }
 
-/* What stays after an absence: the opening line's place, paler, and six seconds long. */
+/* What stays after an absence: the opening line's band, paler, and six seconds long. */
 .scene-dream {
-  padding: 0 24px;
   font-style: italic;
   font-weight: 500;
   color: var(--violet-2);
@@ -4451,7 +4467,7 @@ kbd {
 
 @media (prefers-reduced-motion: reduce) {
   .scene-dream {
-    animation-duration: 6s;
+    animation-duration: 6s !important;
   }
 }
 
