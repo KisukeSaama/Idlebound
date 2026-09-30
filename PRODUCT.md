@@ -141,6 +141,14 @@ late game; mashing the mouse is never required.
   the walker back for about two weeks (2083 at day 14), then pulls ahead: descending once the
   threads reach 8 and the threads woven so far, 2 Descents and 2768 at day 56; at 4 threads
   and half the threads woven so far, 4 Descents and 2816. No seed reaches the Dawn in 8 weeks.
+  Run again on save version 11 (the thread woven from depth; 4 weeks, 5 seeds, stopped at
+  day 20 to 23, medians of the best stage): without a Descent the curve flattens, +521 on
+  day 2, +114 on day 5, about +50 a day in the second week, +10 to +30 in the third (2581 at
+  day 20). The first Descent comes on day 9 in every seed (never inside the first week).
+  Descending once an Age (8 threads at least, x1): a day or two spent under the record,
+  then a jump (+163 on day 13, +87 on day 18) and ahead of the walker who never descends
+  by day 20 (2626 against 2581, 2668 at day 22, 3 Descents). Descending every 146 stages
+  (x0.5) pays the climb back too often: 2508 at day 20. The Descent restarts the curve.
 - The simulations above that go beyond `npm run balance -- <hours> <cps>` and `compare`
   (real schedules, ascension timing, altar leave-out runs, the 72 h bot) were run with the
   options of `packages/game/scripts/bot.ts` (`stagnationMs`, `altars`); they have no CLI
