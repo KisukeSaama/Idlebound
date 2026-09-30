@@ -57,6 +57,8 @@ export const night = defineMessages({
       moreGuardians: (count: number) => (count === 1 ? "Un autre gardien franchi" : `${count} autres gardiens franchis`),
       moreTalents: (count: number) => (count === 1 ? "Une autre technique retrouvée" : `${count} autres techniques retrouvées`),
       still: "La compagnie a gardé la route. Rien n'a bougé.",
+      fragment: "Gardé pour toi",
+      moreFragments: (count: number) => (count === 1 ? "Un autre fragment t'attend dans la Chronique" : `${count} autres fragments t'attendent dans la Chronique`),
       resume: "Reprendre la route"
     },
     buffs: {
@@ -118,6 +120,8 @@ export const night = defineMessages({
       moreGuardians: (count: number) => (count === 1 ? "One more guardian passed" : `${count} more guardians passed`),
       moreTalents: (count: number) => (count === 1 ? "One more technique remembered" : `${count} more techniques remembered`),
       still: "The company held the road. Nothing moved.",
+      fragment: "Kept for you",
+      moreFragments: (count: number) => (count === 1 ? "One more fragment waits in the Chronicle" : `${count} more fragments wait in the Chronicle`),
       resume: "Back on the road"
     },
     buffs: {

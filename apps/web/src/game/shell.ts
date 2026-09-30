@@ -1,6 +1,7 @@
 import {
   ALTAR_BY_ID,
   CARAVAN_MIN_ASCENSIONS,
+  CHRONICLE_SOURCES,
   CLICK_HERO_ID,
   MARKET_OFFERS,
   ageForEra,
@@ -10,6 +11,7 @@ import {
   eraLabel,
   promisesOpen,
   stratumTag,
+  type ChronicleSource,
   type GameState,
   type Locale
 } from "@idlebound/game";
@@ -97,6 +99,22 @@ export function reveals(state: GameState): Reveals {
     autoSpend: companionHired || life.bestHired >= 2 || !state.settings.offlineSpending || reborn
   };
 }
+
+/**
+ * Chronicle sources that already have their own toast (memories, relic legends, secrets,
+ * the King's Word, what stays after an absence, the sayings read at the stall).
+ */
+export const OWN_TOAST: ReadonlySet<ChronicleSource> = new Set(["memory", "promise", "relic", "secret", "crown", "king", "dream", "saying"]);
+
+/**
+ * Where the Reunion looks for the fragment it hands the walker: first the sources whose
+ * fragments may have waited unseen in the Chronicle, then those a toast already told. Never
+ * what stays after an absence: the scene tells it at the same return.
+ */
+export const REUNION_SOURCES: readonly ChronicleSource[] = [
+  ...CHRONICLE_SOURCES.filter((source) => !OWN_TOAST.has(source)),
+  ...CHRONICLE_SOURCES.filter((source) => OWN_TOAST.has(source) && source !== "dream")
+];
 
 /**
  * The name of the stratum a stage belongs to: its era, its tag, and from the second Age on

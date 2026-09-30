@@ -44,7 +44,7 @@ import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
 import { hintsAnsweredBy } from "./hints";
 import { SKILL_PICTO, type PictoName } from "./icons";
-import { ANNOUNCED, ANNOUNCED_AT_LOAD, revealMark, stratumLabel, type RevealId } from "./shell";
+import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, revealMark, stratumLabel, type RevealId } from "./shell";
 import { describePromise } from "./text";
 import { useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
@@ -64,11 +64,6 @@ import "./game.css";
 
 /** Never more than one fragment toast a minute (BIBLE 17.4): the others wait in the Chronicle. */
 const FRAGMENT_TOAST_GAP_MS = 60_000;
-/**
- * Chronicle sources that already have their own toast (memories, relic legends, secrets,
- * the King's Word, what stays after an absence, the sayings read at the stall).
- */
-const OWN_TOAST: ReadonlySet<ChronicleEntry["source"]> = new Set(["memory", "promise", "relic", "secret", "crown", "king", "dream", "saying"]);
 /** The walker is told at most this often that their word holds them back (every strike would say it). */
 const HELD_TOAST_GAP_MS = 12_000;
 /** The night whose dusk is told in a scene: the first. */

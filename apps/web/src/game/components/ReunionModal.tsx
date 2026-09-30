@@ -4,21 +4,27 @@ import {
   HERO_BY_ID,
   UPGRADE_BY_ID,
   bossForStage,
+  chronicleText,
+  firstUnread,
   formatDuration,
   formatNumber,
   gameText,
   guardiansPassed,
   isKingStage,
+  markRead,
   monsterName,
   talentName,
-  type AbsenceAccount
+  unreadChronicle,
+  type AbsenceAccount,
+  type ChronicleEntry
 } from "@idlebound/game";
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { useI18n } from "@/i18n/client";
-import { useGame } from "../context";
+import { useGame, useReveals, useUi } from "../context";
 import { Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { awakenedSeed, portraitSource } from "../pixel/sources";
+import { REUNION_SOURCES } from "../shell";
 import { Modal } from "./Modal";
 
 /** Guardians passed without a fight worth telling, shown by name before they are counted. */
@@ -32,10 +38,25 @@ interface ReunionModalProps {
   onClose: () => void;
 }
 
-/** The Reunion: the company tells the walker the road it held alone. */
+/**
+ * The Reunion: the company tells the walker the road it held alone, and hands them one
+ * fragment of the Chronicle they have not read yet (the one waiting when the window opened;
+ * leaving the window marks it read).
+ */
 export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
-  const { state } = useGame();
+  const { state, store } = useGame();
+  const ui = useUi();
+  const { shown } = useReveals();
   const { t, locale } = useI18n();
+  const [kept] = useState(() => {
+    const unread = firstUnread(store.state, REUNION_SOURCES);
+    return unread ? { ...unread, others: unreadChronicle(store.state) - 1 } : null;
+  });
+  const leave = (toChronicle = false) => {
+    if (kept) store.act((engine) => markRead(engine.state, kept.entry.source, kept.index + 1));
+    onClose();
+    if (toChronicle) ui.openWindow("hall", "chronicle");
+  };
   const g = gameText(locale);
   const n = t.night;
   const m = n.account;
@@ -74,9 +95,9 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
     <Modal
       title={n.reunionTitle}
       icon={<Picto name="campfire" size={30} />}
-      onClose={onClose}
+      onClose={() => leave()}
       size="md"
-      footer={<button type="button" className="btn btn-gold" onClick={onClose}>{m.resume}</button>}
+      footer={<button type="button" className="btn btn-gold" onClick={() => leave()}>{m.resume}</button>}
     >
       <p className="ledger-voice">{n.reunionText(formatDuration(seconds, locale))}</p>
       <dl className="account-facts">
@@ -119,6 +140,24 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
           </ul>
         </>
       ) : null}
+      {kept ? <KeptFragment kept={kept} onOpen={shown.hall && kept.others > 0 ? () => leave(true) : null} /> : null}
     </Modal>
+  );
+}
+
+/** One fragment the walker has not read, as the Chronicle writes it, and how many more wait there. */
+function KeptFragment({ kept, onOpen }: { kept: { entry: ChronicleEntry; others: number }; onOpen: (() => void) | null }) {
+  const { t, locale } = useI18n();
+  const m = t.night.account;
+  const line = chronicleText(kept.entry, locale);
+  return (
+    <>
+      <h3 className="section-heading">{m.fragment}</h3>
+      <div className="fragment unread">
+        <blockquote>{line.text}</blockquote>
+        <p className="fragment-by">{[line.by, t.chronicle.sources[kept.entry.source]].filter(Boolean).join(" · ")}</p>
+      </div>
+      {onOpen ? <button type="button" className="link-button account-chronicle" onClick={onOpen}>{m.moreFragments(kept.others)}</button> : null}
+    </>
   );
 }

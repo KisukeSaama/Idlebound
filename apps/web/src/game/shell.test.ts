@@ -1,6 +1,6 @@
-import { ageName, createInitialState, stratumTag } from "@idlebound/game";
+import { CHRONICLE_SOURCES, ageName, createInitialState, stratumTag } from "@idlebound/game";
 import { describe, expect, it } from "vitest";
-import { ANNOUNCED, ANNOUNCED_AT_LOAD, revealMark, reveals, stratumLabel } from "./shell";
+import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, REUNION_SOURCES, revealMark, reveals, stratumLabel } from "./shell";
 
 describe("progressive interface", () => {
   it("shows nothing but the fight, the attack and the gold at minute one", () => {
@@ -76,6 +76,16 @@ describe("progressive interface", () => {
     state.lifetime.ascensions = 4;
     expect(reveals(state).altars3).toBe(true);
     expect(ANNOUNCED).toEqual(expect.arrayContaining(["altars2", "altars3"]));
+  });
+});
+
+describe("the Reunion's fragment", () => {
+  it("looks first where fragments wait untold, then where a toast told them, never at what the scene just said", () => {
+    expect(REUNION_SOURCES).not.toContain("dream");
+    expect([...REUNION_SOURCES].sort()).toEqual(CHRONICLE_SOURCES.filter((source) => source !== "dream").sort());
+    const firstTold = REUNION_SOURCES.findIndex((source) => OWN_TOAST.has(source));
+    expect(REUNION_SOURCES.slice(firstTold).every((source) => OWN_TOAST.has(source))).toBe(true);
+    expect(REUNION_SOURCES[0]).toBe("keystone");
   });
 });
 

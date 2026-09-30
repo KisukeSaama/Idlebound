@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
-import { chronicleEntries, unreadChronicle } from "./chronicle";
+import { chronicleEntries, firstUnread, markRead, unreadChronicle } from "./chronicle";
 import { achievementText, chronicleText, gameText, hireLine, itemName } from "./content";
 import { ACHIEVEMENTS } from "./data/achievements";
 import { BIOMES } from "./data/biomes";
@@ -167,6 +167,28 @@ describe("biome echoes", () => {
     expect(unreadChronicle(engine.state)).toBe(1);
     engine.state.lore.seen.echo = 1;
     expect(unreadChronicle(engine.state)).toBe(0);
+  });
+
+  it("hands over the oldest unread fragment of the first source asked, and marks it read without going back", () => {
+    const state = createInitialState(T0);
+    expect(firstUnread(state)).toBeNull();
+    state.lore.echoes["green-plains"] = 3;
+    state.lore.songs = 2;
+    state.lore.seen.echo = 1;
+    // The book's order: the echoes come before the songs, the oldest unread first.
+    expect(firstUnread(state)).toEqual({ entry: { source: "echo", biome: "green-plains", index: 1 }, index: 1 });
+    expect(firstUnread(state, ["song", "echo"])).toEqual({ entry: { source: "song", index: 0 }, index: 0 });
+    expect(firstUnread(state, ["dream"])).toBeNull();
+    markRead(state, "echo", 2);
+    expect(state.lore.seen.echo).toBe(2);
+    expect(unreadChronicle(state)).toBe(3);
+    expect(firstUnread(state)!.index).toBe(2);
+    // What was read stays read, and nothing is read that was not found.
+    markRead(state, "echo", 1);
+    expect(state.lore.seen.echo).toBe(2);
+    markRead(state, "echo", 99);
+    expect(state.lore.seen.echo).toBe(3);
+    expect(firstUnread(state)!.entry.source).toBe("song");
   });
 
   it("refuses more echoes than the guardians allow", () => {

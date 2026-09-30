@@ -3309,6 +3309,13 @@ kbd {
   font-variant-numeric: tabular-nums;
 }
 
+/* Under the fragment the Reunion hands over: the way to the others. */
+.account-chronicle {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.86rem;
+}
+
 /* ------------------------------------------------ toasts */
 
 .toasts {

@@ -567,6 +567,12 @@ opens again, within the same cap as a hidden tab.
   input). Kept in memory only, never in the save: a page loaded after the absence tells what
   its own catch-up did (the time the game was closed, within the cap). Shown once, at the Reunion's threshold (30 min); a shorter
   absence tells nothing and starts over.
+- **One fragment kept for the walker**: the account ends on one Chronicle fragment not read
+  yet, the oldest one waiting: first from the sources whose fragments may never have been
+  told (keystones, milestones, echoes, wanderers, events, Lessons, songs, altar legends),
+  then from those a toast already told; never what stays after an absence, which the scene
+  tells at the same return. Leaving the window marks that fragment read (the Hall's count
+  drops by one); a link under it counts the others and opens the Chronicle.
 
 ### Balance targets
 

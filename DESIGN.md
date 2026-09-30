@@ -781,7 +781,11 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   a King), then the last three guardians passed, the companions who joined (their portrait),
   the first four talents learned (scroll), and last the boss that still bars the road, its
   border tinted with the danger color. What is left out is counted in one muted line. Then
-  "The company": a wrap of chips, portrait, name and levels "from → to". One gold button,
+  "The company": a wrap of chips, portrait, name and levels "from → to". Last, when a
+  fragment of the Chronicle is still unread, "Kept for you" (*Gardé pour toi*): that one
+  fragment as the Chronicle writes it (italic line, violet edge, its voice and its source
+  beneath), and a text link counting the others that opens the Chronicle (only once the
+  Hall is open to the walker). One gold button,
   "Back on the road" (*Reprendre la route*). Toasts wait while it is open. Without an account
   to tell, a gold toast with the campfire picto says the welcome instead. A campfire chip keeps the countdown while companion damage
   is ×3.

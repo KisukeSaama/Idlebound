@@ -180,6 +180,27 @@ export function unreadChronicle(state: GameState): number {
   return CHRONICLE_SOURCES.reduce((total, source) => total + unreadOf(state, source), 0);
 }
 
+/**
+ * The fragment to hand a walker who has not opened the Chronicle: the oldest entry not read
+ * yet of the first source, in the order of `sources`, that holds one. `index` is its place in
+ * its source.
+ */
+export function firstUnread(state: GameState, sources: readonly ChronicleSource[] = CHRONICLE_SOURCES): { entry: ChronicleEntry; index: number } | null {
+  for (const source of sources) {
+    if (unreadOf(state, source) === 0) continue;
+    const index = seenOf(state, source);
+    const entry = sourceEntries(state, source)[index];
+    if (entry) return { entry, index };
+  }
+  return null;
+}
+
+/** Marks the first `count` entries of a source as read; what was read stays read. */
+export function markRead(state: GameState, source: ChronicleSource, count: number) {
+  const read = Math.min(count, sourceCount(state, source));
+  if (seenOf(state, source) < read) state.lore.seen[source] = read;
+}
+
 /** Bestiary lines unlocked so far, over every creature. */
 export function bestiaryLines(state: GameState): number {
   let lines = 0;
