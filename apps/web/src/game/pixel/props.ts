@@ -231,13 +231,13 @@ export function paintProps(recipe: SceneRecipe, frame: number, context: PropCont
  * the three tones of the scene's air by lightness, so their shapes and their stones still
  * read but at a lower contrast than anything near; their lights stay lit and move.
  */
-export function paintHazeStructures(recipe: SceneRecipe, wear: Wear, frame: number): Pixels | null {
+export function paintHazeStructures(recipe: SceneRecipe, wear: Wear, frame: number, decor: Readonly<Record<string, DecorGrid>> = DECOR): Pixels | null {
   const hazed = (recipe.structures ?? []).filter((placement) => placement.haze);
   const haze = recipe.build?.haze;
   if (hazed.length === 0 || !haze) return null;
   const out = createPixels(WIDE, H);
   for (const placement of [...hazed].sort((a, b) => a.base - b.base)) {
-    const built = structurePixels(recipe, placement, wear, frame % structureCycle(placement.id));
+    const built = structurePixels(recipe, placement, wear, frame % structureCycle(placement.id), decor);
     if (!built) continue;
     const { pixels } = built;
     const aired = createPixels(pixels.w, pixels.h);

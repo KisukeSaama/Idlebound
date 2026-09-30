@@ -2,12 +2,16 @@
  * The long game: how far the bot gets over weeks, with the Descent or without it, and when
  * it reaches the Dawn (stage 3000).
  *
- *   npx tsx packages/game/scripts/longrun.ts [weeks=8] [seeds=9] [clicks/s=5]
+ *   npx tsx packages/game/scripts/longrun.ts [weeks=8] [seeds=9] [clicks/s=5] [daily]
  *
  * Each game plays day by day and stops at the Dawn. Prints the median best stage at each
  * checkpoint, the median day of the first Descent, the Descents woven, and how many seeds
  * reached the Dawn (with the median day). Each game reports every simulated day on stderr,
  * with the time that day took to play.
+ *
+ * With `daily`, also prints, per plan and per day, the medians of the best stage, the stages
+ * and the essences that day added (the essences as a power of ten), the threads woven so
+ * far, the ascensions and the Descents.
  */
 import { fileURLToPath } from "node:url";
 import { DAWN_STAGE } from "../src/data/biomes";
@@ -23,16 +27,22 @@ const clicksPerSecond = Number(process.argv[4] ?? 5);
 const start = Date.UTC(2026, 0, 1);
 const DAY_MS = 86_400_000;
 const days = Math.round(weeks * 7);
+const daily = process.argv[5] === "daily";
 const CHECKPOINTS = [1, 2, 3, 7, 14, 21, 28, 42, 56, 84, 112].filter((day) => day <= days);
 
+/** The thread doubles with every Age: x1 descends once an Age, x0.5 every 146 stages of new depth. */
 const PLANS: { label: string; descent?: DescentPlan }[] = [
   { label: "no Descent" },
   { label: "Descent (8+ threads, x1)", descent: { minThreads: 8, growth: 1 } },
-  { label: "Descent (4+ threads, x0.5)", descent: { minThreads: 4, growth: 0.5 } }
+  { label: "Descent (8+ threads, x0.5)", descent: { minThreads: 8, growth: 0.5 } }
 ];
+
+/** The end of a day: best stage, essences and threads earned in all, ascensions, Descents. */
+type Day = [stage: number, essences: number, threads: number, ascensions: number, descents: number];
 
 interface Played {
   stages: number[];
+  days: Day[];
   firstDescentDay: number | null;
   descents: number;
   threads: number;
@@ -43,7 +53,7 @@ interface Played {
 function playLong({ plan, seed }: { plan: number; seed: number }): Played {
   const engine = new GameEngine(createInitialState(start), seededRng(seed * 7919), start);
   const s = engine.state;
-  const played: Played = { stages: [], firstDescentDay: null, descents: 0, threads: 0, ascensions: 0, dawnDay: null };
+  const played: Played = { stages: [], days: [], firstDescentDay: null, descents: 0, threads: 0, ascensions: 0, dawnDay: null };
   const options = {
     clicksPerSecond,
     descent: PLANS[plan].descent,
@@ -68,6 +78,7 @@ function playLong({ plan, seed }: { plan: number; seed: number }): Played {
       );
     }
     if (CHECKPOINTS.includes(day)) played.stages.push(s.maxStageEver);
+    played.days.push([s.maxStageEver, s.lifetime.essencesEarned, s.lifetime.threads, s.lifetime.ascensions, s.descents]);
   }
   played.descents = s.descents;
   played.threads = s.lifetime.threads;
@@ -93,4 +104,27 @@ if (!workerJob(playLong)) {
       `${plan.label.padEnd(28)}${stages.map((value) => String(value).padStart(7)).join("")}  ${`day ${day(descended.length ? median(descended) : null)}`.padStart(11)}  ${String(median(games.map((game) => game.descents))).padStart(8)}  ${String(median(games.map((game) => game.threads))).padStart(7)}  ${String(median(games.map((game) => game.ascensions))).padStart(10)}  ${dawn}`
     );
   });
+  if (daily) {
+    const log = (value: number) => (value > 0 ? Math.log10(value).toFixed(2) : "-");
+    PLANS.forEach((plan, index) => {
+      const games = runs.filter((_, job) => jobs[job].plan === index);
+      const at = (game: Played, d: number, field: number) => (d < 0 ? 0 : game.days[d][field]);
+      console.log(`
+${plan.label}
+${["day", "stage", "+stages", "essences", "+essences", "threads", "ascensions", "Descents"].map((title) => title.padStart(11)).join("")}`);
+      for (let d = 0; d < days; d += 1) {
+        const cells = [
+          String(d + 1),
+          String(median(games.map((game) => at(game, d, 0)))),
+          `+${median(games.map((game) => at(game, d, 0) - at(game, d - 1, 0)))}`,
+          `1e${log(median(games.map((game) => at(game, d, 1))))}`,
+          `1e${log(median(games.map((game) => at(game, d, 1) - at(game, d - 1, 1))))}`,
+          String(median(games.map((game) => at(game, d, 2)))),
+          String(median(games.map((game) => at(game, d, 3)))),
+          String(median(games.map((game) => at(game, d, 4))))
+        ];
+        console.log(cells.map((cell) => cell.padStart(11)).join(""));
+      }
+    });
+  }
 }

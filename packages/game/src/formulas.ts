@@ -5,7 +5,8 @@ import { REMEMBRANCE_FRAGMENTS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WALKER_DPS, r
 import { CLICK_HERO_ID, HEROES, UPGRADE_BY_ID } from "./data/heroes";
 import { EQUIPMENT_CAP, FORGE_STEP, forgeCost, relicDensity } from "./data/items";
 import { RECOGNITION_DPS, bestiaryGoldBonus, recognitionTier, rememberedCompanions } from "./data/lore";
-import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia } from "./data/relics";
+import { PROMISE_BY_HERO, promiseAtDusk, promiseDepth, promiseGrantable, promiseOf } from "./data/promises";
+import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia, wornItems } from "./data/relics";
 import type { AffixStat, AltarId, BuffId, Derived, GameState, HeroDef, Item } from "./types";
 
 export const MONSTERS_PER_STAGE = 10;
@@ -14,13 +15,6 @@ export const MAX_STAGE = 3000;
 export const BASE_BOSS_TIMER = 30;
 export const BASE_CRIT_MULTIPLIER = 10;
 export const BASE_TREASURE_CHANCE = 0.01;
-/**
- * The Patience bonus is the company's rhythm when the walker steps back. The walker's own
- * strikes take its place, blow for blow: each strike's damage is taken off the bonus the
- * company deals next, and only strikes beyond it add. So a light hand costs nothing, and a
- * strike that goes unused waits this many seconds of the bonus at most.
- */
-export const STRIKE_FILL_SECONDS = 3;
 export const RESPAWN_SECONDS = 0.35;
 export const BOSS_RESPAWN_SECONDS = 0.8;
 export const ASCENSION_MIN_STAGE = 51;
@@ -122,14 +116,18 @@ export function altarValue(state: GameState, id: AltarId): number {
   return altarEffect(ALTAR_BY_ID[id], altarLevel(state, id), altarMaxLevel(state, id));
 }
 
-/** Price of an altar's next level for this walker (infinite at its cap). */
-export function altarPrice(state: GameState, id: AltarId): number {
-  return altarCost(id, altarLevel(state, id), altarMaxLevel(state, id));
+/**
+ * Whether a stone of the Sanctum answers this walker yet: from its night on (the nights
+ * walked are the ascensions, which no Descent takes back), or once raised, whatever the night.
+ */
+export function altarOpen(state: GameState, id: AltarId): boolean {
+  return state.lifetime.ascensions + 1 >= ALTAR_BY_ID[id].night || altarLevel(state, id) > 0;
 }
 
-/** Share of a strike's damage that takes the Patience bonus's place (Quietus halves it). */
-export function strikeFillShare(state: GameState): number {
-  return 1 - namedEffect(state, "quietStrike");
+/** Price of an altar's next level for this walker (infinite at its cap, or while its stone sleeps). */
+export function altarPrice(state: GameState, id: AltarId): number {
+  if (!altarOpen(state, id)) return Number.POSITIVE_INFINITY;
+  return altarCost(id, altarLevel(state, id), altarMaxLevel(state, id));
 }
 
 /** Seconds Golden Rain lasts (the Vestment of Cinders makes it longer). */
@@ -215,9 +213,7 @@ export function affixValue(item: Item, stat: AffixStat): number {
 
 export function equipmentBonus(state: GameState, stat: AffixStat): number {
   let total = 0;
-  for (const item of Object.values(state.equipment)) {
-    if (item) total += affixValue(item, stat);
-  }
+  for (const item of wornItems(state)) total += affixValue(item, stat);
   // The Thousandth Arrow's critical chance counts toward the same cap.
   if (stat === "critChance") total += namedEffect(state, "critChance");
   const cap = EQUIPMENT_CAP[stat];
@@ -227,8 +223,21 @@ export function equipmentBonus(state: GameState, stat: AffixStat): number {
 /** The density of every relic worn, multiplied together (1 with none from below the present night). */
 export function equipmentDensity(state: GameState): number {
   let total = 1;
-  for (const item of Object.values(state.equipment)) if (item) total *= relicDensity(item);
+  for (const item of wornItems(state)) total *= relicDensity(item);
   return total;
+}
+
+/**
+ * What a relic is worth to the company as it stands: how many times its damage is multiplied
+ * with the relic worn in its slot rather than the slot left empty. Its DPS affix (forged),
+ * its density and a named effect on the company's rhythm all count; gold, strikes and damage
+ * to guardians are not damage of the company and stay out of it.
+ */
+export function relicCompanyGain(state: GameState, item: Item, now: number): number {
+  const { [item.slot]: _worn, ...others } = state.equipment;
+  const bare = derive({ ...state, equipment: others }, now, { ignoreTimed: true }).dpsMultiplier;
+  const worn = derive({ ...state, equipment: { ...others, [item.slot]: item } }, now, { ignoreTimed: true }).dpsMultiplier;
+  return bare > 0 ? worn / bare : 1;
 }
 
 export function achievementBonus(state: GameState): number {
@@ -288,7 +297,7 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     }
   }
 
-  // The Briar Mantle and Morgrath's Phylactery deepen the rhythm companions find alone.
+  // The Briar Mantle, Quietus and Morgrath's Phylactery deepen the company's rhythm.
   const idleBonus = (altarValue(state, "patience") + idleDps) * (1 + namedEffect(state, "idleBonus")) * (1 + namedEffect(state, "phylactery"));
   let dpsMultiplier = globalDps
     * (1 + achievementBonus(state))
@@ -308,8 +317,8 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     if (state.monster?.event === "seam") dpsMultiplier *= 1 + namedEffect(state, "seamDps");
   }
 
-  // The company's rhythm (the walker's strikes take its place, see STRIKE_FILL_SECONDS);
-  // strikes draw on the DPS without it.
+  // The Patience bonus: the company's own rhythm, whatever the walker does. Strikes add to
+  // it, and draw their share on the DPS without it.
   const idleFactor = 1 + idleBonus;
   const heroDps: Record<string, number> = {};
   let activeDps = 0;
@@ -355,7 +364,8 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     critChance: Math.min(1, critChance),
     critMultiplier,
     goldMultiplier,
-    bossTimer: bossTimer + altarValue(state, "time") + namedEffect(state, "bossTimer"),
+    // Thorvald's bet (his promise): every seam open for a share of its time.
+    bossTimer: (bossTimer + altarValue(state, "time") + namedEffect(state, "bossTimer")) * (promiseOf(state, "seam")?.share ?? 1),
     // The Scales of Aurelion bite deeper into elites and guardians.
     bossDamage: (1 + equipmentBonus(state, "bossDamage")) * (1 + namedEffect(state, "bossDamage")),
     guardianGold: 1 + namedEffect(state, "guardianGold"),
@@ -394,6 +404,28 @@ export function wandererSkip(state: GameState): number {
   // The Ring of the Second Morning walks a few stages more, inside the same caps.
   const skip = Math.min(altarValue(state, "wanderer") + namedEffect(state, "wandererStages"), Math.floor(state.maxStageEver / 2));
   return Math.floor(skip / 5) * 5;
+}
+
+/**
+ * Whether a companion can be given the walker's word: their request can be granted, and the
+ * night it asks for is one the walker has already walked (every stage it needs cleared lies
+ * under the best stage ever, counted from where the next night starts). Lysandre does not
+ * ask for two Kings of a walker who has only ever seen one fall.
+ */
+export function promiseAskable(state: GameState, heroId: string, start = wandererSkip(state) + 1): boolean {
+  if (!promiseGrantable(state, heroId)) return false;
+  return promiseDepth(PROMISE_BY_HERO[heroId], start) < state.maxStageEver;
+}
+
+/**
+ * When a word to this companion would take effect: `tonight` while the night is still at its
+ * dusk, otherwise at the `next` one; `null` when they cannot be asked. Nobody asks two nights
+ * running: the companion of last night waits for the next dusk, tonight's for the one after.
+ */
+export function promiseWhen(state: GameState, heroId: string): "tonight" | "next" | null {
+  // Tonight's road starts where this night did; the next one, where the Wanderer's altar will set it.
+  if (promiseAtDusk(state, heroId) && heroId !== state.lastPromise && promiseAskable(state, heroId, state.runStartStage)) return "tonight";
+  return heroId !== state.trail.promise?.hero && promiseAskable(state, heroId) ? "next" : null;
 }
 
 /** Share of the usual wait between wandering crystals while the Moth Lantern burns. */

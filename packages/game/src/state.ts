@@ -1,9 +1,15 @@
 import { seedFrom } from "./rng";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 11;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
+/**
+ * Tutorial id written by the migration to a save that had raised the Altar of the Harvest
+ * before version 11 (its levels came back as essences); `HARVEST_NOTICE_TOLD` once the walker was told.
+ */
+export const HARVEST_NOTICE = "harvest-v11";
+export const HARVEST_NOTICE_TOLD = "harvest-v11:ok";
 
 export function emptyStats(): StatBlock {
   return { clicks: 0, crits: 0, kills: 0, bosses: 0, treasures: 0, goldEarned: 0, crystals: 0, skillsUsed: 0, maxHit: 0, playTime: 0 };
@@ -87,13 +93,14 @@ export function createInitialState(now = Date.now()): GameState {
     bestiary: {},
     lore: emptyLore(),
     recognition: {},
+    promises: {},
+    remembered: {},
     named: [],
     secrets: [],
     trail: emptyTrail(),
     descents: 0,
     threads: 0,
     weaves: {},
-    descentMark: 0,
     caravanWeek: "",
     rngState: seedFrom(now)
   };

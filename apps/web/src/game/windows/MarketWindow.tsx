@@ -1,12 +1,13 @@
 "use client";
 
-import { INVENTORY_LIMIT, MARKET_OFFERS, caravanWare, isoWeek, namedEffect, offlineGains, shardPrice, type CaravanWareId } from "@idlebound/game";
+import { INVENTORY_LIMIT, MARKET_OFFERS, caravanWare, isoWeek, namedEffect, offlineGains, promiseAbstains, shardPrice, type CaravanWareId } from "@idlebound/game";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { audio } from "../audio";
 import { useFormat, useGame, useUi } from "../context";
 import { CARAVAN_PICTO, GoldIcon, OFFER_PICTO, Picto, ShardIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
+import { PromiseNotice } from "./PromiseTab";
 
 /** The Stallkeeper has twelve sayings, one per visit, in turn. */
 const SAYINGS = 12;
@@ -60,11 +61,12 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
         {discount > 0 ? <span className="stall-discount">{t.sanctum.stall.discount(Math.round(discount * 100))}</span> : null}
         <span className="modal-hint">{text.balanceHint}</span>
       </div>
+      <PromiseNotice when={promiseAbstains(state, "shards")} />
       <Caravan now={now} hourglass={hourglass} />
       <div className="market-grid">
         {MARKET_OFFERS.map((offer) => {
           const chest = offer.id === "chest" || offer.id === "great-chest";
-          const blocked = (chest && state.inventory.length >= INVENTORY_LIMIT) || (offer.id === "hourglass" && hourglass <= 0);
+          const blocked = (chest && state.inventory.length >= INVENTORY_LIMIT) || (offer.id === "hourglass" && hourglass <= 0) || promiseAbstains(state, "shards");
           const copy = g.market[offer.id];
           const price = shardPrice(state, offer.cost);
           return (
@@ -112,7 +114,7 @@ function Caravan({ now, hourglass }: { now: number; hourglass: number }) {
   const room = WARE_ROOM[ware.id] ?? 0;
   const packFull = room > 0 && state.inventory.length > INVENTORY_LIMIT - room;
   const noGold = ware.id === "bottled-night" && hourglass <= 0;
-  const blocked = owned || packFull || noGold;
+  const blocked = owned || packFull || noGold || promiseAbstains(state, "shards");
   return (
     <section className="caravan card" aria-labelledby="caravan-title">
       <Picto name={CARAVAN_PICTO[ware.id]} size={40} className="market-icon" />

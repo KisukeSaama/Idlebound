@@ -1,8 +1,9 @@
-import type { GameState, ItemSlot, Rarity } from "../types";
+import type { GameState, Item, ItemSlot, Rarity } from "../types";
 import { eraForStage } from "./biomes";
 import { HERO_BY_ID } from "./heroes";
-import { bestiaryKills, recognitionRuns, recognitionThresholds } from "./lore";
+import { bestiaryKills, recognitionTier } from "./lore";
 import { lookup } from "./lookup";
+import { promiseOf } from "./promises";
 
 /**
  * Named relics (BIBLE 11): relics with a name, a legend and one unique effect, found once
@@ -19,7 +20,6 @@ export type NamedEffect =
   /** Damage dealt to the King (the guardian of every 50th stage). */
   | { kind: "kingDamage"; pct: number }
   /** The walker's strikes take this much less of the Patience bonus's place. */
-  | { kind: "quietStrike"; pct: number }
   /** Shards on every guardian kill. */
   | { kind: "guardianShards"; pct: number }
   /** DPS while a Seam is open. */
@@ -87,7 +87,7 @@ export const NAMED_RELICS: readonly NamedRelicDef[] = [
   // ---- weapons
   { id: "oathcutter", slot: "weapon", rarity: "legendary", effect: { kind: "kingDamage", pct: 1 }, source: { kind: "king", age: 0, chance: 0.02 } },
   { id: "thousandth-arrow", slot: "weapon", rarity: "legendary", effect: { kind: "critChance", pct: 0.03 }, source: { kind: "kills", monster: "moss-alpha", kills: 1_000 } },
-  { id: "quietus", slot: "weapon", rarity: "mythic", effect: { kind: "quietStrike", pct: 0.5 }, source: { kind: "gift", hero: "morgrath" } },
+  { id: "quietus", slot: "weapon", rarity: "mythic", effect: { kind: "idleBonus", pct: 0.5 }, source: { kind: "gift", hero: "morgrath" } },
   { id: "unfinished-hammer", slot: "weapon", rarity: "legendary", effect: { kind: "forgeDiscount", pct: 0.15 }, source: { kind: "gift", hero: "brom" } },
   { id: "splinter-of-sky", slot: "weapon", rarity: "mythic", effect: { kind: "guardianShards", pct: 1 }, source: { kind: "stratum", era: 4, chance: 0.01 } },
   { id: "dawnbreak", slot: "weapon", rarity: "mythic", effect: { kind: "seamDps", pct: 0.25 }, source: { kind: "dawn", descents: 5 } },
@@ -144,10 +144,8 @@ export function namedSourceReached(state: GameState, def: NamedRelicDef): boolea
       return state.maxStageEver > source.era * 50 + 10;
     case "king":
       return state.maxStageEver > (source.age * 5 + 1) * 50 && deepestEra >= source.age * 5;
-    case "gift": {
-      const thresholds = recognitionThresholds(state);
-      return recognitionRuns(state, source.hero) >= thresholds[thresholds.length - 1];
-    }
+    case "gift":
+      return recognitionTier(state, source.hero) >= 5;
     case "creature":
       return bestiaryKills(state, source.monster) > 0;
     case "hired":
@@ -160,11 +158,20 @@ export function namedSourceReached(state: GameState, def: NamedRelicDef): boolea
   }
 }
 
+/**
+ * The relics that count this night: everything worn, less the weapon while it stays on
+ * Brom's anvil (his promise, BIBLE 12.11).
+ */
+export function wornItems(state: GameState): Item[] {
+  const anvil = promiseOf(state, "anvil") !== undefined;
+  return Object.values(state.equipment).filter((item) => item !== undefined && !(anvil && item.slot === "weapon"));
+}
+
 /** Sum of an effect over the equipped named relics. */
 export function namedEffect(state: GameState, kind: NamedEffect["kind"]): number {
   let total = 0;
-  for (const item of Object.values(state.equipment)) {
-    const def = item?.named ? NAMED_BY_ID[item.named] : undefined;
+  for (const item of wornItems(state)) {
+    const def = item.named ? NAMED_BY_ID[item.named] : undefined;
     if (def && def.effect.kind === kind) total += def.effect.pct;
   }
   return total;
@@ -172,7 +179,7 @@ export function namedEffect(state: GameState, kind: NamedEffect["kind"]): number
 
 /** Whether a named relic is worn. */
 export function wearing(state: GameState, id: string): boolean {
-  return Object.values(state.equipment).some((item) => item?.named === id);
+  return wornItems(state).some((item) => item.named === id);
 }
 
 /** The Regalia, all three worn. */

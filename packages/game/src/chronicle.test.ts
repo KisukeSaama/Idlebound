@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
-import { chronicleEntries, unreadChronicle } from "./chronicle";
+import { chronicleEntries, firstUnread, markRead, unreadChronicle } from "./chronicle";
 import { achievementText, chronicleText, gameText, hireLine, itemName } from "./content";
 import { ACHIEVEMENTS } from "./data/achievements";
 import { BIOMES } from "./data/biomes";
@@ -169,6 +169,28 @@ describe("biome echoes", () => {
     expect(unreadChronicle(engine.state)).toBe(0);
   });
 
+  it("hands over the oldest unread fragment of the first source asked, and marks it read without going back", () => {
+    const state = createInitialState(T0);
+    expect(firstUnread(state)).toBeNull();
+    state.lore.echoes["green-plains"] = 3;
+    state.lore.songs = 2;
+    state.lore.seen.echo = 1;
+    // The book's order: the echoes come before the songs, the oldest unread first.
+    expect(firstUnread(state)).toEqual({ entry: { source: "echo", biome: "green-plains", index: 1 }, index: 1 });
+    expect(firstUnread(state, ["song", "echo"])).toEqual({ entry: { source: "song", index: 0 }, index: 0 });
+    expect(firstUnread(state, ["dream"])).toBeNull();
+    markRead(state, "echo", 2);
+    expect(state.lore.seen.echo).toBe(2);
+    expect(unreadChronicle(state)).toBe(3);
+    expect(firstUnread(state)!.index).toBe(2);
+    // What was read stays read, and nothing is read that was not found.
+    markRead(state, "echo", 1);
+    expect(state.lore.seen.echo).toBe(2);
+    markRead(state, "echo", 99);
+    expect(state.lore.seen.echo).toBe(3);
+    expect(firstUnread(state)!.entry.source).toBe("song");
+  });
+
   it("refuses more echoes than the guardians allow", () => {
     const state = veteran();
     state.lore.echoes["green-plains"] = 10;
@@ -206,9 +228,18 @@ describe("Recognition", () => {
     state.lifetime.bestLevelSum = 10;
     state.lifetime.bestHired = 1;
     const base = derive(state, T0).heroDps.maelle;
+    // Runs alone stop at the third memory: the last two ask for a word kept, once each.
     state.recognition = { maelle: RECOGNITION_TIERS[4] };
+    expect(recognitionTier(state, "maelle")).toBe(3);
+    expect(derive(state, T0).heroDps.maelle).toBeCloseTo(base);
+    state.promises = { maelle: 1 };
+    expect(recognitionTier(state, "maelle")).toBe(4);
+    state.promises = { maelle: 2 };
+    expect(recognitionTier(state, "maelle")).toBe(5);
     expect(derive(state, T0).heroDps.maelle).toBeCloseTo(base * 1.1);
-    state.recognition = { maelle: state.lifetime.ascensions + 1 };
+    expect(verifyState(state, T0 + 500 * 3600_000).map((violation) => violation.code)).not.toContain("recognition");
+    // A night counts once, twice with a promise kept: never more.
+    state.recognition = { maelle: state.lifetime.ascensions + 3 };
     expect(verifyState(state, T0 + 500 * 3600_000).map((violation) => violation.code)).toContain("recognition");
   });
 });
@@ -235,6 +266,7 @@ describe("named relics", () => {
     const state = veteran();
     state.maxStage = 60;
     state.recognition = { brom: RECOGNITION_TIERS[4] - 1 };
+    state.promises = { brom: 2 };
     state.heroLevels = { brom: 100 };
     state.lifetime.bestLevelSum = 100;
     state.lifetime.bestHired = 1;

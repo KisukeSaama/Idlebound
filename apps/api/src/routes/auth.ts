@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "../db/client";
 import { emailVerifications, passwordResets, users } from "../db/schema";
 import { env } from "../env";
+import { guestId } from "../lib/guest";
 import { localeOf, t } from "../lib/i18n";
 import { resetPasswordMail, sendMail, verifyEmailMail } from "../lib/mail";
 import { checkPasswordStrength, dummyVerify, hashPassword, verifyPassword } from "../lib/password";
@@ -82,7 +83,8 @@ async function sendVerification(user: { id: string; email: string; username: str
 export const authRoutes = new Hono()
   .get("/me", async (c) => {
     const user = await currentUser(c);
-    return c.json({ user: user ? publicUser(user) : null });
+    // `guest`: this browser also carries a guest's game (the client offers it to the account).
+    return c.json({ user: user ? publicUser(user) : null, guest: guestId(c) !== null });
   })
 
   .post("/register", async (c) => {

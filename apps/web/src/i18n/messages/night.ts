@@ -13,11 +13,14 @@ export const night = defineMessages({
     reveal: {
       map: "La route garde les étapes franchies. Tu peux y revenir.",
       gear: "Une relique. Tu peux la porter.",
-      market: "Tes premiers éclats. Le Comptoir les échange au marché.",
+      market: "Assez d'éclats pour le Comptoir. Il t'attend au marché.",
       ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension et les autels t'y attendent.",
       hall: "Le Grand Livre t'ouvre une page : hauts faits, Bestiaire, Chronique.",
       loom: "Eldra t'attend au Sanctuaire. Son Métier défait la nuit, un fil plus bas.",
-      caravan: "La Roulotte du Comptoir passe entre les nuits. Une marchandise par semaine, au marché."
+      caravan: "La Roulotte du Comptoir passe entre les nuits. Une marchandise par semaine, au marché.",
+      promise: "Quelqu'un te reconnaît à moitié, et te demande ta parole pour la nuit. Au Sanctuaire.",
+      altars2: "Trois pierres de plus te répondent : le Temps, le Marchandage, le Trésor.",
+      altars3: "Les dernières pierres du Sanctuaire s'éveillent. Treize, à présent."
     },
     /** How a timed event ends, won or not. */
     results: {
@@ -54,6 +57,8 @@ export const night = defineMessages({
       moreGuardians: (count: number) => (count === 1 ? "Un autre gardien franchi" : `${count} autres gardiens franchis`),
       moreTalents: (count: number) => (count === 1 ? "Une autre technique retrouvée" : `${count} autres techniques retrouvées`),
       still: "La compagnie a gardé la route. Rien n'a bougé.",
+      fragment: "Gardé pour toi",
+      moreFragments: (count: number) => (count === 1 ? "Un autre fragment t'attend dans la Chronique" : `${count} autres fragments t'attendent dans la Chronique`),
       resume: "Reprendre la route"
     },
     buffs: {
@@ -73,11 +78,14 @@ export const night = defineMessages({
     reveal: {
       map: "The road keeps the stages behind you. You can walk back.",
       gear: "A relic. You can wear it.",
-      market: "Your first shards. The Stallkeeper trades for them at the market.",
+      market: "Shards enough for the Stallkeeper. The stall is open at the market.",
       ascension: "The Sanctum of Dusk opens: ascension and the altars wait for you there.",
       hall: "The Ledger opens a page for you: deeds, Bestiary, Chronicle.",
       loom: "Eldra waits in the Sanctum. Her Loom unweaves the night, one thread deeper.",
-      caravan: "The Stallkeeper's Caravan travels between nights. One ware a week, at the market."
+      caravan: "The Stallkeeper's Caravan travels between nights. One ware a week, at the market.",
+      promise: "Someone half remembers you, and asks for your word tonight. In the Sanctum.",
+      altars2: "Three more stones answer you: Time, Bargain, Treasure.",
+      altars3: "The last stones of the Sanctum wake. Thirteen, now."
     },
     results: {
       seam: { won: "The Seam holds shut.", escaped: "The Seam closes without you." },
@@ -112,6 +120,8 @@ export const night = defineMessages({
       moreGuardians: (count: number) => (count === 1 ? "One more guardian passed" : `${count} more guardians passed`),
       moreTalents: (count: number) => (count === 1 ? "One more technique remembered" : `${count} more techniques remembered`),
       still: "The company held the road. Nothing moved.",
+      fragment: "Kept for you",
+      moreFragments: (count: number) => (count === 1 ? "One more fragment waits in the Chronicle" : `${count} more fragments wait in the Chronicle`),
       resume: "Back on the road"
     },
     buffs: {

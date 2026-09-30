@@ -19,10 +19,14 @@ import {
   relicStratum,
   forgePrice,
   itemName,
+  promiseAbstains,
+  promiseOf,
+  relicCompanyGain,
   salvageValue,
   trimmed,
   wearsRegalia,
   type AffixStat,
+  type GameState,
   type Item,
   type Locale,
   type Rarity
@@ -36,6 +40,7 @@ import { PixelSprite } from "../pixel/PixelSprite";
 import { relicSource } from "../pixel/sources";
 import { useRemembered } from "../remembered";
 import { formatAffix } from "../text";
+import { PromiseNotice } from "./PromiseTab";
 
 /** Rarities from the rarest down: the Bag sorts by it, and bulk salvage counts up to one. */
 const RARITY_ORDER: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
@@ -43,13 +48,13 @@ const BAG_SORTS = ["recent", "rarity", "slot"] as const;
 type BagSort = (typeof BAG_SORTS)[number];
 
 /**
- * How strong a relic is, to rank relics of one rarity: its density first (the stratum it
- * came from), then its affixes, each against its nominal value so every stat weighs alike,
- * forge included.
+ * How strong a relic is, to rank relics of one rarity: what it is worth to the company first
+ * (its score: DPS affix, forge and density), then its affixes, each against its nominal
+ * value so every stat weighs alike, forge included.
  */
-function compareStrength(a: Item, b: Item): number {
+function compareStrength(state: GameState, now: number) {
   const power = (item: Item) => item.affixes.reduce((total, affix) => total + affixValue(item, affix.stat) / AFFIX_BASE[affix.stat], 0);
-  return relicDensity(b) - relicDensity(a) || power(b) - power(a);
+  return (a: Item, b: Item) => relicCompanyGain(state, b, now) - relicCompanyGain(state, a, now) || power(b) - power(a);
 }
 
 const STATS: AffixStat[] = ["dps", "click", "gold", "bossDamage", "critChance", "critDamage", "essence"];
@@ -129,9 +134,14 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
   const main = item.affixes[0];
   const named = item.named ? NAMED_BY_ID[item.named] : undefined;
   const legend = item.named ? g.relics[item.named] : undefined;
-  const delta = compareTo ? affixValue(item, main.stat) - affixValue(compareTo, main.stat) : null;
+  // Its main stat against the worn relic's, when that stat is not the company's damage (the score says that one).
+  const delta = compareTo && main.stat !== "dps" ? affixValue(item, main.stat) - affixValue(compareTo, main.stat) : null;
   const density = relicDensity(item);
   const mult = useMultiplier();
+  const now = state.lastTickAt;
+  const score = relicCompanyGain(state, item, now);
+  const scoreDelta = compareTo ? score / relicCompanyGain(state, compareTo, now) - 1 : null;
+  const signed = (pct: number) => `${pct > 0 ? "+" : pct < 0 ? "-" : ""}${percent(Math.abs(pct), locale)}`;
   return (
     <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: rarityColor(item.rarity, state.settings.colorblind) }}>
       <header className="item-head">
@@ -142,6 +152,14 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
         </div>
         {item.locked ? <span className="item-lock" title={t.windows.gear.lockedTitle}><Picto name="lock" size={18} /></span> : null}
       </header>
+      <p className="item-score" title={t.windows.gear.scoreTitle}>
+        <span>{t.windows.gear.score(mult(score))}</span>
+        {scoreDelta !== null ? (
+          <span className={`item-delta ${scoreDelta > 0.0005 ? "up" : scoreDelta < -0.0005 ? "down" : ""}`}>
+            {scoreDelta > 0.0005 ? "▲" : scoreDelta < -0.0005 ? "▼" : "="} {signed(Math.abs(scoreDelta) < 0.0005 ? 0 : scoreDelta * 100)} {t.windows.gear.versusEquipped}
+          </span>
+        ) : null}
+      </p>
       <ul className="item-affixes">
         {item.affixes.map((affix, index) => (
           <li key={affix.stat} className={index === 0 ? "main" : ""}>{formatAffix(affix.stat, affixValue(item, affix.stat), locale)}</li>
@@ -167,8 +185,12 @@ function Equipped() {
   const fmt = useFormat();
   const mult = useMultiplier();
   const density = equipmentDensity(state);
+  // A word given: no shard spent (Garrick), or the weapon left on the anvil (Brom).
+  const frugal = promiseAbstains(state, "shards");
+  const anvil = promiseOf(state, "anvil") !== undefined;
   return (
     <div className="gear-layout">
+      <PromiseNotice when={frugal || anvil} />
       <div className="gear-slots">
         {SLOTS.map((slot) => {
           const item = state.equipment[slot];
@@ -187,13 +209,13 @@ function Equipped() {
               <button
                 type="button"
                 className="btn btn-violet btn-sm"
-                disabled={item.forge >= FORGE_MAX || state.shards < cost}
+                disabled={item.forge >= FORGE_MAX || state.shards < cost || frugal || (anvil && slot === "weapon")}
                 onClick={() => store.act((engine, now) => engine.forge(slot, now))}
                 title={text.forgeTitle(percent(FORGE_STEP * 100, locale))}
               >
                 {item.forge >= FORGE_MAX ? text.forgeMaxed : <>{text.forge} <ShardIcon size={14} /> {fmt(cost)}</>}
               </button>
-              <button type="button" className="btn btn-ghost btn-sm" disabled={state.inventory.length >= INVENTORY_LIMIT} onClick={() => store.act((engine, now) => engine.unequip(slot, now))}>
+              <button type="button" className="btn btn-ghost btn-sm" disabled={state.inventory.length >= INVENTORY_LIMIT || (anvil && slot === "weapon")} onClick={() => store.act((engine, now) => engine.unequip(slot, now))}>
                 {text.unequip}
               </button>
             </ItemCard>
@@ -297,7 +319,8 @@ function Bag() {
   const carried = state.inventory.map((item) => item.uid).join(",");
   const items = useMemo(() => {
     const sorted = [...store.state.inventory];
-    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || compareStrength(a, b));
+    const stronger = compareStrength(store.state, store.state.lastTickAt);
+    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || stronger(a, b));
     if (sort === "slot") sorted.sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
     if (sort === "recent") sorted.reverse();
     return sorted;
@@ -317,8 +340,12 @@ function Bag() {
     return <p className="empty-state">{text.emptyBag}</p>;
   }
 
+  // Brom keeps the weapon on his anvil for the night: no other takes its place.
+  const anvil = promiseOf(state, "anvil") !== undefined;
+
   return (
     <div className="bag">
+      <PromiseNotice when={anvil} />
       <div className="bag-toolbar">
         <label>
           {text.sortLabel}
@@ -336,7 +363,7 @@ function Bag() {
       <div className="bag-grid">
         {items.map((item) => (
           <ItemCard key={item.uid} item={item} compareTo={state.equipment[item.slot]}>
-            <button type="button" className="btn btn-gold btn-sm" onClick={() => store.act((engine, now) => engine.equip(item.uid, now))}>{text.equip}</button>
+            <button type="button" className="btn btn-gold btn-sm" disabled={anvil && item.slot === "weapon"} onClick={() => store.act((engine, now) => engine.equip(item.uid, now))}>{text.equip}</button>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act((engine) => engine.toggleLock(item.uid))} aria-pressed={Boolean(item.locked)}>
               {item.locked ? text.unlock : text.lock}
             </button>

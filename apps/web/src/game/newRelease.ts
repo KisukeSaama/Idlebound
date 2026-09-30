@@ -57,8 +57,8 @@ export interface NewReleaseHost {
  * A newer release was deployed while the game was open: once everything played is on the
  * server, the page reloads onto it. A hidden page goes at once, and the walker comes back to
  * the new one. A watched page waits for a calm moment (no input for a while, nothing open),
- * then fades out; any input during the fade keeps it. A guest's game, or one the server does
- * not keep, never reloads (see CloudSync.handOver).
+ * then fades out; any input during the fade keeps it. A game the server does not keep never
+ * reloads (see CloudSync.handOver).
  */
 export class NewRelease {
   private target: string | null = null;

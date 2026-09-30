@@ -7,13 +7,17 @@ import { useCloud, useGame, useUi } from "../context";
 import { Picto } from "../icons";
 import { Modal } from "./Modal";
 
-/** Two different games (this device and the server): the player picks which one to keep. */
+/**
+ * Two different games (this page and the server): the player picks which one to keep. The
+ * server's is the account's, or for a guest the one another page of this browser carried on.
+ */
 export function CloudChoiceModal() {
   const cloud = useCloud();
   const ui = useUi();
   const { state } = useGame();
   const { t, locale } = useI18n();
   const m = t.hud.cloudChoice;
+  const guest = cloud.user === null;
   const choice = cloud.pendingChoice;
   if (!choice) return null;
   const local = summarize(state);
@@ -37,8 +41,8 @@ export function CloudChoiceModal() {
   const keepCurrent = async () => {
     if (!localBetter) {
       const confirmed = await ui.confirm({
-        title: m.weakerTitle,
-        text: m.weakerText(remote.maxStage, remote.ascensions, formatDuration(remote.playTime, locale)),
+        title: guest ? m.guest.weakerTitle : m.weakerTitle,
+        text: (guest ? m.guest.weakerText : m.weakerText)(remote.maxStage, remote.ascensions, formatDuration(remote.playTime, locale)),
         confirmLabel: m.keepCurrent,
         danger: true
       });
@@ -49,15 +53,15 @@ export function CloudChoiceModal() {
 
   return (
     <Modal title={m.title} icon={<Picto name="swords" size={30} />} size="md">
-      <p className="ledger-voice">{t.account.ledger.conflict}</p>
-      <p className="modal-text">{m.text}</p>
+      <p className="ledger-voice">{guest ? t.account.ledger.guestConflict : t.account.ledger.conflict}</p>
+      <p className="modal-text">{guest ? m.guest.text : m.text}</p>
       <div className="save-compare">
         {card(m.current, local, localBetter)}
-        {card(m.account, remote, !localBetter)}
+        {card(guest ? m.guest.kept : m.account, remote, !localBetter)}
       </div>
       <div className="save-choice-actions">
         <button type="button" className="btn btn-ghost" onClick={() => void keepCurrent()}>{m.keepCurrent}</button>
-        <button type="button" className="btn btn-gold" onClick={() => void cloud.resolveChoice("cloud")}>{m.takeAccount}</button>
+        <button type="button" className="btn btn-gold" onClick={() => void cloud.resolveChoice("cloud")}>{guest ? m.guest.takeKept : m.takeAccount}</button>
       </div>
     </Modal>
   );

@@ -29,6 +29,16 @@ export interface LoreLine {
   text: string;
 }
 
+/**
+ * A companion's promise (BIBLE 12.11), in their own voice: what they ask at dusk, what they
+ * say when the walker kept their word, and when it was broken.
+ */
+export interface PromiseText {
+  ask: string;
+  kept: string;
+  broken: string;
+}
+
 /** Five memories, one per tier of Recognition. */
 export type Memories = readonly [LoreLine, LoreLine, LoreLine, LoreLine, LoreLine];
 
@@ -116,6 +126,8 @@ export interface GameText {
   memories: Record<string, Memories>;
   /** What a companion says when hired: as a stranger, half remembered, remembered. */
   hireLines: Record<string, readonly [string, string, string]>;
+  /** What each companion asks at dusk, and says of a word kept or broken. */
+  promises: Record<string, PromiseText>;
   /** Named relics: name and legend. */
   relics: Record<string, { name: string; legend: string }>;
   /** The unique effect of a named relic. */

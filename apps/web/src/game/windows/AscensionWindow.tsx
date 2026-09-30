@@ -4,13 +4,18 @@ import {
   ALTARS,
   ASCENSION_MIN_STAGE,
   ESSENCE_DPS_BONUS,
+  MAX_STAGE,
   WEAVES,
   altarMaxLevel,
+  altarOpen,
   altarPrice,
   ascensionPreview,
   canDescend,
   descentPreview,
   formatDuration,
+  promiseAbstains,
+  promisesOpen,
+  stageForThreads,
   weaveCost,
   weaveLevel,
   weaveValue
@@ -22,30 +27,38 @@ import { EssenceIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { formatAltarValue } from "../text";
 import { PlaceHeading } from "./PlaceBanner";
+import { PromiseNotice, PromiseTab } from "./PromiseTab";
 
 /** An altar's legend shows once it reaches this level (the engine writes it to the Chronicle then). */
 const LEGEND_LEVEL = 5;
 
-type Tab = "sanctum" | "loom";
+type Tab = "sanctum" | "promise" | "loom";
 
-export function AscensionWindow({ onClose }: { onClose: () => void }) {
+export function AscensionWindow({ onClose, initialTab }: { onClose: () => void; initialTab?: string }) {
   const { state } = useGame();
   const { t } = useI18n();
-  const [tab, setTab] = useState<Tab>("sanctum");
-  // Eldra's Loom shows once the Descent is possible, and stays after the first one.
+  const [tab, setTab] = useState<Tab>(initialTab === "promise" || initialTab === "loom" ? initialTab : "sanctum");
+  // Eldra's Loom shows once the Descent is possible, and stays after the first one; the
+  // Promise from the second night.
   const loomOpen = canDescend(state) || state.descents > 0;
-  const active: Tab = loomOpen ? tab : "sanctum";
+  const promiseOpen = promisesOpen(state);
+  const tabs = [
+    { id: "sanctum", label: t.sanctum.sanctumTab },
+    ...(promiseOpen ? [{ id: "promise", label: t.sanctum.promise.title }] : []),
+    ...(loomOpen ? [{ id: "loom", label: t.sanctum.loomTab }] : [])
+  ];
+  const active: Tab = tabs.some((entry) => entry.id === tab) ? tab : "sanctum";
   return (
     <Modal
       title={t.hud.windowTitles.ascension.label}
       icon={<WindowIcon id="ascension" />}
       onClose={onClose}
       size="lg"
-      tabs={loomOpen ? [{ id: "sanctum", label: t.sanctum.sanctumTab }, { id: "loom", label: t.sanctum.loomTab }] : undefined}
+      tabs={tabs.length > 1 ? tabs : undefined}
       activeTab={active}
       onTab={(id) => setTab(id as Tab)}
     >
-      {active === "loom" ? <Loom onClose={onClose} /> : <Sanctum onClose={onClose} />}
+      {active === "loom" ? <Loom onClose={onClose} /> : active === "promise" ? <PromiseTab /> : <Sanctum onClose={onClose} />}
     </Modal>
   );
 }
@@ -59,6 +72,12 @@ function Sanctum({ onClose }: { onClose: () => void }) {
   const now = Date.now();
   const preview = ascensionPreview(state, now);
   const canAscend = store.engine.canAscend();
+  // The Nameless asked the walker to keep their essences this night.
+  const keeping = promiseAbstains(state, "essences");
+  // The stones that answer this walker (the Sanctum wakes in three times); those raised to
+  // their cap fold into one line under the others.
+  const open = ALTARS.filter((altar) => altarOpen(state, altar.id));
+  const done = open.filter((altar) => !Number.isFinite(altarPrice(state, altar.id)));
 
   const ascend = async () => {
     if (state.settings.confirmAscension) {
@@ -107,22 +126,23 @@ function Sanctum({ onClose }: { onClose: () => void }) {
 
       <h3 className="section-heading">{text.altars}</h3>
       <p className="modal-hint">{text.altarsHint}</p>
+      <PromiseNotice when={keeping} />
       <div className="altar-grid">
-        {ALTARS.map((altar) => {
+        {open.filter((altar) => !done.includes(altar)).map((altar) => {
           const level = state.altars[altar.id] ?? 0;
           const max = altarMaxLevel(state, altar.id);
           const cost = altarPrice(state, altar.id);
-          const maxed = !Number.isFinite(cost);
           const copy = g.altars[altar.id];
           const legend = level >= LEGEND_LEVEL || state.lore.altars.includes(altar.id) ? g.altarLegends[altar.id] : undefined;
+
           return (
-            <article key={altar.id} className={`altar card ${maxed ? "maxed" : ""}`}>
+            <article key={altar.id} className="altar card">
               <header>
                 <h4>{copy.name}</h4>
                 <span className="altar-level">{text.altarLevel(level, max)}</span>
               </header>
               <p>{copy.description}</p>
-              <p className="altar-value">{text.current} <strong>{formatAltarValue(altar, level, locale, max)}</strong>{!maxed ? <> → {formatAltarValue(altar, level + 1, locale, max)}</> : null}</p>
+              <p className="altar-value">{text.current} <strong>{formatAltarValue(altar, level, locale, max)}</strong> → {formatAltarValue(altar, level + 1, locale, max)}</p>
               {legend ? (
                 <details className="altar-legend">
                   <summary title={`${legend.text} (${legend.by})`}>{t.sanctum.legendSummary}</summary>
@@ -135,15 +155,32 @@ function Sanctum({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 className="btn btn-violet btn-sm"
-                disabled={maxed || cost > state.essences}
+                disabled={cost > state.essences || keeping}
                 onClick={() => store.act((engine, time) => engine.buyAltar(altar.id, time))}
               >
-                {maxed ? text.maximum : <><EssenceIcon size={14} /> {fmt(cost)}</>}
+                <EssenceIcon size={14} /> {fmt(cost)}
               </button>
             </article>
           );
         })}
       </div>
+
+      {done.length > 0 ? (
+        <>
+          <h3 className="section-heading">{text.altarsDone}</h3>
+          <ul className="altar-done">
+            {done.map((altar) => {
+              const max = altarMaxLevel(state, altar.id);
+              return (
+                <li key={altar.id} title={g.altars[altar.id].description}>
+                  <strong>{g.altars[altar.id].name}</strong>
+                  <span>{formatAltarValue(altar, state.altars[altar.id] ?? 0, locale, max)}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      ) : null}
 
       {state.ascensions.length > 0 ? (
         <>
@@ -163,11 +200,6 @@ function Sanctum({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** Essences to gather since the last Descent for the next thread: `threadsFor` inverted. */
-function nextThreadAt(threads: number): number {
-  return Math.pow(10, 5 + (threads + 1) / 2);
-}
-
 /** Eldra's Loom (BIBLE 12.7): the Descent and the eight Weaves. */
 function Loom({ onClose }: { onClose: () => void }) {
   const { state, store } = useGame();
@@ -176,6 +208,8 @@ function Loom({ onClose }: { onClose: () => void }) {
   const ui = useUi();
   const fmt = useFormat();
   const preview = descentPreview(state);
+  // The stage that adds one thread to all those woven or about to be (none past the Dawn).
+  const nextThread = stageForThreads(state.lifetime.threads + preview + 1);
   const stones = weaveValue(state, "remembered-stones");
   const possible = canDescend(state);
 
@@ -208,7 +242,7 @@ function Loom({ onClose }: { onClose: () => void }) {
         </div>
         <div className="ascension-action">
           <p>{text.preview} <strong className="thread-value">{text.threadsCount(fmt(preview))}</strong></p>
-          <p className="modal-hint">{text.nextThread(fmt(nextThreadAt(preview)))}</p>
+          {nextThread <= MAX_STAGE ? <p className="modal-hint">{text.nextThread(nextThread)}</p> : null}
           <button type="button" className="btn btn-violet btn-lg" disabled={!possible} onClick={() => void descend()}>{text.descend}</button>
         </div>
       </section>

@@ -1,11 +1,13 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
-import { ALTAR_BY_ID, altarCost } from "../src/data/altars";
-import { WEAVES, weaveCost } from "../src/data/descent";
-import { HEROES } from "../src/data/heroes";
+import { ALTAR_BY_ID } from "../src/data/altars";
+import { DESCENT_HERO, WEAVES, weaveCost, type WeaveId } from "../src/data/descent";
+import { CLICK_HERO_ID, HEROES } from "../src/data/heroes";
 import { relicDensity } from "../src/data/items";
+import { RECOGNITION_HEROES, recognitionNeeds } from "../src/data/lore";
+import { PROMISE_BY_HERO, PROMISE_RUNS, promiseHolds, promiseOf, promisesKept, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
-import { GameEngine, canDescend, descentPreview, isSkillUnlocked } from "../src/engine";
-import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier, strikeFillShare } from "../src/formulas";
+import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
+import { ESSENCE_DPS_BONUS, altarPrice, derive, heroCost, heroCostMultiplier, promiseWhen } from "../src/formulas";
 import type { AltarId, Derived, GameState, Item } from "../src/types";
 
 export interface BotOptions {
@@ -14,7 +16,10 @@ export interface BotOptions {
   idleFromStage?: number;
   /** Occasional player: clicks only `seconds` out of every `everySeconds`. */
   burst?: { everySeconds: number; seconds: number };
-  /** Ascend after this long without a new stage. */
+  /**
+   * Ascend after this long without a new stage, or once the road only creeps: the last
+   * `CREEP_STAGES` new stages took more than `CREEP_SPANS` times as long.
+   */
   stagnationMs?: number;
   onMilestone?: (engine: GameEngine, now: number) => void;
   onAscend?: (engine: GameEngine, now: number, gain: number, from: number) => void;
@@ -23,11 +28,72 @@ export interface BotOptions {
   /** Descend right after an ascension when this plan allows it (never without one). */
   descent?: DescentPlan;
   onDescend?: (engine: GameEngine, now: number, threads: number) => void;
+  /**
+   * Who gets the walker's word at each dusk (default: `reasonablePromise`, among the promises
+   * the play style can keep, see `promisesAvoided`); `false`: nobody, ever.
+   */
+  promises?: PromisePolicy | false;
+}
+
+/**
+ * Which companion the bot gives its word to at dusk (`null`: nobody tonight). `avoid`: what
+ * this play style would not promise away.
+ */
+export type PromisePolicy = (state: GameState, avoid?: readonly PromiseAbstains[]) => string | null;
+
+/**
+ * What a play style does not give its word about. A walker who strikes does not promise to
+ * sheathe the sword, nor to go without powers: Ysolde and Nyx ask that of those who let the
+ * company walk.
+ */
+export function promisesAvoided(options: BotOptions): readonly PromiseAbstains[] {
+  return averageClicks(options) > 0 ? ["strikes", "powers"] : [];
+}
+
+/** Companions the walker can give their word to at this dusk, who still have something to remember. */
+function askable(state: GameState, avoid: readonly PromiseAbstains[]): string[] {
+  return RECOGNITION_HEROES.filter((hero) => {
+    const def = PROMISE_BY_HERO[hero];
+    if (def.kind === "abstain" && avoid.includes(def.from)) return false;
+    return promiseWhen(state, hero) === "tonight" && recognitionNeeds(state, hero) !== null;
+  });
+}
+
+/**
+ * A reasonable walker's promises. First the companion who only lacks a word kept to remember
+ * more (Eldra before the others: she holds the Loom); otherwise each in turn, the one the
+ * walker has kept the fewest promises to. Nobody who already remembers everything, nobody
+ * two nights running, nothing the walker's own style would break.
+ */
+export const reasonablePromise: PromisePolicy = (state, avoid = []) => {
+  const open = askable(state, avoid);
+  const waiting = open.filter((hero) => {
+    const needs = recognitionNeeds(state, hero)!;
+    return needs.promises > 0 && needs.runs <= PROMISE_RUNS;
+  });
+  if (waiting.includes(DESCENT_HERO)) return DESCENT_HERO;
+  if (waiting.length > 0) return waiting[0];
+  let turn: string | null = null;
+  for (const hero of open) if (turn === null || promisesKept(state, hero) < promisesKept(state, turn)) turn = hero;
+  return turn;
+};
+
+/**
+ * A walker in a hurry for the Loom, the worst case for its day: their word goes to Eldra
+ * every night she can be asked (every other night), and to the others in turn in between.
+ */
+export const loomPromise: PromisePolicy = (state, avoid = []) => (askable(state, avoid).includes(DESCENT_HERO) ? DESCENT_HERO : reasonablePromise(state, avoid));
+
+/** At dusk, before anything else: the bot chooses who gets its word for the night. */
+export function pledgeAtDusk(engine: GameEngine, now: number, options: BotOptions) {
+  if (options.promises === false) return;
+  engine.pledge((options.promises ?? reasonablePromise)(engine.state, promisesAvoided(options)), now);
 }
 
 /**
  * When the bot descends: once the Descent would weave at least `minThreads`, and at least
- * `growth` times the threads woven so far (a second Descent must be worth the climb back).
+ * `growth` times the threads woven so far. The thread doubles with every Age, so `growth: 1`
+ * is a Descent an Age, `0.5` one every 146 stages of new depth.
  */
 export interface DescentPlan {
   minThreads: number;
@@ -49,25 +115,25 @@ export const IDLE_ALTARS: AltarPlan = {
 type Weights = Partial<Record<AltarId, number>>;
 /**
  * Open-ended altars, weighted by how much of their effect reaches the walker: the Blade when
- * the strikes lead (they deal more than the Patience bonus they stand in for), Patience when
- * the company does.
+ * the strikes lead (they deal more than the Patience bonus adds), Patience when the company
+ * does.
  */
 const STRIKE_WEIGHTS: Weights = { might: 1, blade: 0.9, fortune: 0.7 };
 const COMPANY_WEIGHTS: Weights = { might: 1, patience: 0.9, fortune: 0.7 };
 
-/** Whether the walker's strikes, at this pace, deal more than the Patience bonus they stand in for. */
-export function strikesLead(state: GameState, d: Derived, clicksPerSecond: number): boolean {
+/** Whether the walker's strikes, at this pace, deal more than the Patience bonus adds to the company. */
+export function strikesLead(d: Derived, clicksPerSecond: number): boolean {
   const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
-  return strikes * strikeFillShare(state) > d.patienceDps;
+  return strikes > d.patienceDps;
 }
 
 /**
  * Damage a second of the company with a walker striking `clicksPerSecond` times a second
- * (crits averaged): the strikes take the place of the Patience bonus, and add past it.
+ * (crits averaged): the company's damage, Patience bonus included, and every strike on top.
  */
-export function damageRate(state: GameState, d: Derived, clicksPerSecond: number): number {
+export function damageRate(d: Derived, clicksPerSecond: number): number {
   const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
-  return d.dps - d.patienceDps + Math.max(0, d.patienceDps - strikes * strikeFillShare(state)) + strikes;
+  return d.dps + strikes;
 }
 
 /** Average strikes a second of a play style over a whole run. */
@@ -77,6 +143,13 @@ export function averageClicks(options: BotOptions): number {
 }
 
 const DT = 0.1;
+/**
+ * A walker whose strikes come in bursts wins a stage now and then that the company alone could
+ * not: the road creeps, never stalls, and the dusk would never come. From the second night,
+ * three new stages in more than twice the stagnation time is a road that has stopped paying.
+ */
+const CREEP_STAGES = 3;
+const CREEP_SPANS = 2;
 
 /** What a relic is worth to the bot: its main stat, times its density. */
 function relicWorth(item: Item): number {
@@ -87,14 +160,16 @@ function bestHeroPurchase(engine: GameEngine, now: number, clicksPerSecond: numb
   const s = engine.state;
   const multiplier = heroCostMultiplier(s);
   let best: { id: string; ratio: number } | null = null;
-  const base = damageRate(s, derive(s, now, { ignoreTimed: true }), clicksPerSecond);
+  const base = damageRate(derive(s, now, { ignoreTimed: true }), clicksPerSecond);
+  // Companions join in order (a promise may leave one behind, or keep the company small).
+  const recruit = nextRecruit(s)?.id;
   for (const hero of HEROES) {
     const level = s.heroLevels[hero.id] ?? 0;
-    if (hero.index > 1 && level === 0 && (s.heroLevels[HEROES[hero.index - 1].id] ?? 0) === 0) continue;
+    if (level === 0 && hero.id !== CLICK_HERO_ID && hero.id !== recruit) continue;
     const cost = heroCost(hero, level, 1, multiplier);
     if (cost > s.gold) continue;
     s.heroLevels[hero.id] = level + 1;
-    const after = damageRate(s, derive(s, now, { ignoreTimed: true }), clicksPerSecond);
+    const after = damageRate(derive(s, now, { ignoreTimed: true }), clicksPerSecond);
     s.heroLevels[hero.id] = level;
     const gain = after - base;
     const ratio = gain / cost;
@@ -110,6 +185,8 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
   let now = start;
   let lastProgressAt = now;
   let lastMaxStage = s.maxStage;
+  /** When the last new stages of this run were reached, oldest first. */
+  let recent: number[] = [];
   let clickDebt = 0;
   let step = 0;
   const endAt = start + seconds * 1000;
@@ -136,7 +213,8 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
         engine.buyHero(best.id, 1, now);
       }
       for (const skill of SKILLS) if (isSkillUnlocked(s, skill.id) && skill.id !== "echo") engine.useSkill(skill.id, now);
-      if (!s.autoAdvance && (now - lastProgressAt) % 120_000 < DT * 1000 * 5) engine.toggleAutoAdvance();
+      // Having promised never to be pushed back, the bot only leads the company into a seam it holds.
+      if (!s.autoAdvance && (now - lastProgressAt) % 120_000 < DT * 1000 * 5 && (!promiseOf(s, "unfailing") || engine.canBeatNextBoss(now))) engine.toggleAutoAdvance();
       if (s.shards >= 30 && s.inventory.length < 40) engine.buyOffer("chest", now);
       for (const item of [...s.inventory]) {
         const equipped = s.equipment[item.slot];
@@ -151,12 +229,22 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
     if (s.maxStage > lastMaxStage) {
       lastMaxStage = s.maxStage;
       lastProgressAt = now;
+      recent = [...recent, now].slice(-CREEP_STAGES);
       options.onMilestone?.(engine, now);
     }
 
-    if (engine.canAscend() && now - lastProgressAt > stagnation) {
+    // The first night ends on a real stall: the King is new, every stage past him is learned.
+    const creeping = s.lifetime.ascensions > 0 && recent.length === CREEP_STAGES && now - recent[0] > CREEP_SPANS * stagnation;
+    const stalled = now - lastProgressAt > stagnation || creeping;
+    if (stalled && standingPromise(s) && !promiseHolds(s)) {
+      // A word that would not be kept at this dusk holds the night back: the bot takes it
+      // back and walks on a while, freed, before it calls the dusk.
+      engine.breakPromise(now);
+      lastProgressAt = now;
+      recent = [];
+    } else if (engine.canAscend() && stalled) {
       const from = s.maxStage;
-      const leading = strikesLead(s, derive(s, now, { ignoreTimed: true }), averageClicks(options));
+      const leading = strikesLead(derive(s, now, { ignoreTimed: true }), averageClicks(options));
       const gain = engine.ascend(now);
       options.onAscend?.(engine, now, gain, from);
       if (options.descent && wantsDescent(s, options.descent)) {
@@ -164,10 +252,12 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
         buyWeaves(engine, now);
         options.onDescend?.(engine, now, threads);
       }
+      pledgeAtDusk(engine, now, options);
       // Only a walker whose strikes lead the company invests in critical hits.
       buyAltars(engine, now, options.altars ?? (leading ? CLICKER_ALTARS : IDLE_ALTARS), leading);
       lastMaxStage = s.maxStage;
       lastProgressAt = now;
+      recent = [];
     }
   }
   return now;
@@ -177,17 +267,21 @@ function wantsDescent(state: GameState, { minThreads, growth }: DescentPlan): bo
   return canDescend(state) && descentPreview(state) >= Math.max(minThreads, growth * state.lifetime.threads);
 }
 
-/** Threads spent on the cheapest weave first; the Long Thread only matters to a closed game. */
+/** The one weave that compounds: the rest of the threads go to it. */
+const OPEN_WEAVE: WeaveId = "plenty";
+/** Capped weaves bought as soon as they cost little next to the threads held. */
+const WEAVE_SHARE = 0.1;
+
+/**
+ * Threads spent as a reasonable walker would: the capped weaves when cheap (not the Long
+ * Thread, which only matters to a closed game), then every Warp of Plenty the rest affords.
+ */
 export function buyWeaves(engine: GameEngine, now: number) {
   const s = engine.state;
+  const price = (id: WeaveId) => weaveCost(id, s.weaves[id] ?? 0);
   for (let guard = 0; guard < 500; guard += 1) {
-    let cheapest: { id: (typeof WEAVES)[number]["id"]; cost: number } | null = null;
-    for (const weave of WEAVES) {
-      if (weave.id === "long-thread") continue;
-      const cost = weaveCost(weave.id, s.weaves[weave.id] ?? 0);
-      if (cost <= s.threads && (!cheapest || cost < cheapest.cost)) cheapest = { id: weave.id, cost };
-    }
-    if (!cheapest || !engine.buyWeave(cheapest.id, now)) return;
+    const cheap = WEAVES.find((weave) => weave.id !== OPEN_WEAVE && weave.id !== "long-thread" && price(weave.id) <= s.threads * WEAVE_SHARE);
+    if (!engine.buyWeave(cheap?.id ?? OPEN_WEAVE, now)) return;
   }
 }
 
@@ -206,16 +300,26 @@ export function buyAltars(engine: GameEngine, now: number, { milestones }: Altar
   for (let guard = 0; guard < 2000; guard += 1) {
     let bought = false;
     for (const id of milestones) {
-      const cost = altarCost(id, s.altars[id] ?? 0);
+      // The walker's own price: the Knot of Dusk lets the Wanderer's altar grow past its cap.
+      const cost = altarPrice(s, id);
       if (Number.isFinite(cost) && cost <= s.essences * MILESTONE_SHARE && engine.buyAltar(id, now)) bought = true;
     }
     const hold = ESSENCE_DPS_BONUS / (1 + ESSENCE_DPS_BONUS * s.essences);
     let best: { id: AltarId; ratio: number } | null = null;
     for (const [id, weight] of Object.entries(weights) as [AltarId, number][]) {
-      const cost = altarCost(id, s.altars[id] ?? 0);
+      const cost = altarPrice(s, id);
       if (cost > s.essences) continue;
       const ratio = (Math.log(1 + ALTAR_BY_ID[id].valuePerLevel) * weight) / cost;
       if (ratio > hold && (!best || ratio > best.ratio)) best = { id, ratio };
+    }
+    // The Harvest pays in the nights to come: a level is worth the essences it adds to every
+    // later dusk, weighed like the others against keeping the essences.
+    const harvest = s.altars.harvest ?? 0;
+    const harvestCost = altarPrice(s, "harvest");
+    if (harvestCost <= s.essences) {
+      const step = ALTAR_BY_ID.harvest.valuePerLevel;
+      const ratio = Math.log((1 + step * (harvest + 1)) / (1 + step * harvest)) / harvestCost;
+      if (ratio > hold && (!best || ratio > best.ratio)) best = { id: "harvest", ratio };
     }
     if (best && engine.buyAltar(best.id, now)) bought = true;
     if (!bought) return;

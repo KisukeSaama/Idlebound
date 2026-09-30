@@ -22,7 +22,7 @@ export const PHONE_QUERY = "(max-width: 900px) and (min-height: 561px), (max-wid
 
 /**
  * Toasts never cover anything the hand needs: they dock in the free space of the scene, between
- * the top bar (or a tutorial hint) and the monster's panel. On a desktop layout they stand beside
+ * the top bar (or a line of the Chronicle, or a tutorial hint) and the monster's panel. On a desktop layout they stand beside
  * the creature (the wider side) or in the sky above it; on a portrait phone, across the scene,
  * never over the companions' list and its buttons. The toasts that do not fit wait hidden until
  * the others leave.
@@ -144,7 +144,10 @@ export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boole
       }
       // Every measure first, then the writes: one layout, not one per measure.
       const floor = (header ? pageRect(header).bottom : 0) + GAP;
-      const top = Math.max(floor, pageRect(bar).bottom + GAP);
+      // A line of the Chronicle is told in a band under the bar: the stack starts under it (its
+      // foot fades out, which is gap enough).
+      const line = document.querySelector(".scene-line");
+      const top = Math.max(floor, line ? pageRect(line).bottom : pageRect(bar).bottom + GAP);
       // An empty stack holds no spot: the next toast picks the widest side again.
       const room = measureRoom(top, container.childElementCount ? spot : null);
       spot = room?.spot ?? null;

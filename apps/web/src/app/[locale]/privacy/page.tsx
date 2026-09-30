@@ -48,6 +48,9 @@ export default async function PrivacyPage({ params }: Props) {
         <p>
           {p.rightsLead}<em>{p.accountMenu}</em>{p.rightsMiddle}<em>{p.deleteAction}</em>{p.rightsEnd}
         </p>
+        <p>
+          {p.guestRightsLead}<em>{p.newGameAction}</em>{p.guestRightsEnd}
+        </p>
       </main>
       <SiteFooter locale={locale} route="privacy" />
     </div>

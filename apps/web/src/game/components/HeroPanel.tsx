@@ -4,11 +4,14 @@ import {
   CLICK_HERO_ID,
   givingAllAway,
   HEROES,
+  PROMISE_BY_HERO,
   UPGRADE_BY_ID,
   heroCost,
   heroCostMultiplier,
+  hireBarred,
   maxAffordableLevels,
   milestoneMultiplier,
+  nextRecruit,
   recognitionTier,
   talentName,
   upgradeCost,
@@ -22,13 +25,17 @@ import { useFormat, useGame, useReveals } from "../context";
 import { GoldIcon, Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { awakenedSeed, emblemSource, evenRatSource, portraitSource } from "../pixel/sources";
-import { describeEffect } from "../text";
+import { describeEffect, describePromise } from "../text";
+import { promiseStatus, type PromiseStatus } from "../windows/PromiseTab";
 
 const MODES: BuyMode[] = [1, 10, 25, 100, "max"];
 /** The Faceless: how long Nyx's medallion shows the stars. */
 const STARFIELD_MS = 1_000;
 /** Every talent of every companion, with what opens it. */
 const TALENTS = Object.values(UPGRADE_BY_ID).map(({ hero, upgrade }) => ({ id: upgrade.id, heroId: hero.id, level: upgrade.level }));
+
+/** Room a talent card needs past its own height: its gap to the talent, and a breath. */
+const TIP_GAP_PX = 12;
 
 /** Holding a buy key: the first repeat after this long, then faster down to the floor. */
 const HOLD_DELAY_MS = 380;
@@ -140,13 +147,20 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
   const night = `${state.createdAt}:${state.lifetime.ascensions}:${state.descents}`;
   const offered = useRef<{ night: string; ids: Set<string> }>({ night, ids: new Set() });
   if (offered.current.night !== night) offered.current = { night, ids: new Set() };
-  const next = HEROES.find((hero) => hero.id !== CLICK_HERO_ID && (state.heroLevels[hero.id] ?? 0) === 0);
+  // The next to join, in the order of the road (a promise may leave one behind, or hold everyone back).
+  const next = nextRecruit(state);
   if (next && (next.index < state.lifetime.bestHired || heroCost(next, 0, 1, costMultiplier) <= state.gold)) offered.current.ids.add(next.id);
-  const visible = HEROES.filter((hero) => hero.id === CLICK_HERO_ID || (state.heroLevels[hero.id] ?? 0) > 0 || (hero === next && offered.current.ids.has(hero.id)));
+  // The companion who has the walker's word stays in sight all night, hired or not.
+  const promise = state.trail.promise;
+  const status = promiseStatus(state);
+  const visible = HEROES.filter((hero) => hero.id === CLICK_HERO_ID || (state.heroLevels[hero.id] ?? 0) > 0 || (hero === next && offered.current.ids.has(hero.id)) || hero.id === promise?.hero);
+
+  // A companion not hired yet can only join in their turn, and never against the word given.
+  const hireable = (hero: HeroDef) => (state.heroLevels[hero.id] ?? 0) > 0 || hero.id === CLICK_HERO_ID || (hero === next && !hireBarred(state, hero.id));
 
   // Folded, the panel still says what the gold can buy: a count on its heading.
   const ready = folded
-    ? visible.filter((hero) => heroCost(hero, state.heroLevels[hero.id] ?? 0, mode === "max" ? 1 : mode, costMultiplier) <= state.gold).length + affordableTalents
+    ? visible.filter((hero) => hireable(hero) && heroCost(hero, state.heroLevels[hero.id] ?? 0, mode === "max" ? 1 : mode, costMultiplier) <= state.gold).length + affordableTalents
     : 0;
 
   // The Faceless: when Nyx's secret is found, her medallion shows the stars for a moment.
@@ -244,7 +258,9 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
               recognition={recognitionTier(state, hero.id)}
               count={purchase.count}
               cost={purchase.cost}
-              affordable={purchase.cost <= state.gold}
+              affordable={hireable(hero) && purchase.cost <= state.gold}
+              promise={hero.id === promise?.hero && status ? status : undefined}
+              promiseRule={hero.id === promise?.hero && status ? `${t.sanctum.promise.status[status]}. ${status === "broken" ? t.sanctum.promise.statusHint.broken : describePromise(PROMISE_BY_HERO[hero.id], locale, promise.goal, true)}` : undefined}
               value={hero.id === CLICK_HERO_ID ? derived.click : derived.heroDps[hero.id] ?? 0}
               share={share}
               nextMilestone={nextMilestone(level)}
@@ -326,14 +342,32 @@ interface HeroRowProps {
   fading: boolean;
   /** Thorvald and Pip are even: a tiny gold rat sits on his medallion. */
   even: boolean;
+  /** The walker's word for the night is theirs: a knot on the medallion, tied, kept so far or undone. */
+  promise?: PromiseStatus;
+  /** What the word asks and how it stands, in one line under the name. */
+  promiseRule?: string;
 }
 
-const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent, onPortrait, starfield, fading, even }: HeroRowProps) {
+const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent, onPortrait, starfield, fading, even, promise, promiseRule }: HeroRowProps) {
   const isClick = hero.id === CLICK_HERO_ID;
   const hired = level > 0;
   const hold = useHoldRepeat(() => onBuy(hero.id));
+  // The list clips what leaves it: near its top, the talent cards open under their talent.
+  const [tipsBelow, setTipsBelow] = useState(false);
+  const placeTips = ({ currentTarget: row }: { currentTarget: HTMLLIElement }) => {
+    const strip = row.querySelector(".talents");
+    if (!strip || !row.parentElement) return;
+    const room = strip.getBoundingClientRect().top - row.parentElement.getBoundingClientRect().top;
+    const tallest = Math.max(...Array.from(strip.querySelectorAll<HTMLElement>(".talent-tip"), (tip) => tip.offsetHeight));
+    setTipsBelow(room < tallest + TIP_GAP_PX);
+  };
   return (
-    <li className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}${fading ? " is-fading" : ""}`} style={{ ["--hero" as string]: hero.color }}>
+    <li
+      className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}${fading ? " is-fading" : ""}${promise ? ` has-promise promise-${promise}` : ""}${tipsBelow ? " tips-below" : ""}`}
+      style={{ ["--hero" as string]: hero.color }}
+      onPointerEnter={placeTips}
+      onFocus={placeTips}
+    >
       <div
         className={`hero-medallion ${recognition > 0 ? `recognized recognition-${recognition}` : ""} ${starfield ? "starfield" : ""}`}
         aria-hidden="true"
@@ -342,6 +376,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
         <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size="parent" nearest /></span>
         {starfield ? <span className="medallion-stars" /> : null}
         {even ? <PixelSprite source={evenRatSource()} scale={1} className="medallion-rat" /> : null}
+        {promise ? <span className="medallion-promise"><Picto name={promise === "broken" ? "frayed" : "knot"} size={14} /></span> : null}
         {hired ? <span className="hero-level">{level}</span> : null}
       </div>
       <div className="hero-info">
@@ -357,6 +392,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
               : <>{m.dpsPerLevel(fmt(hero.baseDps))}</>}
           {nextMilestone ? <span className="hero-milestone" title={m.milestoneTitle(fmt(milestoneMultiplier(level)))}>{m.milestone(nextMilestone)}</span> : null}
         </div>
+        {promiseRule ? <div className="hero-promise">{promiseRule}</div> : null}
         {hired && talents.length > 0 ? (
           <div className="talents" role="list" aria-label={m.talentsOf(text.name)}>
             {talents.map((talent) => {

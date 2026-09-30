@@ -1,11 +1,11 @@
 import { ALTARS, BESTIARY, BIOMES, CARAVAN_WARES, HEROES, MARKET_OFFERS, NAMED_RELICS, RARITIES, SKILLS, SLOTS, SLOT_BASE_COUNT, TREASURE_MONSTER } from "@idlebound/game";
-import { ALTAR_ICONS, C, CARAVAN_ICONS, DECOR, NAMED_RELIC_SHAPES, CREATURE_RECIPES, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, STRUCTURES, resolveCreature } from "@idlebound/game/art";
+import { ALTAR_ICONS, ARENA_ROWS, C, CARAVAN_ICONS, CREATURE_HEIGHTS, DECOR, LOW_BODY_LENGTH, NAMED_RELIC_SHAPES, CREATURE_RECIPES, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLab, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, SCENE_FLOOR, STRUCTURES, resolveCreature } from "@idlebound/game/art";
 import { describe, expect, it } from "vitest";
 import { renderCreature } from "./creature";
 import { AGE_COUNT, ERAS_PER_AGE, ageOf } from "./eras";
 import { renderEmblem } from "./mask";
 import { forgeRunes, RELIC_SIZE, renderCrystal, renderIcon, renderRelic } from "./objects";
-import { EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pixels";
+import { bounds, EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pixels";
 import { awakenedRecipe, PORTRAIT_SIZE, renderPortrait } from "./portrait";
 import { gradeForNight } from "./night";
 import { structureView } from "./props";
@@ -157,6 +157,54 @@ describe("pixel generator", () => {
     }
   });
 
+  it("keeps the creature the subject of the arena: every rank at its share of the height, the places standing back", () => {
+    const body = (id: string) => {
+      const { rows } = resolveCreature(id).grid;
+      const drawn = rows.map((row, y) => (/[^.]/.test(row) ? y : -1)).filter((y) => y >= 0);
+      return { height: drawn[drawn.length - 1] - drawn[0] + 1, width: Math.max(...rows.map((row) => row.replace(/\.+$/, "").length)) };
+    };
+    // 45% of the arena's height for a normal creature, 60% for an elite, 75% for a guardian.
+    expect(CREATURE_HEIGHTS.normal[0]).toBe(Math.round(ARENA_ROWS * 0.45));
+    expect(CREATURE_HEIGHTS.elite[0]).toBe(Math.round(ARENA_ROWS * 0.6));
+    expect(CREATURE_HEIGHTS.guardian[0]).toBe(Math.round(ARENA_ROWS * 0.75));
+    for (const id of Object.keys(CREATURE_RECIPES)) {
+      const { rank } = resolveCreature(id);
+      const [low, high] = CREATURE_HEIGHTS[rank];
+      const { height, width } = body(id);
+      // The King's forms may be measured across (the Dawn is a line); a body lying low, along its length.
+      if (rank === "king") expect(Math.max(height, width), id).toBeGreaterThanOrEqual(low);
+      else if (height < low) expect(rank === "normal" && width >= LOW_BODY_LENGTH, `${id}: ${width} x ${height}`).toBe(true);
+      expect(height, id).toBeLessThanOrEqual(high);
+    }
+    // The order the road is read in: Pip under a rat, a rat under a boar, and in every biome
+    // its creatures under its elite, its elite under its guardian, its guardian under the King.
+    expect(body("golden-rat").height).toBeLessThan(body("field-rat").height);
+    expect(body("field-rat").height).toBeLessThan(body("wild-boar").height);
+    for (const biome of BIOMES) {
+      for (const monster of biome.monsters) expect(body(monster.id).height, monster.id).toBeLessThan(body(biome.miniBoss.id).height);
+      expect(body(biome.miniBoss.id).height, biome.id).toBeLessThan(body(biome.boss.id).height);
+      if (resolveCreature(biome.boss.id).rank === "guardian") expect(body(biome.boss.id).height, biome.id).toBeLessThan(body("ruined-king").height);
+    }
+    // The places stand back: every building with a door stands in the scene's air, high in the
+    // picture (its foot nearer the horizon than the walker) and under the smallest creature of its biome.
+    const showpieces: Record<string, string> = {
+      "green-plains": "brom-forge",
+      "dark-forest": "grove-hut",
+      "forgotten-caves": "vault-winding-house",
+      "corrupted-marsh": "mire-alchemist",
+      "fallen-king-ruins": "keep-gatehouse"
+    };
+    for (const biome of BIOMES) {
+      const scene = SCENES[biome.id];
+      const placement = scene.structures!.find((structure) => structure.id === showpieces[biome.id])!;
+      expect(placement.haze, showpieces[biome.id]).toBe(true);
+      expect(placement.base - scene.horizon, showpieces[biome.id]).toBeLessThan((SCENE_FLOOR - scene.horizon) / 2);
+      const tall = bounds(structureView(biome.id, placement.id, 0, 0)!)!.h;
+      const upright = biome.monsters.map((monster) => body(monster.id)).filter((box) => box.height >= CREATURE_HEIGHTS.normal[0]);
+      expect(tall, showpieces[biome.id]).toBeLessThanOrEqual(Math.min(...upright.map((box) => box.height)) + 6);
+    }
+  });
+
   it("closes only the eyes on a blink: flames, lanterns, windows and runes stay lit", () => {
     for (const id of Object.keys(CREATURE_RECIPES)) {
       const { grid } = resolveCreature(id);
@@ -285,6 +333,47 @@ describe("pixel generator", () => {
           for (const pal of renderCreature(monster.id).pixels.idx) if (pal !== EMPTY) withCreature.add(pal);
           expect(withCreature.size, `${biome.id} + ${monster.id}`).toBeLessThanOrEqual(24);
         }
+      }
+    }
+  });
+
+  it("gives every biome a night of its own: any two differ at a glance in their sky or their ground", () => {
+    // The mean color of a region, in CIELAB, weighted by area: what the eye keeps of a place.
+    const mean = (flat: Pixels, from: number, to: number) => {
+      const sum = [0, 0, 0];
+      let count = 0;
+      for (let at = from * flat.w; at < to * flat.w; at += 1) {
+        if (flat.idx[at] === EMPTY) continue;
+        const lab = palLab(flat.idx[at]);
+        for (let k = 0; k < 3; k += 1) sum[k] += lab[k];
+        count += 1;
+      }
+      return sum.map((value) => value / count);
+    };
+    const shares = (flat: Pixels) => {
+      const share = new Array<number>(ORVANE_64.length).fill(0);
+      for (const pal of flat.idx) if (pal !== EMPTY) share[pal] += 1 / flat.idx.length;
+      return share;
+    };
+    const distance = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    const nights = BIOMES.map((biome) => {
+      const flat = flattenScene(renderScene(biome.id, 0));
+      const horizon = SCENES[biome.id].horizon;
+      return { id: biome.id, sky: mean(flat, 0, horizon), ground: mean(flat, horizon, flat.h), shares: shares(flat) };
+    });
+    for (const [index, a] of nights.entries()) {
+      for (const b of nights.slice(index + 1)) {
+        // 8 is three and a half times what the eye just notices, over half a screen.
+        expect(Math.max(distance(a.sky, b.sky), distance(a.ground, b.ground)), `${a.id} / ${b.id}`).toBeGreaterThanOrEqual(8);
+        // Two open skies of the Kingdom may share their violets; never most of the picture.
+        const shared = a.shares.reduce((total, share, pal) => total + Math.min(share, b.shares[pal]), 0);
+        expect(shared, `${a.id} / ${b.id} shared pixels`).toBeLessThan(0.4);
+      }
+    }
+    // The ramps themselves: no dark step of the vaults is the night's or the Keep's twin.
+    for (const vault of [C.vaultNight, C.vault1, C.vault2]) {
+      for (const violet of [C.night1, C.night2, C.night3, C.night4, C.dusk, C.plum, C.keepStone]) {
+        expect(distance(palLab(vault), palLab(violet)), `${ORVANE_64[vault]} / ${ORVANE_64[violet]}`).toBeGreaterThanOrEqual(8);
       }
     }
   });

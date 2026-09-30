@@ -56,6 +56,7 @@ import {
   NIGHT_OWL_SECONDS,
   NOTCH_KILLS,
   NOTCH_LAST_STAGE,
+  promisesAwaited,
   RECOGNITION_LEVEL,
   REST_FAILS,
   REST_STAGE,
@@ -75,6 +76,7 @@ import {
   recognitionTier,
   type SecretId
 } from "./data/lore";
+import { PROMISE_BY_HERO, PROMISE_RUNS, UNFAILING_MARGIN_SECONDS, hireBarred, promiseAbstains, promiseHolds, promiseOf, promisesKept, standingPromise } from "./data/promises";
 import { NAMED_BY_ID, NAMED_RELICS, namedEffect, namedSourceReached, wearing, wearsRegalia, type NamedRelicDef } from "./data/relics";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BY_ID, type MarketOfferId } from "./data/market";
 import { SKILLS, SKILL_BY_ID } from "./data/skills";
@@ -104,10 +106,10 @@ import {
   memoryStartGold,
   nextBreakpoint,
   offlineCapSeconds,
+  promiseAskable,
+  promiseWhen,
   REUNION_MIN_AWAY_SECONDS,
   REUNION_SHARE,
-  STRIKE_FILL_SECONDS,
-  strikeFillShare,
   shardPrice,
   skillCooldownMultiplier,
   skillDuration,
@@ -121,7 +123,7 @@ import {
 import { generateItem } from "./loot";
 import { pick, randomInt, storedRng, uid, type Rng } from "./rng";
 import { emptyStats, emptyTrail } from "./state";
-import type { AbsenceAccount, AltarId, BuffId, BuyMode, ChronicleEntry, Derived, GameEvent, GameState, Item, ItemSlot, MonsterDef, MonsterKind, MonsterState, OfflineSummary, Rarity, SkillId } from "./types";
+import type { AbsenceAccount, AltarId, BuffId, BuyMode, ChronicleEntry, Derived, GameEvent, GameState, Item, ItemSlot, MonsterDef, MonsterKind, MonsterState, OfflineSummary, PromiseState, Rarity, SkillId } from "./types";
 
 /** Past this gap between two ticks, gains are computed in one catch-up instead of simulated. */
 const CATCH_UP_THRESHOLD_MS = 5_000;
@@ -169,9 +171,9 @@ export function guardiansPassed(account: AbsenceAccount): number[] {
   return stages;
 }
 
-/** Threads a Descent would weave now. */
+/** Threads a Descent would weave now: what the deepest stage adds to every thread already woven. */
 export function descentPreview(state: GameState): number {
-  return threadsFor(state.lifetime.essencesEarned - state.descentMark);
+  return Math.max(0, threadsFor(state.maxStageEver) - state.lifetime.threads);
 }
 
 function levelSum(state: GameState): number {
@@ -212,9 +214,14 @@ interface Purchase {
   gain: number;
 }
 
-/** The companion who joins next, hired in order as in the shop, if any is left. */
-function nextRecruit(state: GameState) {
-  return HEROES.find((hero) => hero.id !== CLICK_HERO_ID && !(state.heroLevels[hero.id] > 0) && (hero.index <= 1 || state.heroLevels[HEROES[hero.index - 1].id] > 0));
+/**
+ * The companion who joins next, hired in order as in the shop, if any is left. The one a
+ * promise leaves behind is passed over; while a promise keeps the company small, nobody joins.
+ */
+export function nextRecruit(state: GameState) {
+  const left = promiseOf(state, "without")?.other;
+  const next = HEROES.find((hero) => hero.id !== CLICK_HERO_ID && hero.id !== left && !(state.heroLevels[hero.id] > 0));
+  return next && !hireBarred(state, next.id) ? next : undefined;
 }
 
 function bestValue(options: Purchase[]): Purchase | undefined {
@@ -246,13 +253,6 @@ export class GameEngine {
   /** Companion damage dealt since the last "dps" event (one per second, for the UI). */
   private companionDamage = 0;
   private companionTimer = 0;
-  /** Strike damage waiting to take the Patience bonus's place (at most a few seconds of it). */
-  private strikeFill = 0;
-  /** Patience bonus due and taken by strikes since the last "dps" event. */
-  private patienceDue = 0;
-  private patienceTaken = 0;
-  /** Share of the Patience bonus the company dealt over the last second (the rest, the walker's strikes did). */
-  patienceShare = 1;
   private unlockedAchievements: Set<string>;
   /** Whether the local clock reads the dead of night, rechecked once a minute (Night Owl). */
   private night = false;
@@ -350,6 +350,112 @@ export class GameEngine {
     const rest = count - share * kinds;
     // The remainder turns with the stage, so no creature is favored over a long catch-up.
     biome.monsters.forEach((monster, index) => this.recordKills(monster.id, share + ((index - (stage % kinds) + kinds) % kinds < rest ? 1 : 0)));
+  }
+
+  // ---------------------------------------------------------------- the Promise
+
+  /** The walker tried what their word forbids: they are held to it, and told so. */
+  private held(): false {
+    const promise = this.state.trail.promise;
+    if (promise) this.emit({ type: "promiseHeld", heroId: promise.hero });
+    return false;
+  }
+
+
+  /**
+   * The walker chooses who gets their word at the next dusk (`null`: nobody). At dusk itself,
+   * before anyone has joined, the word is given at once.
+   */
+  pledge(heroId: string | null, now: number): boolean {
+    const s = this.state;
+    if (heroId === null) {
+      delete s.pledge;
+      return true;
+    }
+    const when = promiseWhen(s, heroId);
+    if (when === null) return false;
+    s.pledge = heroId;
+    if (when === "tonight") this.givePromise(now);
+    return true;
+  }
+
+  /** Dusk: the word the walker meant to give is given, for this night only. */
+  private givePromise(now: number) {
+    const s = this.state;
+    const heroId = s.pledge;
+    delete s.pledge;
+    // Nobody asks two nights running.
+    if (!heroId || s.trail.promise || heroId === s.lastPromise || !promiseAskable(s, heroId, s.runStartStage)) return;
+    const promise: PromiseState = { hero: heroId, kings: 0 };
+    // Oriane asks for a night deeper than the last one.
+    if (PROMISE_BY_HERO[heroId].kind === "further") promise.goal = s.ascensions[s.ascensions.length - 1].maxStage;
+    s.trail.promise = promise;
+    this.emit({ type: "promise", heroId, outcome: "given" });
+    this.refresh(now);
+  }
+
+  /** The walker takes their word back. Nothing is lost but the word. */
+  breakPromise(now: number): boolean {
+    const standing = standingPromise(this.state);
+    if (!standing) return false;
+    standing.progress.broken = true;
+    this.emit({ type: "promise", heroId: standing.progress.hero, outcome: "broken" });
+    this.refresh(now);
+    return true;
+  }
+
+  /** A boss fell at the head of the run: what it means for the word given. */
+  private promiseBossFell(stage: number) {
+    const standing = standingPromise(this.state);
+    if (!standing) return;
+    const { def, progress } = standing;
+    const held = promiseHolds(this.state);
+    const king = isKingStage(stage);
+    const guardian = isBiomeBossStage(stage);
+    if (king) progress.kings += 1;
+    if (def.kind === "head" && (def.until === "king" ? king : guardian)) progress.released = true;
+    if (def.kind === "wait" && guardian && (def.guardian === "king" ? king : bossForStage(stage).id === def.guardian)) progress.waited = true;
+    this.promiseProgress(held);
+  }
+
+  /** Tells the walker once the word given would hold if dusk came now. */
+  private promiseProgress(heldBefore: boolean) {
+    const promise = this.state.trail.promise;
+    if (promise && !heldBefore && promiseHolds(this.state)) this.emit({ type: "promise", heroId: promise.hero, outcome: "ready" });
+  }
+
+  /** Seconds the company holds its blows at the start of a fight on this boss stage (a promise to wait). */
+  private graceSeconds(stage: number): number {
+    const wait = promiseOf(this.state, "wait");
+    if (!wait || !isBiomeBossStage(stage)) return 0;
+    return (wait.guardian === "king" ? isKingStage(stage) : bossForStage(stage).id === wait.guardian) ? wait.seconds : 0;
+  }
+
+  /** Whether the fight in front of the walker is still in its moment of grace. */
+  private inGrace(): boolean {
+    const s = this.state;
+    const monster = s.monster;
+    if (!monster || monster.kind !== "boss") return false;
+    const grace = this.graceSeconds(s.stage);
+    return grace > 0 && this.derived.bossTimer - s.bossTimeLeft < grace;
+  }
+
+  /**
+   * Dusk settles the word given: kept when the night met what it asked, and the night then
+   * counts twice for that companion; otherwise broken, if it was not already.
+   */
+  private settlePromise(): string | null {
+    const s = this.state;
+    const promise = s.trail.promise;
+    if (!promise) return null;
+    if (!promiseHolds(s)) {
+      if (!promise.broken) this.emit({ type: "promise", heroId: promise.hero, outcome: "broken" });
+      return null;
+    }
+    s.promises[promise.hero] = promisesKept(s, promise.hero) + 1;
+    this.emit({ type: "promise", heroId: promise.hero, outcome: "kept" });
+    if (s.promises[promise.hero] === 1) this.fragment({ source: "promise", hero: promise.hero });
+    return promise.hero;
   }
 
   /** A secret found: a line in the Chronicle and a deed with no power. */
@@ -539,22 +645,17 @@ export class GameEngine {
         // Pip stopped to dare the walker; out of time, he runs off laughing.
         if (now > monster.wager.until) this.pipLeaves();
       } else {
-        if (d.autoClicksPerSecond > 0) {
+        // A promise to wait: for a moment at the start of the fight, nobody strikes.
+        const grace = this.inGrace();
+        if (d.autoClicksPerSecond > 0 && !grace) {
           this.autoClickAccumulator += d.autoClicksPerSecond * dt;
           while (this.autoClickAccumulator >= 1 && s.monster) {
             this.autoClickAccumulator -= 1;
             this.strike(now, "auto");
           }
         }
-        if (s.monster && d.dps > 0) {
-          const factor = this.targetFactor(s.monster);
-          // The walker's strikes took the place of this much of the Patience bonus.
-          const bonus = d.patienceDps * dt * factor;
-          const taken = Math.min(this.strikeFill, bonus);
-          this.strikeFill -= taken;
-          this.patienceDue += bonus;
-          this.patienceTaken += taken;
-          const amount = d.dps * dt * factor - taken;
+        if (s.monster && d.dps > 0 && !grace) {
+          const amount = d.dps * dt * this.targetFactor(s.monster);
           this.companionDamage += amount;
           this.damage(amount, now);
         }
@@ -571,11 +672,8 @@ export class GameEngine {
     this.companionTimer += dt;
     if (this.companionTimer >= 1) {
       if (this.companionDamage > 0) this.emit({ type: "dps", damage: this.companionDamage });
-      if (this.patienceDue > 0) this.patienceShare = 1 - this.patienceTaken / this.patienceDue;
       this.companionTimer = 0;
       this.companionDamage = 0;
-      this.patienceDue = 0;
-      this.patienceTaken = 0;
     }
 
     if (this.afkAfterMs !== null && now - this.lastInputAt >= this.afkAfterMs) {
@@ -727,11 +825,19 @@ export class GameEngine {
   }
 
   /** Whether companions alone beat the boss ahead in time (true when no boss blocks the way). */
-  private canBeatNextBoss(now: number): boolean {
+  canBeatNextBoss(now: number): boolean {
     const s = this.state;
     if (!isBossStage(s.maxStage)) return true;
     const d = derive(s, now, { ignoreTimed: true });
-    return d.dps > 0 && this.bossLeft(s.maxStage) <= d.dps * this.stageFactor(s.maxStage, d) * d.bossTimer;
+    return d.dps > 0 && this.bossLeft(s.maxStage) <= d.dps * this.stageFactor(s.maxStage, d) * this.fightSeconds(s.maxStage, d);
+  }
+
+  /**
+   * Seconds the company has to bring a boss down: its seam, less the moment of grace of a
+   * promise to wait, less a margin the night the walker promised never to be pushed back.
+   */
+  private fightSeconds(stage: number, d: Derived): number {
+    return Math.max(0, d.bossTimer - this.graceSeconds(stage) - (promiseOf(this.state, "unfailing") ? UNFAILING_MARGIN_SECONDS : 0));
   }
 
   /** HP a boss stage's boss comes back with: its wounds taken off, the Eclipse added. */
@@ -791,6 +897,8 @@ export class GameEngine {
     let blockedAt: number | null = null;
     // The boss the company last lost to: the autopilot only goes back once it can win.
     let failedAt: number | null = s.autoAdvance ? null : s.maxStage;
+    const unfailing = promiseOf(s, "unfailing") !== undefined;
+    const holds = promiseHolds(s);
     s.stage = s.maxStage;
     // Whatever stood in the road (an event, Pip's dare) is gone when the walker comes back.
     s.monster = null;
@@ -809,17 +917,19 @@ export class GameEngine {
       while (s.maxStage < MAX_STAGE) {
         const stage = s.maxStage;
         if (isBossStage(stage)) {
-          const fight = this.bossLeft(stage) / (d.dps * this.stageFactor(stage, d));
-          if (fight > d.bossTimer) {
+          const grace = this.graceSeconds(stage);
+          const fight = grace + this.bossLeft(stage) / (d.dps * this.stageFactor(stage, d));
+          if (fight > d.bossTimer - (unfailing ? UNFAILING_MARGIN_SECONDS : 0)) {
             // Reaching a boss too strong, the company fights it once anyway, as in an open
             // tab, and the wounds it leaves stay (up to stage 44). Then it trains and waits.
-            if (stage === failedAt) { blockedAt = stage; break; }
+            // The night the walker promised never to be pushed back, it does not try.
+            if (stage === failedAt || unfailing) { blockedAt = stage; break; }
             if (d.bossTimer > time) break;
             time -= d.bossTimer;
             failedAt = stage;
             this.stoppedBy(stage);
             s.lifetime.bossFails += 1;
-            this.keepWound(stage, (d.dps * this.stageFactor(stage, d) * d.bossTimer) / (bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1)));
+            this.keepWound(stage, (d.dps * this.stageFactor(stage, d) * Math.max(0, d.bossTimer - grace)) / (bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1)));
             continue;
           }
           if (fight + BOSS_RESPAWN_SECONDS > time) break;
@@ -834,6 +944,7 @@ export class GameEngine {
             kings += 1;
             s.trail.eclipse = false;
           }
+          this.promiseBossFell(stage);
         } else {
           const perKill = stageHp(stage) / d.dps + RESPAWN_SECONDS;
           const needed = MONSTERS_PER_STAGE - s.kills;
@@ -884,6 +995,7 @@ export class GameEngine {
     if (s.crystal && s.crystal.expiresAt < now) s.crystal = null;
     // Purchases made while away are summed up in the summary, not replayed as effects.
     this.events = [...this.events.slice(0, eventMark), ...this.events.slice(eventMark).filter((event) => event.type === "skillUnlocked" || event.type === "fragment")];
+    this.promiseProgress(holds);
     s.monster = null;
     s.respawnIn = 0.25;
     s.bossTimeLeft = 0;
@@ -1092,6 +1204,11 @@ export class GameEngine {
     s.trail.listen = 0;
     const monster = s.monster;
     if (!monster) return;
+    // A word given: the sword stays sheathed all night, or waits out a guardian's moment of grace.
+    if (promiseAbstains(s, "strikes") || this.inGrace()) {
+      this.held();
+      return;
+    }
     this.clickedThisFight = true;
     if (monster.wager) {
       s.run.clicks += 1;
@@ -1120,8 +1237,6 @@ export class GameEngine {
     if (source === "click") {
       s.run.clicks += 1;
       s.lifetime.clicks += 1;
-      // The walker's own blow takes the place of as much of the company's Patience bonus.
-      this.strikeFill = Math.min(this.strikeFill + damage * strikeFillShare(s), d.patienceDps * factor * STRIKE_FILL_SECONDS);
     }
     if (crit) {
       s.run.crits += 1;
@@ -1200,6 +1315,7 @@ export class GameEngine {
       // Shards and items only drop from the boss that blocks progression: a boss already
       // beaten in this run and replayed from the stage selector pays gold only.
       if (frontier) {
+        this.promiseBossFell(s.stage);
         shards = monster.kind === "boss" ? 1 + Math.floor(s.stage / 25) + namedEffect(s, "guardianShards") : this.rng() < 0.35 ? 1 : 0;
         this.earnShards(shards);
         const chance = monster.kind === "boss" ? 0.4 : 0.15;
@@ -1314,6 +1430,7 @@ export class GameEngine {
   private advance() {
     const s = this.state;
     if (s.maxStage >= MAX_STAGE) return;
+    const holds = promiseHolds(s);
     s.maxStage += 1;
     s.kills = 0;
     if (s.maxStage > s.maxStageEver) s.maxStageEver = s.maxStage;
@@ -1325,12 +1442,22 @@ export class GameEngine {
       s.trail.migration = { stage: s.maxStage, biome: pick(this.rng, others).id };
       this.meetEvent("migration");
     }
+    // Promised never to be pushed back, the company does not walk into a seam it cannot
+    // hold alone: it trains before it, and the walker may still lead it in.
+    if (s.autoAdvance && isBossStage(s.maxStage) && promiseOf(s, "unfailing") && !this.canBeatNextBoss(s.lastTickAt)) {
+      this.stoppedBy(s.maxStage);
+      s.autoAdvance = false;
+    }
     if (s.autoAdvance) this.setStage(s.maxStage);
+    // A night promised deeper than the last: the word holds once it is.
+    this.promiseProgress(holds);
   }
 
   private failBoss() {
     const s = this.state;
     s.lifetime.bossFails += 1;
+    // The seam closed on the company: a promise never to be pushed back is broken.
+    if (promiseOf(s, "unfailing")) this.breakPromise(s.lastTickAt);
     // Let Him Rest: the King at stage 50, left alone until his seam closes, three times.
     if (s.stage === REST_STAGE && isKingStage(s.stage)) {
       s.trail.rest = this.clickedThisFight ? 0 : s.trail.rest + 1;
@@ -1398,6 +1525,7 @@ export class GameEngine {
     const s = this.state;
     const hero = HERO_BY_ID[heroId];
     if (!hero) return false;
+    if ((s.heroLevels[heroId] ?? 0) === 0 && hireBarred(s, heroId)) return this.held();
     const { count, cost } = this.heroPurchase(heroId, mode);
     if (count <= 0 || cost > s.gold) return false;
     const before = s.heroLevels[heroId] ?? 0;
@@ -1477,6 +1605,7 @@ export class GameEngine {
     if (!def || !isSkillUnlocked(s, id)) return false;
     const current = s.skills[id];
     if (current && current.readyAt > now) return false;
+    if (promiseAbstains(s, "powers")) return this.held();
 
     if (id === "echo") {
       const target = s.lastSkill;
@@ -1548,6 +1677,7 @@ export class GameEngine {
   clickCrystal(now: number): boolean {
     const s = this.state;
     if (!s.crystal || s.crystal.expiresAt < now) return false;
+    if (promiseAbstains(s, "crystals")) return this.held();
     const storm = s.crystal.storm ?? 0;
     s.crystal = null;
     s.run.crystals += 1;
@@ -1608,10 +1738,19 @@ export class GameEngine {
     s.ascensions.push({ at: now, maxStage: s.maxStage, essences: gain });
     if (s.ascensions.length > MAX_ASCENSION_HISTORY) s.ascensions.splice(0, s.ascensions.length - MAX_ASCENSION_HISTORY);
     // Recognition: companions who reached level 100 this night remember the walker a little.
+    // The one whose promise was kept remembers the night twice if they reached it too and
+    // their memories were waiting for a word; once otherwise.
+    const tiers = new Map(HEROES.map((hero) => [hero.id, recognitionTier(s, hero.id)]));
+    const promised = s.trail.promise?.hero;
+    const awaited = promised !== undefined && promisesAwaited(s, promised) > 0;
+    const kept = this.settlePromise();
     for (const hero of HEROES) {
-      if (hero.id === CLICK_HERO_ID || (s.heroLevels[hero.id] ?? 0) < RECOGNITION_LEVEL) continue;
-      const before = recognitionTier(s, hero.id);
-      s.recognition[hero.id] = recognitionRuns(s, hero.id) + 1;
+      if (hero.id === CLICK_HERO_ID) continue;
+      const reached = (s.heroLevels[hero.id] ?? 0) >= RECOGNITION_LEVEL;
+      const runs = hero.id === kept ? (reached && awaited ? PROMISE_RUNS : 1) : reached ? 1 : 0;
+      if (runs === 0) continue;
+      const before = tiers.get(hero.id) ?? 0;
+      s.recognition[hero.id] = recognitionRuns(s, hero.id) + runs;
       const tier = recognitionTier(s, hero.id);
       if (tier > before) {
         this.emit({ type: "recognition", heroId: hero.id, tier });
@@ -1633,10 +1772,14 @@ export class GameEngine {
     if (heldBefore >= KEEP_SOME_ESSENCES && offered === 0) this.discover("keep-some");
 
     this.resetRun(now);
+    // Whoever had the walker's word this night does not ask again at this dusk.
+    if (promised) s.lastPromise = promised;
+    else delete s.lastPromise;
     // Every seventh dusk, the next King is shadowed by his Eclipse.
     if (s.lifetime.ascensions % ECLIPSE_EVERY === 0) s.trail.eclipse = true;
     this.refresh(now);
     if (skip > 0) this.skipStages(skip);
+    this.givePromise(now);
     this.emit({ type: "ascended", essences: gain });
     this.checkNamedSources();
     this.checkMilestones(milestones);
@@ -1710,6 +1853,7 @@ export class GameEngine {
     const level = altarLevel(s, id);
     const cost = altarPrice(s, id);
     if (!Number.isFinite(cost) || cost > s.essences) return false;
+    if (promiseAbstains(s, "essences")) return this.held();
     s.essences -= cost;
     s.altars[id] = level + 1;
     s.trail.offered += cost;
@@ -1728,9 +1872,9 @@ export class GameEngine {
 
   /**
    * The Descent (BIBLE 12.7): Eldra unweaves the Sanctum and weaves the Long Night again, one
-   * thread deeper. The run, the essences and the stones go; threads are woven from the
-   * essences gathered since the last Descent; relics, shards, deeds, the Chronicle and
-   * Recognition stay. A few stones survive with the Remembered Stones.
+   * thread deeper. The run, the essences and the stones go; the thread grows by what the
+   * walker's deepest stage adds to it; relics, shards, deeds, the Chronicle and Recognition
+   * stay. A few stones survive with the Remembered Stones.
    */
   descend(now: number): number {
     const s = this.state;
@@ -1741,7 +1885,6 @@ export class GameEngine {
     s.descents += 1;
     s.threads += threads;
     s.lifetime.threads += threads;
-    s.descentMark = s.lifetime.essencesEarned;
     s.essences = 0;
     const altars: GameState["altars"] = {};
     for (const altar of ALTARS) {
@@ -1750,7 +1893,11 @@ export class GameEngine {
     }
     s.altars = altars;
     s.lore.readings.push(0);
+    // The word given at this dusk holds through the unweaving: it is given again, below.
+    const standing = standingPromise(s);
+    if (standing) s.pledge = standing.progress.hero;
     this.resetRun(now);
+    this.givePromise(now);
     this.emit({ type: "descended", threads });
     this.checkMilestones(milestones);
     this.refresh(now);
@@ -1798,6 +1945,8 @@ export class GameEngine {
     const s = this.state;
     const index = s.inventory.findIndex((item) => item.uid === itemUid);
     if (index < 0) return false;
+    // Brom keeps the weapon on his anvil for the night: it is not swapped under his hammer.
+    if (s.inventory[index].slot === "weapon" && promiseOf(s, "anvil")) return this.held();
     const [item] = s.inventory.splice(index, 1);
     const previous = s.equipment[item.slot];
     s.equipment[item.slot] = item;
@@ -1810,6 +1959,7 @@ export class GameEngine {
     const s = this.state;
     const item = s.equipment[slot];
     if (!item || s.inventory.length >= INVENTORY_LIMIT) return false;
+    if (slot === "weapon" && promiseOf(s, "anvil")) return this.held();
     delete s.equipment[slot];
     s.inventory.push(item);
     this.refresh(now);
@@ -1849,6 +1999,7 @@ export class GameEngine {
     if (!item || item.forge >= FORGE_MAX) return false;
     const cost = forgePrice(s, item);
     if (cost > s.shards) return false;
+    if (promiseAbstains(s, "shards") || (slot === "weapon" && promiseOf(s, "anvil"))) return this.held();
     s.shards -= cost;
     item.forge += 1;
     this.refresh(now);
@@ -1871,6 +2022,7 @@ export class GameEngine {
     if (!offer) return false;
     const cost = shardPrice(s, offer.cost);
     if (cost > s.shards) return false;
+    if (promiseAbstains(s, "shards")) return this.held();
     const level = Math.max(1, s.maxStageEver - 1);
     switch (id) {
       case "chest":
@@ -1930,6 +2082,7 @@ export class GameEngine {
     const ware = caravanWare(isoWeek(now));
     const cost = shardPrice(s, ware.cost);
     if (cost > s.shards) return false;
+    if (promiseAbstains(s, "shards")) return this.held();
     const level = Math.max(1, s.maxStageEver - 1);
     switch (ware.id) {
       case "token":

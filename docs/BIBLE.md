@@ -281,14 +281,17 @@ Every existing system, what it is in the world, and the word the UI can lean on.
 |---|---|
 | 20 companions, hired in order | The people the walker meets along the road, always in the same order, because the night is always the same night. |
 | Companions reset on ascension | At dusk, everyone forgets. Only the walker (and Pip) remember. |
+| The Promise (shipped): at dusk, the walker's word to one companion shapes the night; kept until the next dusk with the King fallen, the night counts twice in their memory for the two words their last memories wait for (if they reached level 100), once otherwise; never the same companion two nights running (section 12.11) | At dusk everyone forgets, except a word given. A companion cannot remember the walker, but can ask them for something, and a walker who keeps asking to be remembered can at least be someone who keeps their word. |
+| What the word forbids is refused, and only the walker breaks it, on purpose (shipped) | A word given is not broken by a slip of the hand: the night itself holds the walker to it. Taking it back is a choice, and the companion sees it made. |
+| The company alone respects the word (shipped): the autopilot and the catch-ups never hire the one left behind, never walk into a seam they cannot hold | They heard the walker promise. They would not make a liar of them while they are away. |
 | Companion DPS continues when you do not click | They are real fighters, not summons. They do not need you to hold their hand. |
 | Levels, cost ×1.07 | Trust, bought with coin and time: each level is a night's worth of friendship compressed into an evening. |
 | Talents at 10/25/50/100/150 | Techniques they remember from their own past. Level 50 talents are their signature: who they really are. |
 | Milestones ×3.5 every 25 levels from 200 | **Legend tiers**: a companion pushed this far starts to become a legend of the night itself. |
 | Hero glyph and color | Their sigil, painted on their medallion. |
 | Party medallions, shots to the monster | Companions visibly fighting. Each strike family (arrow, blade, claw, blunt, spell) is their fighting style. |
-| Idle bonus (Patience, Kaelen 50, Morgrath 50) | When the walker steps back, the companions find their rhythm. Kaelen's **Sentinel's Vigil** and Morgrath's **Silent Legion** are disciplines that only work when no one interrupts. In the Truth: when the dreamer's eyes half-close, the dream deepens. |
-| The walker's strikes stand in for the idle bonus, blow for blow (shipped): a strike takes the place of as much of the bonus, only strikes beyond it add, so a light hand never costs | The Vigil and the Legion keep a rhythm. The walker's blade does not break it; it takes its place in it. Strike harder than the rhythm and the walker leads. |
+| Patience bonus (the altar, Kaelen 50, Morgrath 50): companions hit that much harder, always | The companions find their rhythm, and keep it. Kaelen's **Sentinel's Vigil** and Morgrath's **Silent Legion** are disciplines of the long watch: they hold whatever the walker does. In the Truth: when the dreamer's eyes half-close, the dream deepens. |
+| The walker's strikes add to the Patience bonus (shipped; they stood in for it, blow for blow, until one sentence had to say it) | The Vigil and the Legion keep a rhythm. The walker's blade does not break it, and does not take its place: it strikes between the beats. |
 | Autopilot after 60 s away | Left alone, the company spends its coin and goes back to the boss that stopped it. They have done this before. |
 | Spending while away | The company levels itself up: they know what they need. |
 
@@ -316,6 +319,12 @@ Every existing system, what it is in the world, and the word the UI can lean on.
 | Ascension resets gold, companions, stage, powers, run stats | What the night takes back. |
 | Ascension history (100 entries) | The **Chronicle**: one line per night (section 12.1). |
 | Save version 4 altar refund | In-world event: **the Reckoning of the Stones**. The Sanctum was rebuilt; every walker got back what they had offered and chose again. Fragment-worthy. |
+
+**The Sanctum wakes in three times** (shipped): a stone only answers a walker it has seen
+come back. Might, the Blade, Fortune and Patience answer from the first night; Time,
+Treasure and Bargain from the third; the six others from the fifth. A stone already raised
+never goes back to sleep. The Harvest stops at five levels (shipped): a husk only holds so
+many seeds.
 
 **The thirteen altars and who raised them** (altar legends, one per altar, shown in the
 altar card tooltip once the altar reaches level 5):
@@ -378,11 +387,11 @@ one).
 | Open tab, player away, full progress | The dreamer dozes; the dream holds. The company walks on. |
 | Hidden tab or closed game catch-up, capped at 8 h | One night's sleep. The dream cannot run longer than a night without being looked at again. |
 | Reunion (shipped): back from 30 min or more away, companion damage ×3 for a sixth of the absence (capped at an hour: a night gives the full hour), counted from the walker's return, never during it | The company held the road without the walker. When the walker comes back, they fight with a lighter heart. The UI says **Reunion** (FR: *Retrouvailles*). |
-| The company's account (shipped): at the Reunion, what changed while away (road, gold, walls, guardians, who joined, techniques remembered, levels) | Around the fire, the company tells the walker the road it held: who joined, who remembered what, which guardian stood in the way and gave. They walked it; the walker did not. It is their story, plainly told, not a dream's. |
+| The company's account (shipped): at the Reunion, what changed while away (road, gold, walls, guardians, who joined, techniques remembered, levels) | Around the fire, the company tells the walker the road it held: who joined, who remembered what, which guardian stood in the way and gave. They walked it; the walker did not. It is their story, plainly told, not a dream's. Shipped too: they end on one fragment of the Chronicle the walker had not read, kept for them by the fire. |
 | Spending while away by breakpoints (shipped): the next companion first, then levels up to a talent or a milestone, saving for one within reach | Companions spend as soldiers do: a friend met on the road is welcomed first, then the coin goes to what makes them stronger at once, never a coin at a time. For a technique almost within reach, they wait a little. |
 | Closed game (shipped): the time since the last save is caught up when it opens again, like a hidden tab (8 h at most, the Long Thread's hours included), never more than the server saw pass | The company does not wait for the walker. They keep the road for a night and tell it at the Reunion. Past a night, the world holds its breath and waits, perfectly still. |
 | The dream leaves no inventory | Dreams leave only a feeling that you were somewhere: one line (**Dreams on return**, section 12.8). The inventory is the company's to tell, at the Reunion. |
-| Guest play, not kept | An **unnamed walker**. The night forgets the unnamed. |
+| Guest play (shipped), kept for the browser that played it, forgotten after 30 days without a visit, never ranked | An **unnamed walker**. The Ledger holds a thread without a name for thirty nights after it was last walked; the Roll only takes names. |
 | Account creation | **Inscribing your name on the Roll.** |
 | E-mail confirmation within 3 days | **Sealing the name.** An unsealed name fades from the Ledger after three nights. |
 | Save conflict (409), choosing a run | "Two threads carry your name. The Ledger asks which one is you." |
@@ -1031,7 +1040,7 @@ the Grove*). On top of them, **24 named relics** with a legend, a fixed source a
 |---|---|---|---|---|---|
 | `oathcutter` | Oathcutter / Tranche-Serment | Legendary | Fallen King, any form, 2% per first clear | +100% damage to the King (stages multiple of 50) | "Kaelen broke it on the throne steps the night he ran. It has been trying to get back up the stairs ever since." |
 | `thousandth-arrow` (**shipped**) | The Thousandth Arrow / La Millième Flèche | Legendary | Moss Alpha, on its 1,000th lifetime kill | +3% crit chance (counts toward the cap) | "Maëlle fletched it the night she lost count of the nights. It has never missed, which bothers her." |
-| `quietus` | Quietus / Quiétus | Mythic | Morgrath's Recognition 5 gift | Idle bonus reaches full value in 20 s instead of 30 s | "A scythe that has never been swung. Morgrath says it will be, once." |
+| `quietus` | Quietus / Quiétus | Mythic | Morgrath's Recognition 5 gift | Patience bonus ×1.5 (shipped) | "A scythe that has never been swung. Morgrath says it will be, once." |
 | `unfinished-hammer` (**shipped**) | The Unfinished Hammer / Le Marteau inachevé | Legendary | Brom's Recognition 5 gift | -15% forge cost | "Forged every night for a king who stopped needing it. Finished, at last, for you." |
 | `splinter-of-sky` | Splinter of the Sky / Éclat de voûte | Mythic | Astral stratum (era 4) guardians, 1% | +1 shard on every guardian kill | "A blade cut from the Sky-Glass. Look along its edge and you see a room with a lamp in it." |
 | `dawnbreak` | Dawnbreak / Point-du-jour | Mythic | Descent 5 or deeper, the Dawn at stage 3000 | +25% DPS during the Seam event | "It is warm to the touch, like a window in the morning." |
@@ -1086,9 +1095,9 @@ porte. »*). Its legend in the Chronicle is written by the Nameless.
 
 ## 12. New mechanics that serve the story
 
-Eight systems. None of them adds a new way to get stronger faster than the current
-balance allows, except the Descent, which is the second prestige layer PRODUCT.md already
-asks for. Their cost for the anti-cheat is listed in section 21.
+Eight systems, then the Promise (12.11), the game's own mechanic. None of them adds a new
+way to get stronger faster than the current balance allows, except the Descent, which is
+the second prestige layer PRODUCT.md already asks for. Their cost for the anti-cheat is listed in section 21.
 
 ### 12.1 The Chronicle (codex)
 
@@ -1106,9 +1115,13 @@ half of it by playing.
 > **Shipped**: runs are counted for every companion; memories, hire lines and the +10% are
 > live for Maëlle and Brom, the others join with their arcs.
 
-Each companion has a **Recognition** level from 0 to 5, raised by the number of distinct
-runs (ascensions) in which that companion reached level 100: tiers at 1, 3, 7, 15 and 30
-such runs. Each tier unlocks one memory in the Chronicle (section 10.3), a short toast
+Each companion has a **Recognition** level from 0 to 5, raised by runs: a night
+(ascension) in which that companion reached level 100 counts once, twice when it kept one
+of the two promises their memories wait for (section 12.11); a promise kept to a companion
+who stayed under level 100 counts the night once. Tiers at 1, 3, 7, 15 and 32 runs, and the last
+two memories each ask one promise kept: nobody is fully remembered by only walking past.
+(Before promises, save version 9 and older, the tiers were 1, 3, 7, 15 and 30 runs alone:
+what a companion remembered then, they keep.) Each tier unlocks one memory in the Chronicle (section 10.3), a short toast
 when first reached ("Maëlle looks at you strangely."), and a visual change on the
 medallion (a thin gold ring per tier). At tier 5, a **gift** for eight companions (named
 relics) and a permanent **+10% DPS for that companion**.
@@ -1173,9 +1186,13 @@ deepest act.
 - **Resets:** everything an ascension resets, plus essences and altar levels.
 - **Keeps:** relics, shards, achievements, fragments, bestiary, Recognition, lifetime
   statistics, best stage ever.
-- **Gives:** **Threads** (FR: *Fils*), from the essences collected during this Descent. A
-  shape to balance with the bot: `threads = floor(2 × (log10(E) − 5))` for `E` essences
-  collected since the last Descent (0 under 1e6; 8 at 1e9; 20 at 1e15).
+- **Gives:** **Threads** (FR: *Fils*). Shipped: the thread is as long as the night has gone
+  deep, `floor(2^((deepest stage − 750) / 250))` woven in all (2 at stage 1000, twice as many
+  with every Age, 32 at stage 2000, 512 at the Dawn), and a Descent weaves only what the
+  walker's deepest stage adds to it. In the world: every thread is one night, and Eldra has
+  no new thread for a night that went no deeper than the last. (The first shape, threads
+  from the essences of each Descent, paid the same for a shallow night as for a deep one:
+  descending often and shallow was the best way down.)
 - **Spends at Eldra's Loom** on eight **Weaves** (FR: *Tissages*), permanent:
 
   | Weave EN / FR | Effect per level | Cap |
@@ -1232,6 +1249,72 @@ same rules as every line: reveal, never explain; the Truth is never stated.
 | The Loom | Descent 1 | Eldra at her loom, the woven night on its beam. |
 | The Threshold | Stage 2,000 | Morgrath says the word nobody says. |
 | Not Yet | Stage 3,000 | The line of light, and the road ending. |
+
+### 12.11 The Promise
+
+> **Shipped** (save version 10): the twenty requests, the word held by the engine, the knot
+> on the medallion, the Promise tab of the Sanctum (`data/promises.ts`,
+> `content/story/promises.ts`).
+
+The game's own mechanic, born of its fiction: **at dusk everyone forgets, except a word
+given.** Before the company gathers, one companion may ask the walker for something, and the
+walker may give their word. One word a night, to one companion. The night is then walked
+differently: what the word forbids is refused by the night itself (a walker who gave their
+word does not break it by accident), the company left alone respects it too, and only the
+walker can take it back, on purpose.
+
+- **Opens** (shipped) once a companion half remembers the walker (Recognition 2, three nights walked together): nobody asks a stranger for their word. Each companion asks from their own second memory on. **Nobody
+  asks two nights running**: the companion who had last night's word waits a dusk. And
+  nobody asks for a night the walker has never walked: a request is only made once every
+  stage it needs cleared (its King or Kings, the guardian it waits at) lies under the
+  walker's best stage, counted from where the night will start.
+- **Given** in the Sanctum: at once while the night is still at its dusk (nobody hired, no
+  stretch of road cleared, nothing the word forbids already done), otherwise for the next
+  dusk. A word given at a dusk where a Descent begins is given again below.
+- **Kept** at dusk when the night met what it asked **and its King fell** (a King beaten at
+  the head of the run since the word was given: the night has to be walked). The night then
+  counts **twice** in that companion's Recognition (12.2) if they also reached level 100
+  that night and their memories were still waiting for a word (two per companion, the ones
+  their last two memories ask); once otherwise (a word kept to someone who stayed behind, or
+  a third word, is remembered, not doubled). The companion says one line, kept in the
+  Chronicle the first time ("Words kept").
+- **Broken** by the walker's choice (the Sanctum, confirmed), by a dusk called too early, or,
+  for Eldra's, by a seam that closes on the company. Breaking costs no power: what the word
+  forbade is allowed again, the night counts like any other, the companion says one line
+  (a toast, and a knot undone on the medallion until dusk), and nothing goes to the Chronicle.
+- **Why the rule:** every night asks a new question (whose word, and is it worth the depth
+  it costs tonight?), the wall offers a second one (keep it and turn back, or break it and
+  go on), and the last two memories of a companion cannot be had by only walking past them.
+
+**The twenty requests** (one each, always the same; the rule in plain words is shown with it):
+
+| Companion | What they ask | In the world |
+|---|---|---|
+| Maëlle | Nobody past her joins until the night's first guardian falls | "Just you and me, like the first night." |
+| Brom | The weapon counts for nothing all night, and is left alone | He keeps it on his anvil: it has a fold he does not like. |
+| Ysolde | No strike of the walker's own all night | "Stand still. Let me do the shooting." She has seen where you fall. |
+| Brother Cinder | Ashka is not hired all night | Keep the fire between her and him. |
+| Nyx | No power all night | Not tonight: the heart beats alone. |
+| Garrick | No shard spent all night (stall, forge, Caravan) | He wants to count them all at dusk. |
+| Séraphine | No blow for 10 s before the Heart of the Old Grove, which must fall | Her teacher has something to say to her first. |
+| Thorvald | Elites and guardians for half their time, all night | Double or nothing. |
+| Mirelle | No blow for 15 s before the Baron of Rot, who must fall | One more cure to try, and he has to be standing. |
+| Kaelen | Nobody past him joins until the King falls | A knight's place is at the head. |
+| Oriane | The night goes past the stage the last one reached | She has already heard it. Do not make her wrong. |
+| Vorn | No blow for 10 s before the Stone Devourer, which must fall | Biscuit wants a sniff. They are the same sort of hungry. |
+| Lysandre | Two Kings fall this night | One king proves nothing. He needs the second for a footnote. |
+| Ashka | Brother Cinder is not hired all night | His little flame makes hers look patient. |
+| The Nameless | No essence offered to the altars all night | His gauntlet on the walker's essences. (He does not speak yet.) |
+| Eldra | No seam closes on the walker all night; alone, the company only walks into seams it can hold | Every seam that closes, she mends before dusk. |
+| Morgrath | Kaelen is not hired all night | He will not walk beside the King's knight. |
+| Célestine | No crystal caught all night | They sing differently when nobody reaches. |
+| Aurelion | No blow for 10 s before the King | One does not strike a crown unannounced. |
+| The Awakened | The Awakened is not hired all night | They sit down by the road, one open hand toward the dark: go on. |
+
+Each request is written three times in the companion's voice (section 20): the asking, the
+word kept, the word broken. The Nameless and the Awakened do not speak before their last
+memories: theirs are gestures. No request gives away a secret of section 10.3 before its
+Recognition tier (Kaelen asks for "a knight's place", never says whose place it was).
 
 ---
 
@@ -1505,6 +1588,16 @@ logo and the e-mail template stay as they are.
 
 ### 18.2 Grid and scale
 
+> **Shipped** (the creature and the places): the creature is what the walker strikes, so
+> it stays the subject of the arena. Measured against the 140 rows of a scene above its
+> ground line, a normal creature stands at least 45% of the height (63 rows), an elite 60%
+> (84), a guardian 75% (105), the King's forms about 90% (125); in every biome the
+> creatures stand under their elite, the elite under its guardian. The scale is set by the
+> places, not by shrinking the creatures: each biome's building (Brom's forge, the
+> tree-house, the winding house, the house on stilts, the gatehouse) was drawn again small,
+> high in the picture and in the scene's air, so nothing with a door stands at the size of
+> what fights in front of it. The table below is the first plan, kept as the record.
+
 | Asset | Logical size | Notes |
 |---|---|---|
 | Normal monster | 48 × 48 | Silhouette fills about 70% |
@@ -1537,9 +1630,15 @@ and more violet, highlights warmer), never pure black: the darkest outline is `#
 |---|---|---|---|---|---|
 | Hearthfields | `#1a1633` `#2b2450` | `#2e3a24` `#4a5a2a` | `#5f8a3a` `#8bd46a` | `#ffe29a` (lanterns, fireflies) | `#8bd46a` |
 | Wychwood | `#0e1420` `#172a2c` | `#1d2a22` `#2c3f30` | `#2f6b58` `#4fd1a5` | `#c9ffe8` (wisps) | `#4fd1a5` |
-| Deepvaults | `#0b0a14` `#16182e` | `#23264a` `#3a3f70` | `#5a64b8` `#8f9cff` | `#7fd8ff` (runes, shards) | `#8f9cff` |
+| Deepvaults | `#0b0a14` `#12202f` | `#1e324c` `#334d73` | `#5470b8` `#8f9cff` | `#7fd8ff` (runes, shards) | `#8f9cff` |
 | Mire of Osric | `#121410` `#1f2616` | `#2f3318` `#4d5222` | `#7d8f2f` `#b6d94c` | `#e8ff9a` (will-o'-wisps) | `#b6d94c` |
 | Orvane Keep | `#140f24` `#221a3d` | `#2a2347` `#3f3566` | `#7a5bb8` `#c58cff` | `#c9a6ff` (violet fire) | `#c58cff` |
+
+> **Shipped**: the five scenes are held apart by a test (mean color of sky or ground 8 apart
+> in CIELAB for any two biomes). The Hearthfields' ground is drawn on its own ramp above
+> (it had borrowed the Wychwood's teal), and the Deepvaults' dark steps were moved from
+> indigo (`#16182e` `#23264a` `#3a3f70` `#5a64b8`, near twins of the night ramp) to the true
+> blue of the table.
 
 Rarity colors stay those of `RARITY_INFO`; relic icons take their highlight from them.
 
@@ -1642,7 +1741,7 @@ Age XI. The HUD never changes: tokens and contrast stay the same everywhere. A s
 > banners, leaves and mist in motion, the guardian's ground kept calm. The rules now live
 > in DESIGN.md (Imagery). Choices made while building it: buildings are pieces shaded by a
 > builder rather than hand-drawn grids, so one recipe wears down through every era; the
-> Hearthfields keep their hand-drawn props (the mill and the farmhouse later left out) and gain Brom's forge at the crossroads as their showpiece; still
+> Hearthfields keep their hand-drawn props (the mill and the farmhouse later left out) and gain Brom's forge at the crossroads, later set far up the road (18.2); still
 > water floods the Mire only (pools in the Deepvaults read as stripes and were left out).
 > The Sanctum, Loom and Dawn scenes and the Age marks of Ages II to XII shipped next (see 18).
 
@@ -1718,7 +1817,8 @@ In Age X sounds arrive late and muffled; at the Dawn nothing sounds.
 > *frappe*) for the walker's own blow, and the **Ledger** keeps the walker's road.
 
 - **Length:** fragments 140 characters at most, bestiary lines 120, recognition memories
-  180, relic and altar legends 200. One image per line.
+  and promise lines (asked, kept, broken) 180, relic and altar legends 200. One image per
+  line.
 - **Voices:** the King (short, plain, tired, kind), Lysandre (confident, footnoted,
   wrong), Oriane (present tense, certainties), Morgrath (theatrical, honest), Célestine
   (sound words, lowercase feeling), the Stallkeeper (commerce as philosophy), the Ledger
@@ -1751,6 +1851,7 @@ version 5):
 | `secrets: string[]` | Secrets | Ids from the table; no bonus |
 | `descents: number`, `threads: number`, `weaves: Record<id, number>` | Descent | Threads ledger (earned from essences collected ≥ spent + held), caps |
 | `lifetime.kings`, `lifetime.seams`, `lifetime.catchUps` | Deeds, fragments | Kings ≤ bosses on stages multiple of 50 reachable; seams ≤ kills / 400 with margin |
+| `promises: Record<heroId, number>`, `pledge?`, `lastPromise?`, `trail.promise?`, `remembered` (save version 10, shipped) | The Promise (12.11) | Promises kept ≤ ascensions, one more at most per night ended; Recognition ≤ ascensions + promises kept (two at most); never the companion of last night (`lastPromise`), never a stage past the walker's best; the word of a night never swapped nor mended before its dusk, and what it forbids not done while it stands; `remembered` (tiers 4 and 5 held before version 10) bounded by the runs of the old rule and never changed |
 
 **Validation constants that move:** `WAGER_MAX_GOLD` (Pip's Wager, once per golden rat caught), `MAX_TIMED_DPS`
 (Echo of a Walker ×1.25), the offline cap (The Long Thread), crystal timing (Humming Loom,

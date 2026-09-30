@@ -1,4 +1,4 @@
-import { USERNAME_MAX, USERNAME_MIN } from "@idlebound/game";
+import { GUEST_SAVE_DAYS, USERNAME_MAX, USERNAME_MIN } from "@idlebound/game";
 import { defineMessages } from "../define";
 
 /** Account window: sign-up, sign-in, profile, cloud save status, new game. */
@@ -15,7 +15,8 @@ export const account = defineMessages({
     },
     ledger: {
       guest: "Marcheur sans nom",
-      guestPlain: "Invité : ta partie n'est pas conservée.",
+      guestPlain: "Invité : ta partie est gardée pour ce navigateur.",
+      guestConflict: "Deux fils pour un seul marcheur. Le Grand Livre demande lequel est toi.",
       inscribe: "Inscris ton nom au Registre",
       inscribePlain: "(crée un compte)",
       seal: "Scelle ton nom",
@@ -35,6 +36,7 @@ export const account = defineMessages({
     passwordMismatch: "Les deux mots de passe ne correspondent pas.",
     checkInbox: (email: string) => `Un lien de confirmation t'attend sur ${email}.`,
     rejected: "Le serveur a détecté une progression impossible dans cette partie (données modifiées ?). Elle ne sera ni conservée ni classée. Recharge la page pour reprendre ta dernière partie acceptée.",
+    guestInfo: `Sans nom au Registre, le Grand Livre garde ta partie pour ce navigateur seulement, et l'oublie après ${GUEST_SAVE_DAYS} jours sans visite. Elle n'entre pas au classement.`,
     saveInfo: "Ta partie est conservée sur le serveur quelques secondes après chacune de tes actions, au moins toutes les 30 secondes et quand tu quittes la page. Le serveur vérifie chaque envoi avant qu'il n'entre au classement.",
     changePassword: "Changer de mot de passe",
     logout: "Se déconnecter",
@@ -53,8 +55,8 @@ export const account = defineMessages({
     deletedText: "Toutes tes données serveur ont été effacées.",
     deleteWarning: "Cette action est irréversible. Confirme avec ton mot de passe.",
     password: "Mot de passe",
-    pitchTitle: "Sans compte, ta progression n'est pas conservée.",
-    pitchText: "Un compte (e-mail, pseudo, mot de passe) conserve ta partie sur nos serveurs, la synchronise entre tes appareils et t'inscrit au classement. Ta partie en cours est gardée.",
+    pitchTitle: "Un compte garde ta partie sur tous tes appareils.",
+    pitchText: "Elle ne tient plus à ce navigateur, et ton nom entre au classement. Un e-mail, un pseudo, un mot de passe : ta partie en cours vient avec toi.",
     registerTab: "Créer un compte",
     loginTab: "Se connecter",
     email: "E-mail",
@@ -84,7 +86,7 @@ export const account = defineMessages({
       forbidden: "Ce pseudo n'est pas autorisé."
     },
     restart: "Recommencer",
-    restartHint: "Sans compte, ta partie n'est pas conservée : elle sera perdue en fermant la page.",
+    restartHint: "Une nouvelle partie remplace celle que le Grand Livre garde pour ce navigateur.",
     restartConfirmTitle: "Recommencer à zéro ?",
     restartConfirmText: "Toute ta progression actuelle sera perdue.",
     restartConfirmLabel: "Tout recommencer",
@@ -103,7 +105,8 @@ export const account = defineMessages({
     },
     ledger: {
       guest: "Unnamed walker",
-      guestPlain: "Guest: this game is not kept.",
+      guestPlain: "Guest: your game is kept for this browser.",
+      guestConflict: "Two threads for a single walker. The Ledger asks which one is you.",
       inscribe: "Inscribe your name on the Roll",
       inscribePlain: "(create an account)",
       seal: "Seal your name",
@@ -123,6 +126,7 @@ export const account = defineMessages({
     passwordMismatch: "The two passwords don't match.",
     checkInbox: (email: string) => `A confirmation link is waiting for you at ${email}.`,
     rejected: "The server detected impossible progress in this game (edited data?). It will be neither kept nor ranked. Reload the page to pick up your last accepted game.",
+    guestInfo: `With no name on the Roll, the Ledger keeps your game for this browser only, and forgets it after ${GUEST_SAVE_DAYS} days without a visit. It does not enter the leaderboard.`,
     saveInfo: "Your game is kept on the server a few seconds after each of your actions, at least every 30 seconds, and when you leave the page. The server checks every update before it reaches the leaderboard.",
     changePassword: "Change password",
     logout: "Log out",
@@ -141,8 +145,8 @@ export const account = defineMessages({
     deletedText: "All your server data has been erased.",
     deleteWarning: "This cannot be undone. Confirm with your password.",
     password: "Password",
-    pitchTitle: "Without an account, your progress is not kept.",
-    pitchText: "An account (e-mail, username, password) keeps your game on our servers, syncs it across your devices and puts you on the leaderboard. Your current game is kept.",
+    pitchTitle: "An account keeps your game on all your devices.",
+    pitchText: "It no longer hangs on this browser, and your name enters the leaderboard. An e-mail, a username, a password: your current game comes with you.",
     registerTab: "Create an account",
     loginTab: "Log in",
     email: "E-mail",
@@ -172,7 +176,7 @@ export const account = defineMessages({
       forbidden: "This username is not allowed."
     },
     restart: "Start over",
-    restartHint: "Without an account, your game is not kept: it will be lost when you close the page.",
+    restartHint: "A new game replaces the one the Ledger keeps for this browser.",
     restartConfirmTitle: "Start over from scratch?",
     restartConfirmText: "All your current progress will be lost.",
     restartConfirmLabel: "Start over",

@@ -89,7 +89,8 @@ export interface LeaderboardData {
 }
 
 export const api = {
-  me: () => request<{ user: AccountUser | null }>("GET", "/auth/me"),
+  /** `guest`: this browser also carries a guest's game the server keeps. */
+  me: () => request<{ user: AccountUser | null; guest?: boolean }>("GET", "/auth/me"),
   register: (email: string, username: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/register", { email, username, password }),
   login: (email: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/login", { email, password }),
   logout: () => request<{ ok: true }>("POST", "/auth/logout"),
@@ -100,8 +101,10 @@ export const api = {
   changeEmail: (email: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/email", { email, password }),
   changePassword: (currentPassword: string, newPassword: string) => request<{ ok: true }>("POST", "/auth/password", { currentPassword, newPassword }),
   deleteAccount: (password: string) => request<{ ok: true }>("DELETE", "/auth/account", { password }),
-  getSave: () => request<{ save: CloudSave | null }>("GET", "/save"),
-  putSave: (state: GameState, baseRevision: number | null, replace = false, keepalive = false) =>
-    request<{ revision: number; updatedAt: string }>("PUT", "/save", { state, baseRevision, replace }, { keepalive }),
+  /** The account's game, or with `guest` the one kept for this browser without an account. */
+  getSave: (guest = false) => request<{ save: CloudSave | null }>("GET", guest ? "/save/guest" : "/save"),
+  putSave: (state: GameState, baseRevision: number | null, replace = false, keepalive = false, guest = false) =>
+    request<{ revision: number; updatedAt: string }>("PUT", guest ? "/save/guest" : "/save", { state, baseRevision, replace }, { keepalive }),
+  dropGuestSave: () => request<{ ok: true }>("DELETE", "/save/guest"),
   leaderboard: (board: BoardId) => request<LeaderboardData>("GET", `/leaderboard?board=${encodeURIComponent(board)}&limit=50`)
 };

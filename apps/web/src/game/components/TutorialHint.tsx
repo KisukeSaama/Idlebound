@@ -1,14 +1,13 @@
 "use client";
 
-import { ALTAR_REWORK_NOTICE, CLICK_HERO_ID, HERO_BY_ID, heroCost, isBossStage, SKILLS, isSkillUnlocked } from "@idlebound/game";
+import { ALTAR_REWORK_NOTICE, HARVEST_NOTICE_TOLD } from "@idlebound/game";
+import { useEffect, useRef } from "react";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
+import { HINT_READ_MS, currentHint, hintLearned, type Hint, type HintId } from "../hints";
 
-interface Hint {
-  id: string;
-  text: string;
-  position: "center" | "right" | "bottom";
-}
+/** How often the time a hint has spent under the walker's eyes is counted. */
+const READ_STEP_MS = 1_000;
 
 /**
  * Contextual tips for the first minutes; each one goes away once understood. The scene renders
@@ -19,43 +18,59 @@ export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
   const { state, store } = useGame();
   const { t, g } = useI18n();
   const m = t.hud.tutorial;
-  const done = state.tutorial.done;
-  const hint = pickHint();
-
-  function pickHint(): Hint | null {
-    if (!done.includes(ALTAR_REWORK_NOTICE) && state.lifetime.ascensions > 0) {
-      return { id: ALTAR_REWORK_NOTICE, text: m.altarRework, position: "center" };
-    }
-    if (state.lifetime.ascensions > 0 || done.includes("all")) return null;
-    const aldric = state.heroLevels[CLICK_HERO_ID] ?? 0;
-    if (!done.includes("hire") && aldric === 0 && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1)) {
-      return { id: "hire", text: m.hire, position: "right" };
-    }
-    const maelle = state.heroLevels.maelle ?? 0;
-    if (!done.includes("companion") && maelle === 0 && state.gold >= HERO_BY_ID.maelle.baseCost) {
-      return { id: "companion", text: m.companion(g.heroes.maelle.name), position: "right" };
-    }
-    if (!done.includes("boss") && isBossStage(state.stage) && state.monster && state.monster.kind !== "normal" && state.lifetime.bosses === 0) {
-      return { id: "boss", text: m.boss, position: "bottom" };
-    }
-    const firstSkill = SKILLS.find((skill) => isSkillUnlocked(state, skill.id));
-    if (!done.includes("skill") && firstSkill && state.lifetime.skillsUsed === 0) {
-      return { id: "skill", text: m.skill(firstSkill.hotkey), position: "bottom" };
-    }
-    if (!done.includes("farm") && !state.autoAdvance && state.lifetime.bossFails > 0) {
-      return { id: "farm", text: m.farm, position: "center" };
-    }
-    if (!done.includes("ascend") && state.maxStage >= 51) {
-      return { id: "ascend", text: m.ascend, position: "center" };
-    }
-    return null;
-  }
-
+  const hint = currentHint(state);
   if (!hint) return null;
   return (
     <div className={`tutorial-hint hint-${placement} hint-${hint.position}`} role="note" onPointerDown={(event) => event.stopPropagation()}>
-      <span>{hint.text}</span>
+      <span>{hintText(hint)}</span>
       <button type="button" aria-label={m.okLabel} onClick={() => store.act((engine) => engine.completeTutorial(hint.id))}>{m.ok}</button>
     </div>
   );
+
+  function hintText({ id, skill }: Hint): string {
+    switch (id) {
+      case "hire": return m.hire;
+      case "companion": return m.companion(g.heroes.maelle.name);
+      case "boss": return m.boss;
+      case "skill": return m.skill(skill?.hotkey ?? "1");
+      case "farm": return m.farm;
+      case "ascend": return m.ascend;
+      case ALTAR_REWORK_NOTICE: return m.altarRework;
+      case HARVEST_NOTICE_TOLD: return m.harvestCap;
+    }
+  }
+}
+
+/**
+ * Sends a hint away once it stops making sense, without the walker's "OK": when what they did
+ * answered it, or once it has been read (`HINT_READ_MS` on screen in a watched tab). A notice
+ * waits to be acknowledged. Marked in the save, so every device agrees; never a player input
+ * (the autopilot keeps its own clock).
+ */
+export function useHintDismissal() {
+  const { state, store } = useGame();
+  const hint = currentHint(state);
+  const id = hint?.id ?? null;
+  const timed = hint !== null && !hint.notice;
+  const shown = useRef<HintId | null>(null);
+
+  // The hint that just left the screen: if the walker's own doing answered it, it is done.
+  useEffect(() => {
+    const before = shown.current;
+    shown.current = id;
+    if (before === null || before === id) return;
+    const current = store.state;
+    if (!current.tutorial.done.includes(before) && hintLearned(current, before)) store.apply((engine) => engine.completeTutorial(before));
+  }, [store, id]);
+
+  useEffect(() => {
+    if (id === null || !timed) return;
+    let read = 0;
+    const timer = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      read += READ_STEP_MS;
+      if (read >= HINT_READ_MS) store.apply((engine) => engine.completeTutorial(id));
+    }, READ_STEP_MS);
+    return () => clearInterval(timer);
+  }, [store, id, timed]);
 }

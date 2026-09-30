@@ -28,8 +28,7 @@ export function AccountWindow({ onClose }: { onClose: () => void }) {
 function Profile() {
   const cloud = useCloud();
   const ui = useUi();
-  const { t, locale } = useI18n();
-  const text = t.account;
+  const text = useI18n().t.account;
   const [panel, setPanel] = useState<"none" | "password" | "delete">("none");
   const user = cloud.user!;
   return (
@@ -42,6 +41,26 @@ function Profile() {
         </div>
       </div>
       {!user.emailVerified ? <VerifyNotice /> : null}
+      <LedgerStatus />
+      <p className="modal-hint">{text.saveInfo}</p>
+      <div className="account-actions">
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPanel(panel === "password" ? "none" : "password")}>{text.changePassword}</button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => void cloud.logout().then(() => ui.toast({ tone: "info", title: text.loggedOutTitle, text: text.loggedOutText }))}>{text.logout}</button>
+        <button type="button" className="btn btn-danger btn-sm" onClick={() => setPanel(panel === "delete" ? "none" : "delete")}>{text.deleteAccount}</button>
+      </div>
+      {panel === "password" ? <ChangePassword onDone={() => setPanel("none")} /> : null}
+      {panel === "delete" ? <DeleteAccount /> : null}
+    </section>
+  );
+}
+
+/** What the Ledger holds of this game, an account's or a guest's: state, last save, trouble. */
+function LedgerStatus() {
+  const cloud = useCloud();
+  const { t, locale } = useI18n();
+  const text = t.account;
+  return (
+    <>
       <div className={`cloud-status status-${cloud.status}`}>
         <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />
         <div>
@@ -53,15 +72,7 @@ function Profile() {
       {cloud.status === "rejected" ? (
         <p className="form-error">{text.rejected}</p>
       ) : null}
-      <p className="modal-hint">{text.saveInfo}</p>
-      <div className="account-actions">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPanel(panel === "password" ? "none" : "password")}>{text.changePassword}</button>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => void cloud.logout().then(() => ui.toast({ tone: "info", title: text.loggedOutTitle, text: text.loggedOutText }))}>{text.logout}</button>
-        <button type="button" className="btn btn-danger btn-sm" onClick={() => setPanel(panel === "delete" ? "none" : "delete")}>{text.deleteAccount}</button>
-      </div>
-      {panel === "password" ? <ChangePassword onDone={() => setPanel("none")} /> : null}
-      {panel === "delete" ? <DeleteAccount /> : null}
-    </section>
+    </>
   );
 }
 
@@ -218,16 +229,21 @@ function DeleteAccount() {
 
 function AuthForms() {
   const [mode, setMode] = useState<"register" | "login" | "forgot">("register");
+  const cloud = useCloud();
   const text = useI18n().t.account;
+  // The session ended under an account's game: it is not a guest's, and nothing keeps it.
+  const adrift = cloud.status === "offline";
   return (
     <section className="account-section">
       <div className="profile-card is-guest">
         <div className="profile-avatar" aria-hidden="true">?</div>
         <div>
           <h3>{text.ledger.guest}</h3>
-          <p className="modal-hint">{text.ledger.guestPlain}</p>
+          {adrift ? null : <p className="modal-hint">{text.ledger.guestPlain}</p>}
         </div>
       </div>
+      <LedgerStatus />
+      {adrift ? null : <p className="modal-hint">{text.guestInfo}</p>}
       <div className="auth-pitch">
         <strong>{text.pitchTitle}</strong>
         <span> {text.pitchText}</span>

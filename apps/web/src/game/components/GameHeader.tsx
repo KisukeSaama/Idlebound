@@ -7,8 +7,11 @@ import type { CloudStatus } from "../cloud";
 import { useCloud, useFormat, useGame, useReveals, useUi } from "../context";
 import { ClickIcon, EssenceIcon, GoldIcon, Picto, ShardIcon, SwordIcon } from "../icons";
 
-/** States of the Ledger worth more than a dot: a word and a sign, read aloud when they come. */
-const TROUBLE: ReadonlySet<CloudStatus> = new Set<CloudStatus>(["error", "rejected", "unverified"]);
+/**
+ * States of the Ledger worth more than a dot: a word and a sign, read aloud when they come.
+ * A guest's game is kept like an account's, so its troubles are told the same way.
+ */
+const TROUBLE: ReadonlySet<CloudStatus> = new Set<CloudStatus>(["error", "rejected", "unverified", "offline"]);
 
 export function GameHeader() {
   const { state, derived } = useGame();
@@ -18,7 +21,7 @@ export function GameHeader() {
   const { shown, freshClass } = useReveals();
   const { t, locale } = useI18n();
   const m = t.hud.header;
-  const trouble = cloud.user && TROUBLE.has(cloud.status) ? t.account.status[cloud.status] : null;
+  const trouble = TROUBLE.has(cloud.status) ? t.account.status[cloud.status] : null;
 
   return (
     <header className="game-header">
@@ -65,7 +68,6 @@ export function GameHeader() {
       >
         {trouble ? null : <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />}
         <span className="account-name">{cloud.user ? cloud.user.username : t.account.ledger.guest}</span>
-        {!cloud.user ? <span className="account-cta">{m.notSaved}</span> : null}
         {trouble ? (
           <span className={`sync-badge sync-badge-${cloud.status}`}>
             <Picto name="warning" size={14} />

@@ -62,7 +62,30 @@ import { WILD_BOAR } from "./grids/wild-boar";
 import { WILL_O_WISP } from "./grids/will-o-wisp";
 import { WINDOW_KING } from "./grids/window-king";
 import { WOVEN_KING } from "./grids/woven-king";
-import type { CreatureRecipe, ResolvedRecipe } from "./types";
+import type { CreatureRank, CreatureRecipe, ResolvedRecipe } from "./types";
+
+/** The rows of a scene above the ground line: the height a creature is measured against. */
+export const ARENA_ROWS = 140;
+
+/**
+ * How tall the body of each rank is drawn, in rows of the scene (the air under a flier left
+ * out): the creature is what the walker strikes, so it stays the subject of the arena. A
+ * normal creature stands at least 45% of the arena's height, an elite 60%, a guardian 75%,
+ * the King's forms about 90%; each rank stops where the next begins, so a biome's elite
+ * stands over its creatures and its guardian over its elite. A body lying low (a toad, a
+ * hound, a bramble) is measured along its length, which must reach `LOW_BODY_LENGTH`.
+ * Pip, the treasure, is smaller than anything that fights.
+ */
+export const CREATURE_HEIGHTS: Record<CreatureRank, readonly [number, number]> = {
+  treasure: [24, 44],
+  normal: [63, 87],
+  elite: [84, 104],
+  guardian: [105, 120],
+  king: [105, 128]
+};
+
+/** The length a normal creature lying low must reach instead of the height. */
+export const LOW_BODY_LENGTH = 88;
 
 /**
  * The creatures of the five biomes, the Lantern Queen and Pip, every one drawn by hand

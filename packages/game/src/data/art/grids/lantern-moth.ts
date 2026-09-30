@@ -101,8 +101,9 @@ export const LANTERN_MOTH: CreatureGrid = {
     x: { pal: C.ink }
   },
   idle: {
-    // Hovering: the whole body rises and sinks on its wingbeat.
-    waist: 74,
+    // Hovering: the whole body rises and sinks on its wingbeat (the waist two rows short of the
+    // last, so the highest beat lifts nothing from under the grid).
+    waist: 72,
     breath: [0, 1, 1, 2, 2, 1, 1, 0, 0, 0],
     // Once in a cycle, the wingtips dip.
     twitch: {

@@ -212,7 +212,7 @@ export const SCENES: Record<string, SceneRecipe> = {
     ranges: [
       { kind: "mountains", color: C.night4, base: 74, height: 22, rim: C.keepStone },
       { kind: "hills", color: C.night3, base: 74, height: 10, rim: C.night4 },
-      { kind: "treeline", color: C.woodNight2, base: 74, height: 9 }
+      { kind: "treeline", color: C.woodFloor, base: 74, height: 9 }
     ],
     // Far across the fields, on its hill, the Keep: one window still lit.
     landmark: { kind: "keep", x: 206, base: 76, color: C.night3, rim: C.keepStone },
@@ -237,15 +237,14 @@ export const SCENES: Record<string, SceneRecipe> = {
       straw: [C.goldDeep, C.fur1]
     },
     rim: C.lilac,
-    // Brom's forge at the crossroads, near the walker; far behind in the mist, the barn and the chapel.
+    // Far up the road, in the mist of the fields: Brom's forge at the crossroads, the barn and the chapel.
     structures: [
       { id: "hearth-barn", x: 60, base: 88, haze: true },
       { id: "hearth-barn", x: 150, base: 84, haze: true, flip: true },
       { id: "hearth-chapel", x: 186, base: 84, haze: true },
       { id: "hearth-barn", x: 460, base: 88, haze: true, flip: true },
-      { id: "brom-forge", x: 248, base: 136, flip: true }
+      { id: "brom-forge", x: 232, base: 98, haze: true, flip: true }
     ],
-    halos: [{ x: 244, y: 128, r: 14, color: C.goldDeep }],
     build: {
       ramps: {
         stone: [C.night3, C.night4, C.keepStone, C.haze],
@@ -255,18 +254,19 @@ export const SCENES: Record<string, SceneRecipe> = {
       },
       outline: C.ink,
       rim: C.lilac,
-      growth: [C.woodFloor2, C.field2, C.woodLeaf],
+      growth: [C.field1, C.field2, C.field3],
       far: [C.night3, C.keepStone],
       haze: [C.night3, C.night4, C.keepStone]
     },
     glow: C.goldLight,
-    // The fields at night: dark, dull, pulled toward blue-green; only the lights warm them.
-    ground: { edge: C.woodFloor2, fill: C.woodFloor2, near: C.woodNight2, road: C.keepStone, rut: C.night4 },
+    // The fields at night, on the plains' own greens (BIBLE 18.3): dark and dull, but moss, not
+    // the wood's teal; only the lights warm them.
+    ground: { edge: C.field1, fill: C.field1, near: C.woodFloor, road: C.keepStone, rut: C.night4 },
     shadow: C.ink,
     night: { rim: C.lilac },
     grass: {
-      blades: [C.woodLeaf, C.woodLeaf, C.woodFloor2],
-      tip: C.woodLeaf,
+      blades: [C.field2, C.field2, C.field1],
+      tip: C.field3,
       heart: C.lilac,
       rim: C.lilac,
       stone: [C.keepStone, C.night4],
@@ -324,7 +324,7 @@ export const SCENES: Record<string, SceneRecipe> = {
       { id: "grove-watch", x: 160, base: 106, haze: true },
       { id: "grove-stones", x: 204, base: 105, haze: true },
       { id: "grove-watch", x: 470, base: 104, haze: true, flip: true },
-      { id: "grove-hut", x: 70, base: 127 },
+      { id: "grove-hut", x: 74, base: 112, haze: true },
       { id: "grove-dolmen", x: 252, base: 121 },
       { id: "wayshrine", x: 294, base: 113 },
       { id: "grove-dolmen", x: 430, base: 117, flip: true },
@@ -348,7 +348,6 @@ export const SCENES: Record<string, SceneRecipe> = {
       far: [C.woodNight2, C.woodFloor2],
       haze: [C.woodFloor, C.woodFloor2, C.woodLeaf]
     },
-    halos: [{ x: 106, y: 76, r: 12, color: C.woodFloor2 }],
     prop: C.woodNight,
     glow: C.wisp,
     ground: { edge: C.woodFloor2, fill: C.woodFloor, near: C.woodNight2, road: C.flesh0, rut: C.night1 },
@@ -394,15 +393,15 @@ export const SCENES: Record<string, SceneRecipe> = {
       { id: "vault-pillar", x: 164, base: 103, haze: true },
       { id: "vault-scaffold", x: 440, base: 104, haze: true, flip: true },
       { id: "vault-pillar", x: 8, base: 112 },
-      { id: "vault-winding-house", x: 70, base: 134, flip: true },
+      { id: "vault-winding-house", x: 84, base: 112, haze: true, flip: true },
       { id: "vault-pillar", x: 306, base: 114, flip: true },
-      { id: "vault-gallery", x: 262, base: 122 },
-      { id: "vault-cart", x: 234, base: 136 },
+      { id: "vault-gallery", x: 262, base: 114, haze: true },
+      { id: "vault-cart", x: 232, base: 116, haze: true },
       { id: "vault-crystals", x: 290, base: 138 },
-      { id: "vault-gallery", x: 404, base: 118, flip: true },
+      { id: "vault-gallery", x: 404, base: 112, haze: true, flip: true },
       { id: "vault-crystals", x: 470, base: 128, flip: true },
       { id: "vault-pillar", x: 530, base: 112 },
-      { id: "vault-headframe", x: 596, base: 126, flip: true }
+      { id: "vault-headframe", x: 596, base: 110, haze: true, flip: true }
     ],
     build: {
       ramps: {
@@ -421,10 +420,7 @@ export const SCENES: Record<string, SceneRecipe> = {
       far: [C.vault1, C.vault2],
       haze: [C.vault1, C.vault2, C.vault3]
     },
-    halos: [
-      { x: 109, y: 96, r: 10, color: C.flesh0 },
-      { x: 288, y: 122, r: 13, color: C.vault3 }
-    ],
+    halos: [{ x: 288, y: 122, r: 13, color: C.vault3 }],
     prop: C.vaultNight,
     glow: C.shard,
     ground: { edge: C.vault2, fill: C.vault1, near: C.vaultNight, road: C.vaultNight },
@@ -468,12 +464,12 @@ export const SCENES: Record<string, SceneRecipe> = {
       { id: "mire-posts", x: 186, base: 106, haze: true },
       { id: "mire-drowned-cottage", x: 228, base: 108, haze: true },
       { id: "mire-drowned-cottage", x: 118, base: 106, haze: true, flip: true },
-      { id: "mire-alchemist", x: 66, base: 130, reflect: true },
+      { id: "mire-alchemist", x: 84, base: 112, haze: true },
       { id: "mire-lantern-post", x: 14, base: 112, reflect: true },
       { id: "mire-sluice", x: 256, base: 114, reflect: true },
       { id: "mire-jetty", x: 262, base: 132, reflect: true },
       { id: "mire-lantern-post", x: 234, base: 106, reflect: true, flip: true },
-      { id: "mire-stilt-hut", x: 440, base: 114, reflect: true, flip: true },
+      { id: "mire-stilt-hut", x: 440, base: 110, haze: true, flip: true },
       { id: "mire-sluice", x: 560, base: 110, reflect: true }
     ],
     halos: [
@@ -537,7 +533,7 @@ export const SCENES: Record<string, SceneRecipe> = {
       { id: "keep-hall-wall", x: 162, base: 106, haze: true },
       { id: "keep-warden", x: 204, base: 109, haze: true },
       { id: "keep-pillars", x: 250, base: 108, haze: true },
-      { id: "keep-gatehouse", x: 68, base: 133 },
+      { id: "keep-gatehouse", x: 62, base: 112, haze: true },
       { id: "keep-brazier", x: 72, base: 140 },
       { id: "keep-brazier", x: 224, base: 122 },
       { id: "keep-warden", x: 252, base: 121 },

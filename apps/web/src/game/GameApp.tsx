@@ -4,6 +4,7 @@ import {
   ACHIEVEMENT_BY_ID,
   BESTIARY_BY_ID,
   BIOMES,
+  PROMISE_BY_HERO,
   SKILLS,
   SKILL_BY_ID,
   WALKER_MIN_ASCENSIONS,
@@ -23,6 +24,7 @@ import {
   eclipseWord,
   isKingStage,
   kingWord,
+  promiseText,
   rarityColor,
   recognitionTier,
   regaliaWord,
@@ -40,8 +42,10 @@ import { audio } from "./audio";
 import { haptics } from "./haptics";
 import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
+import { hintsAnsweredBy } from "./hints";
 import { SKILL_PICTO, type PictoName } from "./icons";
-import { ANNOUNCED, revealMark, stratumLabel, type RevealId } from "./shell";
+import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, revealMark, stratumLabel, type RevealId } from "./shell";
+import { describePromise } from "./text";
 import { useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
@@ -58,15 +62,10 @@ import { PHONE_QUERY, Toasts, type Toast } from "./components/Toasts";
 import { WindowHost } from "./windows/WindowHost";
 import "./game.css";
 
-/** A guest who really played is warned before losing their game by leaving. */
-const GUEST_WARNING_SECONDS = 120;
 /** Never more than one fragment toast a minute (BIBLE 17.4): the others wait in the Chronicle. */
 const FRAGMENT_TOAST_GAP_MS = 60_000;
-/**
- * Chronicle sources that already have their own toast (memories, relic legends, secrets,
- * the King's Word, what stays after an absence, the sayings read at the stall).
- */
-const OWN_TOAST: ReadonlySet<ChronicleEntry["source"]> = new Set(["memory", "relic", "secret", "crown", "king", "dream", "saying"]);
+/** The walker is told at most this often that their word holds them back (every strike would say it). */
+const HELD_TOAST_GAP_MS = 12_000;
 /** The night whose dusk is told in a scene: the first. */
 const FIRST_DUSK_NIGHT = 1;
 /** Chronicle sources rare and weighty enough to always be told, whatever came just before. */
@@ -92,7 +91,10 @@ const REVEAL_PICTO: Partial<Record<RevealId, PictoName>> = {
   ascension: "gem",
   hall: "trophy",
   loom: "unweave",
-  caravan: "stall"
+  caravan: "stall",
+  promise: "knot",
+  altars2: "gem",
+  altars3: "gem"
 };
 /** Creatures whose new Bestiary lines are worth a toast: the great ones and the wanderers. */
 const HERALDED = new Set([...BIOMES.flatMap((biome) => [biome.boss.id, biome.miniBoss.id]), ...Object.keys(WANDERER_BY_ID), "echo-bat"]);
@@ -169,15 +171,19 @@ export default function GameApp() {
   useSyncExternalStore(cloud.subscribe, cloud.getVersion, () => 0);
 
   const ui = useMemo<GameUi>(() => ({
-    openWindow: (id, tab) => setOpenWindow({ id, tab }),
+    openWindow: (id, tab) => {
+      // A hint that pointed to this place is answered by the walker opening it.
+      for (const hint of hintsAnsweredBy(store.state, id)) store.apply((engine) => engine.completeTutorial(hint));
+      setOpenWindow({ id, tab });
+    },
     closeWindow: () => setOpenWindow(null),
     toast,
     playCutscene: setCutscene,
     confirm: (options) => new Promise<boolean>((resolve) => setConfirmRequest({ ...options, resolve }))
-  }), [toast]);
+  }), [toast, store]);
 
   // Load the game from the server, then start the loop. No local save: progress only
-  // exists on the server (and only with an account).
+  // exists on the server, under an account or, for a guest, under this browser's cookie.
   useEffect(() => {
     // Dev tool: window.__idlebound.act((engine) => …) from the console.
     if (process.env.NODE_ENV !== "production") (window as unknown as { __idlebound?: GameStore }).__idlebound = store;
@@ -201,9 +207,8 @@ export default function GameApp() {
       if (!see()) void cloud.sync({ keepalive: true });
     };
     const onLeave = (event: BeforeUnloadEvent) => {
-      if (!cloud.user && store.state.lifetime.playTime > GUEST_WARNING_SECONDS) event.preventDefault();
-      // Signed in, but the last uploads failed (server away): what was played since is only here.
-      else if (cloud.user && cloud.status === "error") event.preventDefault();
+      // The last uploads failed (server away) or the session ended: what was played since is only here.
+      if (cloud.wouldLose()) event.preventDefault();
     };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("beforeunload", onLeave);
@@ -243,11 +248,26 @@ export default function GameApp() {
     let engine = store.engine;
     let known = revealsOf(store);
     const timers = new Set<ReturnType<typeof setTimeout>>();
+    const announce = (id: RevealId) => {
+      const m = currentMessages();
+      const g = gameText(currentLocale());
+      const place = id as keyof typeof m.night.reveal;
+      const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : place === "altars2" || place === "altars3" ? g.places.sanctum.name : m.hud.windowTitles[place].label;
+      toast({ tone: "info", icon: REVEAL_PICTO[id], title, text: m.night.reveal[place] });
+      store.apply((current) => current.completeTutorial(revealMark(id)));
+    };
+    // What arrived after this walker was already past its threshold is told once, at load.
+    const late = () => {
+      const shown = revealsOf(store);
+      for (const id of ANNOUNCED_AT_LOAD) if (shown[id] && !store.state.tutorial.done.includes(revealMark(id))) announce(id);
+    };
+    late();
     const check = () => {
       const shown = revealsOf(store);
       if (store.engine !== engine) {
         engine = store.engine;
         known = shown;
+        late();
         return;
       }
       for (const id of Object.keys(shown) as RevealId[]) {
@@ -258,14 +278,8 @@ export default function GameApp() {
           fresh.delete(id);
         }, FRESH_MS);
         timers.add(timer);
-        const mark = revealMark(id);
-        if (!ANNOUNCED.includes(id) || store.state.tutorial.done.includes(mark)) continue;
-        const m = currentMessages();
-        const g = gameText(currentLocale());
-        const place = id as keyof typeof m.night.reveal;
-        const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : m.hud.windowTitles[place].label;
-        toast({ tone: "info", icon: REVEAL_PICTO[id], title, text: m.night.reveal[place] });
-        store.apply((current) => current.completeTutorial(mark));
+        if (!ANNOUNCED.includes(id) || store.state.tutorial.done.includes(revealMark(id))) continue;
+        announce(id);
       }
       known = shown;
     };
@@ -338,6 +352,7 @@ export default function GameApp() {
     let remembered: { heroId: string; tier: number }[] = [];
     /** The King's seam closing on a walker who never passed him is told once a session. */
     let repelled = false;
+    let lastHeldAt = -Infinity;
     return store.onFx((event: GameEvent) => {
       const locale = currentLocale();
       const m = currentMessages().hud.toasts;
@@ -519,6 +534,34 @@ export default function GameApp() {
             toast({ tone: "gold", icon: "sparkle", title: words.recognitionManyTitle, text: words.recognitionMany(list, all.every((entry) => entry.tier === 1)) });
           }, 0);
           break;
+        case "promise": {
+          // A word through the night, in the companion's own voice: asked, then kept or broken.
+          const words = currentMessages().sanctum.promise.toasts;
+          const name = g.heroes[event.heroId].name;
+          const lines = promiseText(event.heroId, locale);
+          if (event.outcome === "given") {
+            audio.play("fragment");
+            toast({ tone: "info", icon: "knot", title: words.given(name), text: describePromise(PROMISE_BY_HERO[event.heroId], locale, store.state.trail.promise?.goal), quote: lines ? { by: name, text: lines.ask } : undefined });
+          } else if (event.outcome === "ready") {
+            toast({ tone: "gold", icon: "knot", title: words.ready, text: words.readyText });
+          } else if (event.outcome === "kept") {
+            audio.play("recognition");
+            toast({ tone: "gold", icon: "knot", title: words.kept(name), quote: lines ? { by: name, text: lines.kept } : undefined });
+          } else {
+            audio.play("error");
+            toast({ tone: "info", icon: "frayed", title: words.broken(name), quote: lines ? { by: name, text: lines.broken } : undefined });
+          }
+          break;
+        }
+        case "promiseHeld": {
+          const at = performance.now();
+          if (at - lastHeldAt < HELD_TOAST_GAP_MS) break;
+          lastHeldAt = at;
+          audio.play("error");
+          const words = currentMessages().sanctum.promise.toasts;
+          toast({ tone: "info", icon: "knot", title: words.held(g.heroes[event.heroId].name), text: words.heldText(describePromise(PROMISE_BY_HERO[event.heroId], locale, store.state.trail.promise?.goal)) });
+          break;
+        }
         case "secret":
           audio.play("fragment");
           toast({ tone: "violet", icon: "sparkle", title: m.secretTitle, text: chronicleText({ source: "secret", id: event.id }, locale).text });

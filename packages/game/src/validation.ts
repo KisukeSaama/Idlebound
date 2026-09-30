@@ -12,9 +12,9 @@
  * Violation messages are for logs and developers; the UI localizes by `code`.
  */
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
-import { ALTAR_BY_ID, altarTotalCost } from "./data/altars";
+import { ALTARS, ALTAR_BY_ID, altarTotalCost, legacyHarvestCost } from "./data/altars";
 import { BIOMES, KING_FORMS, GUARDIAN_IDS, isBossStage, isKingStage } from "./data/biomes";
-import { DESCENT_HERO, DESCENT_MIN_STAGE, WEAVE_BY_ID, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
+import { DESCENT_HERO, DESCENT_MIN_STAGE, WEAVE_BY_ID, legacyThreadsFor, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
 import { EVENTS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WALKER_DPS } from "./data/events";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
@@ -28,19 +28,26 @@ import {
   EVEN_RATS,
   GOOD_BOY_RUNS,
   LAST_SECOND_TIMES,
+  LEGACY_RECOGNITION_TIERS,
   LESSONS,
   LISTEN_SECONDS,
   NIGHT_OWL_SECONDS,
   NOTCH_KILLS,
+  RECOGNITION_HEROES,
+  RECOGNITION_PROMISES,
   SECRET_IDS,
   TONGUE_SECONDS,
   WANDERERS,
   WANDERER_BY_ID,
   WELCOME_BACK_MS,
   bestiaryKills,
+  recognitionRuns,
+  recognitionThresholds,
   recognitionTier,
+  recognitionTierByRuns,
   type SecretId
 } from "./data/lore";
+import { PROMISE_BY_HERO, companionMet, promiseAsker, promiseDepth, promiseKings, promisesKept, promisesKeptInAll } from "./data/promises";
 import { NAMED_BY_ID, NAMED_RELICS, namedSourceReached, type NamedEffect } from "./data/relics";
 import { AGE_COUNT, keystonesFound } from "./data/strata";
 import { SAVE_VERSION } from "./state";
@@ -129,19 +136,29 @@ function forgeRefunds(state: GameState): number {
   return items.reduce((total, item) => total + (item ? Math.floor(item.forge * RARITY_INFO[item.rarity].shards * 0.5) : 0), 0);
 }
 
+/** Highest level of the Altar of the Harvest the essences ever gathered could have bought, up to `cap`, at the price `cost`. */
+function harvestAffordable(state: GameState, cap: number, cost: (level: number) => number = (level) => altarTotalCost("harvest", level)): number {
+  let harvest = 0;
+  while (harvest < cap && cost(harvest + 1) <= state.lifetime.essencesEarned + 1) harvest += 1;
+  return harvest;
+}
+/** The Harvest had no cap before save version 11: what an older save's past ascensions are checked against. */
+const LEGACY_HARVEST_MAX = 1_000;
+
 /**
  * Highest essence multiplier an ascension of this walker ever had. The Altar of the Harvest
  * falls with each Descent, so it is taken at the highest level every essence ever gathered
- * could have bought.
+ * could have bought, within its cap; `past` adds the level an older save could hold before
+ * the cap came (its ascensions of then stay in its ledgers).
  */
-function maxEssenceMultiplier(state: GameState): number {
-  let harvest = state.altars.harvest ?? 0;
-  while (harvest < 100_000 && altarTotalCost("harvest", harvest + 1) <= state.lifetime.essencesEarned + 1) harvest += 1;
+function maxEssenceMultiplier(state: GameState, past = true): number {
+  const bought = Math.max(state.altars.harvest ?? 0, harvestAffordable(state, ALTAR_BY_ID.harvest.maxLevel));
+  const harvest = past ? Math.max(bought, state.legacyHarvest ?? 0) : bought;
   return (1 + harvest * ALTAR_BY_ID.harvest.valuePerLevel) * (1 + AFFIX_CAP.essence! * 4) * Math.pow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty"));
 }
 /** Most essences one ascension of this walker can grant. */
-function maxAscensionEssences(state: GameState): number {
-  return essencesForStage(state.maxStageEver - 1) * maxEssenceMultiplier(state) + 1;
+function maxAscensionEssences(state: GameState, past = true): number {
+  return essencesForStage(state.maxStageEver - 1) * maxEssenceMultiplier(state, past) + 1;
 }
 
 const HERO_BY_ID_COUNT = Object.keys(HERO_BY_ID).length;
@@ -236,8 +253,10 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     else if (altar.maxLevel > 0 && (state.altars[id as AltarId] ?? 0) > altarMaxLevel(state, id as AltarId)) fail("altar", "Altar level above maximum.");
   }
   if (!le(altarSpend(state) + state.essences, state.lifetime.essencesEarned)) fail("essence-ledger", "More essences spent than collected.");
-  // The history outlives a Descent, which takes the Altar of the Harvest back: each record is
-  // held to the best multiplier this walker ever had, not to the altars standing today.
+  // The Harvest an older save held above today's cap is no higher than its essences could buy.
+  if ((state.legacyHarvest ?? 0) > harvestAffordable(state, LEGACY_HARVEST_MAX, legacyHarvestCost)) fail("altar", "A Harvest of old the essences gathered could never have raised.");
+  // The Warp of Plenty multiplies every ascension's essences; the Harvest of a night in the
+  // history may have fallen since (a Descent, the cap of version 11).
   const essenceCap = maxEssenceMultiplier(state);
   const ascensionTotal = state.ascensions.reduce((total, record) => total + record.essences, 0);
   for (const record of state.ascensions) {
@@ -403,10 +422,19 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   if (new Set(lore.events).size !== lore.events.length || lore.events.some((id) => !(EVENTS as readonly string[]).includes(id))) fail("lore", "Unknown event.");
   if (new Set(lore.altars).size !== lore.altars.length || lore.altars.some((id) => !ALTAR_BY_ID[id as AltarId])) fail("lore", "Unknown altar legend.");
 
+  // A night counts once for a companion, twice for each of the two words their memories ask.
+  const doubled = RECOGNITION_PROMISES[RECOGNITION_PROMISES.length - 1];
   for (const [heroId, runs] of Object.entries(state.recognition)) {
     if (!HERO_BY_ID[heroId]) fail("recognition", `Unknown companion: ${heroId}.`);
-    else if (runs > lifetime.ascensions) fail("recognition", "More remembered runs than ascensions.");
+    else if (runs > lifetime.ascensions + Math.min(doubled, promisesKept(state, heroId))) fail("recognition", "More remembered runs than ascensions.");
   }
+  // What a companion remembered before promises came is what the runs alone had earned.
+  const thresholds = recognitionThresholds(state, LEGACY_RECOGNITION_TIERS);
+  for (const [heroId, tier] of Object.entries(state.remembered)) {
+    if (!RECOGNITION_HEROES.includes(heroId)) fail("recognition", `Unknown companion: ${heroId}.`);
+    else if (recognitionTierByRuns(recognitionRuns(state, heroId), thresholds) < tier) fail("recognition", "A memory older than the runs that earned it.");
+  }
+  verifyPromises(state, fail);
 
   if (new Set(state.named).size !== state.named.length) fail("named", "Named relic found twice.");
   for (const id of state.named) {
@@ -421,6 +449,48 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   for (const id of state.secrets) {
     if (!SECRET_IDS.includes(id)) fail("secret", `Unknown secret: ${id}.`);
     else if (!secretPossible(state, id as SecretId, serverNow)) fail("secret", `Secret without its conditions: ${id}.`);
+  }
+}
+
+/** Promises: one word a night at most, kept only on a night whose King fell. */
+function verifyPromises(state: GameState, fail: (code: string, message: string) => void) {
+  const lifetime = state.lifetime;
+  for (const heroId of Object.keys(state.promises)) {
+    if (!Object.hasOwn(PROMISE_BY_HERO, heroId)) fail("promise", `Unknown companion: ${heroId}.`);
+  }
+  if (promisesKeptInAll(state) > lifetime.ascensions) fail("promise", "More promises kept than nights.");
+  if (state.pledge !== undefined && !Object.hasOwn(PROMISE_BY_HERO, state.pledge)) fail("promise", `Unknown companion: ${state.pledge}.`);
+  if (state.lastPromise !== undefined && !Object.hasOwn(PROMISE_BY_HERO, state.lastPromise)) fail("promise", `Unknown companion: ${state.lastPromise}.`);
+  const promise = state.trail.promise;
+  if (!promise) return;
+  const def = Object.hasOwn(PROMISE_BY_HERO, promise.hero) ? PROMISE_BY_HERO[promise.hero] : undefined;
+  if (!def) {
+    fail("promise", `Unknown companion: ${promise.hero}.`);
+    return;
+  }
+  if (!promiseAsker(state, promise.hero) || !companionMet(state, promise.hero)) fail("promise", "A promise to someone who does not remember the walker.");
+  // Nobody asks two nights running, and nobody asks for a night the walker never walked.
+  if (promise.hero === state.lastPromise) fail("promise", "The same companion asked two nights running.");
+  if (promiseDepth(def, state.runStartStage) >= state.maxStageEver) fail("promise", "A promise deeper than the walker ever went.");
+  // Its Kings were fought this night, at the head of the run.
+  const kingsAhead = Math.floor((state.maxStage - 1) / 50) - Math.floor((state.runStartStage - 1) / 50);
+  if (promise.kings > kingsAhead || promise.kings > state.run.bosses || promise.kings > lifetime.kings) fail("promise", "More Kings than the night has seen fall.");
+  if ((promise.waited || promise.released) && state.run.bosses === 0) fail("promise", "A guardian that never fell.");
+  if (promise.waited && def.kind !== "wait") fail("promise", "Nothing to wait for.");
+  if (promise.released && def.kind !== "head") fail("promise", "Nobody to follow.");
+  if (promise.released && def.kind === "head" && def.until === "king" && promise.kings < promiseKings(def)) fail("promise", "Released before the King fell.");
+  if (promise.goal !== undefined && (def.kind !== "further" || promise.goal > state.maxStageEver)) fail("promise", "A night deeper than any night walked.");
+  // What the word forbids was not done while it stood.
+  if (!promise.broken) {
+    if (def.kind === "without" && (state.heroLevels[def.other] ?? 0) > 0) fail("promise", "The companion left behind was hired.");
+    if (def.kind === "abstain" && def.from === "strikes" && state.run.clicks > 0) fail("promise", "A strike under a promise to sheathe the sword.");
+    if (def.kind === "abstain" && def.from === "powers" && state.run.skillsUsed > 0) fail("promise", "A power used under a promise of silence.");
+    if (def.kind === "abstain" && def.from === "crystals" && state.run.crystals > 0) fail("promise", "A crystal caught under a promise to leave them.");
+    if (def.kind === "abstain" && def.from === "essences" && state.trail.offered > 0) fail("promise", "Essences offered under a promise to keep them.");
+    if (def.kind === "head" && !promise.released) {
+      const limit = HERO_BY_ID[def.hero].index;
+      if (Object.entries(state.heroLevels).some(([heroId, level]) => level > 0 && (HERO_BY_ID[heroId]?.index ?? 0) > limit)) fail("promise", "The company grew past its head.");
+    }
   }
 }
 
@@ -451,11 +521,10 @@ function secretPossible(state: GameState, id: SecretId, serverNow: number): bool
   }
 }
 
-/** The Descent: threads woven only from essences gathered, spent only on weaves that exist. */
+/** The Descent: a thread no longer than the deepest stage weaves, spent only on weaves that exist. */
 function verifyDescent(state: GameState, fail: (code: string, message: string) => void) {
   const lifetime = state.lifetime;
   if (state.descents > 0 && (state.maxStageEver < DESCENT_MIN_STAGE || recognitionTier(state, DESCENT_HERO) < 5)) fail("descent", "Descent without the Loom.");
-  if (state.descentMark > lifetime.essencesEarned + 1) fail("descent", "Descent begun past the essences gathered.");
   let spent = 0;
   for (const [id, level] of Object.entries(state.weaves)) {
     const weave = WEAVE_BY_ID[id as WeaveId];
@@ -467,8 +536,12 @@ function verifyDescent(state: GameState, fail: (code: string, message: string) =
     spent += weaveTotalCost(id as WeaveId, level ?? 0);
   }
   if (spent + state.threads > lifetime.threads) fail("descent", "More threads spent than woven.");
-  // Each Descent wove at most what every essence ever gathered could weave.
-  if (lifetime.threads > state.descents * threadsFor(lifetime.essencesEarned)) fail("descent", "More threads than essences allow.");
+  if (state.descents === 0 && lifetime.threads > 0) fail("descent", "Threads woven without a Descent.");
+  // Before version 11 each Descent wove at most what every essence ever gathered could weave:
+  // those threads stay. Since, the thread is as long as the deepest stage, and no longer.
+  const legacy = state.legacyThreads ?? 0;
+  if (legacy > state.descents * legacyThreadsFor(lifetime.essencesEarned)) fail("descent", "More threads than essences allowed.");
+  if (lifetime.threads > Math.max(legacy, threadsFor(state.maxStageEver))) fail("descent", "More threads than the deepest stage weaves.");
   if (!/^(\d{4}-W\d{2})?$/.test(state.caravanWeek)) fail("descent", "Unknown Caravan week.");
 }
 
@@ -504,13 +577,40 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
     if (b[key] + EPSILON < a[key]) fail("rollback", `Statistic "${key}" went down.`);
   }
   if (next.maxStageEver < previous.maxStageEver) fail("rollback", "Stage record went down.");
+  // A stone of the Sanctum is first raised on its night or later (one already raised stays open).
+  for (const altar of ALTARS) {
+    if ((next.altars[altar.id] ?? 0) > 0 && !((previous.altars[altar.id] ?? 0) > 0) && b.ascensions + 1 < altar.night) fail("altar", `Altar raised before its night: ${altar.id}.`);
+  }
   const recorded = (state: GameState) => Object.values(state.bestiary).reduce((total, count) => total + count, 0);
   if (recorded(next) < recorded(previous)) fail("rollback", "Bestiary went down.");
   for (const [heroId, runs] of Object.entries(previous.recognition)) {
     if ((Object.hasOwn(next.recognition, heroId) ? next.recognition[heroId] : 0) < runs) fail("rollback", "Recognition went down.");
   }
+  // Promises: kept ones never go back, one more at most per night ended, and the word given
+  // for a night is not swapped or mended before its dusk.
+  const nights = Math.max(0, b.ascensions - a.ascensions);
+  for (const [heroId, kept] of Object.entries(previous.promises)) {
+    if (promisesKept(next, heroId) < kept) fail("rollback", "A promise kept was forgotten.");
+  }
+  if (promisesKeptInAll(next) - promisesKeptInAll(previous) > nights) fail("promise", "More promises kept than nights ended.");
+  for (const [heroId, runs] of Object.entries(next.recognition)) {
+    const gained = runs - recognitionRuns(previous, heroId);
+    if (gained > nights + promisesKept(next, heroId) - promisesKept(previous, heroId)) fail("recognition", "Recognition grew faster than the nights.");
+  }
+  const tiers = (state: GameState) => JSON.stringify(Object.entries(state.remembered).sort(([x], [y]) => (x < y ? -1 : 1)));
+  if (tiers(next) !== tiers(previous)) fail("recognition", "Memories older than promises cannot change.");
+  const given = previous.trail.promise;
+  if (given && nights === 0 && next.descents === previous.descents) {
+    const now = next.trail.promise;
+    if (!now || now.hero !== given.hero) fail("promise", "The word given for the night was swapped.");
+    else if ((given.broken && !now.broken) || now.kings < given.kings) fail("promise", "A broken promise was mended.");
+  }
+  // One dusk later, last night's word is remembered as it was.
+  if (nights === 1 && next.descents === previous.descents && next.lastPromise !== given?.hero) fail("promise", "Last night's word was rewritten.");
   if (previous.named.some((id) => !next.named.includes(id))) fail("rollback", "A named relic was forgotten.");
   if (next.descents < previous.descents) fail("rollback", "Descents went down.");
+  if (b.threads > a.threads && next.descents === previous.descents) fail("descent", "Threads woven without a Descent.");
+  if ((next.legacyThreads ?? 0) !== (previous.legacyThreads ?? 0)) fail("descent", "The threads of an older save cannot change.");
   if (previous.secrets.some((id) => !next.secrets.includes(id))) fail("rollback", "A secret was forgotten.");
   const lore = (state: GameState) => state.lore.songs + state.lore.dreams + Object.values(state.lore.ages).reduce((total, count) => total + count, 0) + Object.values(state.lore.echoes).reduce((total, count) => total + count, 0);
   if (lore(next) < lore(previous)) fail("rollback", "The Chronicle went down.");
@@ -541,7 +641,9 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   if (!le(b.goldEarned - a.goldEarned, goldBound)) fail("gold", "Gold earned too fast.");
 
   // Essences: each ascension at most what the deepest stage pays, each crystal its share.
-  const perAscension = maxAscensionEssences(next);
+  // The nights since the last save were walked under today's cap on the Harvest.
+  const perAscension = maxAscensionEssences(next, false);
+  if ((next.legacyHarvest ?? 0) !== (previous.legacyHarvest ?? 0)) fail("altar", "The Harvest of an older save cannot change.");
   const fromAscensions = b.ascensionEssences - a.ascensionEssences;
   if (!le(fromAscensions, ascensions * perAscension)) fail("essence-source", "Ascensions too generous.");
   if (!le(b.essencesEarned - a.essencesEarned, Math.min(ascensions * perAscension, Math.max(0, fromAscensions)) + crystals * crystalEssenceReward(next.maxStageEver) + 1)) {

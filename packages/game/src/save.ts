@@ -141,6 +141,10 @@ export const gameStateSchema = z.object({
     seen: idRecord(count, 300, 20)
   }),
   recognition: idRecord(count, 100),
+  promises: idRecord(count, 100),
+  remembered: idRecord(z.number().int().min(4).max(5), 100),
+  pledge: z.string().max(40).optional(),
+  lastPromise: z.string().max(40).optional(),
   named: z.array(z.string().max(40)).max(100),
   secrets: z.array(z.string().max(40)).max(100),
   trail: z.object({
@@ -152,12 +156,21 @@ export const gameStateSchema = z.object({
     listen: positive,
     migration: z.object({ stage: stageNumber, biome: z.string().max(40) }).optional(),
     wound: z.object({ stage: stageNumber, share: z.number().min(0).max(1) }).optional(),
+    promise: z.object({
+      hero: z.string().max(40),
+      kings: z.number().int().min(0).max(100),
+      broken: z.boolean().optional(),
+      waited: z.boolean().optional(),
+      released: z.boolean().optional(),
+      goal: stageNumber.optional()
+    }).optional(),
     eclipse: z.boolean().optional()
   }),
   descents: count,
   threads: count,
   weaves: idRecord(z.number().int().min(0).max(WEAVE_LEVEL_MAX), 20),
-  descentMark: positive,
+  legacyThreads: count.optional(),
+  legacyHarvest: z.number().int().min(0).max(1_000).optional(),
   caravanWeek: z.string().max(10),
   rngState: z.number().int().min(0).max(0xffffffff)
 });

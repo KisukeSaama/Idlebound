@@ -12,13 +12,14 @@ import {
   rememberedCompanions
 } from "./data/lore";
 import { BIOMES } from "./data/biomes";
+import { promisesKept } from "./data/promises";
 import { AGE_COUNT, MILESTONES, keystonesFound, type MilestoneId } from "./data/strata";
 import type { ChronicleEntry, GameState } from "./types";
 
 /** The Chronicle's sources, in the order the book shows them. */
 export type ChronicleSource = ChronicleEntry["source"];
 export const CHRONICLE_SOURCES: readonly ChronicleSource[] = [
-  "keystone", "milestone", "king", "echo", "age", "wanderer", "event", "memory", "lesson", "song", "dream", "saying", "relic", "altar", "secret", "crown"
+  "keystone", "milestone", "king", "echo", "age", "wanderer", "event", "memory", "promise", "lesson", "song", "dream", "saying", "relic", "altar", "secret", "crown"
 ];
 
 /** Whether a walker has lived one of the milestones of their own story. */
@@ -100,6 +101,10 @@ export function sourceEntries(state: GameState, source: ChronicleSource): Chroni
         for (const hero of RECOGNITION_HEROES) if (recognitionTier(state, hero) >= tier) entries.push({ source, hero, tier });
       }
       break;
+    case "promise":
+      // What each companion said the first time the walker kept their word.
+      for (const hero of RECOGNITION_HEROES) if (promisesKept(state, hero) > 0) entries.push({ source, hero });
+      break;
     case "lesson":
       for (const id of state.lore.lessons) entries.push({ source, id });
       break;
@@ -173,6 +178,27 @@ export function unreadOf(state: GameState, source: ChronicleSource): number {
 /** Chronicle entries not read yet. */
 export function unreadChronicle(state: GameState): number {
   return CHRONICLE_SOURCES.reduce((total, source) => total + unreadOf(state, source), 0);
+}
+
+/**
+ * The fragment to hand a walker who has not opened the Chronicle: the oldest entry not read
+ * yet of the first source, in the order of `sources`, that holds one. `index` is its place in
+ * its source.
+ */
+export function firstUnread(state: GameState, sources: readonly ChronicleSource[] = CHRONICLE_SOURCES): { entry: ChronicleEntry; index: number } | null {
+  for (const source of sources) {
+    if (unreadOf(state, source) === 0) continue;
+    const index = seenOf(state, source);
+    const entry = sourceEntries(state, source)[index];
+    if (entry) return { entry, index };
+  }
+  return null;
+}
+
+/** Marks the first `count` entries of a source as read; what was read stays read. */
+export function markRead(state: GameState, source: ChronicleSource, count: number) {
+  const read = Math.min(count, sourceCount(state, source));
+  if (seenOf(state, source) < read) state.lore.seen[source] = read;
 }
 
 /** Bestiary lines unlocked so far, over every creature. */

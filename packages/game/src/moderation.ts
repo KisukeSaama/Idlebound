@@ -4,6 +4,9 @@
  * leaderboard. The word lists are data (French and English slurs), not UI text.
  */
 
+/** A guest's game (no account) nobody came back to for this long is deleted by the server. */
+export const GUEST_SAVE_DAYS = 30;
+
 export const USERNAME_MIN = 3;
 export const USERNAME_MAX = 16;
 const USERNAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9_-]+$/;

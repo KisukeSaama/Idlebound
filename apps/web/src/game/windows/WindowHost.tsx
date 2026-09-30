@@ -15,7 +15,7 @@ export function WindowHost({ id, tab, onClose }: { id: WindowId; tab?: string; o
     case "gear": return <GearWindow onClose={onClose} initialTab="equipped" />;
     case "inventory": return <GearWindow onClose={onClose} initialTab="bag" />;
     case "market": return <MarketWindow onClose={onClose} />;
-    case "ascension": return <AscensionWindow onClose={onClose} />;
+    case "ascension": return <AscensionWindow onClose={onClose} initialTab={tab} />;
     case "hall": return <HallWindow onClose={onClose} initialTab={tab} />;
     case "account": return <AccountWindow onClose={onClose} />;
     case "settings": return <SettingsWindow onClose={onClose} />;

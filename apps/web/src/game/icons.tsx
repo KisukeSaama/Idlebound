@@ -411,6 +411,21 @@ const PICTOS = {
       <path d="M15.5 8.5l1.8-1.3.2 2.2zM15.5 8.5l1.5 1.8-2 .4z" fill="#c9d8ff" stroke="#3a3f70" strokeWidth="0.6" strokeLinejoin="round" />
     </>
   ),
+  /** A word given: a thread tied in a bow. */
+  knot: (
+    <>
+      <path d="M10 9.2C7.6 5 3.4 4.6 3 8c-.4 3.2 4 3.6 7 1.2zM10 9.2c2.400-4.200 6.600-4.600 7-1.200.4 3.200-4 3.600-7 1.200zM9.200 10.200L6 16.800M10.800 10.200L14 16.800" fill="none" stroke="#0b0a14" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 9.2C7.6 5 3.4 4.6 3 8c-.4 3.2 4 3.6 7 1.2zM10 9.2c2.400-4.200 6.600-4.600 7-1.200.4 3.200-4 3.600-7 1.200zM9.200 10.200L6 16.800M10.800 10.200L14 16.800" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="10" cy="9.4" r="1.7" fill="currentColor" stroke="#0b0a14" strokeWidth="0.8" />
+    </>
+  ),
+  /** A word broken: the same thread, its bow undone into two loose ends. */
+  frayed: (
+    <>
+      <path d="M3.500 4.500c3.800.600 5.400 3 5 6.500-.2 2-1.200 4-2.500 5.800M16.500 4.500c-3.800.600-5.400 3-5 6.500.2 2 1.200 4 2.500 5.800" fill="none" stroke="#0b0a14" strokeWidth="4" strokeLinecap="round" />
+      <path d="M3.500 4.500c3.800.600 5.400 3 5 6.500-.2 2-1.200 4-2.500 5.800M16.500 4.500c-3.800.600-5.400 3-5 6.500.2 2 1.200 4 2.500 5.800" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </>
+  ),
   fastForward: <path d="M2.5 4.5l7 5.5-7 5.5zM10.5 4.5l7 5.5-7 5.5z" fill="currentColor" />,
   pause: <path d="M5 4h3.5v12H5zM11.5 4H15v12h-3.5z" fill="currentColor" />,
   close: <path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />,
