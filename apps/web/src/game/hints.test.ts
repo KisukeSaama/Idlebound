@@ -14,6 +14,16 @@ describe("tutorial hints", () => {
     expect(currentHint(state)).toBeNull();
   });
 
+  it("stops asking to train Aldric once a companion has joined, as an idle walker never does", () => {
+    const state = createInitialState();
+    state.heroLevels = { aldric: 0, maelle: 120 };
+    state.lifetime.bestHired = 2;
+    state.maxStage = 54;
+    state.gold = 1e9;
+    expect(currentHint(state)?.id).not.toBe("hire");
+    expect(hintLearned(state, "hire")).toBe(true);
+  });
+
   it("drops a hint the moment the walker did what it says, marked or not", () => {
     const state = createInitialState();
     state.heroLevels.aldric = 10;

@@ -33,10 +33,16 @@ function taught(state: GameState): boolean {
   return state.lifetime.ascensions > 0 || state.tutorial.done.includes("all");
 }
 
+/** Whether a companion has joined the walker this night or any other. */
+function companyJoined(state: GameState): boolean {
+  return state.lifetime.bestHired >= 2 || Object.entries(state.heroLevels).some(([id, level]) => id !== CLICK_HERO_ID && level > 0);
+}
+
 /** Whether the moment a hint speaks of is there. */
 function applies(state: GameState, id: Lesson): boolean {
   switch (id) {
-    case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) === 0 && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1);
+    // Only before the company: once someone has joined, the walker's own blade is a choice.
+    case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) === 0 && !companyJoined(state) && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1);
     case "companion": return (state.heroLevels.maelle ?? 0) === 0 && state.gold >= HERO_BY_ID.maelle.baseCost;
     case "boss": return isBossStage(state.stage) && state.monster !== null && state.monster.kind !== "normal" && state.lifetime.bosses === 0;
     case "skill": return state.lifetime.skillsUsed === 0 && SKILLS.some((skill) => isSkillUnlocked(state, skill.id));
@@ -48,7 +54,7 @@ function applies(state: GameState, id: Lesson): boolean {
 /** Whether the walker has done what a hint says: it has nothing left to teach. */
 function learned(state: GameState, id: Lesson): boolean {
   switch (id) {
-    case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) > 0;
+    case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) > 0 || companyJoined(state);
     case "companion": return (state.heroLevels.maelle ?? 0) > 0;
     case "boss": return state.lifetime.bosses > 0;
     case "skill": return state.lifetime.skillsUsed > 0;
