@@ -14,7 +14,7 @@ import { Party } from "./Party";
 import { SceneCanvas, monsterKeyOf } from "./SceneCanvas";
 import { SkillBar } from "./SkillBar";
 import { StageBar } from "./StageBar";
-import { TutorialHint } from "./TutorialHint";
+import { TutorialHint, useHintDismissal } from "./TutorialHint";
 
 /** Seconds the opening line stays at the start of a run. */
 const OPENING_SECONDS = 7;
@@ -66,6 +66,7 @@ export function Scene() {
   // Every run opens at dusk on the first stretch of road, with the same two words.
   const opening = state.stage === 1 && state.maxStage === 1 && state.run.playTime < OPENING_SECONDS;
   const { shown } = useReveals();
+  useHintDismissal();
 
   // What stays after a long absence: one line over the scene, no numbers, then gone.
   const [dream, setDream] = useState<{ key: number; text: string } | null>(null);

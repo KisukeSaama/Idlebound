@@ -203,7 +203,10 @@ Content colors live with the game data, not in CSS:
   already ascended. In the stacked layout (900 px wide or less, or 560 px high or less) the
   arena is all monster, so the hint leaves it and stands in the scene's flow under the
   powers, still and full width; the arena shrinks a little while it shows and the monster is
-  never covered.
+  never covered. A hint leaves by itself as soon as it stops making sense, for good: the
+  walker did what it says (hired, beat the boss, used the power, took the road again after
+  a closed seam), opened the place it points to (the Sanctum), or has had it on screen for
+  30 s in a watched tab. It goes without a transition. The two notices wait for their "OK".
 - **Companions** (the roster): one line per companion, rows alternating like an old guild
   list, the portrait in its frame (thread in the companion's color, the bust at the whole
   scale nearest the frame, so a phone's smaller frame still shows the face), name, title, DPS and

@@ -599,7 +599,10 @@ rejects real play.
 - Settings: language, number notation (letters, scientific, engineering), sound and its volume,
   damage numbers, reduced motion, colorblind colors (rarities, gains and losses in hues that
   red-green blindness keeps apart), ascension confirmation.
-- One-time tutorial hints guide the first minutes; saves that had ascended before version 4
+- One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a
+  time, each gone for good once the walker did what it says, opened the place it points to,
+  read it for 30 s, or pressed "OK" (a closed seam is explained once, not at every failed
+  boss). Saves that had ascended before version 4
   get a one-time notice about the altar rework, and saves that had raised the Altar of the
   Harvest before version 11 one about its refund.
 

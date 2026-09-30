@@ -42,6 +42,7 @@ import { audio } from "./audio";
 import { haptics } from "./haptics";
 import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
+import { hintsAnsweredBy } from "./hints";
 import { SKILL_PICTO, type PictoName } from "./icons";
 import { ANNOUNCED, ANNOUNCED_AT_LOAD, revealMark, stratumLabel, type RevealId } from "./shell";
 import { describePromise } from "./text";
@@ -175,12 +176,16 @@ export default function GameApp() {
   useSyncExternalStore(cloud.subscribe, cloud.getVersion, () => 0);
 
   const ui = useMemo<GameUi>(() => ({
-    openWindow: (id, tab) => setOpenWindow({ id, tab }),
+    openWindow: (id, tab) => {
+      // A hint that pointed to this place is answered by the walker opening it.
+      for (const hint of hintsAnsweredBy(store.state, id)) store.apply((engine) => engine.completeTutorial(hint));
+      setOpenWindow({ id, tab });
+    },
     closeWindow: () => setOpenWindow(null),
     toast,
     playCutscene: setCutscene,
     confirm: (options) => new Promise<boolean>((resolve) => setConfirmRequest({ ...options, resolve }))
-  }), [toast]);
+  }), [toast, store]);
 
   // Load the game from the server, then start the loop. No local save: progress only
   // exists on the server, under an account or, for a guest, under this browser's cookie.
