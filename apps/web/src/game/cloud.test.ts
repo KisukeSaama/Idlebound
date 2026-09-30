@@ -1,4 +1,5 @@
 import { createInitialState, type GameState } from "@idlebound/game";
+import { verifyTransition } from "@idlebound/game/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CloudSync } from "./cloud";
 import { GameStore } from "./store";
@@ -35,6 +36,7 @@ describe("CloudSync at load", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("waits for the server instead of starting a guest game when it cannot be reached", async () => {
@@ -88,6 +90,33 @@ describe("CloudSync at load", () => {
     await cloud.init();
     expect(store.state.lifetime.offlineSeconds).toBeGreaterThan(3_590);
     expect(store.state.lifetime.offlineSeconds).toBeLessThanOrEqual(3_600);
+    cloud.dispose();
+  });
+
+  it("sends a game caught up to the clock when the page wakes from a freeze", async () => {
+    const start = Date.now();
+    fetchMock
+      .mockResolvedValueOnce(json({ user: USER }))
+      .mockResolvedValueOnce(json({ save: { state: createInitialState(start), revision: 3, updatedAt: "2026-01-01T00:00:00Z", elapsedMs: 0 } }));
+    const store = new GameStore(createInitialState());
+    const cloud = new CloudSync(store);
+    await cloud.init();
+    const before = structuredClone(store.state);
+
+    // The device slept fourteen minutes; the sync timer runs before the loop's.
+    const clock = vi.spyOn(Date, "now").mockReturnValue(start + 14 * 60_000);
+    fetchMock.mockResolvedValueOnce(json({ revision: 4, updatedAt: "2026-01-01T00:00:00Z" }));
+    await cloud.sync();
+    const [, init] = fetchMock.mock.calls.at(-1)!;
+    const sent = JSON.parse(String((init as RequestInit).body)).state as GameState;
+    expect(sent.lastTickAt).toBe(start + 14 * 60_000);
+    expect(sent.lifetime.offlineSeconds).toBeGreaterThan(830);
+
+    // The server keeps it, and the save after it too: the catch-up was counted in the first.
+    expect(verifyTransition(before, sent, 14 * 60_000)).toEqual([]);
+    clock.mockReturnValue(start + 14 * 60_000 + 15_000);
+    store.advance();
+    expect(verifyTransition(sent, store.state, 15_000)).toEqual([]);
     cloud.dispose();
   });
 
