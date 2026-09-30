@@ -106,17 +106,20 @@ late game; mashing the mouse is never required.
   with every crit investment maxed (no Blade) stays under 6× at 5 clicks/s. At 24 h (median
   of 9 seeds, every profile giving its word at each dusk, each companion in turn, among the
   promises its style can keep: a profile that strikes gives no word to Ysolde nor to Nyx)
-  every style stands within a quarter of the others (the best over the worst: 1.20): the
-  occasional player leads (back every hour for 10 minutes, the tab left open to the
-  autopilot, ascending when a boss blocks the company: 898, 4 h of real play), then
-  continuous bursts (819), 10 clicks/s (796), idle (771), 2/s (768) and 5/s (748). Idle no
-  longer comes last: it stands level with 2 clicks/s and 23 stages ahead of 5/s (3%, inside
-  what single seeds swing), because an idle walker can give every word, Ysolde's and Nyx's
-  included, at no cost, while most words cost a striking walker some depth. The bot buys the
-  Blade when its clicks lead the company (they deal
-  more than the Patience bonus), Patience otherwise. 8 h in a background tab after 24 h of
-  play adds 18 to 49 stages (median per profile), and the Reunion doubles the first hour
-  back (+10 to +31 stages instead of +4 to +19). The 72 h bot (5 clicks/s, seed 42, a word
+  every style stands within a quarter of the others (the best over the worst: 1.14): 10
+  clicks/s leads (950), then 5/s (903), continuous bursts (891), the occasional player (867,
+  back every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
+  blocks the company, 4 h of real play), 2/s (851) and idle (836). Strikes add on top of the
+  Patience bonus since save version 11, so the walkers who strike gained depth; a walker
+  whose strikes come in bursts wins a stage now and then that the company alone could not,
+  and the bot calls its dusk once the road only creeps (from the second night, three new
+  stages in more than twice the stagnation time), not only once it stalls: without that
+  rule the bursts crept for hours and fell to 736 (1.28). The bot buys the Blade when its
+  clicks lead the company (they deal more than the Patience bonus), Patience otherwise:
+  at 10 clicks/s the strikes are then almost all the damage (clicks 325 times the company
+  without its bonus), and 8 h away adds only 1 stage to that walker. 8 h in a background tab
+  after 24 h of play adds 18 to 44 stages to the others (median per profile), and the
+  Reunion doubles the first hour back (+12 to +29 stages instead of +5 to +16). The 72 h bot (5 clicks/s, seed 42, a word
   given each night) reaches stage 1518 after 12 ascensions (500 at 16 h, 1000 at 30 h), and
   in a week 1960 after 26, each ascension adding fewer stages past 1000 (+120, +98, +70,
   +58, +70, then about +25 in the last days): no runaway. Before the Promise the same seed

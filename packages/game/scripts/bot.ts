@@ -16,7 +16,10 @@ export interface BotOptions {
   idleFromStage?: number;
   /** Occasional player: clicks only `seconds` out of every `everySeconds`. */
   burst?: { everySeconds: number; seconds: number };
-  /** Ascend after this long without a new stage. */
+  /**
+   * Ascend after this long without a new stage, or once the road only creeps: the last
+   * `CREEP_STAGES` new stages took more than `CREEP_SPANS` times as long.
+   */
   stagnationMs?: number;
   onMilestone?: (engine: GameEngine, now: number) => void;
   onAscend?: (engine: GameEngine, now: number, gain: number, from: number) => void;
@@ -140,6 +143,13 @@ export function averageClicks(options: BotOptions): number {
 }
 
 const DT = 0.1;
+/**
+ * A walker whose strikes come in bursts wins a stage now and then that the company alone could
+ * not: the road creeps, never stalls, and the dusk would never come. From the second night,
+ * three new stages in more than twice the stagnation time is a road that has stopped paying.
+ */
+const CREEP_STAGES = 3;
+const CREEP_SPANS = 2;
 
 /** What a relic is worth to the bot: its main stat, times its density. */
 function relicWorth(item: Item): number {
@@ -175,6 +185,8 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
   let now = start;
   let lastProgressAt = now;
   let lastMaxStage = s.maxStage;
+  /** When the last new stages of this run were reached, oldest first. */
+  let recent: number[] = [];
   let clickDebt = 0;
   let step = 0;
   const endAt = start + seconds * 1000;
@@ -217,15 +229,20 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
     if (s.maxStage > lastMaxStage) {
       lastMaxStage = s.maxStage;
       lastProgressAt = now;
+      recent = [...recent, now].slice(-CREEP_STAGES);
       options.onMilestone?.(engine, now);
     }
 
-    if (now - lastProgressAt > stagnation && standingPromise(s) && !promiseHolds(s)) {
+    // The first night ends on a real stall: the King is new, every stage past him is learned.
+    const creeping = s.lifetime.ascensions > 0 && recent.length === CREEP_STAGES && now - recent[0] > CREEP_SPANS * stagnation;
+    const stalled = now - lastProgressAt > stagnation || creeping;
+    if (stalled && standingPromise(s) && !promiseHolds(s)) {
       // A word that would not be kept at this dusk holds the night back: the bot takes it
       // back and walks on a while, freed, before it calls the dusk.
       engine.breakPromise(now);
       lastProgressAt = now;
-    } else if (engine.canAscend() && now - lastProgressAt > stagnation) {
+      recent = [];
+    } else if (engine.canAscend() && stalled) {
       const from = s.maxStage;
       const leading = strikesLead(derive(s, now, { ignoreTimed: true }), averageClicks(options));
       const gain = engine.ascend(now);
@@ -240,6 +257,7 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       buyAltars(engine, now, options.altars ?? (leading ? CLICKER_ALTARS : IDLE_ALTARS), leading);
       lastMaxStage = s.maxStage;
       lastProgressAt = now;
+      recent = [];
     }
   }
   return now;
