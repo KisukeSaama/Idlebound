@@ -507,6 +507,7 @@ describe("the Descent", () => {
   function atTheLoom(): GameState {
     const state = veteran();
     state.recognition = { eldra: RECOGNITION_TIERS[4] };
+    state.promises = { eldra: 2 };
     state.maxStage = 1_200;
     state.stage = 1_200;
     state.lifetime.essencesEarned = 1e9;
@@ -639,7 +640,8 @@ describe("named relics", () => {
   it("lets their unique effects work within the caps", () => {
     const state = veteran();
     state.named = ["eldra-locket", "second-morning", "oathcutter"];
-    state.recognition = { eldra: 30 };
+    state.recognition = { eldra: RECOGNITION_TIERS[4] };
+    state.promises = { eldra: 2 };
     state.altars = { echoes: 10, wanderer: 10 };
     const locket = { ...generateItem(seededRng(2), 100, { slot: "amulet", rarity: "mythic" }), named: "eldra-locket" };
     const ring = { ...generateItem(seededRng(3), 100, { slot: "ring", rarity: "mythic" }), named: "second-morning" };

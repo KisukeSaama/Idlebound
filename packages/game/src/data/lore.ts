@@ -161,8 +161,15 @@ export const SAYINGS = 12;
 
 // ---------------------------------------------------------------- Recognition
 
-/** Runs with a companion at level 100 or more that raise their Recognition to each tier. */
-export const RECOGNITION_TIERS = [1, 3, 7, 15, 30] as const;
+/**
+ * Runs of Recognition that raise a companion to each tier: a night with them at level 100
+ * or more counts once, twice when it kept one of the two promises their last memories wait
+ * for. The last tier asks two runs more since promises came (save version 10): those two
+ * words give them back, and the Loom still opens around day 8 to 9.
+ */
+export const RECOGNITION_TIERS = [1, 3, 7, 15, 32] as const;
+/** The tiers before promises (save version 9 and older): what a companion remembered then, they keep. */
+export const LEGACY_RECOGNITION_TIERS = [1, 3, 7, 15, 30] as const;
 export const RECOGNITION_LEVEL = 100;
 /** A companion who fully remembers the walker fights 10% harder. */
 export const RECOGNITION_DPS = 0.1;
@@ -177,16 +184,67 @@ export function recognitionRuns(state: GameState, heroId: string): number {
 }
 
 /** Runs needed for each tier, lowered by the Kinship weave (never under one run a tier). */
-export function recognitionThresholds(state: GameState): readonly number[] {
+export function recognitionThresholds(state: GameState, tiers: readonly number[] = RECOGNITION_TIERS): readonly number[] {
   const kinship = Object.hasOwn(state.weaves, "kinship") ? state.weaves.kinship ?? 0 : 0;
-  return RECOGNITION_TIERS.map((threshold, index) => Math.max(index + 1, threshold - kinship));
+  return tiers.map((threshold, index) => Math.max(index + 1, threshold - kinship));
+}
+
+/**
+ * Promises kept that each tier asks on top of its runs (BIBLE 12.11): the last two memories
+ * are only given to a walker who kept their word, once each.
+ */
+export const RECOGNITION_PROMISES = [0, 0, 0, 1, 2] as const;
+
+/** The tier the runs alone give: the rule before promises (save version 9 and older). */
+export function recognitionTierByRuns(runs: number, thresholds: readonly number[]): number {
+  return thresholds.filter((threshold) => runs >= threshold).length;
+}
+
+/** The tier a companion already held when promises came: it stays, and the tiers above ask only what is left. */
+export function rememberedTier(state: GameState, heroId: string): number {
+  return Object.hasOwn(state.remembered, heroId) ? state.remembered[heroId] : 0;
 }
 
 /** Recognition tier of a companion, 0 to 5. */
 export function recognitionTier(state: GameState, heroId: string): number {
   if (!RECOGNITION_HEROES.includes(heroId)) return 0;
   const runs = recognitionRuns(state, heroId);
-  return recognitionThresholds(state).filter((threshold) => runs >= threshold).length;
+  const kept = Object.hasOwn(state.promises, heroId) ? state.promises[heroId] : 0;
+  const held = rememberedTier(state, heroId);
+  const already = held > 0 ? RECOGNITION_PROMISES[held - 1] : 0;
+  let tier = 0;
+  for (const [index, threshold] of recognitionThresholds(state).entries()) {
+    if (runs < threshold || kept < RECOGNITION_PROMISES[index] - already) break;
+    tier = index + 1;
+  }
+  return Math.max(tier, held);
+}
+
+/**
+ * Promises a companion's memories still wait for (two in all, one for each of the last two,
+ * less what they held before promises came). Only those count a night twice: a word kept
+ * past them is remembered like any night.
+ */
+export function promisesAwaited(state: GameState, heroId: string): number {
+  if (!RECOGNITION_HEROES.includes(heroId)) return 0;
+  const held = rememberedTier(state, heroId);
+  const already = held > 0 ? RECOGNITION_PROMISES[held - 1] : 0;
+  const kept = Object.hasOwn(state.promises, heroId) ? state.promises[heroId] : 0;
+  return Math.max(0, RECOGNITION_PROMISES[RECOGNITION_PROMISES.length - 1] - already - kept);
+}
+
+/** What keeps a companion from their next memory: runs with them still to walk, promises still to keep. */
+export function recognitionNeeds(state: GameState, heroId: string): { runs: number; promises: number } | null {
+  const tier = recognitionTier(state, heroId);
+  const thresholds = recognitionThresholds(state);
+  if (!RECOGNITION_HEROES.includes(heroId) || tier >= thresholds.length) return null;
+  const held = rememberedTier(state, heroId);
+  const already = held > 0 ? RECOGNITION_PROMISES[held - 1] : 0;
+  const kept = Object.hasOwn(state.promises, heroId) ? state.promises[heroId] : 0;
+  return {
+    runs: Math.max(0, thresholds[tier] - recognitionRuns(state, heroId)),
+    promises: Math.max(0, RECOGNITION_PROMISES[tier] - already - kept)
+  };
 }
 
 /** Companions who fully remember the walker. */

@@ -28,19 +28,26 @@ import {
   EVEN_RATS,
   GOOD_BOY_RUNS,
   LAST_SECOND_TIMES,
+  LEGACY_RECOGNITION_TIERS,
   LESSONS,
   LISTEN_SECONDS,
   NIGHT_OWL_SECONDS,
   NOTCH_KILLS,
+  RECOGNITION_HEROES,
+  RECOGNITION_PROMISES,
   SECRET_IDS,
   TONGUE_SECONDS,
   WANDERERS,
   WANDERER_BY_ID,
   WELCOME_BACK_MS,
   bestiaryKills,
+  recognitionRuns,
+  recognitionThresholds,
   recognitionTier,
+  recognitionTierByRuns,
   type SecretId
 } from "./data/lore";
+import { PROMISE_BY_HERO, companionMet, promiseDepth, promiseKings, promisesKept, promisesKeptInAll, promisesOpen } from "./data/promises";
 import { NAMED_BY_ID, NAMED_RELICS, namedSourceReached, type NamedEffect } from "./data/relics";
 import { AGE_COUNT, keystonesFound } from "./data/strata";
 import { SAVE_VERSION } from "./state";
@@ -403,10 +410,19 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   if (new Set(lore.events).size !== lore.events.length || lore.events.some((id) => !(EVENTS as readonly string[]).includes(id))) fail("lore", "Unknown event.");
   if (new Set(lore.altars).size !== lore.altars.length || lore.altars.some((id) => !ALTAR_BY_ID[id as AltarId])) fail("lore", "Unknown altar legend.");
 
+  // A night counts once for a companion, twice for each of the two words their memories ask.
+  const doubled = RECOGNITION_PROMISES[RECOGNITION_PROMISES.length - 1];
   for (const [heroId, runs] of Object.entries(state.recognition)) {
     if (!HERO_BY_ID[heroId]) fail("recognition", `Unknown companion: ${heroId}.`);
-    else if (runs > lifetime.ascensions) fail("recognition", "More remembered runs than ascensions.");
+    else if (runs > lifetime.ascensions + Math.min(doubled, promisesKept(state, heroId))) fail("recognition", "More remembered runs than ascensions.");
   }
+  // What a companion remembered before promises came is what the runs alone had earned.
+  const thresholds = recognitionThresholds(state, LEGACY_RECOGNITION_TIERS);
+  for (const [heroId, tier] of Object.entries(state.remembered)) {
+    if (!RECOGNITION_HEROES.includes(heroId)) fail("recognition", `Unknown companion: ${heroId}.`);
+    else if (recognitionTierByRuns(recognitionRuns(state, heroId), thresholds) < tier) fail("recognition", "A memory older than the runs that earned it.");
+  }
+  verifyPromises(state, fail);
 
   if (new Set(state.named).size !== state.named.length) fail("named", "Named relic found twice.");
   for (const id of state.named) {
@@ -421,6 +437,48 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   for (const id of state.secrets) {
     if (!SECRET_IDS.includes(id)) fail("secret", `Unknown secret: ${id}.`);
     else if (!secretPossible(state, id as SecretId, serverNow)) fail("secret", `Secret without its conditions: ${id}.`);
+  }
+}
+
+/** Promises: one word a night at most, kept only on a night whose King fell. */
+function verifyPromises(state: GameState, fail: (code: string, message: string) => void) {
+  const lifetime = state.lifetime;
+  for (const heroId of Object.keys(state.promises)) {
+    if (!Object.hasOwn(PROMISE_BY_HERO, heroId)) fail("promise", `Unknown companion: ${heroId}.`);
+  }
+  if (promisesKeptInAll(state) > lifetime.ascensions) fail("promise", "More promises kept than nights.");
+  if (state.pledge !== undefined && !Object.hasOwn(PROMISE_BY_HERO, state.pledge)) fail("promise", `Unknown companion: ${state.pledge}.`);
+  if (state.lastPromise !== undefined && !Object.hasOwn(PROMISE_BY_HERO, state.lastPromise)) fail("promise", `Unknown companion: ${state.lastPromise}.`);
+  const promise = state.trail.promise;
+  if (!promise) return;
+  const def = Object.hasOwn(PROMISE_BY_HERO, promise.hero) ? PROMISE_BY_HERO[promise.hero] : undefined;
+  if (!def) {
+    fail("promise", `Unknown companion: ${promise.hero}.`);
+    return;
+  }
+  if (!promisesOpen(state) || !companionMet(state, promise.hero)) fail("promise", "A promise to someone the walker never met.");
+  // Nobody asks two nights running, and nobody asks for a night the walker never walked.
+  if (promise.hero === state.lastPromise) fail("promise", "The same companion asked two nights running.");
+  if (promiseDepth(def, state.runStartStage) >= state.maxStageEver) fail("promise", "A promise deeper than the walker ever went.");
+  // Its Kings were fought this night, at the head of the run.
+  const kingsAhead = Math.floor((state.maxStage - 1) / 50) - Math.floor((state.runStartStage - 1) / 50);
+  if (promise.kings > kingsAhead || promise.kings > state.run.bosses || promise.kings > lifetime.kings) fail("promise", "More Kings than the night has seen fall.");
+  if ((promise.waited || promise.released) && state.run.bosses === 0) fail("promise", "A guardian that never fell.");
+  if (promise.waited && def.kind !== "wait") fail("promise", "Nothing to wait for.");
+  if (promise.released && def.kind !== "head") fail("promise", "Nobody to follow.");
+  if (promise.released && def.kind === "head" && def.until === "king" && promise.kings < promiseKings(def)) fail("promise", "Released before the King fell.");
+  if (promise.goal !== undefined && (def.kind !== "further" || promise.goal > state.maxStageEver)) fail("promise", "A night deeper than any night walked.");
+  // What the word forbids was not done while it stood.
+  if (!promise.broken) {
+    if (def.kind === "without" && (state.heroLevels[def.other] ?? 0) > 0) fail("promise", "The companion left behind was hired.");
+    if (def.kind === "abstain" && def.from === "strikes" && state.run.clicks > 0) fail("promise", "A strike under a promise to sheathe the sword.");
+    if (def.kind === "abstain" && def.from === "powers" && state.run.skillsUsed > 0) fail("promise", "A power used under a promise of silence.");
+    if (def.kind === "abstain" && def.from === "crystals" && state.run.crystals > 0) fail("promise", "A crystal caught under a promise to leave them.");
+    if (def.kind === "abstain" && def.from === "essences" && state.trail.offered > 0) fail("promise", "Essences offered under a promise to keep them.");
+    if (def.kind === "head" && !promise.released) {
+      const limit = HERO_BY_ID[def.hero].index;
+      if (Object.entries(state.heroLevels).some(([heroId, level]) => level > 0 && (HERO_BY_ID[heroId]?.index ?? 0) > limit)) fail("promise", "The company grew past its head.");
+    }
   }
 }
 
@@ -509,6 +567,27 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   for (const [heroId, runs] of Object.entries(previous.recognition)) {
     if ((Object.hasOwn(next.recognition, heroId) ? next.recognition[heroId] : 0) < runs) fail("rollback", "Recognition went down.");
   }
+  // Promises: kept ones never go back, one more at most per night ended, and the word given
+  // for a night is not swapped or mended before its dusk.
+  const nights = Math.max(0, b.ascensions - a.ascensions);
+  for (const [heroId, kept] of Object.entries(previous.promises)) {
+    if (promisesKept(next, heroId) < kept) fail("rollback", "A promise kept was forgotten.");
+  }
+  if (promisesKeptInAll(next) - promisesKeptInAll(previous) > nights) fail("promise", "More promises kept than nights ended.");
+  for (const [heroId, runs] of Object.entries(next.recognition)) {
+    const gained = runs - recognitionRuns(previous, heroId);
+    if (gained > nights + promisesKept(next, heroId) - promisesKept(previous, heroId)) fail("recognition", "Recognition grew faster than the nights.");
+  }
+  const tiers = (state: GameState) => JSON.stringify(Object.entries(state.remembered).sort(([x], [y]) => (x < y ? -1 : 1)));
+  if (tiers(next) !== tiers(previous)) fail("recognition", "Memories older than promises cannot change.");
+  const given = previous.trail.promise;
+  if (given && nights === 0 && next.descents === previous.descents) {
+    const now = next.trail.promise;
+    if (!now || now.hero !== given.hero) fail("promise", "The word given for the night was swapped.");
+    else if ((given.broken && !now.broken) || now.kings < given.kings) fail("promise", "A broken promise was mended.");
+  }
+  // One dusk later, last night's word is remembered as it was.
+  if (nights === 1 && next.descents === previous.descents && next.lastPromise !== given?.hero) fail("promise", "Last night's word was rewritten.");
   if (previous.named.some((id) => !next.named.includes(id))) fail("rollback", "A named relic was forgotten.");
   if (next.descents < previous.descents) fail("rollback", "Descents went down.");
   if (previous.secrets.some((id) => !next.secrets.includes(id))) fail("rollback", "A secret was forgotten.");

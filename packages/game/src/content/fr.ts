@@ -4,6 +4,7 @@ import { BESTIARY_KEEP_TEXT } from "./story/bestiary-keep";
 import { COMPANY_TEXT } from "./story/company";
 import { CUTSCENES_TEXT } from "./story/cutscenes";
 import { COMPANY_LATE_TEXT } from "./story/company-late";
+import { PROMISES_TEXT } from "./story/promises";
 import { PLACES_TEXT } from "./story/places";
 import { STRATA_TEXT } from "./story/strata";
 import { SYSTEMS_TEXT } from "./story/systems";
@@ -336,6 +337,7 @@ export const fr: GameText = {
     ...COMPANY_TEXT.fr.hireLines,
     ...COMPANY_LATE_TEXT.fr.hireLines
   },
+  promises: PROMISES_TEXT.fr,
   relics: SYSTEMS_TEXT.fr.relics,
   namedEffects: SYSTEMS_TEXT.fr.namedEffects,
   secrets: SYSTEMS_TEXT.fr.secrets,

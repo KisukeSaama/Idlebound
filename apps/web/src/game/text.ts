@@ -1,4 +1,4 @@
-import { altarEffect, formatPercent, gameText, trimmed, type AffixStat, type AltarDef, type HeroEffect, type Locale } from "@idlebound/game";
+import { altarEffect, formatPercent, gameText, trimmed, type AffixStat, type AltarDef, type HeroEffect, type Locale, type PromiseDef } from "@idlebound/game";
 import { messages } from "@/i18n/messages";
 
 const pct = (value: number) => Math.round(value * 100);
@@ -17,6 +17,29 @@ export function describeEffect(effect: HeroEffect, heroName: string, locale: Loc
     case "bossTimer": return t.bossTimer(effect.seconds);
     case "treasure": return t.treasure(pct(effect.pct));
     case "idleDps": return t.idleDps(pct(effect.pct));
+  }
+}
+
+/**
+ * What a promise asks, in plain words. `goal`: the stage Oriane's night must pass, once the
+ * word is given (before, the night it is measured against is not over). `short`: without
+ * the reminder that the King must fall (the companions' list, where room is scarce).
+ */
+export function describePromise(def: PromiseDef, locale: Locale, goal?: number, short = false): string {
+  const t = messages(locale).sanctum.promise.rules;
+  const g = gameText(locale);
+  const name = (heroId: string) => g.heroes[heroId]?.name ?? heroId;
+  const withKing = (rule: string) => (short ? rule : `${rule} ${t.king}`);
+  switch (def.kind) {
+    case "without": return withKing(def.other === def.hero ? t.withoutSelf : t.without(name(def.other)));
+    case "head": return def.until === "king" ? t.headKing(name(def.hero)) : withKing(t.headGuardian(name(def.hero)));
+    case "wait": return def.guardian === "king" ? withKing(t.waitKing(def.seconds)) : withKing(t.wait(g.monsters[def.guardian] ?? def.guardian, def.seconds));
+    case "abstain": return withKing(t[def.from]);
+    case "unfailing": return withKing(t.unfailing);
+    case "seam": return withKing(t.seam(pct(def.share)));
+    case "anvil": return withKing(t.anvil);
+    case "further": return withKing(goal === undefined ? t.furtherNext : t.further(goal));
+    case "strata": return t.strata(def.kings);
   }
 }
 

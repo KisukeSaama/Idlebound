@@ -21,6 +21,7 @@ export * from "./data/items";
 export * from "./data/achievements";
 export * from "./data/market";
 export * from "./data/lore";
+export * from "./data/promises";
 export * from "./data/relics";
 export * from "./data/descent";
 export * from "./data/caravan";

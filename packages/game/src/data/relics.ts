@@ -1,8 +1,9 @@
-import type { GameState, ItemSlot, Rarity } from "../types";
+import type { GameState, Item, ItemSlot, Rarity } from "../types";
 import { eraForStage } from "./biomes";
 import { HERO_BY_ID } from "./heroes";
-import { bestiaryKills, recognitionRuns, recognitionThresholds } from "./lore";
+import { bestiaryKills, recognitionTier } from "./lore";
 import { lookup } from "./lookup";
+import { promiseOf } from "./promises";
 
 /**
  * Named relics (BIBLE 11): relics with a name, a legend and one unique effect, found once
@@ -144,10 +145,8 @@ export function namedSourceReached(state: GameState, def: NamedRelicDef): boolea
       return state.maxStageEver > source.era * 50 + 10;
     case "king":
       return state.maxStageEver > (source.age * 5 + 1) * 50 && deepestEra >= source.age * 5;
-    case "gift": {
-      const thresholds = recognitionThresholds(state);
-      return recognitionRuns(state, source.hero) >= thresholds[thresholds.length - 1];
-    }
+    case "gift":
+      return recognitionTier(state, source.hero) >= 5;
     case "creature":
       return bestiaryKills(state, source.monster) > 0;
     case "hired":
@@ -160,11 +159,20 @@ export function namedSourceReached(state: GameState, def: NamedRelicDef): boolea
   }
 }
 
+/**
+ * The relics that count this night: everything worn, less the weapon while it stays on
+ * Brom's anvil (his promise, BIBLE 12.11).
+ */
+export function wornItems(state: GameState): Item[] {
+  const anvil = promiseOf(state, "anvil") !== undefined;
+  return Object.values(state.equipment).filter((item) => item !== undefined && !(anvil && item.slot === "weapon"));
+}
+
 /** Sum of an effect over the equipped named relics. */
 export function namedEffect(state: GameState, kind: NamedEffect["kind"]): number {
   let total = 0;
-  for (const item of Object.values(state.equipment)) {
-    const def = item?.named ? NAMED_BY_ID[item.named] : undefined;
+  for (const item of wornItems(state)) {
+    const def = item.named ? NAMED_BY_ID[item.named] : undefined;
     if (def && def.effect.kind === kind) total += def.effect.pct;
   }
   return total;
@@ -172,7 +180,7 @@ export function namedEffect(state: GameState, kind: NamedEffect["kind"]): number
 
 /** Whether a named relic is worn. */
 export function wearing(state: GameState, id: string): boolean {
-  return Object.values(state.equipment).some((item) => item?.named === id);
+  return wornItems(state).some((item) => item.named === id);
 }
 
 /** The Regalia, all three worn. */

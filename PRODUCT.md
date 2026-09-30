@@ -44,7 +44,9 @@ market is French-speaking, with a full English version.
    timer runs out.
 4. **Ascend** once the Fallen King (stage 50) is beaten: restart from stage 1 in exchange
    for essences, which permanently boost damage and buy altars.
-5. **Collect relics**, forge them, trade shards at the market, unlock achievements.
+5. **Give your word** at dusk to one companion: what they ask shapes the night, and a word
+   kept is how they come to remember you (see "The Promise").
+6. **Collect relics**, forge them, trade shards at the market, unlock achievements.
 
 ## World and progression
 
@@ -107,17 +109,23 @@ late game; mashing the mouse is never required.
 - **Targets** (checked by tests and `npm run balance -- 24 compare 5`, median of 5 seeds):
   with every talent and no altar, 5 clicks/s add about half of companion DPS; a click build
   with every crit investment maxed (no Blade) stays under 6× at 5 clicks/s. At 24 h (median
-  of 9 seeds) every style stands within a quarter of the others and every clicking style
-  at or above idle: the occasional player leads (back every hour for 10 minutes, the tab
-  left open to the autopilot, ascending when a boss blocks the company: 890, 4 h of real
-  play), then 10 clicks/s (860, +19% over idle), continuous bursts (813), 5/s (808), 2/s
-  (768) and idle (724). The bot buys the Blade when its clicks lead the company (they deal
+  of 9 seeds, every profile giving its word at each dusk, each companion in turn, among the
+  promises its style can keep: a profile that strikes gives no word to Ysolde nor to Nyx)
+  every style stands within a quarter of the others (the best over the worst: 1.20): the
+  occasional player leads (back every hour for 10 minutes, the tab left open to the
+  autopilot, ascending when a boss blocks the company: 898, 4 h of real play), then
+  continuous bursts (819), 10 clicks/s (796), idle (771), 2/s (768) and 5/s (748). Idle no
+  longer comes last: it stands level with 2 clicks/s and 23 stages ahead of 5/s (3%, inside
+  what single seeds swing), because an idle walker can give every word, Ysolde's and Nyx's
+  included, at no cost, while most words cost a striking walker some depth. The bot buys the
+  Blade when its clicks lead the company (they deal
   more than the Patience bonus), Patience otherwise. 8 h in a background tab after 24 h of
-  play adds 1 to 29 stages (median per profile), and the Reunion doubles the first hour
-  back (+11 to +19 stages instead of +5 to +10). The 72 h bot (5 clicks/s, seed 42)
-  reaches stage 1663 after 12 ascensions (500 at 15 h, 1000 at 26 h), and in a week 2028
-  after 25, each ascension adding fewer stages past 1000 (+166, +128, +117, +107, +76,
-  then about +30 in the last days): no runaway.
+  play adds 18 to 49 stages (median per profile), and the Reunion doubles the first hour
+  back (+10 to +31 stages instead of +4 to +19). The 72 h bot (5 clicks/s, seed 42, a word
+  given each night) reaches stage 1518 after 12 ascensions (500 at 16 h, 1000 at 30 h), and
+  in a week 1960 after 26, each ascension adding fewer stages past 1000 (+120, +98, +70,
+  +58, +70, then about +25 in the last days): no runaway. Before the Promise the same seed
+  stood at 1663 and 2028: the words cost it 9% of its depth at 72 h, 3% in a week.
 - **Real schedules** (hybrid simulation: active sessions played by the bot, the tab left
   open in between with the autopilot, closed at night): a newcomer (a first hour, then four
   15 min sessions a day) reaches stage 94 on day 1 and 379 on day 2; an engaged player
@@ -131,8 +139,10 @@ late game; mashing the mouse is never required.
   converges, 1.025 already runs away to stage 3000 within a week.
 - **The long game** (`npx tsx packages/game/scripts/longrun.ts [weeks] [seeds] [clicks/s]`,
   bot at 5 clicks/s around the clock, median of 5 seeds over 8 weeks): stage 1987 at day 7,
-  2323 at day 14, 2530 at day 28, 2687 at day 56 without a Descent. The first Descent opens
-  at day 8.7 (Eldra's Recognition 5 asks for 30 runs, the stage 1000 comes on day 2). It sets
+  2323 at day 14, 2530 at day 28, 2687 at day 56 without a Descent. The first Descent opened
+  at day 8.7 before the Promise (Eldra's Recognition 5 asked for 30 runs, the stage 1000
+  comes on day 2), and still does with it (see "The Promise" below); the eight weeks of
+  this paragraph were not run again since. It sets
   the walker back for about two weeks (2083 at day 14), then pulls ahead: descending once the
   threads reach 8 and the threads woven so far, 2 Descents and 2768 at day 56; at 4 threads
   and half the threads woven so far, 4 Descents and 2816. No seed reaches the Dawn in 8 weeks.
@@ -209,11 +219,78 @@ their base. The Vestment of Cinders makes Golden Rain last 45 s.
   times more generous (20 instead of 5 as its base, 3 instead of 1 per stage past 50); since
   it only grew, older ascension records and the essence leaderboard stay valid.
 
+### The Promise
+
+At dusk everyone forgets, except a word given. From the second night, the walker may give
+their word to **one companion a night**, among those already met; what that companion asks
+shapes the whole night (BIBLE 12.11).
+
+- **Given** in the Sanctum (the Promise tab): at once while the night is still at its dusk
+  (nobody hired, no stage cleared, nothing the word forbids already done), otherwise for
+  the next dusk. One word a night; it cannot be swapped.
+- **Never the same companion two nights running**: whoever had last night's word waits a
+  dusk (a night without a word rests nobody).
+- **Never a night the walker has not walked**: a companion only asks once every stage the
+  promise needs cleared (its King, Lysandre's second King, the guardian it waits at, counted
+  from the stage the night starts on) lies under the walker's best stage. Until then they
+  are not in the list.
+- **Held by the night itself**: while the word stands, what it forbids is refused (the
+  hire, the strike, the power, the purchase), and a toast says why. The autopilot and the
+  catch-ups (hidden tab, closed game) respect it the same way, so every promise can be kept
+  without being there. Only the walker breaks it, on purpose (a confirmed key in the
+  Sanctum), or by calling the dusk too early; Eldra's also breaks when a seam closes.
+- **Kept** at dusk when what it asks was done **and a King fell that night** (at the head of
+  the run, after the word was given). Their words join the Chronicle the first time, and the
+  night counts **2 runs** of Recognition for that companion instead of 1 when both hold:
+  they reached level 100 that night, and their memories were still waiting for a word (two
+  per companion: one for the fourth memory, one for the fifth). Otherwise it counts 1: a
+  word kept to a companion who stayed under level 100, or a third word to one who has had
+  their two.
+- **Broken**: no power is lost and nothing is forbidden any more; the night counts like any
+  other, the companion says one line and their medallion keeps an undone knot until dusk.
+  Nothing goes to the Chronicle.
+- **Recognition asks for it**: tiers at 1, 3, 7, 15 and **32** runs (the last was 30), and
+  the fourth and fifth memories each ask one promise kept to that companion. What a
+  companion already remembered before save version 10 stays remembered.
+
+| Companion | The night they ask for |
+|---|---|
+| Maëlle | Nobody past her joins the company until the night's first guardian falls |
+| Brom | The weapon worn counts for nothing all night (main stat, density, named effect) and cannot be swapped or forged; asked only of a walker who wears one |
+| Ysolde | No strike of the walker's own all night (Frenzy and the striking scroll still strike) |
+| Brother Cinder | Ashka is not hired all night (the companions after her still join) |
+| Nyx | No power all night |
+| Garrick | No shard spent all night: stall, Caravan, forge |
+| Séraphine | No blow for 10 s at the start of every fight with the Heart of the Old Grove, which must fall |
+| Thorvald | Elites and guardians for half their time, all night |
+| Mirelle | No blow for 15 s at the start of every fight with the Baron of Rot, who must fall |
+| Kaelen | Nobody past him joins the company until the King falls |
+| Oriane | The night goes past the stage the last night reached |
+| Vorn | No blow for 10 s at the start of every fight with the Stone Devourer, which must fall |
+| Lysandre | Two Kings fall this night |
+| Ashka | Brother Cinder is not hired all night |
+| The Nameless | No essence offered to the altars all night |
+| Eldra | No seam closes on the walker all night; alone, the company stops before a boss it cannot beat in its time less a second, without fighting it (no failed fight, no wound kept) |
+| Morgrath | Kaelen is not hired all night |
+| Célestine | No crystal caught all night |
+| Aurelion | No blow for 10 s at the start of every fight with the King |
+| The Awakened | The Awakened is not hired all night |
+
+- **The Loom's day** (`npx tsx packages/game/scripts/loom.ts 12 6`, bot at 5 clicks/s,
+  median of 6 seeds): a walker who gives their word each night, each companion in turn and
+  first to whoever only lacks a word to remember more (Eldra before the others), opens the
+  Loom and descends on **day 8.7** (29 nights, 27 promises kept), as before the Promise. The
+  worst case, a walker who gives Eldra their word every night the rules allow (every other
+  night), opens it on **day 8.1** (30 nights): only her two awaited words count double, so
+  hurrying gains half a day. (With every kept word counting double, the same walker opened
+  it on day 5.7, and on day 3.7 without the rest of a night: hence the two rules.)
+
 ### The Descent
 
 The second layer of rebirth, for the long run (it keeps players apart after weeks of play).
 
-- **Unlock**: a best stage of 1000 ever and Eldra's Recognition 5 (she shows her Loom).
+- **Unlock**: a best stage of 1000 ever and Eldra's Recognition 5 (she shows her Loom): 32
+  runs with her, and two promises kept to her.
 - **A Descent** resets everything an ascension resets, plus the essences and the altars;
   it keeps relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime
   statistics and the best stage ever. It weaves **threads** from the essences gathered
@@ -294,7 +371,8 @@ line of text: it stores counters, and the n-th fragment of a source is always th
     brings the next back: always the first, then 15% + 5% per era);
   - the **Age echoes**: 8 per Age, then the grammar, brought back by the King's first fall
     in an Age, by every Seam closed and by the Quiet;
-  - rare wanderers, events (their first time), Recognition memories (100), **Aldric's
+  - rare wanderers, events (their first time), Recognition memories (100), **words kept**
+    (what each companion said the first time a promise to them was kept, 20), **Aldric's
     Lessons** (the first purchase of each of his seven talents), **Célestine's songs** (5%
     of the crystals caught once she has been met), **what stays after an absence** (a
     return after an hour or more in a hidden tab or a sleeping computer: one line over the
@@ -318,7 +396,10 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   the Ledger saw" lists it on every device, to be watched again; saves already past it see
   it there at once.
 - **Recognition**: a companion who reached level 100 in a run remembers the walker a
-  little; tiers at 1, 3, 7, 15 and 30 such runs (one run less per level of Kinship), each a
+  little (one run; two when it kept one of the two promises their memories wait for, see
+  "The Promise");
+  tiers at 1, 3, 7, 15 and 32 runs (one run less per level of Kinship), the last two asking
+  one promise kept each, each tier a
   memory and a gold ring on the medallion, the fifth +10% DPS for that companion. Every
   companion greets the walker when hired, as a stranger, half remembered (tier 1 or 2) or
   remembered (tier 3 or more). Eight give a named relic at tier 5. Companions who remember
@@ -446,6 +527,11 @@ opens again, within the same cap as a hidden tab.
   Aldric is never levelled. Turned off, the gold is kept.
 - **What presence adds**, with no ratio applied to the away player: wandering crystals,
   powers, faster purchases, ascensions, altars, the shard market, gear and the forge.
+- **The word given is kept while away**: the autopilot and the catch-ups never hire a
+  companion the promise leaves behind (the next ones join in their turn), hire nobody past
+  the head of the company until its guardian falls, count the moment of grace of a promise
+  to wait in every fight, and, under Eldra's, stop before a boss they cannot beat instead of
+  fighting it once. A promise can be kept, never broken, by a walker who is not there.
 - **Reunion** (*Retrouvailles*): back from 30 min or more away (no input on the page, or
   time a background tab or a closed game caught up), the player's first input brings a gold toast
   and companion damage ×3 for a sixth of the absence, counted from that moment and capped
@@ -466,9 +552,11 @@ opens again, within the same cap as a hidden tab.
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
 (`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 48, stage 50 in
-1 h 41, first ascension at 2 h 53, stage 100 at 4 h 36, then steady progress carried by
-ascensions. A naive walker (it buys the newest companion it can afford, never the best
-value) loses 2 min 30 at the stage 30 guardian and 3 min at the stage 40 guardian (median of
+1 h 41, first ascension at 2 h 54, stage 100 at 4 h 38 (4 h 16 without a word given on the
+second night: Maëlle's keeps the company to the two of them until the first guardian), then
+steady progress carried by ascensions. A naive walker (it buys the newest companion it can afford, never the best
+value) loses 2 min 27 at the stage 20 guardian, 2 min 33 at the stage 30 guardian and
+3 min 09 at the stage 40 guardian (median of
 9 seeds, `npx tsx packages/game/scripts/walls.ts 9`). The pace of a run is set by the gold a
 monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to stage 10.
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
@@ -571,6 +659,17 @@ rejects real play.
 - In the choice between two games, keeping the current one when the account's game is
   further along (best stage, then play time) asks for confirmation, naming what will be
   erased (stage, ascensions, play time).
+- **Save version 10** brings the Promise: the promises kept to each companion, the word
+  of the night in the run's trail, the companion chosen for the next dusk, the one who had
+  last night's word. An older save
+  starts with none, and keeps what its companions already remembered: a fourth or fifth
+  memory earned under the old rule (runs alone, 30 for the fifth) stays, the tiers above it
+  asking only what is left (`remembered`, written once by the migration, never changed
+  after). Tested: a version 9 save parses, verifies, plays on and saves again. Proved on the
+  running server (Postgres, the API of this release): a save written by the last release
+  (version 9, stage 160, two ascensions) stored as it was, read by `GET /save`, caught up,
+  played on and accepted by `PUT /save`, then a dusk with a word given accepted again; the
+  row reads version 10, no rejection logged.
 - **Save version 9** keeps two more things. The essences of every ascension in one ledger
   (the history holds only the last hundred): an older save gets the most its data proves,
   its history's sum or what its crystals cannot explain. And the engine's random generator:
@@ -631,6 +730,16 @@ the save reached (and their slot and rarity), secrets by their conditions. The D
 bounded by its unlock (stage 1000, Eldra's Recognition), threads by the essences gathered,
 Weaves by their caps and the threads woven; Kings, Seams, threads, Descents, secrets and
 the Chronicle's counters never go back.
+Promises are bounded by the nights: never more kept than ascensions, one more at most per
+night ended between two saves, and Recognition never above the ascensions plus the promises
+kept to that companion, two at most (the two nights that count double). The word of a
+night belongs to a companion the walker has met, who did not have last night's (what the
+save says of last night must match the save before it), asks for no stage deeper than the
+walker's best, is
+never swapped nor mended before its dusk, counts no more Kings than the night saw fall, and
+cannot stand while what it forbids shows in the save (the companion left behind hired, a
+strike, a power, a crystal, an essence offered, the company past its head). The tiers held
+before version 10 are bounded by the runs the old rule asked, and never change afterwards.
 Rejections are logged (kept 90 days, 30 per player and hour at most, one entry per code); a
 refused save returns its first 20 violations. Only accepted saves feed the leaderboard, which
 keeps each player's best verified values. Checks that need no stored save run before the

@@ -19,6 +19,8 @@ import {
   relicStratum,
   forgePrice,
   itemName,
+  promiseAbstains,
+  promiseOf,
   salvageValue,
   trimmed,
   wearsRegalia,
@@ -36,6 +38,7 @@ import { PixelSprite } from "../pixel/PixelSprite";
 import { relicSource } from "../pixel/sources";
 import { useRemembered } from "../remembered";
 import { formatAffix } from "../text";
+import { PromiseNotice } from "./PromiseTab";
 
 /** Rarities from the rarest down: the Bag sorts by it, and bulk salvage counts up to one. */
 const RARITY_ORDER: Rarity[] = ["mythic", "legendary", "epic", "rare", "common"];
@@ -167,8 +170,12 @@ function Equipped() {
   const fmt = useFormat();
   const mult = useMultiplier();
   const density = equipmentDensity(state);
+  // A word given: no shard spent (Garrick), or the weapon left on the anvil (Brom).
+  const frugal = promiseAbstains(state, "shards");
+  const anvil = promiseOf(state, "anvil") !== undefined;
   return (
     <div className="gear-layout">
+      <PromiseNotice when={frugal || anvil} />
       <div className="gear-slots">
         {SLOTS.map((slot) => {
           const item = state.equipment[slot];
@@ -187,13 +194,13 @@ function Equipped() {
               <button
                 type="button"
                 className="btn btn-violet btn-sm"
-                disabled={item.forge >= FORGE_MAX || state.shards < cost}
+                disabled={item.forge >= FORGE_MAX || state.shards < cost || frugal || (anvil && slot === "weapon")}
                 onClick={() => store.act((engine, now) => engine.forge(slot, now))}
                 title={text.forgeTitle(percent(FORGE_STEP * 100, locale))}
               >
                 {item.forge >= FORGE_MAX ? text.forgeMaxed : <>{text.forge} <ShardIcon size={14} /> {fmt(cost)}</>}
               </button>
-              <button type="button" className="btn btn-ghost btn-sm" disabled={state.inventory.length >= INVENTORY_LIMIT} onClick={() => store.act((engine, now) => engine.unequip(slot, now))}>
+              <button type="button" className="btn btn-ghost btn-sm" disabled={state.inventory.length >= INVENTORY_LIMIT || (anvil && slot === "weapon")} onClick={() => store.act((engine, now) => engine.unequip(slot, now))}>
                 {text.unequip}
               </button>
             </ItemCard>
@@ -317,8 +324,12 @@ function Bag() {
     return <p className="empty-state">{text.emptyBag}</p>;
   }
 
+  // Brom keeps the weapon on his anvil for the night: no other takes its place.
+  const anvil = promiseOf(state, "anvil") !== undefined;
+
   return (
     <div className="bag">
+      <PromiseNotice when={anvil} />
       <div className="bag-toolbar">
         <label>
           {text.sortLabel}
@@ -336,7 +347,7 @@ function Bag() {
       <div className="bag-grid">
         {items.map((item) => (
           <ItemCard key={item.uid} item={item} compareTo={state.equipment[item.slot]}>
-            <button type="button" className="btn btn-gold btn-sm" onClick={() => store.act((engine, now) => engine.equip(item.uid, now))}>{text.equip}</button>
+            <button type="button" className="btn btn-gold btn-sm" disabled={anvil && item.slot === "weapon"} onClick={() => store.act((engine, now) => engine.equip(item.uid, now))}>{text.equip}</button>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act((engine) => engine.toggleLock(item.uid))} aria-pressed={Boolean(item.locked)}>
               {item.locked ? text.unlock : text.lock}
             </button>

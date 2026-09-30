@@ -206,9 +206,18 @@ describe("Recognition", () => {
     state.lifetime.bestLevelSum = 10;
     state.lifetime.bestHired = 1;
     const base = derive(state, T0).heroDps.maelle;
+    // Runs alone stop at the third memory: the last two ask for a word kept, once each.
     state.recognition = { maelle: RECOGNITION_TIERS[4] };
+    expect(recognitionTier(state, "maelle")).toBe(3);
+    expect(derive(state, T0).heroDps.maelle).toBeCloseTo(base);
+    state.promises = { maelle: 1 };
+    expect(recognitionTier(state, "maelle")).toBe(4);
+    state.promises = { maelle: 2 };
+    expect(recognitionTier(state, "maelle")).toBe(5);
     expect(derive(state, T0).heroDps.maelle).toBeCloseTo(base * 1.1);
-    state.recognition = { maelle: state.lifetime.ascensions + 1 };
+    expect(verifyState(state, T0 + 500 * 3600_000).map((violation) => violation.code)).not.toContain("recognition");
+    // A night counts once, twice with a promise kept: never more.
+    state.recognition = { maelle: state.lifetime.ascensions + 3 };
     expect(verifyState(state, T0 + 500 * 3600_000).map((violation) => violation.code)).toContain("recognition");
   });
 });
@@ -235,6 +244,7 @@ describe("named relics", () => {
     const state = veteran();
     state.maxStage = 60;
     state.recognition = { brom: RECOGNITION_TIERS[4] - 1 };
+    state.promises = { brom: 2 };
     state.heroLevels = { brom: 100 };
     state.lifetime.bestLevelSum = 100;
     state.lifetime.bestHired = 1;

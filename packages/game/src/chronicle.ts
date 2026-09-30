@@ -12,13 +12,14 @@ import {
   rememberedCompanions
 } from "./data/lore";
 import { BIOMES } from "./data/biomes";
+import { promisesKept } from "./data/promises";
 import { AGE_COUNT, MILESTONES, keystonesFound, type MilestoneId } from "./data/strata";
 import type { ChronicleEntry, GameState } from "./types";
 
 /** The Chronicle's sources, in the order the book shows them. */
 export type ChronicleSource = ChronicleEntry["source"];
 export const CHRONICLE_SOURCES: readonly ChronicleSource[] = [
-  "keystone", "milestone", "king", "echo", "age", "wanderer", "event", "memory", "lesson", "song", "dream", "saying", "relic", "altar", "secret", "crown"
+  "keystone", "milestone", "king", "echo", "age", "wanderer", "event", "memory", "promise", "lesson", "song", "dream", "saying", "relic", "altar", "secret", "crown"
 ];
 
 /** Whether a walker has lived one of the milestones of their own story. */
@@ -99,6 +100,10 @@ export function sourceEntries(state: GameState, source: ChronicleSource): Chroni
       for (let tier = 1; tier <= 5; tier += 1) {
         for (const hero of RECOGNITION_HEROES) if (recognitionTier(state, hero) >= tier) entries.push({ source, hero, tier });
       }
+      break;
+    case "promise":
+      // What each companion said the first time the walker kept their word.
+      for (const hero of RECOGNITION_HEROES) if (promisesKept(state, hero) > 0) entries.push({ source, hero });
       break;
     case "lesson":
       for (const id of state.lore.lessons) entries.push({ source, id });

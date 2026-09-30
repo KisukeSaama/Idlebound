@@ -142,6 +142,30 @@ Content colors live with the game data, not in CSS:
   an altar card carries a "Who raised it" disclosure (tooltip on hover, open on touch).
   The Loom tab shows the threads, what a Descent takes and keeps, the threads it would weave,
   a danger-confirmed Descend button and the eight Weaves as cards.
+- **The Promise** (a folder tab of the ascension window, from the second night): one line on
+  the rule, then "Tonight": the word of the night as a framed block (portrait in its frame,
+  name, the knot and its state, the companion's request in italics, the rule in plain words,
+  a ghost "Break my word" key, danger-confirmed); a gold thread, brighter once the word would
+  hold at dusk, grey once broken, when the request gives way to what the companion said. Then
+  "Whom to give your word": the companions met as a roster (rows alternating like the
+  companions' list): portrait, name and title, words kept, the request in italics, the rule,
+  a line in `--gold-2` when their next memory waits for a word, and one raised key ("Give my
+  word", or "At the next dusk" once the night is under way, or for the companion who had
+  last night's word; disabled for tonight's, with "Nobody asks two nights running"). A
+  companion whose request the walker's best stage cannot meet yet is not listed. The one chosen for the next
+  dusk shows a knot and "Take back". On phones the key goes under the text, full width.
+  Inside a window the toasts wait, so what the word forbids there is said in place
+  (`.promise-notice`: the knot, "Your word holds you" and the rule, over the altars, the
+  stall, the forge) and the keys it forbids are disabled.
+- **The knot** (`knot`, `frayed` pictos): the mark of a word given, an SVG in the
+  interface's ink, never pixels. On the medallion of the companion who holds the walker's
+  word, a small square label with a black line at the top left corner (the level sits
+  bottom right): gold thread when given, `--gold-2` once kept so far, grey and undone when
+  broken. That companion's row stays in the companions' list all night, hired or not (the
+  portrait dimmed when not), with one line under the name in `--gold-2`: the state and the
+  rule. In the scene, their medallion stands first in the party (at the bottom, so a phone's
+  three medallions keep it), with the same knot: the promise stays in sight with the panel
+  folded.
 - **The stall** (market): the Stallkeeper's saying of the visit as a quote at the top;
   prices through the Token's discount (old price struck out); the Caravan's ware of the week
   as a gold-edged card.
@@ -159,6 +183,11 @@ Content colors live with the game data, not in CSS:
   (4.5 s for danger). The others wait in line and none is dropped; while more than a
   screenful waits, each goes after 2.6 s. Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
   in the item's rarity color), success, info, danger.
+  A promise speaks through them in the companion's voice, as a quote (8 s): the request when
+  the word is given (info, with the rule), "Your word holds" once it would hold at dusk
+  (gold), what they say when it is kept (gold) or broken (info, the undone knot). When the
+  walker tries what the word forbids, one info toast says so (the rule, and where to break
+  it), at most once every 12 s.
 - **Forms**: `.field` + `.input` (a field sunk into the page), gold focus border,
   `aria-invalid` turns the border red,
   `.field-hint` and `.field-error` under the input.
@@ -216,12 +245,15 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Companions | Aldric, the companions hired, and only the next one, once affordable this night or hired on a past night; talents only reachable or owned; buy modes from 10 levels; "spend while away" with the first companion |
 | Powers | only the unlocked ones; Unweave on key 7 once woven |
 | Loom tab, Caravan | when a Descent is possible or has happened; from the third ascension |
+| Promise tab | from the first ascension (the second night) |
 | "Keep the Kingdom's sky" | from Age II |
 
 Each first appearance during play is announced once: a toast for the rail's windows, the
-Loom and the Caravan (marked `ui:<id>` in `tutorial.done`, so it happens once on every
-device), a 4 s glow for the other elements (an outline with reduced motion). A game loaded
-past a threshold shows those elements at once, without a flood of announcements.
+Loom, the Caravan and the Promise (marked `ui:<id>` in `tutorial.done`, so it happens once
+on every device), a 4 s glow for the other elements (an outline with reduced motion). A game
+loaded past a threshold shows those elements at once, without a flood of announcements;
+only what arrived after walkers were already past its threshold is told once at load
+(`ANNOUNCED_AT_LOAD`: the Promise).
 
 ## Large screens
 

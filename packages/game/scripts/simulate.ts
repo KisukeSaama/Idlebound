@@ -16,7 +16,7 @@ import { formatDuration, formatNumber } from "../src/numbers";
 import { seededRng } from "../src/rng";
 import { createInitialState } from "../src/state";
 import { fileURLToPath } from "node:url";
-import { IDLE_ALTARS, buyAltars, playBot, type BotOptions } from "./bot";
+import { IDLE_ALTARS, buyAltars, playBot, pledgeAtDusk, type BotOptions } from "./bot";
 import { pool, workerJob } from "./pool";
 
 const hours = Number(process.argv[2] ?? 12);
@@ -53,6 +53,7 @@ function playOccasional(engine: GameEngine, from: number, seconds: number): numb
     if (phase === 0) {
       if (engine.canAscend() && !s.autoAdvance) {
         engine.ascend(now);
+        pledgeAtDusk(engine, now, BURSTS);
         buyAltars(engine, now, IDLE_ALTARS, false);
       }
       engine.markInput(now);

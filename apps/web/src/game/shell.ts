@@ -7,6 +7,7 @@ import {
   canDescend,
   eraForStage,
   eraLabel,
+  promisesOpen,
   sourceCount,
   stratumTag,
   type GameState,
@@ -29,6 +30,7 @@ export type RevealId =
   | "hall"
   | "loom"
   | "caravan"
+  | "promise"
   | "stageBar"
   | "autoToggle"
   | "dps"
@@ -39,7 +41,13 @@ export type RevealId =
   | "autoSpend";
 
 /** Elements whose first appearance gets a toast; the others only glow as they arrive. */
-export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan"];
+export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan", "promise"];
+
+/**
+ * Elements that arrived after walkers were already past their threshold: a game loaded past
+ * it is told once too, instead of finding them unannounced.
+ */
+export const ANNOUNCED_AT_LOAD: readonly RevealId[] = ["promise"];
 
 /** Id kept in `state.tutorial.done` once an element was announced (short: the list holds 50). */
 export function revealMark(id: RevealId): string {
@@ -67,6 +75,8 @@ export function reveals(state: GameState): Reveals {
     // Places inside other windows: Eldra's Loom in the Sanctum, the Caravan at the stall.
     loom: canDescend(state) || state.descents > 0,
     caravan: life.ascensions >= CARAVAN_MIN_ASCENSIONS,
+    // The Promise, in the Sanctum: from the second night.
+    promise: promisesOpen(state),
     stageBar: map,
     autoToggle: life.bossFails > 0 || !state.autoAdvance || reborn,
     dps: companionHired || life.bestHired >= 2 || reborn,

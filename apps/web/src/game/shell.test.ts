@@ -1,6 +1,6 @@
 import { ageName, createInitialState, stratumTag } from "@idlebound/game";
 import { describe, expect, it } from "vitest";
-import { ANNOUNCED, revealMark, reveals, stratumLabel } from "./shell";
+import { ANNOUNCED, ANNOUNCED_AT_LOAD, revealMark, reveals, stratumLabel } from "./shell";
 
 describe("progressive interface", () => {
   it("shows nothing but the fight, the attack and the gold at minute one", () => {
@@ -33,6 +33,15 @@ describe("progressive interface", () => {
     const state = createInitialState();
     state.tutorial.done.push(revealMark("gear"));
     expect(reveals(state).gear).toBe(true);
+  });
+
+  it("opens the Promise with the second night, and tells a game loaded past it once", () => {
+    const state = createInitialState();
+    expect(reveals(state).promise).toBe(false);
+    state.lifetime.ascensions = 1;
+    expect(reveals(state).promise).toBe(true);
+    expect(ANNOUNCED).toContain("promise");
+    for (const id of ANNOUNCED_AT_LOAD) expect(ANNOUNCED).toContain(id);
   });
 
   it("keeps its marks short and few (the save holds 50 tutorial ids of 40 characters)", () => {

@@ -4525,6 +4525,242 @@ kbd {
   100% { opacity: 0; }
 }
 
+/* The Promise: a knot on the medallion of the companion who holds the walker's word for the
+   night (a gold thread; brighter once the word would hold at dusk; undone and grey when broken). */
+.medallion-promise {
+  position: absolute;
+  top: -6px;
+  left: -7px;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 2px;
+  background: #07060c;
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px var(--gold-deep);
+  color: var(--gold);
+  pointer-events: none;
+}
+
+.promise-ready .medallion-promise {
+  box-shadow: 0 0 0 1px var(--gold);
+  color: var(--gold-2);
+}
+
+.promise-broken .medallion-promise {
+  box-shadow: 0 0 0 1px var(--border-strong);
+  color: var(--faint);
+}
+
+/* Not hired (left behind, or still to come): the portrait dims, the knot stays lit. */
+.hero-row.unhired.has-promise .hero-medallion {
+  filter: none;
+}
+
+.hero-row.unhired.has-promise .medallion-clip,
+.party-member.is-absent .medallion-clip {
+  filter: grayscale(0.7) brightness(0.8);
+}
+
+.hero-promise {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--gold-2);
+}
+
+.promise-broken .hero-promise {
+  color: var(--faint);
+}
+
+.party-member .medallion-promise {
+  top: -5px;
+  left: -6px;
+  width: 16px;
+  height: 16px;
+}
+
+/* The Promise tab of the Sanctum: the word of the night, then the company as a roster. */
+.promise-hint {
+  max-width: 72ch;
+}
+
+.promise-none {
+  margin: 0;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.promise-night,
+.promise-row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.promise-night {
+  padding: 12px;
+  border: 1px solid #000;
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  box-shadow: 0 0 0 1px var(--gold-deep), var(--bevel);
+}
+
+.promise-night.promise-ready {
+  box-shadow: 0 0 0 1px var(--gold), var(--bevel);
+}
+
+.promise-night.promise-broken {
+  box-shadow: 0 0 0 1px var(--border-strong), var(--bevel);
+}
+
+.promise-night > .btn {
+  align-self: center;
+}
+
+.promise-roster {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.promise-row {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.promise-row:nth-child(even) {
+  background: var(--bg-2);
+}
+
+.promise-row:last-child {
+  border-bottom: 0;
+}
+
+.promise-portrait {
+  position: relative;
+  display: block;
+  width: 46px;
+  height: 46px;
+  border: 1px solid #000;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--hero) 70%, #000);
+}
+
+.promise-body header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.promise-body h4 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.promise-kept {
+  font-size: 0.76rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.promise-body blockquote {
+  margin: 4px 0;
+  font-size: 0.88rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.promise-body p {
+  margin: 0;
+}
+
+.promise-rule {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.promise-needs {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-2);
+}
+
+.promise-status,
+.promise-chosen {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.promise-ready .promise-status {
+  color: var(--gold-2);
+}
+
+.promise-broken .promise-status {
+  color: var(--faint);
+}
+
+.promise-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  align-self: center;
+  gap: 6px;
+}
+
+/* Inside a window, where toasts wait: what the word given forbids here. */
+.promise-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border: 1px solid #000;
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  box-shadow: 0 0 0 1px var(--gold-deep);
+  font-size: 0.84rem;
+  color: var(--text);
+}
+
+.promise-notice .picto {
+  flex: none;
+  margin-top: 2px;
+  color: var(--gold);
+}
+
+.gear-layout > .promise-notice {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 599px) {
+  .promise-night,
+  .promise-row {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+
+  .promise-action,
+  .promise-night > .btn {
+    grid-column: 1 / -1;
+    align-items: stretch;
+  }
+}
+
 /* The map's stratum selector. */
 .map-strata {
   display: flex;

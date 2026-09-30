@@ -2,6 +2,7 @@
  * Migration of older saves, without the schema: the client runs it on every cloud load, so it
  * stays free of zod and of the server's checks (see save.ts and validation.ts).
  */
+import { LEGACY_RECOGNITION_TIERS, recognitionTierByRuns } from "./data/lore";
 import { crystalEssenceReward } from "./formulas";
 import { seedFrom } from "./rng";
 import { ALTAR_REWORK_NOTICE, SAVE_VERSION, createInitialState } from "./state";
@@ -52,9 +53,26 @@ export function migrateState(raw: unknown): unknown {
   if (version < 9) {
     (merged.lifetime as Record<string, unknown>).ascensionEssences = legacyAscensionEssences(merged);
   }
+  // Version 10 brought promises: the last two memories of a companion now ask for a word
+  // kept. What a companion already remembered stays remembered, and asks nothing again.
+  if (version < 10) merged.remembered = legacyRemembered(merged);
   if (typeof input.rngState !== "number") merged.rngState = seedFrom(typeof merged.createdAt === "number" ? merged.createdAt : 0);
   merged.version = SAVE_VERSION;
   return merged;
+}
+
+/** The fourth and fifth tiers companions held under the rule of runs alone (before version 10). */
+function legacyRemembered(merged: Record<string, unknown>): Record<string, number> {
+  const recognition = merged.recognition && typeof merged.recognition === "object" ? (merged.recognition as Record<string, unknown>) : {};
+  const weaves = merged.weaves && typeof merged.weaves === "object" ? (merged.weaves as Record<string, unknown>) : {};
+  const kinship = Object.hasOwn(weaves, "kinship") && typeof weaves.kinship === "number" && Number.isFinite(weaves.kinship) ? weaves.kinship : 0;
+  const thresholds = LEGACY_RECOGNITION_TIERS.map((threshold, index) => Math.max(index + 1, threshold - kinship));
+  const remembered: Record<string, number> = {};
+  for (const [hero, runs] of Object.entries(recognition)) {
+    const tier = typeof runs === "number" ? recognitionTierByRuns(runs, thresholds) : 0;
+    if (tier >= 4) remembered[hero] = tier;
+  }
+  return remembered;
 }
 
 /** Essences the ascensions of a save written before version 9 granted, at least. */

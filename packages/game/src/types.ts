@@ -274,6 +274,24 @@ export interface RunTrail {
   eclipse?: boolean;
   /** Wounds a boss kept from failed fights: its stage and the share of its HP they took. */
   wound?: { stage: number; share: number };
+  /** The word given at this dusk (BIBLE 12.11). */
+  promise?: PromiseState;
+}
+
+/** A promise given for the night: to whom, and how far it has been kept. */
+export interface PromiseState {
+  /** The companion the walker gave their word to (`data/promises.ts` says what they ask). */
+  hero: string;
+  /** Kings beaten at the head of the run since the word was given. */
+  kings: number;
+  /** Broken, by the walker's own choice or by a seam that closed on the company. */
+  broken?: boolean;
+  /** The guardian the promise waits at fell, its moment of grace honored. */
+  waited?: boolean;
+  /** The company may grow again: the guardian the promise led it to has fallen. */
+  released?: boolean;
+  /** The stage the night must go past (how deep the last one went). */
+  goal?: number;
 }
 
 export interface GameState {
@@ -325,6 +343,17 @@ export interface GameState {
   lore: LoreState;
   /** Runs in which each companion reached level 100 (Recognition). */
   recognition: Record<string, number>;
+  /** Promises kept to each companion (BIBLE 12.11). */
+  promises: Record<string, number>;
+  /**
+   * Recognition tiers companions already held when promises came (save version 10): what
+   * they remembered stays remembered, whatever those tiers ask since.
+   */
+  remembered: Record<string, number>;
+  /** The companion the walker means to give their word to at the next dusk. */
+  pledge?: string;
+  /** The companion who had the walker's word last night: nobody asks two nights running. */
+  lastPromise?: string;
   /** Named relics already found (each drops once per save). */
   named: string[];
   /** Secrets found (BIBLE 15). */
@@ -396,6 +425,10 @@ export type GameEvent =
   | { type: "bestiary"; id: string; tier: number }
   /** A companion remembers the walker a little more. */
   | { type: "recognition"; heroId: string; tier: number }
+  /** A promise through the night: given, its conditions met, kept at dusk, or broken. */
+  | { type: "promise"; heroId: string; outcome: "given" | "ready" | "kept" | "broken" }
+  /** The walker tried what their word forbids: the engine held them to it. */
+  | { type: "promiseHeld"; heroId: string }
   | { type: "secret"; id: string }
   /** A new Chronicle entry. */
   | { type: "fragment"; entry: ChronicleEntry }
@@ -423,6 +456,8 @@ export type ChronicleEntry =
   | { source: "age"; age: number; index: number }
   | { source: "wanderer"; id: string }
   | { source: "memory"; hero: string; tier: number }
+  /** What a companion said the first time a promise to them was kept. */
+  | { source: "promise"; hero: string }
   | { source: "lesson"; id: string }
   | { source: "song"; index: number }
   | { source: "dream"; index: number }

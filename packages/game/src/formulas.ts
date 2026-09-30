@@ -5,7 +5,8 @@ import { REMEMBRANCE_FRAGMENTS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WALKER_DPS, r
 import { CLICK_HERO_ID, HEROES, UPGRADE_BY_ID } from "./data/heroes";
 import { EQUIPMENT_CAP, FORGE_STEP, forgeCost, relicDensity } from "./data/items";
 import { RECOGNITION_DPS, bestiaryGoldBonus, recognitionTier, rememberedCompanions } from "./data/lore";
-import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia } from "./data/relics";
+import { PROMISE_BY_HERO, promiseAtDusk, promiseDepth, promiseGrantable, promiseOf } from "./data/promises";
+import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia, wornItems } from "./data/relics";
 import type { AffixStat, AltarId, BuffId, Derived, GameState, HeroDef, Item } from "./types";
 
 export const MONSTERS_PER_STAGE = 10;
@@ -215,9 +216,7 @@ export function affixValue(item: Item, stat: AffixStat): number {
 
 export function equipmentBonus(state: GameState, stat: AffixStat): number {
   let total = 0;
-  for (const item of Object.values(state.equipment)) {
-    if (item) total += affixValue(item, stat);
-  }
+  for (const item of wornItems(state)) total += affixValue(item, stat);
   // The Thousandth Arrow's critical chance counts toward the same cap.
   if (stat === "critChance") total += namedEffect(state, "critChance");
   const cap = EQUIPMENT_CAP[stat];
@@ -227,7 +226,7 @@ export function equipmentBonus(state: GameState, stat: AffixStat): number {
 /** The density of every relic worn, multiplied together (1 with none from below the present night). */
 export function equipmentDensity(state: GameState): number {
   let total = 1;
-  for (const item of Object.values(state.equipment)) if (item) total *= relicDensity(item);
+  for (const item of wornItems(state)) total *= relicDensity(item);
   return total;
 }
 
@@ -355,7 +354,8 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     critChance: Math.min(1, critChance),
     critMultiplier,
     goldMultiplier,
-    bossTimer: bossTimer + altarValue(state, "time") + namedEffect(state, "bossTimer"),
+    // Thorvald's bet (his promise): every seam open for a share of its time.
+    bossTimer: (bossTimer + altarValue(state, "time") + namedEffect(state, "bossTimer")) * (promiseOf(state, "seam")?.share ?? 1),
     // The Scales of Aurelion bite deeper into elites and guardians.
     bossDamage: (1 + equipmentBonus(state, "bossDamage")) * (1 + namedEffect(state, "bossDamage")),
     guardianGold: 1 + namedEffect(state, "guardianGold"),
@@ -394,6 +394,28 @@ export function wandererSkip(state: GameState): number {
   // The Ring of the Second Morning walks a few stages more, inside the same caps.
   const skip = Math.min(altarValue(state, "wanderer") + namedEffect(state, "wandererStages"), Math.floor(state.maxStageEver / 2));
   return Math.floor(skip / 5) * 5;
+}
+
+/**
+ * Whether a companion can be given the walker's word: their request can be granted, and the
+ * night it asks for is one the walker has already walked (every stage it needs cleared lies
+ * under the best stage ever, counted from where the next night starts). Lysandre does not
+ * ask for two Kings of a walker who has only ever seen one fall.
+ */
+export function promiseAskable(state: GameState, heroId: string, start = wandererSkip(state) + 1): boolean {
+  if (!promiseGrantable(state, heroId)) return false;
+  return promiseDepth(PROMISE_BY_HERO[heroId], start) < state.maxStageEver;
+}
+
+/**
+ * When a word to this companion would take effect: `tonight` while the night is still at its
+ * dusk, otherwise at the `next` one; `null` when they cannot be asked. Nobody asks two nights
+ * running: the companion of last night waits for the next dusk, tonight's for the one after.
+ */
+export function promiseWhen(state: GameState, heroId: string): "tonight" | "next" | null {
+  // Tonight's road starts where this night did; the next one, where the Wanderer's altar will set it.
+  if (promiseAtDusk(state, heroId) && heroId !== state.lastPromise && promiseAskable(state, heroId, state.runStartStage)) return "tonight";
+  return heroId !== state.trail.promise?.hero && promiseAskable(state, heroId) ? "next" : null;
 }
 
 /** Share of the usual wait between wandering crystals while the Moth Lantern burns. */

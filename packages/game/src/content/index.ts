@@ -8,9 +8,9 @@ import type { ChronicleEntry, Item, MonsterState } from "../types";
 import { en } from "./en";
 import { fr } from "./fr";
 import { grammarLine } from "./grammar";
-import type { GameText, LoreLine } from "./types";
+import type { GameText, LoreLine, PromiseText } from "./types";
 
-export type { CutsceneText, Gender, GameText, HeroText, LoreLine, Memories, NameText } from "./types";
+export type { CutsceneText, Gender, GameText, HeroText, LoreLine, Memories, NameText, PromiseText } from "./types";
 export { roman } from "./roman";
 
 const TEXT: Record<Locale, GameText> = { fr, en };
@@ -136,6 +136,10 @@ export function chronicleText(entry: ChronicleEntry, locale: Locale): LoreLine {
       return own(text.wanderers, entry.id) ?? NOBODY;
     case "memory":
       return own(text.memories, entry.hero)?.[entry.tier - 1] ?? NOBODY;
+    case "promise": {
+      const promise = own(text.promises, entry.hero);
+      return promise ? { by: own(text.heroes, entry.hero)?.name ?? "", text: promise.kept } : NOBODY;
+    }
     case "lesson":
       return own(text.lessons, entry.id) ?? NOBODY;
     case "song":
@@ -159,6 +163,11 @@ export function chronicleText(entry: ChronicleEntry, locale: Locale): LoreLine {
     case "crown":
       return text.crown.legend;
   }
+}
+
+/** What a companion asks at dusk, and what they say when the walker's word was kept, or broken. */
+export function promiseText(heroId: string, locale: Locale): PromiseText | null {
+  return own(TEXT[locale].promises, heroId) ?? null;
 }
 
 /** What a companion says when hired, by how well they remember the walker (Recognition). */

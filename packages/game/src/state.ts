@@ -1,7 +1,7 @@
 import { seedFrom } from "./rng";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 
@@ -87,6 +87,8 @@ export function createInitialState(now = Date.now()): GameState {
     bestiary: {},
     lore: emptyLore(),
     recognition: {},
+    promises: {},
+    remembered: {},
     named: [],
     secrets: [],
     trail: emptyTrail(),

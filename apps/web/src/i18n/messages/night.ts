@@ -17,7 +17,8 @@ export const night = defineMessages({
       ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension et les autels t'y attendent.",
       hall: "Le Grand Livre t'ouvre une page : hauts faits, Bestiaire, Chronique.",
       loom: "Eldra t'attend au Sanctuaire. Son Métier défait la nuit, un fil plus bas.",
-      caravan: "La Roulotte du Comptoir passe entre les nuits. Une marchandise par semaine, au marché."
+      caravan: "La Roulotte du Comptoir passe entre les nuits. Une marchandise par semaine, au marché.",
+      promise: "Au crépuscule, un compagnon peut recevoir ta parole pour la nuit. Un seul. Au Sanctuaire."
     },
     /** How a timed event ends, won or not. */
     results: {
@@ -77,7 +78,8 @@ export const night = defineMessages({
       ascension: "The Sanctum of Dusk opens: ascension and the altars wait for you there.",
       hall: "The Ledger opens a page for you: deeds, Bestiary, Chronicle.",
       loom: "Eldra waits in the Sanctum. Her Loom unweaves the night, one thread deeper.",
-      caravan: "The Stallkeeper's Caravan travels between nights. One ware a week, at the market."
+      caravan: "The Stallkeeper's Caravan travels between nights. One ware a week, at the market.",
+      promise: "At dusk, one companion can be given your word for the night. Only one. In the Sanctum."
     },
     results: {
       seam: { won: "The Seam holds shut.", escaped: "The Seam closes without you." },

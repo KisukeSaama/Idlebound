@@ -1,11 +1,14 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
 import { ALTAR_BY_ID, altarCost } from "../src/data/altars";
 import { WEAVES, weaveCost } from "../src/data/descent";
-import { HEROES } from "../src/data/heroes";
+import { DESCENT_HERO } from "../src/data/descent";
+import { CLICK_HERO_ID, HEROES } from "../src/data/heroes";
 import { relicDensity } from "../src/data/items";
+import { RECOGNITION_HEROES, recognitionNeeds } from "../src/data/lore";
+import { PROMISE_BY_HERO, PROMISE_RUNS, promiseHolds, promiseOf, promisesKept, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
-import { GameEngine, canDescend, descentPreview, isSkillUnlocked } from "../src/engine";
-import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier, strikeFillShare } from "../src/formulas";
+import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
+import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier, promiseWhen, strikeFillShare } from "../src/formulas";
 import type { AltarId, Derived, GameState, Item } from "../src/types";
 
 export interface BotOptions {
@@ -23,6 +26,66 @@ export interface BotOptions {
   /** Descend right after an ascension when this plan allows it (never without one). */
   descent?: DescentPlan;
   onDescend?: (engine: GameEngine, now: number, threads: number) => void;
+  /**
+   * Who gets the walker's word at each dusk (default: `reasonablePromise`, among the promises
+   * the play style can keep, see `promisesAvoided`); `false`: nobody, ever.
+   */
+  promises?: PromisePolicy | false;
+}
+
+/**
+ * Which companion the bot gives its word to at dusk (`null`: nobody tonight). `avoid`: what
+ * this play style would not promise away.
+ */
+export type PromisePolicy = (state: GameState, avoid?: readonly PromiseAbstains[]) => string | null;
+
+/**
+ * What a play style does not give its word about. A walker who strikes does not promise to
+ * sheathe the sword, nor to go without powers: Ysolde and Nyx ask that of those who let the
+ * company walk.
+ */
+export function promisesAvoided(options: BotOptions): readonly PromiseAbstains[] {
+  return averageClicks(options) > 0 ? ["strikes", "powers"] : [];
+}
+
+/** Companions the walker can give their word to at this dusk, who still have something to remember. */
+function askable(state: GameState, avoid: readonly PromiseAbstains[]): string[] {
+  return RECOGNITION_HEROES.filter((hero) => {
+    const def = PROMISE_BY_HERO[hero];
+    if (def.kind === "abstain" && avoid.includes(def.from)) return false;
+    return promiseWhen(state, hero) === "tonight" && recognitionNeeds(state, hero) !== null;
+  });
+}
+
+/**
+ * A reasonable walker's promises. First the companion who only lacks a word kept to remember
+ * more (Eldra before the others: she holds the Loom); otherwise each in turn, the one the
+ * walker has kept the fewest promises to. Nobody who already remembers everything, nobody
+ * two nights running, nothing the walker's own style would break.
+ */
+export const reasonablePromise: PromisePolicy = (state, avoid = []) => {
+  const open = askable(state, avoid);
+  const waiting = open.filter((hero) => {
+    const needs = recognitionNeeds(state, hero)!;
+    return needs.promises > 0 && needs.runs <= PROMISE_RUNS;
+  });
+  if (waiting.includes(DESCENT_HERO)) return DESCENT_HERO;
+  if (waiting.length > 0) return waiting[0];
+  let turn: string | null = null;
+  for (const hero of open) if (turn === null || promisesKept(state, hero) < promisesKept(state, turn)) turn = hero;
+  return turn;
+};
+
+/**
+ * A walker in a hurry for the Loom, the worst case for its day: their word goes to Eldra
+ * every night she can be asked (every other night), and to the others in turn in between.
+ */
+export const loomPromise: PromisePolicy = (state, avoid = []) => (askable(state, avoid).includes(DESCENT_HERO) ? DESCENT_HERO : reasonablePromise(state, avoid));
+
+/** At dusk, before anything else: the bot chooses who gets its word for the night. */
+export function pledgeAtDusk(engine: GameEngine, now: number, options: BotOptions) {
+  if (options.promises === false) return;
+  engine.pledge((options.promises ?? reasonablePromise)(engine.state, promisesAvoided(options)), now);
 }
 
 /**
@@ -88,9 +151,11 @@ function bestHeroPurchase(engine: GameEngine, now: number, clicksPerSecond: numb
   const multiplier = heroCostMultiplier(s);
   let best: { id: string; ratio: number } | null = null;
   const base = damageRate(s, derive(s, now, { ignoreTimed: true }), clicksPerSecond);
+  // Companions join in order (a promise may leave one behind, or keep the company small).
+  const recruit = nextRecruit(s)?.id;
   for (const hero of HEROES) {
     const level = s.heroLevels[hero.id] ?? 0;
-    if (hero.index > 1 && level === 0 && (s.heroLevels[HEROES[hero.index - 1].id] ?? 0) === 0) continue;
+    if (level === 0 && hero.id !== CLICK_HERO_ID && hero.id !== recruit) continue;
     const cost = heroCost(hero, level, 1, multiplier);
     if (cost > s.gold) continue;
     s.heroLevels[hero.id] = level + 1;
@@ -136,7 +201,8 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
         engine.buyHero(best.id, 1, now);
       }
       for (const skill of SKILLS) if (isSkillUnlocked(s, skill.id) && skill.id !== "echo") engine.useSkill(skill.id, now);
-      if (!s.autoAdvance && (now - lastProgressAt) % 120_000 < DT * 1000 * 5) engine.toggleAutoAdvance();
+      // Having promised never to be pushed back, the bot only leads the company into a seam it holds.
+      if (!s.autoAdvance && (now - lastProgressAt) % 120_000 < DT * 1000 * 5 && (!promiseOf(s, "unfailing") || engine.canBeatNextBoss(now))) engine.toggleAutoAdvance();
       if (s.shards >= 30 && s.inventory.length < 40) engine.buyOffer("chest", now);
       for (const item of [...s.inventory]) {
         const equipped = s.equipment[item.slot];
@@ -154,7 +220,12 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       options.onMilestone?.(engine, now);
     }
 
-    if (engine.canAscend() && now - lastProgressAt > stagnation) {
+    if (now - lastProgressAt > stagnation && standingPromise(s) && !promiseHolds(s)) {
+      // A word that would not be kept at this dusk holds the night back: the bot takes it
+      // back and walks on a while, freed, before it calls the dusk.
+      engine.breakPromise(now);
+      lastProgressAt = now;
+    } else if (engine.canAscend() && now - lastProgressAt > stagnation) {
       const from = s.maxStage;
       const leading = strikesLead(s, derive(s, now, { ignoreTimed: true }), averageClicks(options));
       const gain = engine.ascend(now);
@@ -164,6 +235,7 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
         buyWeaves(engine, now);
         options.onDescend?.(engine, now, threads);
       }
+      pledgeAtDusk(engine, now, options);
       // Only a walker whose strikes lead the company invests in critical hits.
       buyAltars(engine, now, options.altars ?? (leading ? CLICKER_ALTARS : IDLE_ALTARS), leading);
       lastMaxStage = s.maxStage;
