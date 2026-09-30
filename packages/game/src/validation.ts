@@ -236,8 +236,9 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     else if (altar.maxLevel > 0 && (state.altars[id as AltarId] ?? 0) > altarMaxLevel(state, id as AltarId)) fail("altar", "Altar level above maximum.");
   }
   if (!le(altarSpend(state) + state.essences, state.lifetime.essencesEarned)) fail("essence-ledger", "More essences spent than collected.");
-  // The Warp of Plenty multiplies every ascension's essences.
-  const essenceCap = (1 + (state.altars.harvest ?? 0) * 0.1) * (1 + AFFIX_CAP.essence! * 4) * Math.pow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty"));
+  // The history outlives a Descent, which takes the Altar of the Harvest back: each record is
+  // held to the best multiplier this walker ever had, not to the altars standing today.
+  const essenceCap = maxEssenceMultiplier(state);
   const ascensionTotal = state.ascensions.reduce((total, record) => total + record.essences, 0);
   for (const record of state.ascensions) {
     if (record.maxStage > state.maxStageEver) fail("ascension", "Ascension from a stage never reached.");
