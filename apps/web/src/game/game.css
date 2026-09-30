@@ -1752,20 +1752,25 @@ button.resource:hover .resource-label {
   }
 }
 
-/* Folder tabs: the open one joins the page under it. */
+/*
+ * Folder tabs: the open one joins the page under it. The rule is drawn inside the strip and
+ * the open tab sits on it, so nothing overflows downward: the strip only scrolls sideways.
+ */
 .modal-tabs {
   display: flex;
   gap: 3px;
   padding: 8px 14px 0;
   background: var(--bg-2);
-  border-bottom: 1px solid var(--border-strong);
+  box-shadow: inset 0 -1px 0 var(--border-strong);
   overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
 }
 
 .modal-tabs button {
-  position: relative;
-  top: 1px;
+  flex: none;
+  margin-bottom: 1px;
   padding: 7px 14px 6px;
   border: 1px solid var(--border);
   border-bottom: 0;
@@ -1782,6 +1787,7 @@ button.resource:hover .resource-label {
 }
 
 .modal-tabs button.active {
+  margin-bottom: 0;
   padding-bottom: 7px;
   background: var(--panel-solid);
   border-color: var(--border-strong);
