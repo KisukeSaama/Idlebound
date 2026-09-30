@@ -21,7 +21,7 @@ import {
 import { NAMED_RELICS } from "./data/relics";
 import { ERA_COUNT, MILESTONES, keystonesFound } from "./data/strata";
 import { GameEngine, canDescend, descentPreview } from "./engine";
-import { MAX_TREASURE_CHANCE, RESPAWN_SECONDS, WAGER_MAX_GOLD, bossHp, derive, skillCooldownMultiplier, stageGold, stageHp, wagerGold, wandererSkip } from "./formulas";
+import { MAX_TREASURE_CHANCE, RESPAWN_SECONDS, WAGER_MAX_GOLD, bossHp, derive, essencesForStage, skillCooldownMultiplier, stageGold, stageHp, wagerGold, wandererSkip } from "./formulas";
 import { LOCALES } from "./i18n";
 import { generateItem } from "./loot";
 import { seededRng, type Rng } from "./rng";
@@ -542,6 +542,22 @@ describe("the Descent", () => {
     expect(descentPreview(s)).toBe(0);
     expect(milestoneReached(s, "descent-1")).toBe(true);
     expect(verifyState(s, LATER)).toEqual([]);
+  });
+
+  it("keeps the ascensions a raised Altar of the Harvest paid once a Descent takes the altar back", () => {
+    const state = atTheLoom();
+    state.altars = { harvest: 40 };
+    const engine = engineWith(state);
+    const gain = engine.ascend(T0);
+    expect(gain).toBeGreaterThan(essencesForStage(1_199) * 4);
+    expect(engine.descend(T0)).toBeGreaterThan(0);
+    expect(engine.state.altars).toEqual({});
+    expect(verifyState(engine.state, LATER)).toEqual([]);
+
+    // No Harvest these essences could have raised pays a million times more.
+    const forged = structuredClone(engine.state);
+    forged.ascensions.at(-1)!.essences = gain * 1e6;
+    expect(codes(forged)).toContain("ascension");
   });
 
   it("buys Weaves: the Warp of Plenty, the Knot of Dusk, the Seventh Night and its Unweave", () => {
