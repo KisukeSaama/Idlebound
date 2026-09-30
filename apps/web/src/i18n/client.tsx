@@ -56,7 +56,7 @@ export function I18nProvider({ locale: initialLocale, preference: initialPrefere
     activeLocale = target;
     setLocale(target);
     document.documentElement.lang = target;
-    // Switch the URL in place: a navigation would remount the page (and lose a guest game).
+    // Switch the URL in place: a navigation would remount the page (and reload the game).
     window.history.replaceState(window.history.state, "", swapLocale(window.location.pathname, target) + window.location.search + window.location.hash);
   }, []);
 

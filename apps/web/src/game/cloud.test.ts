@@ -39,7 +39,7 @@ describe("CloudSync at load", () => {
     vi.restoreAllMocks();
   });
 
-  it("waits for the server instead of starting a guest game when it cannot be reached", async () => {
+  it("waits for the server instead of starting a blank game when it cannot be reached", async () => {
     fetchMock.mockRejectedValueOnce(new TypeError("offline"));
     const cloud = new CloudSync(new GameStore(createInitialState()));
     let done = false;
@@ -50,12 +50,31 @@ describe("CloudSync at load", () => {
     expect(done).toBe(false);
     expect(cloud.reaching?.attempts).toBe(1);
 
-    // The network comes back: the next attempt goes at once and a "no session" answer lets a guest in.
-    fetchMock.mockResolvedValueOnce(json({ user: null }));
+    // The network comes back: the next attempt goes at once, and a "no session, no guest
+    // game" answer lets a new guest in.
+    fetchMock.mockResolvedValueOnce(json({ user: null, guest: false })).mockResolvedValueOnce(json({ save: null }));
     browser.dispatchEvent(new Event("online"));
     await init;
     expect(cloud.reaching).toBeNull();
-    expect(cloud.status).toBe("offline");
+    expect(cloud.status).toBe("idle");
+    expect(cloud.revision).toBeNull();
+    cloud.dispose();
+  });
+
+  it("waits for the server when the guest's game cannot be read, rather than starting over it", async () => {
+    fetchMock.mockResolvedValueOnce(json({ user: null, guest: true })).mockResolvedValueOnce(json({ error: "unreachable" }, 502));
+    const store = new GameStore(createInitialState());
+    const cloud = new CloudSync(store);
+    const init = cloud.init();
+    await vi.waitFor(() => expect(cloud.reaching).not.toBeNull());
+    const saved: GameState = { ...createInitialState(), maxStageEver: 42 };
+    fetchMock
+      .mockResolvedValueOnce(json({ user: null, guest: true }))
+      .mockResolvedValueOnce(json({ save: { state: saved, revision: 3, updatedAt: "2026-01-01T00:00:00Z", elapsedMs: 0 } }));
+    cloud.retryNow();
+    await init;
+    expect(store.state.maxStageEver).toBe(42);
+    expect(cloud.revision).toBe(3);
     cloud.dispose();
   });
 
@@ -236,12 +255,207 @@ describe("CloudSync hand-over to a newer release", () => {
     cloud.dispose();
   });
 
-  it("never hands over a guest game, which only lives in the page", async () => {
-    fetchMock.mockResolvedValueOnce(json({ user: null }));
+  it("never hands over a guest's game the server does not keep yet", async () => {
+    fetchMock.mockResolvedValueOnce(json({ user: null, guest: false })).mockResolvedValueOnce(json({ save: null }));
     const cloud = new CloudSync(new GameStore(createInitialState()));
     await cloud.init();
     expect(await cloud.handOver()).toBe(false);
     expect(puts()).toHaveLength(0);
+    cloud.dispose();
+  });
+
+  it("hands over a guest's game the server keeps", async () => {
+    fetchMock
+      .mockResolvedValueOnce(json({ user: null, guest: true }))
+      .mockResolvedValueOnce(json({ save: { state: createInitialState(), revision: 4, updatedAt: "2026-01-01T00:00:00Z", elapsedMs: 0 } }));
+    const cloud = new CloudSync(new GameStore(createInitialState()));
+    await cloud.init();
+    fetchMock.mockResolvedValueOnce(json({ revision: 5, updatedAt: "2026-01-01T00:00:00Z" }));
+    expect(await cloud.handOver()).toBe(true);
+    const [url, init] = puts()[0];
+    expect(String(url)).toBe("/api/save/guest");
+    expect((init as RequestInit).keepalive).toBe(true);
+  });
+});
+
+describe("CloudSync for a guest", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    stubBrowser();
+    // Anything not answered by hand (letting go of the guest's game) is accepted.
+    fetchMock = vi.fn(async () => json({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const calls = () => fetchMock.mock.calls.map(([url, init]) => `${(init as RequestInit).method} ${String(url)}`);
+  const bodyOf = (index: number) => JSON.parse(String((fetchMock.mock.calls[index][1] as RequestInit).body));
+  const kept = (revision: number) => json({ revision, updatedAt: "2026-01-01T00:00:00Z" });
+  const save = (state: GameState, revision: number) => json({ save: { state, revision, updatedAt: "2026-01-01T00:00:00Z", elapsedMs: 0 } });
+  /** A game played far enough that it never gives way without a choice. */
+  const played = (createdAt: number, maxStageEver = 42): GameState => ({ ...createInitialState(createdAt), maxStageEver });
+
+  /** A guest whose game the server keeps, loaded as a reload would. */
+  async function guestReloaded(state = played(Date.now() - 3_600_000)) {
+    fetchMock.mockResolvedValueOnce(json({ user: null, guest: true })).mockResolvedValueOnce(save(state, 3));
+    const store = new GameStore(createInitialState());
+    const cloud = new CloudSync(store);
+    await cloud.init();
+    return { store, cloud };
+  }
+
+  it("finds the guest's game again after a reload, and saves on top of it", async () => {
+    const { store, cloud } = await guestReloaded();
+    expect(calls()).toEqual(["GET /api/auth/me", "GET /api/save/guest"]);
+    expect(cloud.user).toBeNull();
+    expect(store.state.maxStageEver).toBe(42);
+    expect(cloud.revision).toBe(3);
+    expect(cloud.status).toBe("synced");
+    expect(cloud.wouldLose()).toBe(false);
+
+    fetchMock.mockResolvedValueOnce(kept(4));
+    await cloud.sync();
+    expect(calls()[2]).toBe("PUT /api/save/guest");
+    expect(bodyOf(2)).toMatchObject({ baseRevision: 3, replace: false, state: { maxStageEver: 42 } });
+    expect(cloud.revision).toBe(4);
+    cloud.dispose();
+  });
+
+  it("keeps nothing of a page merely opened, and the game from its first blow", async () => {
+    fetchMock.mockResolvedValueOnce(json({ user: null, guest: false })).mockResolvedValueOnce(json({ save: null }));
+    const store = new GameStore(createInitialState());
+    const cloud = new CloudSync(store);
+    await cloud.init();
+    await cloud.sync();
+    await cloud.sync({ keepalive: true });
+    expect(calls()).toHaveLength(2);
+
+    store.apply((engine) => {
+      engine.state.lifetime.clicks += 1;
+    });
+    fetchMock.mockResolvedValueOnce(kept(1));
+    await cloud.sync();
+    expect(calls()[2]).toBe("PUT /api/save/guest");
+    expect(bodyOf(2).baseRevision).toBeNull();
+    expect(cloud.status).toBe("synced");
+    expect(cloud.revision).toBe(1);
+    cloud.dispose();
+  });
+
+  it("brings the guest's game to a new account as its first save", async () => {
+    const { store, cloud } = await guestReloaded();
+    const lineage = store.state.createdAt;
+    fetchMock.mockResolvedValueOnce(json({ save: null })).mockResolvedValueOnce(kept(1));
+    await cloud.connect(USER);
+    expect(calls().slice(2, 4)).toEqual(["GET /api/save", "PUT /api/save"]);
+    expect(bodyOf(3)).toMatchObject({ baseRevision: null, state: { createdAt: lineage, maxStageEver: 42 } });
+    expect(cloud.pendingChoice).toBeNull();
+    expect(cloud.revision).toBe(1);
+    cloud.dispose();
+  });
+
+  it("asks before the guest's game and an account's replace one another, then lets go of the other", async () => {
+    // Kept as the guest's: the account's game is replaced only after the choice.
+    const first = await guestReloaded();
+    const account = played(Date.now() - 7_200_000, 12);
+    fetchMock.mockResolvedValueOnce(save(account, 9));
+    await first.cloud.connect(USER);
+    expect(first.cloud.pendingChoice?.revision).toBe(9);
+    expect(first.store.state.maxStageEver).toBe(42);
+    expect(calls().slice(2)).toEqual(["GET /api/save"]);
+    await first.cloud.sync();
+    expect(calls()).toHaveLength(3);
+    fetchMock.mockResolvedValueOnce(kept(10));
+    await first.cloud.resolveChoice("local");
+    expect(calls().slice(3)).toEqual(["PUT /api/save", "DELETE /api/save/guest"]);
+    expect(bodyOf(3)).toMatchObject({ baseRevision: 9, replace: true, state: { maxStageEver: 42 } });
+    first.cloud.dispose();
+
+    // The account's game is taken: the guest's is let go, and nothing is written over either.
+    fetchMock.mockClear();
+    const second = await guestReloaded();
+    fetchMock.mockResolvedValueOnce(save(account, 9));
+    await second.cloud.connect(USER);
+    await second.cloud.resolveChoice("cloud");
+    expect(second.store.state.maxStageEver).toBe(12);
+    expect(second.cloud.revision).toBe(9);
+    expect(calls().slice(2)).toEqual(["GET /api/save", "DELETE /api/save/guest"]);
+    second.cloud.dispose();
+  });
+
+  it("offers the choice again when a signed-in page still carries a guest's game", async () => {
+    const guestGame = played(Date.now() - 3_600_000);
+    const account = played(Date.now() - 7_200_000, 12);
+    fetchMock
+      .mockResolvedValueOnce(json({ user: USER, guest: true }))
+      .mockResolvedValueOnce(save(guestGame, 3))
+      .mockResolvedValueOnce(save(account, 9));
+    const store = new GameStore(createInitialState());
+    const cloud = new CloudSync(store);
+    await cloud.init();
+    expect(calls()).toEqual(["GET /api/auth/me", "GET /api/save/guest", "GET /api/save"]);
+    expect(store.state.maxStageEver).toBe(42);
+    expect(cloud.pendingChoice?.revision).toBe(9);
+    cloud.dispose();
+  });
+
+  it("replaces the kept game when the guest starts over, and only then", async () => {
+    const { store, cloud } = await guestReloaded();
+    fetchMock.mockResolvedValueOnce(kept(4));
+    cloud.newGame();
+    await vi.waitFor(() => expect(cloud.revision).toBe(4));
+    expect(calls()[2]).toBe("PUT /api/save/guest");
+    expect(bodyOf(2)).toMatchObject({ baseRevision: 3, replace: true, state: { maxStageEver: 1 } });
+    expect(store.state.maxStageEver).toBe(1);
+    // The next save carries the new game on, without replacing anything.
+    store.apply((engine) => {
+      engine.state.lifetime.clicks += 1;
+    });
+    fetchMock.mockResolvedValueOnce(kept(5));
+    await cloud.sync();
+    expect(bodyOf(3)).toMatchObject({ baseRevision: 4, replace: false });
+    cloud.dispose();
+  });
+
+  it("never keeps an account's game as a guest's once the session ended", async () => {
+    fetchMock.mockResolvedValueOnce(json({ user: USER, guest: false })).mockResolvedValueOnce(save(played(Date.now() - 3_600_000), 7));
+    const store = new GameStore(createInitialState());
+    const cloud = new CloudSync(store);
+    await cloud.init();
+    fetchMock.mockResolvedValueOnce(json({ error: "login required" }, 401));
+    await cloud.sync();
+    expect(cloud.user).toBeNull();
+    expect(cloud.status).toBe("offline");
+    expect(cloud.wouldLose()).toBe(true);
+    // Nothing more is sent, least of all to the guest's ledger.
+    await cloud.sync();
+    await cloud.sync({ keepalive: true });
+    cloud.requestSave();
+    expect(calls()).toEqual(["GET /api/auth/me", "GET /api/save", "PUT /api/save"]);
+    cloud.dispose();
+  });
+
+  it("gives a guest who signed out the game this browser still carried", async () => {
+    // Signed in with a choice left open: the guest's game is still on the server.
+    const guestGame = played(Date.now() - 3_600_000);
+    fetchMock
+      .mockResolvedValueOnce(json({ user: USER, guest: true }))
+      .mockResolvedValueOnce(save(guestGame, 3))
+      .mockResolvedValueOnce(save(played(Date.now() - 7_200_000, 12), 9));
+    const store = new GameStore(createInitialState());
+    const cloud = new CloudSync(store);
+    await cloud.init();
+    fetchMock.mockResolvedValueOnce(json({ ok: true })).mockResolvedValueOnce(save(guestGame, 3));
+    await cloud.logout();
+    expect(calls().slice(3)).toEqual(["POST /api/auth/logout", "GET /api/save/guest"]);
+    expect(cloud.user).toBeNull();
+    expect(cloud.pendingChoice).toBeNull();
+    expect(store.state.maxStageEver).toBe(42);
+    expect(cloud.revision).toBe(3);
     cloud.dispose();
   });
 });

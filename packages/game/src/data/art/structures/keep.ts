@@ -8,70 +8,54 @@ import type { DecorGrid, StructureRecipe } from "../architecture";
  * the stair to the hall; far off, towers with a window or two still lit.
  */
 export const KEEP_STRUCTURES: Record<string, StructureRecipe> = {
-  // The gatehouse of the great hall: two towers and a pointed arch whose keystone fell,
-  // the portcullis stuck half raised, a banner with no colors left, violet light far inside.
+  // The gatehouse of the great hall, across the courtyard: two towers and a pointed arch
+  // whose keystone fell, the portcullis stuck half raised, violet light far inside, the
+  // gargoyle on its left tower.
   "keep-gatehouse": {
-    w: 86,
-    h: 128,
-    fragile: 44,
+    w: 43,
+    h: 64,
+    fragile: 22,
     growth: 0.55,
     seed: 5111,
     pieces: [
-      { block: [20, 30, 46, 85], m: "stone", finish: "ashlar", lift: 0.1 },
+      { block: [10, 15, 23, 43], m: "stone", finish: "ashlar", lift: 0.1 },
       // The right tower, taller, its top broken.
-      { block: [66, 14, 20, 101], m: "stone", finish: "ashlar", side: "right" },
-      { block: [65, 11, 22, 3], m: "stone", lift: 0.4 },
-      { block: [66, 5, 5, 6], m: "stone", finish: "ashlar", lift: 0.2 },
-      { block: [74, 5, 5, 6], m: "stone", finish: "ashlar", lift: 0.2 },
-      { cut: [79, 0, 87, 0, 87, 26, 83, 19, 81, 12] },
+      { block: [33, 7, 10, 51], m: "stone", finish: "ashlar", side: "right" },
+      { block: [33, 6, 11, 1], m: "stone", lift: 0.4 },
+      { block: [33, 3, 3, 3], m: "stone", finish: "ashlar", lift: 0.2 },
+      { block: [37, 3, 3, 3], m: "stone", finish: "ashlar", lift: 0.2 },
+      { cut: [40, 0, 44, 0, 44, 13, 42, 10, 41, 6] },
       // The left tower.
-      { block: [0, 26, 20, 89], m: "stone", finish: "ashlar", side: "left" },
-      { block: [0, 23, 21, 3], m: "stone", lift: 0.4 },
-      { block: [0, 17, 5, 6], m: "stone", finish: "ashlar", lift: 0.2 },
-      { block: [8, 17, 5, 6], m: "stone", finish: "ashlar", lift: 0.2 },
-      { block: [15, 17, 5, 6], m: "stone", finish: "ashlar", lift: 0.2 },
+      { block: [0, 13, 10, 45], m: "stone", finish: "ashlar", side: "left" },
+      { block: [0, 12, 11, 1], m: "stone", lift: 0.4 },
+      { block: [0, 9, 3, 3], m: "stone", finish: "ashlar", lift: 0.2 },
+      { block: [4, 9, 3, 3], m: "stone", finish: "ashlar", lift: 0.2 },
+      { block: [8, 9, 2, 3], m: "stone", finish: "ashlar", lift: 0.2 },
       // The parapet over the gate, broken in its middle.
-      { block: [20, 26, 46, 4], m: "stone", lift: 0.35 },
-      { block: [21, 20, 5, 6], m: "stone", finish: "ashlar", lift: 0.2 },
-      { block: [58, 20, 5, 6], m: "stone", finish: "ashlar", lift: 0.2 },
-      { cut: [30, 18, 55, 18, 52, 31, 47, 27, 42, 33, 37, 28, 33, 30] },
-      // The hall beyond the gate: dark, its floor rising in steps, a far window of violet fire.
-      { gap: [29, 44, 28, 71], style: "arch" },
-      { block: [30, 108, 26, 7], m: "stone", finish: "ashlar", lift: -0.9 },
-      { block: [33, 102, 20, 6], m: "stone", finish: "ashlar", lift: -1.2 },
-      { block: [36, 97, 14, 5], m: "stone", finish: "ashlar", lift: -1.5 },
-      { gap: [41, 76, 4, 9], style: "arch", lit: true },
-      { decor: "keep-portcullis", at: [29, 88] },
+      { block: [10, 13, 23, 2], m: "stone", lift: 0.35 },
+      { block: [11, 10, 2, 3], m: "stone", finish: "ashlar", lift: 0.2 },
+      { block: [29, 10, 3, 3], m: "stone", finish: "ashlar", lift: 0.2 },
+      { cut: [15, 9, 28, 9, 26, 16, 24, 14, 21, 17, 19, 14, 17, 15] },
+      // The hall beyond the gate: dark, a far window of violet fire, the portcullis stuck half raised.
+      { gap: [15, 22, 14, 36], style: "arch" },
+      { gap: [21, 46, 2, 5], style: "arch", lit: true },
+      { beam: [17, 28, 17, 41], width: 1, m: "metal" },
+      { beam: [20, 24, 20, 41], width: 1, m: "metal" },
+      { beam: [23, 24, 23, 41], width: 1, m: "metal" },
+      { beam: [26, 28, 26, 41], width: 1, m: "metal" },
+      { beam: [16, 41, 28, 41], width: 1, m: "metal" },
       // The ring of voussoirs, the keystone gone.
-      {
-        poly: [24, 115, 24, 70, 25, 60, 29, 51, 35, 44, 43, 39, 51, 44, 57, 51, 61, 60, 62, 70, 62, 115, 57, 115, 57, 70, 56, 62, 53, 55, 49, 50, 43, 46, 37, 50, 33, 55, 30, 62, 29, 70, 29, 115],
-        m: "rock",
-        finish: "rubble",
-        lift: 0.2
-      },
-      // The hood over the arch, a drip of lighter stone.
-      { poly: [22, 72, 22, 68, 23, 59, 27, 49, 34, 41, 43, 36, 52, 41, 59, 49, 63, 59, 64, 68, 64, 72, 62, 72, 62, 70, 61, 60, 57, 51, 51, 44, 43, 39, 35, 44, 29, 51, 25, 60, 24, 70, 24, 72], m: "rock", lift: 0.5 },
-      { cut: [40, 36, 46, 36, 45, 45, 41, 45] },
-      { decor: "keep-capital", at: [21, 72] },
-      { decor: "keep-capital", at: [56, 72], flip: true },
-      // Cracks run down from the fallen keystone and across the towers.
-      { poly: [36, 33, 38, 33, 35, 42, 33, 42], m: "stone", lift: -1.6 },
-      { poly: [58, 36, 60, 36, 63, 47, 61, 48], m: "stone", lift: -1.6 },
-      { poly: [4, 60, 6, 60, 9, 71, 7, 72, 5, 66], m: "stone", lift: -1.6 },
-      { poly: [72, 88, 74, 88, 71, 99, 69, 99], m: "stone", lift: -1.6 },
+      { poly: [12, 58, 12, 35, 13, 30, 15, 26, 18, 22, 22, 20, 26, 22, 29, 26, 31, 30, 31, 35, 31, 58, 29, 58, 29, 35, 28, 31, 27, 28, 25, 25, 22, 23, 19, 25, 17, 28, 15, 31, 15, 35, 15, 58], m: "rock", finish: "rubble", lift: 0.2 },
+      { cut: [20, 18, 23, 18, 23, 23, 21, 23] },
       // Arrow slits, and one window still lit high in the right tower.
-      { gap: [9, 46, 2, 8], style: "slit" },
-      { gap: [9, 80, 2, 8], style: "slit" },
-      { gap: [75, 72, 2, 8], style: "slit" },
-      { gap: [74, 24, 4, 7], style: "arch", lit: true, frame: "stone" },
-      { decor: "keep-gargoyle", at: [16, 34] },
-      { decor: "keep-banner", at: [70, 64] },
-      // The stair up to the gate, and the stones that fell from it.
-      { block: [4, 115, 78, 6], m: "stone", finish: "ashlar", lift: 0.1 },
-      { block: [0, 121, 86, 7], m: "stone", finish: "ashlar", lift: 0.35 },
-      { beam: [62, 125, 76, 126], width: 5, m: "stone", finish: "ashlar", lift: -0.1 },
-      { poly: [76, 128, 78, 121, 85, 120, 86, 128], m: "stone", finish: "rubble", lift: 0.2 },
-      { poly: [0, 128, 2, 122, 9, 123, 10, 128], m: "stone", finish: "rubble" }
+      { gap: [5, 23, 1, 4], style: "slit" },
+      { gap: [5, 40, 1, 4], style: "slit" },
+      { gap: [38, 36, 1, 4], style: "slit" },
+      { gap: [37, 12, 2, 4], style: "arch", lit: true, frame: "stone" },
+      { decor: "keep-gargoyle", at: [8, 18] },
+      // The stair up to the gate.
+      { block: [2, 58, 39, 3], m: "stone", finish: "ashlar", lift: 0.1 },
+      { block: [0, 61, 43, 3], m: "stone", finish: "ashlar", lift: 0.35 }
     ]
   },
   // The side wall of the great hall, in the middle distance: buttresses, tall windows, its top gone.
@@ -239,38 +223,6 @@ export const KEEP_STRUCTURES: Record<string, StructureRecipe> = {
 };
 
 export const KEEP_DECOR: Record<string, DecorGrid> = {
-  // The portcullis, stuck half raised: iron bars, crossbars, the spikes of its foot.
-  "keep-portcullis": {
-    rows: [
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mMMMMMMMMMMMMMMMMMMMMMMMm",
-      ".#M..mM..mM..Mm..mM..mM.#.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mMMMMMMMMMMMMMMMMMMMMMMMm",
-      ".#M..mM..mM..Mm..mM..mM.#.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mMMMMMMMMMMMMMMMMMMMMMMMm",
-      ".#M..mM..mM..Mm..mM..mM.#.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mMMMMMMMMMMMMMMMMMMMMMMMm",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      ".mM..mM..mM..Mm..mM..mM.m.",
-      "..M...M...M...m...M...M...",
-      "..M...M...M...m...M...M...",
-      "..#...#...#...#...#...#..."
-    ],
-    legend: { "#": "outline", m: ["metal", 1], M: ["metal", 2] }
-  },
-  // A carved capital where the arch springs: acanthus leaves worn smooth.
-  "keep-capital": {
-    rows: ["abbbbbbc", ".abbbbc.", "a.bcb.c.", ".abbcc..", "..abc..."],
-    legend: { a: ["stone", 4], b: ["stone", 3], c: ["stone", 1] }
-  },
   // A gargoyle leaning out of the tower, its mouth open on nothing.
   "keep-gargoyle": {
     rows: ["..##....", ".#ab#...", "#abbb##.", "#abbbbb#", ".#bcc#c#", "..#c#.#.", "...#...."],

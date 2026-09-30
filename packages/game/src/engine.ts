@@ -110,8 +110,6 @@ import {
   promiseWhen,
   REUNION_MIN_AWAY_SECONDS,
   REUNION_SHARE,
-  STRIKE_FILL_SECONDS,
-  strikeFillShare,
   shardPrice,
   skillCooldownMultiplier,
   skillDuration,
@@ -173,9 +171,9 @@ export function guardiansPassed(account: AbsenceAccount): number[] {
   return stages;
 }
 
-/** Threads a Descent would weave now. */
+/** Threads a Descent would weave now: what the deepest stage adds to every thread already woven. */
 export function descentPreview(state: GameState): number {
-  return threadsFor(state.lifetime.essencesEarned - state.descentMark);
+  return Math.max(0, threadsFor(state.maxStageEver) - state.lifetime.threads);
 }
 
 function levelSum(state: GameState): number {
@@ -255,13 +253,6 @@ export class GameEngine {
   /** Companion damage dealt since the last "dps" event (one per second, for the UI). */
   private companionDamage = 0;
   private companionTimer = 0;
-  /** Strike damage waiting to take the Patience bonus's place (at most a few seconds of it). */
-  private strikeFill = 0;
-  /** Patience bonus due and taken by strikes since the last "dps" event. */
-  private patienceDue = 0;
-  private patienceTaken = 0;
-  /** Share of the Patience bonus the company dealt over the last second (the rest, the walker's strikes did). */
-  patienceShare = 1;
   private unlockedAchievements: Set<string>;
   /** Whether the local clock reads the dead of night, rechecked once a minute (Night Owl). */
   private night = false;
@@ -664,14 +655,7 @@ export class GameEngine {
           }
         }
         if (s.monster && d.dps > 0 && !grace) {
-          const factor = this.targetFactor(s.monster);
-          // The walker's strikes took the place of this much of the Patience bonus.
-          const bonus = d.patienceDps * dt * factor;
-          const taken = Math.min(this.strikeFill, bonus);
-          this.strikeFill -= taken;
-          this.patienceDue += bonus;
-          this.patienceTaken += taken;
-          const amount = d.dps * dt * factor - taken;
+          const amount = d.dps * dt * this.targetFactor(s.monster);
           this.companionDamage += amount;
           this.damage(amount, now);
         }
@@ -688,11 +672,8 @@ export class GameEngine {
     this.companionTimer += dt;
     if (this.companionTimer >= 1) {
       if (this.companionDamage > 0) this.emit({ type: "dps", damage: this.companionDamage });
-      if (this.patienceDue > 0) this.patienceShare = 1 - this.patienceTaken / this.patienceDue;
       this.companionTimer = 0;
       this.companionDamage = 0;
-      this.patienceDue = 0;
-      this.patienceTaken = 0;
     }
 
     if (this.afkAfterMs !== null && now - this.lastInputAt >= this.afkAfterMs) {
@@ -1256,8 +1237,6 @@ export class GameEngine {
     if (source === "click") {
       s.run.clicks += 1;
       s.lifetime.clicks += 1;
-      // The walker's own blow takes the place of as much of the company's Patience bonus.
-      this.strikeFill = Math.min(this.strikeFill + damage * strikeFillShare(s), d.patienceDps * factor * STRIKE_FILL_SECONDS);
     }
     if (crit) {
       s.run.crits += 1;
@@ -1893,9 +1872,9 @@ export class GameEngine {
 
   /**
    * The Descent (BIBLE 12.7): Eldra unweaves the Sanctum and weaves the Long Night again, one
-   * thread deeper. The run, the essences and the stones go; threads are woven from the
-   * essences gathered since the last Descent; relics, shards, deeds, the Chronicle and
-   * Recognition stay. A few stones survive with the Remembered Stones.
+   * thread deeper. The run, the essences and the stones go; the thread grows by what the
+   * walker's deepest stage adds to it; relics, shards, deeds, the Chronicle and Recognition
+   * stay. A few stones survive with the Remembered Stones.
    */
   descend(now: number): number {
     const s = this.state;
@@ -1906,7 +1885,6 @@ export class GameEngine {
     s.descents += 1;
     s.threads += threads;
     s.lifetime.threads += threads;
-    s.descentMark = s.lifetime.essencesEarned;
     s.essences = 0;
     const altars: GameState["altars"] = {};
     for (const altar of ALTARS) {

@@ -34,6 +34,9 @@ const STARFIELD_MS = 1_000;
 /** Every talent of every companion, with what opens it. */
 const TALENTS = Object.values(UPGRADE_BY_ID).map(({ hero, upgrade }) => ({ id: upgrade.id, heroId: hero.id, level: upgrade.level }));
 
+/** Room a talent card needs past its own height: its gap to the talent, and a breath. */
+const TIP_GAP_PX = 12;
+
 /** Holding a buy key: the first repeat after this long, then faster down to the floor. */
 const HOLD_DELAY_MS = 380;
 const HOLD_START_MS = 160;
@@ -349,8 +352,22 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
   const isClick = hero.id === CLICK_HERO_ID;
   const hired = level > 0;
   const hold = useHoldRepeat(() => onBuy(hero.id));
+  // The list clips what leaves it: near its top, the talent cards open under their talent.
+  const [tipsBelow, setTipsBelow] = useState(false);
+  const placeTips = ({ currentTarget: row }: { currentTarget: HTMLLIElement }) => {
+    const strip = row.querySelector(".talents");
+    if (!strip || !row.parentElement) return;
+    const room = strip.getBoundingClientRect().top - row.parentElement.getBoundingClientRect().top;
+    const tallest = Math.max(...Array.from(strip.querySelectorAll<HTMLElement>(".talent-tip"), (tip) => tip.offsetHeight));
+    setTipsBelow(room < tallest + TIP_GAP_PX);
+  };
   return (
-    <li className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}${fading ? " is-fading" : ""}${promise ? ` has-promise promise-${promise}` : ""}`} style={{ ["--hero" as string]: hero.color }}>
+    <li
+      className={`hero-row ${hired ? "hired" : "unhired"} ${affordable ? "affordable" : ""}${fading ? " is-fading" : ""}${promise ? ` has-promise promise-${promise}` : ""}${tipsBelow ? " tips-below" : ""}`}
+      style={{ ["--hero" as string]: hero.color }}
+      onPointerEnter={placeTips}
+      onFocus={placeTips}
+    >
       <div
         className={`hero-medallion ${recognition > 0 ? `recognized recognition-${recognition}` : ""} ${starfield ? "starfield" : ""}`}
         aria-hidden="true"

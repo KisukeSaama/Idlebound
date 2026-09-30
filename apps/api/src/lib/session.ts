@@ -5,6 +5,7 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { db } from "../db/client";
 import { emailVerifications, passwordResets, saveRejections, sessions, users } from "../db/schema";
 import { env } from "../env";
+import { purgeGuestSaves } from "./guest";
 import { localeOf } from "./i18n";
 import { purgeInactiveAccounts, purgeUnverifiedAccounts } from "./inactivity";
 
@@ -85,12 +86,13 @@ export async function destroyAllSessions(userId: string) {
   await db.delete(sessions).where(eq(sessions.userId, userId));
 }
 
-/** Periodic cleanup: expired sessions and links, old anti-cheat logs, inactive and never-confirmed accounts. */
+/** Periodic cleanup: expired sessions and links, old anti-cheat logs, inactive and never-confirmed accounts, guest games nobody came back to. */
 export async function purgeExpired() {
   const now = new Date();
   // Warn-then-delete, never delete without a warning e-mail.
   await purgeInactiveAccounts(now);
   await purgeUnverifiedAccounts(now);
+  await purgeGuestSaves(now);
   await db.delete(sessions).where(lt(sessions.expiresAt, now));
   await db.delete(passwordResets).where(lt(passwordResets.expiresAt, now));
   await db.delete(emailVerifications).where(lt(emailVerifications.expiresAt, now));

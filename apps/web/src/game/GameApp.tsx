@@ -61,8 +61,6 @@ import { PHONE_QUERY, Toasts, type Toast } from "./components/Toasts";
 import { WindowHost } from "./windows/WindowHost";
 import "./game.css";
 
-/** A guest who really played is warned before losing their game by leaving. */
-const GUEST_WARNING_SECONDS = 120;
 /** Never more than one fragment toast a minute (BIBLE 17.4): the others wait in the Chronicle. */
 const FRAGMENT_TOAST_GAP_MS = 60_000;
 /**
@@ -98,7 +96,9 @@ const REVEAL_PICTO: Partial<Record<RevealId, PictoName>> = {
   hall: "trophy",
   loom: "unweave",
   caravan: "stall",
-  promise: "knot"
+  promise: "knot",
+  altars2: "gem",
+  altars3: "gem"
 };
 /** Creatures whose new Bestiary lines are worth a toast: the great ones and the wanderers. */
 const HERALDED = new Set([...BIOMES.flatMap((biome) => [biome.boss.id, biome.miniBoss.id]), ...Object.keys(WANDERER_BY_ID), "echo-bat"]);
@@ -183,7 +183,7 @@ export default function GameApp() {
   }), [toast]);
 
   // Load the game from the server, then start the loop. No local save: progress only
-  // exists on the server (and only with an account).
+  // exists on the server, under an account or, for a guest, under this browser's cookie.
   useEffect(() => {
     // Dev tool: window.__idlebound.act((engine) => …) from the console.
     if (process.env.NODE_ENV !== "production") (window as unknown as { __idlebound?: GameStore }).__idlebound = store;
@@ -207,9 +207,8 @@ export default function GameApp() {
       if (!see()) void cloud.sync({ keepalive: true });
     };
     const onLeave = (event: BeforeUnloadEvent) => {
-      if (!cloud.user && store.state.lifetime.playTime > GUEST_WARNING_SECONDS) event.preventDefault();
-      // Signed in, but the last uploads failed (server away): what was played since is only here.
-      else if (cloud.user && cloud.status === "error") event.preventDefault();
+      // The last uploads failed (server away) or the session ended: what was played since is only here.
+      if (cloud.wouldLose()) event.preventDefault();
     };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("beforeunload", onLeave);
@@ -253,7 +252,7 @@ export default function GameApp() {
       const m = currentMessages();
       const g = gameText(currentLocale());
       const place = id as keyof typeof m.night.reveal;
-      const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : m.hud.windowTitles[place].label;
+      const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : place === "altars2" || place === "altars3" ? g.places.sanctum.name : m.hud.windowTitles[place].label;
       toast({ tone: "info", icon: REVEAL_PICTO[id], title, text: m.night.reveal[place] });
       store.apply((current) => current.completeTutorial(revealMark(id)));
     };

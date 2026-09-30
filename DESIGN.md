@@ -141,7 +141,7 @@ Content colors live with the game data, not in CSS:
   under it, then the ascension and the altars; from level 5
   an altar card carries a "Who raised it" disclosure (tooltip on hover, open on touch).
   The Loom tab shows the threads, what a Descent takes and keeps, the threads it would weave,
-  a danger-confirmed Descend button and the eight Weaves as cards.
+  the stage of the next thread, a danger-confirmed Descend button and the eight Weaves as cards.
 - **The Promise** (a folder tab of the ascension window, from the second night): one line on
   the rule, then "Tonight": the word of the night as a framed block (portrait in its frame,
   name, the knot and its state, the companion's request in italics, the rule in plain words,
@@ -235,9 +235,9 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 |---|---|
 | Map | stage 2 reached once |
 | Equipment, pack | the first relic |
-| Market | the first shards |
+| Market | 20 shards earned in all (the stall's cheapest ware) |
 | Ascension | stage 51 reached once, essences, an ascension or a Descent |
-| Hall | the first deed, the first elite or guardian down, or a first fragment |
+| Hall | the first guardian down (stage 11 reached once); deeds and fragments found before wait there |
 | Account (rail and header chip) | always |
 | Settings | always |
 | Header counters | DPS with the first companion, click damage with Aldric's first level, shards once earned, essences as before |
@@ -245,11 +245,12 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Companions | Aldric, the companions hired, and only the next one, once affordable this night or hired on a past night; talents only reachable or owned; buy modes from 10 levels; "spend while away" with the first companion |
 | Powers | only the unlocked ones; Unweave on key 7 once woven |
 | Loom tab, Caravan | when a Descent is possible or has happened; from the third ascension |
-| Promise tab | from the first ascension (the second night) |
+| Promise tab | once a companion half remembers the walker (Recognition 2) |
+| Altars | the four open-ended ones at once, three more from the third night, the last six from the fifth; one already raised always |
 | "Keep the Kingdom's sky" | from Age II |
 
 Each first appearance during play is announced once: a toast for the rail's windows, the
-Loom, the Caravan and the Promise (marked `ui:<id>` in `tutorial.done`, so it happens once
+Loom, the Caravan, the Promise and the two wakings of the Sanctum's altars (marked `ui:<id>` in `tutorial.done`, so it happens once
 on every device), a 4 s glow for the other elements (an outline with reduced motion). A game
 loaded past a threshold shows those elements at once, without a flood of announcements;
 only what arrived after walkers were already past its threshold is told once at load
@@ -420,11 +421,20 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   wearing through. Creatures that had a painted portrait keep its design and mood (the
   Field Rat, the Jumpy Boar, the Moss Alpha, the Shade Wolf, the Briar Witch, the Heart of
   the Old Grove, the Blind Crawler, the Echo Bat, the Stone Devourer, the Bog Remnant, the
-  Baron of Rot, the Fallen King); the others were drawn for the story. Sizes follow rank
-  and anatomy: normal creatures 50 to 110 px tall (the Rot Toad squat at 92 × 51, the
-  Field Rat 98 × 68, the Hollow Scarecrow on its pole 90 × 110), elites about 95 to 110,
-  guardians about 110, the Fallen King 125 × 124, Pip 36 × 39. Each keeps to 12
-  colors, 24 with its scene.
+  Baron of Rot, the Fallen King); the others were drawn for the story. Sizes follow
+  rank (`CREATURE_HEIGHTS`): the creature is what the walker strikes, so it stays the
+  subject of the arena, measured against the 140 rows of a scene above its ground line
+  (`ARENA_ROWS`). A normal creature's body stands at least 63 rows tall (45%), an elite 84
+  (60%), a guardian 105 (75%), the King's forms about 125 (90%); each rank stops where the
+  next begins, so in every biome the creatures stand under their elite (about 92 rows),
+  the elite under its guardian (106 to 111) and the guardian under the King. Inside a rank
+  the order is the world's: Pip (36 × 39) under the Field Rat (91 × 63), the rat under the
+  Jumpy Boar (92 × 75), a bird under anything the size of a person (about 80). A body
+  lying low is measured along its length instead, at least 88 (the Rot Toad 92 × 51, the
+  Last Hound, the Whisper Bramble). A test keeps every grid at its rank's share. A creature
+  that changes size is drawn again on a grid of the new size, never scaled: every pixel of
+  a creature is the size of a pixel of its scene. Each keeps to 12 colors, 24 with its
+  scene.
 - **Eras and Ages** (`eras.ts`): five eras make an Age (twelve Ages, eras 0 to 59). Age I:
   none, then Echo (a ghost copy one pixel up and right, a checker of cold dusk where it
   shows), Ash (warm ramps, embers every fifth pixel of the upper edges), Void (missing
@@ -509,16 +519,21 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   shrine and the cloak caught on it, the Runeguild's head-frame and its one warm lantern,
   the rune-cut pillars and gallery mouths, the peat-cutters' huts on stilts, the sluice
   and the jetty with its half-sunk boat, the Keep's broken colonnade, headless stone
-  wardens, braziers of violet fire and fallen drums, Brom's forge at the crossroads. Each
-  biome has one showpiece near the walker, as large and as finely drawn as its creatures,
-  standing where a phone's view still shows it: Brom's forge (its hearth burning deep in
-  the arch, bellows, tools on the wall, the lean-to with the anvil and the unfinished
-  hammer, the quenching barrel, the grindstone, the sign and the crossroads' post), the
-  tree-house of the Grove (balcony, ladder, drying herbs, a caged lantern), the Runeguild's
-  winding house (a spoked pulley, the cage down the shaft, the winch hut and the guild's
-  sign), Mirelle's house on stilts (her bottles on the sill, a simmering cauldron, her
-  skiff below), and the Keep's gatehouse (a pointed arch without its keystone, the
-  portcullis stuck half raised, a colorless banner, a violet window).
+  wardens, braziers of violet fire and fallen drums, Brom's forge at the crossroads. The
+  places stand back: no building is drawn at the size of the creatures in front of it.
+  Each biome's own building is small, high in the picture (its foot nearer the horizon
+  than the walker) and laid on the scene's air like the rest of the middle distance, under
+  the smallest creature of its biome: Brom's forge (50 × 47: the hearth burning deep in
+  the arch, the lean-to with the anvil and the unfinished hammer, one window lit), the
+  tree-house of the Grove (its balcony, a lit window, the owl on its bough), the
+  Runeguild's winding house (the sheave on its head, the winch hut, one warm lantern),
+  Mirelle's house on stilts (its sagging thatch, a lit window, the porch lantern) and the
+  Keep's gatehouse (a pointed arch without its keystone, the portcullis stuck half raised,
+  a violet window, the gargoyle of the Last Second); the gallery mouths and the cart of
+  the Deepvaults stand in the same air. What stays in full color near the walker has no
+  door to measure a creature against: standing stones, a wayside shrine, pillars,
+  crystals, a sluice, braziers, statues, a ruined arch. A test keeps each of the five in
+  the haze, in the upper half of the ground, and no taller than its biome's creatures.
   Buildings stand at the sides: what matters lies between columns 50 and 270, so a narrow
   view still shows it, and the guardian's ground stays calm (a test keeps bright and
   light-giving pixels under 1.5% of the space where it stands).
@@ -836,7 +851,9 @@ default 0.6), saved with the other settings.
 - **The Ledger's voice** (account window, save errors, the Roll): a diegetic line in Cinzel
   gold (`.ledger-voice`), its plain meaning always next to it (`.ledger-plain`, or the
   existing explanation): "Seal your name (confirm your e-mail within 3 days)". Guests are
-  the "Unnamed walker"; the Roll's boards carry their name in the fiction, the plain
+  the "Unnamed walker": their game is kept like an account's, so their chip and their
+  account window show the same Ledger states (dot, last save, trouble), never a "not kept"
+  call to action; the Roll's boards carry their name in the fiction, the plain
   meaning beneath (`.board-meaning`).
 
 ## Accessibility

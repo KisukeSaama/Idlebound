@@ -14,7 +14,7 @@ export const sanctum = defineMessages({
     /** The Promise (BIBLE 12.11): the word given to one companion at dusk. */
     promise: {
       title: "La Promesse",
-      hint: "Au crépuscule, tu donnes ta parole à un seul compagnon, jamais le même deux soirs de suite. Elle vaut toute la nuit : ce qu'elle interdit t'est refusé tant qu'elle tient. Tenue, le Roi tombé, elle reste dans son souvenir. Les deux que ses derniers souvenirs attendent comptent la nuit double, s'il a atteint le niveau 100.",
+      hint: "Au crépuscule, donne ta parole à un compagnon : ce qu'elle interdit t'est refusé jusqu'au crépuscule suivant. Tenue, le Roi tombé, elle reste dans son souvenir.",
       tonight: "Cette nuit",
       none: "Tu n'as donné ta parole à personne cette nuit.",
       choose: "À qui donner ta parole",
@@ -25,6 +25,8 @@ export const sanctum = defineMessages({
       giveLabel: (name: string, tonight: boolean) => `${name} : ${tonight ? "donner ma parole pour cette nuit" : "donner ma parole au prochain crépuscule"}`,
       noWeapon: "Il te faut une arme à lui laisser.",
       rested: "Ta parole de cette nuit. Personne ne demande deux soirs de suite.",
+      restedLast: "Ta parole d'hier soir. Personne ne demande deux soirs de suite.",
+      doubles: "Tenue, cette parole compte double dans son souvenir, si son niveau atteint 100 cette nuit-là.",
       breakWord: "Rompre ma parole",
       breakTitle: "Rompre ta parole ?",
       breakText: "Ce qui t'a été demandé ne te retient plus, et tu ne perds aucune force. Mais cette nuit ne comptera pas double, et tu ne pourras plus donner ta parole avant le prochain crépuscule.",
@@ -83,7 +85,7 @@ export const sanctum = defineMessages({
       stonesKept: (pct: number) => `Pierres mémoires : ${pct} % de chaque niveau d'autel reste.`,
       preview: "Une Descente tisserait maintenant",
       threadsCount: (count: string) => `${count} fils`,
-      nextThread: (essences: string) => `Fil suivant à ${essences} essences récoltées depuis la dernière Descente.`,
+      nextThread: (stage: number) => `Fil suivant à l'étape ${stage}. Seule une nuit plus profonde que toutes les autres allonge le fil.`,
       descend: "Descendre",
       confirmTitle: "Descendre ?",
       confirmText: (threads: string, none: boolean) =>
@@ -120,7 +122,7 @@ export const sanctum = defineMessages({
     legendSummary: "Who raised it",
     promise: {
       title: "The Promise",
-      hint: "At dusk you give your word to one companion, never the same two nights running. It holds all night: what it forbids is refused while it stands. Kept, with the King fallen, it stays in their memory. The two words their last memories wait for count the night twice, if they reached level 100.",
+      hint: "At dusk, give your word to one companion: what it forbids is refused until the next dusk. Kept, with the King fallen, it stays in their memory.",
       tonight: "Tonight",
       none: "You gave your word to no one tonight.",
       choose: "Whom to give your word",
@@ -131,6 +133,8 @@ export const sanctum = defineMessages({
       giveLabel: (name: string, tonight: boolean) => `${name}: ${tonight ? "give my word for tonight" : "give my word at the next dusk"}`,
       noWeapon: "You need a weapon to leave with him.",
       rested: "Tonight's word. Nobody asks two nights running.",
+      restedLast: "Last night's word. Nobody asks two nights running.",
+      doubles: "Kept, this word counts twice in their memory, if they reach level 100 that night.",
       breakWord: "Break my word",
       breakTitle: "Break your word?",
       breakText: "What was asked of you no longer binds you, and you lose no strength. But this night will not count twice, and you cannot give your word again before the next dusk.",
@@ -188,7 +192,7 @@ export const sanctum = defineMessages({
       stonesKept: (pct: number) => `Remembered Stones: ${pct}% of each altar level stays.`,
       preview: "A Descent would weave now",
       threadsCount: (count: string) => `${count} ${count === "1" ? "thread" : "threads"}`,
-      nextThread: (essences: string) => `Next thread at ${essences} essences gathered since the last Descent.`,
+      nextThread: (stage: number) => `Next thread at stage ${stage}. Only a night deeper than any before lengthens the thread.`,
       descend: "Descend",
       confirmTitle: "Descend?",
       confirmText: (threads: string, none: boolean) =>

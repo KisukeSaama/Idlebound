@@ -8,25 +8,46 @@ import { lookup } from "./lookup";
  * fortune, patience) multiply their effect at each level ("mult": ×(1 + value)^level), so
  * against an exponential price they stay a real trade-off with holding essences (each one
  * owned gives +10% DPS) at every stage of the game: the best split keeps about half the
- * essences in hand. The others add up ("add": value × level) and most are capped.
+ * essences in hand. The others add up ("add": value × level) and are capped. The Harvest is
+ * capped too, and dearer (before save version 11 it had no cap and cost 5 × 1.3^level):
+ * open-ended, its cheap levels multiplied every later night's essences by eight within a day,
+ * far past what the balance is measured on.
+ *
+ * The Sanctum wakes in three times (`night`): the four open-ended stones answer from the first
+ * night, where the one real choice is (keep or offer, and to which); three more from the third
+ * night, the last six from the fifth. A stone the walker already raised stays open.
  */
 export const ALTARS: AltarDef[] = [
-  { id: "might", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.1, format: "pct" },
-  { id: "blade", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.1, format: "pct" },
-  { id: "fortune", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.12, format: "pct" },
-  { id: "patience", maxLevel: 0, costBase: 1, costGrowth: 1.7, stacking: "mult", valuePerLevel: 0.14, format: "pct" },
-  { id: "time", maxLevel: 30, costBase: 2, costGrowth: 1.35, stacking: "add", valuePerLevel: 1, format: "seconds" },
-  { id: "fate", maxLevel: 5, costBase: 3, costGrowth: 2, stacking: "add", valuePerLevel: 0.2, format: "pct" },
-  { id: "precision", maxLevel: 25, costBase: 3, costGrowth: 1.3, stacking: "add", valuePerLevel: 0.01, format: "pct" },
-  { id: "treasure", maxLevel: 20, costBase: 3, costGrowth: 1.35, stacking: "add", valuePerLevel: 0.005, format: "pct" },
-  { id: "bargain", maxLevel: 25, costBase: 4, costGrowth: 1.4, stacking: "add", valuePerLevel: 0.02, format: "pct" },
-  { id: "echoes", maxLevel: 10, costBase: 5, costGrowth: 1.6, stacking: "add", valuePerLevel: 0.05, format: "pct" },
-  { id: "harvest", maxLevel: 0, costBase: 5, costGrowth: 1.3, stacking: "add", valuePerLevel: 0.1, format: "pct" },
-  { id: "wanderer", maxLevel: 10, costBase: 10, costGrowth: 1.8, stacking: "add", valuePerLevel: 10, format: "stages" },
-  { id: "memory", maxLevel: 20, costBase: 10, costGrowth: 1.5, stacking: "add", valuePerLevel: 5, format: "flat" }
+  { id: "might", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.1, format: "pct", night: 1 },
+  { id: "blade", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.1, format: "pct", night: 1 },
+  { id: "fortune", maxLevel: 0, costBase: 1, costGrowth: 1.6, stacking: "mult", valuePerLevel: 0.12, format: "pct", night: 1 },
+  { id: "patience", maxLevel: 0, costBase: 1, costGrowth: 1.7, stacking: "mult", valuePerLevel: 0.14, format: "pct", night: 1 },
+  { id: "time", maxLevel: 30, costBase: 2, costGrowth: 1.35, stacking: "add", valuePerLevel: 1, format: "seconds", night: 3 },
+  { id: "fate", maxLevel: 5, costBase: 3, costGrowth: 2, stacking: "add", valuePerLevel: 0.2, format: "pct", night: 5 },
+  { id: "precision", maxLevel: 25, costBase: 3, costGrowth: 1.3, stacking: "add", valuePerLevel: 0.01, format: "pct", night: 5 },
+  { id: "treasure", maxLevel: 20, costBase: 3, costGrowth: 1.35, stacking: "add", valuePerLevel: 0.005, format: "pct", night: 3 },
+  { id: "bargain", maxLevel: 25, costBase: 4, costGrowth: 1.4, stacking: "add", valuePerLevel: 0.02, format: "pct", night: 3 },
+  { id: "echoes", maxLevel: 10, costBase: 5, costGrowth: 1.6, stacking: "add", valuePerLevel: 0.05, format: "pct", night: 5 },
+  { id: "harvest", maxLevel: 5, costBase: 5, costGrowth: 3, stacking: "add", valuePerLevel: 0.1, format: "pct", night: 5 },
+  { id: "wanderer", maxLevel: 10, costBase: 10, costGrowth: 1.8, stacking: "add", valuePerLevel: 10, format: "stages", night: 5 },
+  { id: "memory", maxLevel: 20, costBase: 10, costGrowth: 1.5, stacking: "add", valuePerLevel: 5, format: "flat", night: 5 }
 ];
 
 export const ALTAR_BY_ID = lookup(ALTARS.map((altar) => [altar.id, altar])) as Record<AltarId, AltarDef>;
+
+/** The Altar of the Harvest's price before save version 11: what an older save paid for its levels. */
+const LEGACY_HARVEST = { costBase: 5, costGrowth: 1.3 };
+
+/** What level `level` of the Harvest cost an older save (rounded up, as it was paid). */
+export function legacyHarvestPrice(level: number): number {
+  return Math.ceil(LEGACY_HARVEST.costBase * Math.pow(LEGACY_HARVEST.costGrowth, level));
+}
+
+/** Essences an older save spent to raise the Harvest to `level` at the least (closed form, a hair under the prices paid). */
+export function legacyHarvestCost(level: number): number {
+  if (level <= 0) return 0;
+  return (LEGACY_HARVEST.costBase * (Math.pow(LEGACY_HARVEST.costGrowth, level) - 1)) / (LEGACY_HARVEST.costGrowth - 1);
+}
 
 /**
  * Total effect of an altar at a given level: `value × level`, or `(1 + value)^level - 1`.

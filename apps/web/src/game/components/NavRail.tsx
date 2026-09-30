@@ -1,6 +1,6 @@
 "use client";
 
-import { ACHIEVEMENTS, altarCost, ALTARS, INVENTORY_LIMIT, unreadChronicle } from "@idlebound/game";
+import { ACHIEVEMENTS, altarPrice, ALTARS, INVENTORY_LIMIT, unreadChronicle } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { perPublish, useCloud, useGame, useReveals, useUi, type WindowId } from "../context";
 import type { RevealId } from "../shell";
@@ -29,7 +29,7 @@ export function NavRail({ active }: { active: WindowId | null }) {
 
   const badges: Partial<Record<WindowId, string>> = {};
   if (store.engine.canAscend()) badges.ascension = "!";
-  else if (ALTARS.some((altar) => altarCost(altar.id, state.altars[altar.id] ?? 0) <= state.essences)) badges.ascension = "+";
+  else if (ALTARS.some((altar) => altarPrice(state, altar.id) <= state.essences)) badges.ascension = "+";
   if (state.inventory.length >= INVENTORY_LIMIT - 4) badges.inventory = "!";
   else if (state.inventory.length > 0) badges.inventory = String(state.inventory.length);
   if (state.shards >= 30) badges.market = "+";

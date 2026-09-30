@@ -1,5 +1,6 @@
 import type { GameState, PromiseState } from "../types";
 import { CLICK_HERO_ID, HERO_BY_ID } from "./heroes";
+import { RECOGNITION_HEROES, recognitionTier } from "./lore";
 import { lookup } from "./lookup";
 
 /**
@@ -57,8 +58,11 @@ export const PROMISES: readonly PromiseDef[] = [
 
 export const PROMISE_BY_HERO: Record<string, PromiseDef> = lookup(PROMISES.map((promise) => [promise.hero, promise]));
 
-/** Promises open with the second night: a first dusk has been walked. */
-export const PROMISE_MIN_ASCENSIONS = 1;
+/**
+ * A companion asks for the walker's word once they half remember them (Recognition 2, three
+ * nights walked together): nobody asks a stranger for their word.
+ */
+export const PROMISE_MIN_TIER = 2;
 /**
  * Runs of Recognition a night counts for the companion whose promise was kept: twice, when
  * they also reached the level at which a night counts at all (`RECOGNITION_LEVEL`) and their
@@ -87,19 +91,25 @@ export function companionMet(state: GameState, heroId: string): boolean {
   return (state.heroLevels[hero.id] ?? 0) > 0 || state.lifetime.bestHired > hero.index || (Object.hasOwn(state.recognition, hero.id) && state.recognition[hero.id] > 0);
 }
 
-/** Whether promises are part of this walker's nights yet. */
+/** Whether a companion remembers the walker enough to ask for their word. */
+export function promiseAsker(state: GameState, heroId: string): boolean {
+  return recognitionTier(state, heroId) >= PROMISE_MIN_TIER;
+}
+
+/** Whether promises are part of this walker's nights yet: someone half remembers them. */
 export function promisesOpen(state: GameState): boolean {
-  return state.lifetime.ascensions >= PROMISE_MIN_ASCENSIONS;
+  return RECOGNITION_HEROES.some((hero) => promiseAsker(state, hero));
 }
 
 /**
- * Whether a companion's request can be granted at all: someone met, asking for something the
+ * Whether a companion's request can be granted at all: someone met who half remembers the
+ * walker, asking for something the
  * walker has (a companion to leave behind must have been met, a weapon to leave must be
  * worn). Whether the road allows it is `promiseAskable`'s to say (formulas.ts).
  */
 export function promiseGrantable(state: GameState, heroId: string): boolean {
   const def = Object.hasOwn(PROMISE_BY_HERO, heroId) ? PROMISE_BY_HERO[heroId] : undefined;
-  if (!def || !promisesOpen(state) || !companionMet(state, heroId)) return false;
+  if (!def || !promiseAsker(state, heroId) || !companionMet(state, heroId)) return false;
   if (def.kind === "without") return companionMet(state, def.other);
   if (def.kind === "anvil") return state.equipment.weapon !== undefined;
   if (def.kind === "further") return state.ascensions.length > 0;

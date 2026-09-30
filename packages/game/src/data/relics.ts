@@ -20,7 +20,6 @@ export type NamedEffect =
   /** Damage dealt to the King (the guardian of every 50th stage). */
   | { kind: "kingDamage"; pct: number }
   /** The walker's strikes take this much less of the Patience bonus's place. */
-  | { kind: "quietStrike"; pct: number }
   /** Shards on every guardian kill. */
   | { kind: "guardianShards"; pct: number }
   /** DPS while a Seam is open. */
@@ -88,7 +87,7 @@ export const NAMED_RELICS: readonly NamedRelicDef[] = [
   // ---- weapons
   { id: "oathcutter", slot: "weapon", rarity: "legendary", effect: { kind: "kingDamage", pct: 1 }, source: { kind: "king", age: 0, chance: 0.02 } },
   { id: "thousandth-arrow", slot: "weapon", rarity: "legendary", effect: { kind: "critChance", pct: 0.03 }, source: { kind: "kills", monster: "moss-alpha", kills: 1_000 } },
-  { id: "quietus", slot: "weapon", rarity: "mythic", effect: { kind: "quietStrike", pct: 0.5 }, source: { kind: "gift", hero: "morgrath" } },
+  { id: "quietus", slot: "weapon", rarity: "mythic", effect: { kind: "idleBonus", pct: 0.5 }, source: { kind: "gift", hero: "morgrath" } },
   { id: "unfinished-hammer", slot: "weapon", rarity: "legendary", effect: { kind: "forgeDiscount", pct: 0.15 }, source: { kind: "gift", hero: "brom" } },
   { id: "splinter-of-sky", slot: "weapon", rarity: "mythic", effect: { kind: "guardianShards", pct: 1 }, source: { kind: "stratum", era: 4, chance: 0.01 } },
   { id: "dawnbreak", slot: "weapon", rarity: "mythic", effect: { kind: "seamDps", pct: 0.25 }, source: { kind: "dawn", descents: 5 } },

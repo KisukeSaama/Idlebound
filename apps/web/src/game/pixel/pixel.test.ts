@@ -1,11 +1,11 @@
 import { ALTARS, BESTIARY, BIOMES, CARAVAN_WARES, HEROES, MARKET_OFFERS, NAMED_RELICS, RARITIES, SKILLS, SLOTS, SLOT_BASE_COUNT, TREASURE_MONSTER } from "@idlebound/game";
-import { ALTAR_ICONS, C, CARAVAN_ICONS, DECOR, NAMED_RELIC_SHAPES, CREATURE_RECIPES, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, STRUCTURES, resolveCreature } from "@idlebound/game/art";
+import { ALTAR_ICONS, ARENA_ROWS, C, CARAVAN_ICONS, CREATURE_HEIGHTS, DECOR, LOW_BODY_LENGTH, NAMED_RELIC_SHAPES, CREATURE_RECIPES, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, SCENE_FLOOR, STRUCTURES, resolveCreature } from "@idlebound/game/art";
 import { describe, expect, it } from "vitest";
 import { renderCreature } from "./creature";
 import { AGE_COUNT, ERAS_PER_AGE, ageOf } from "./eras";
 import { renderEmblem } from "./mask";
 import { forgeRunes, RELIC_SIZE, renderCrystal, renderIcon, renderRelic } from "./objects";
-import { EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pixels";
+import { bounds, EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pixels";
 import { awakenedRecipe, PORTRAIT_SIZE, renderPortrait } from "./portrait";
 import { gradeForNight } from "./night";
 import { structureView } from "./props";
@@ -154,6 +154,54 @@ describe("pixel generator", () => {
       expect([...blink.emit].some((emit) => emit === 1), `${id} blink`).toBe(false);
       // Never resized: the Age that swells built bodies leaves a drawing at its size.
       expect(renderCreature(id, { era: 5 }).pixels.w).toBe(still.w);
+    }
+  });
+
+  it("keeps the creature the subject of the arena: every rank at its share of the height, the places standing back", () => {
+    const body = (id: string) => {
+      const { rows } = resolveCreature(id).grid;
+      const drawn = rows.map((row, y) => (/[^.]/.test(row) ? y : -1)).filter((y) => y >= 0);
+      return { height: drawn[drawn.length - 1] - drawn[0] + 1, width: Math.max(...rows.map((row) => row.replace(/\.+$/, "").length)) };
+    };
+    // 45% of the arena's height for a normal creature, 60% for an elite, 75% for a guardian.
+    expect(CREATURE_HEIGHTS.normal[0]).toBe(Math.round(ARENA_ROWS * 0.45));
+    expect(CREATURE_HEIGHTS.elite[0]).toBe(Math.round(ARENA_ROWS * 0.6));
+    expect(CREATURE_HEIGHTS.guardian[0]).toBe(Math.round(ARENA_ROWS * 0.75));
+    for (const id of Object.keys(CREATURE_RECIPES)) {
+      const { rank } = resolveCreature(id);
+      const [low, high] = CREATURE_HEIGHTS[rank];
+      const { height, width } = body(id);
+      // The King's forms may be measured across (the Dawn is a line); a body lying low, along its length.
+      if (rank === "king") expect(Math.max(height, width), id).toBeGreaterThanOrEqual(low);
+      else if (height < low) expect(rank === "normal" && width >= LOW_BODY_LENGTH, `${id}: ${width} x ${height}`).toBe(true);
+      expect(height, id).toBeLessThanOrEqual(high);
+    }
+    // The order the road is read in: Pip under a rat, a rat under a boar, and in every biome
+    // its creatures under its elite, its elite under its guardian, its guardian under the King.
+    expect(body("golden-rat").height).toBeLessThan(body("field-rat").height);
+    expect(body("field-rat").height).toBeLessThan(body("wild-boar").height);
+    for (const biome of BIOMES) {
+      for (const monster of biome.monsters) expect(body(monster.id).height, monster.id).toBeLessThan(body(biome.miniBoss.id).height);
+      expect(body(biome.miniBoss.id).height, biome.id).toBeLessThan(body(biome.boss.id).height);
+      if (resolveCreature(biome.boss.id).rank === "guardian") expect(body(biome.boss.id).height, biome.id).toBeLessThan(body("ruined-king").height);
+    }
+    // The places stand back: every building with a door stands in the scene's air, high in the
+    // picture (its foot nearer the horizon than the walker) and under the smallest creature of its biome.
+    const showpieces: Record<string, string> = {
+      "green-plains": "brom-forge",
+      "dark-forest": "grove-hut",
+      "forgotten-caves": "vault-winding-house",
+      "corrupted-marsh": "mire-alchemist",
+      "fallen-king-ruins": "keep-gatehouse"
+    };
+    for (const biome of BIOMES) {
+      const scene = SCENES[biome.id];
+      const placement = scene.structures!.find((structure) => structure.id === showpieces[biome.id])!;
+      expect(placement.haze, showpieces[biome.id]).toBe(true);
+      expect(placement.base - scene.horizon, showpieces[biome.id]).toBeLessThan((SCENE_FLOOR - scene.horizon) / 2);
+      const tall = bounds(structureView(biome.id, placement.id, 0, 0)!)!.h;
+      const upright = biome.monsters.map((monster) => body(monster.id)).filter((box) => box.height >= CREATURE_HEIGHTS.normal[0]);
+      expect(tall, showpieces[biome.id]).toBeLessThanOrEqual(Math.min(...upright.map((box) => box.height)) + 6);
     }
   });
 

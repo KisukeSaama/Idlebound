@@ -53,6 +53,23 @@ export const saves = pgTable("saves", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
 });
 
+/**
+ * A guest's game: no account, no e-mail. The browser holds an httpOnly cookie, the row is
+ * found by its hash. Never ranked; purged once unvisited for too long (see lib/guest.ts).
+ */
+export const guestSaves = pgTable("guest_saves", {
+  /** SHA-256 of the cookie's token: a database leak yields no usable game. */
+  id: text("id").primaryKey(),
+  state: jsonb("state").notNull(),
+  revision: integer("revision").notNull().default(1),
+  /** Lineage id: the game's creation date on the client. */
+  gameCreatedAt: bigint("game_created_at", { mode: "number" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Last visit (day precision on reads), used to purge games nobody comes back to. */
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [index("guest_saves_last_seen_idx").on(table.lastSeenAt)]);
+
 export const leaderboard = pgTable("leaderboard", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
   maxStage: integer("max_stage").notNull().default(1),
@@ -72,10 +89,12 @@ export const leaderboard = pgTable("leaderboard", {
   index("leaderboard_descents_idx").on(sql`${table.descents} desc`, sql`${table.maxStage} desc`)
 ]);
 
-/** Log of saves rejected by the anti-cheat (audit). */
+/** Log of saves rejected by the anti-cheat (audit): an account's, or a guest's. */
 export const saveRejections = pgTable("save_rejections", {
   id: serial("id").primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  /** A guest's game (guest_saves.id). No foreign key: the entry outlives an adopted or purged game. */
+  guestId: text("guest_id"),
   codes: jsonb("codes").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [index("save_rejections_user_idx").on(table.userId)]);

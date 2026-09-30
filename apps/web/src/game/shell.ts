@@ -1,14 +1,14 @@
 import {
+  ALTAR_BY_ID,
   CARAVAN_MIN_ASCENSIONS,
-  CHRONICLE_SOURCES,
   CLICK_HERO_ID,
+  MARKET_OFFERS,
   ageForEra,
   ageName,
   canDescend,
   eraForStage,
   eraLabel,
   promisesOpen,
-  sourceCount,
   stratumTag,
   type GameState,
   type Locale
@@ -31,6 +31,8 @@ export type RevealId =
   | "loom"
   | "caravan"
   | "promise"
+  | "altars2"
+  | "altars3"
   | "stageBar"
   | "autoToggle"
   | "dps"
@@ -41,7 +43,7 @@ export type RevealId =
   | "autoSpend";
 
 /** Elements whose first appearance gets a toast; the others only glow as they arrive. */
-export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan", "promise"];
+export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan", "promise", "altars2", "altars3"];
 
 /**
  * Elements that arrived after walkers were already past their threshold: a game loaded past
@@ -56,6 +58,11 @@ export function revealMark(id: RevealId): string {
 
 export type Reveals = Record<RevealId, boolean>;
 
+/** The stall opens once the walker has earned the price of its cheapest ware. */
+const FIRST_WARE = Math.min(...MARKET_OFFERS.map((offer) => offer.cost));
+/** The Hall opens once the first guardian (stage 10) has fallen. */
+const HALL_STAGE = 11;
+
 export function reveals(state: GameState): Reveals {
   const life = state.lifetime;
   const announced = (id: RevealId) => state.tutorial.done.includes(revealMark(id));
@@ -67,16 +74,19 @@ export function reveals(state: GameState): Reveals {
   return {
     map,
     gear: hadGear || announced("gear"),
-    market: shards || announced("market"),
+    market: life.shardsEarned >= FIRST_WARE || announced("market"),
     ascension: state.maxStageEver >= 51 || state.essences > 0 || reborn || announced("ascension"),
-    // The Hall opens with the first deed, the first guardian or elite down (its Bestiary
-    // line), or the first Chronicle entry: never on the first kill of minute one.
-    hall: state.achievements.length > 0 || life.bosses > 0 || CHRONICLE_SOURCES.some((source) => sourceCount(state, source) > 0) || announced("hall"),
+    // The Hall opens with the first guardian down: the first deeds and fragments, a few
+    // seconds into minute one, wait there for the walker.
+    hall: state.maxStageEver >= HALL_STAGE || announced("hall"),
     // Places inside other windows: Eldra's Loom in the Sanctum, the Caravan at the stall.
     loom: canDescend(state) || state.descents > 0,
     caravan: life.ascensions >= CARAVAN_MIN_ASCENSIONS,
     // The Promise, in the Sanctum: from the second night.
     promise: promisesOpen(state),
+    // The Sanctum wakes in three times: more stones answer from the third and the fifth night.
+    altars2: life.ascensions + 1 >= ALTAR_BY_ID.time.night,
+    altars3: life.ascensions + 1 >= ALTAR_BY_ID.harvest.night,
     stageBar: map,
     autoToggle: life.bossFails > 0 || !state.autoAdvance || reborn,
     dps: companionHired || life.bestHired >= 2 || reborn,

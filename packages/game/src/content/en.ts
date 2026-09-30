@@ -118,7 +118,7 @@ export const en: GameText = {
     might: { name: "Altar of Might", description: "Each level multiplies your DPS by 1.10." },
     blade: { name: "Altar of the Blade", description: "Each level multiplies your whole strike by 1.1, its share of your DPS included." },
     fortune: { name: "Altar of Fortune", description: "Each level multiplies your gold by 1.12." },
-    patience: { name: "Altar of Patience", description: "Each level multiplies your companions' Patience bonus by 1.14. Your strikes stand in for it, blow for blow." },
+    patience: { name: "Altar of Patience", description: "Adds to the Patience bonus, which makes your companions hit harder. Each level adds more than the last." },
     time: { name: "Altar of Time", description: "+1 s on the timer of elites and guardians per level." },
     fate: { name: "Altar of Fate", description: "+20% critical damage per level." },
     precision: { name: "Altar of Precision", description: "+1% critical hit chance per level." },

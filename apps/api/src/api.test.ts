@@ -30,8 +30,23 @@ async function ensureDatabase(target: string) {
 }
 
 class Client {
-  cookie = "";
+  /** Cookies the API set, by name: a session and a guest's game can ride together. */
+  private jar = new Map<string, string>();
+  /** The `Set-Cookie` headers of the last answer, attributes included. */
+  lastSetCookies: string[] = [];
   constructor(private ip: string) {}
+
+  get cookie() {
+    return [...this.jar].map(([name, value]) => `${name}=${value}`).join("; ");
+  }
+
+  has(name: string) {
+    return this.jar.has(name);
+  }
+
+  value(name: string) {
+    return this.jar.get(name);
+  }
 
   async call(method: string, path: string, body?: unknown, headers: Record<string, string> = {}) {
     const response = await app.request(path, {
@@ -42,15 +57,22 @@ class Client {
         "cf-connecting-ip": this.ip,
         // Network peer = a Cloudflare node, so the API trusts cf-connecting-ip.
         "x-forwarded-for": "173.245.48.10",
-        ...(this.cookie ? { cookie: this.cookie } : {}),
+        ...(this.jar.size > 0 ? { cookie: this.cookie } : {}),
         ...headers
       },
       body: body === undefined ? undefined : JSON.stringify(body)
     });
-    const setCookie = response.headers.get("set-cookie");
-    if (setCookie) this.cookie = setCookie.split(";")[0];
+    this.lastSetCookies = response.headers.getSetCookie();
+    for (const line of this.lastSetCookies) {
+      const pair = line.split(";")[0];
+      const name = pair.slice(0, pair.indexOf("="));
+      const value = pair.slice(pair.indexOf("=") + 1);
+      // A deleted cookie comes back empty.
+      if (value) this.jar.set(name, value);
+      else this.jar.delete(name);
+    }
     const json = await response.json().catch(() => ({}));
-    return { status: response.status, json: json as Record<string, any> };
+    return { status: response.status, json: json as Record<string, any>, retryAfter: response.headers.get("retry-after") };
   }
 }
 
@@ -269,6 +291,226 @@ suite("API (real Postgres)", () => {
     const cloud = await client.call("GET", "/save");
     expect(cloud.json.save.revision).toBe(1);
   }, 60_000);
+
+  describe("guest games", () => {
+    const password = "Un-Mot-De-Passe-Solide";
+    const codes = (answer: { json: Record<string, any> }) => answer.json.violations.map((violation: { code: string }) => violation.code);
+    /** The row of the guest game a client carries. */
+    async function guestRow(client: Client) {
+      const { hashToken } = await import("./lib/session");
+      const [row] = await sql`select id, revision, last_seen_at from guest_saves where id = ${hashToken(client.value("ib_guest") ?? "")}`;
+      return row as { id: string; revision: number; last_seen_at: string } | undefined;
+    }
+
+    it("keeps a guest's game under an httpOnly cookie and gives it back on reload, off the leaderboard", async () => {
+      const guest = new Client("10.0.1.1");
+      // Nothing kept yet: no cookie, no game.
+      expect((await guest.call("GET", "/save/guest")).json.save).toBeNull();
+      expect(guest.has("ib_guest")).toBe(false);
+      expect((await guest.call("GET", "/auth/me")).json).toEqual({ user: null, guest: false });
+
+      const [{ ranked: before }] = await sql`select count(*)::int as ranked from leaderboard`;
+      const state = playedState(2);
+      const first = await guest.call("PUT", "/save/guest", { state, baseRevision: null });
+      expect(first.status, JSON.stringify(first.json)).toBe(200);
+      expect(first.json.revision).toBe(1);
+      expect(guest.lastSetCookies.join()).toMatch(/^ib_guest=[^;]+;.*HttpOnly/i);
+
+      // The page reloads: the same browser finds its game again, and saves on top of it.
+      const reloaded = await guest.call("GET", "/save/guest");
+      expect(reloaded.json.save.revision).toBe(1);
+      expect(reloaded.json.save.state.gold).toBe(state.gold);
+      expect(reloaded.json.save.elapsedMs).toBeGreaterThanOrEqual(0);
+      expect((await guest.call("GET", "/auth/me")).json).toEqual({ user: null, guest: true });
+      expect((await guest.call("PUT", "/save/guest", { state, baseRevision: 1 })).json.revision).toBe(2);
+
+      // No account: no rank, and the account's routes stay closed.
+      const [{ ranked: after }] = await sql`select count(*)::int as ranked from leaderboard`;
+      expect(after).toBe(before);
+      expect((await guest.call("GET", "/leaderboard?board=stage")).json.me).toBeNull();
+      expect((await guest.call("GET", "/save")).status).toBe(401);
+      expect((await guest.call("PUT", "/save", { state, baseRevision: null })).status).toBe(401);
+
+      // Another browser sees nothing of it, and a forged cookie opens nothing.
+      expect((await new Client("10.0.1.1").call("GET", "/save/guest")).json.save).toBeNull();
+      const forged = await new Client("10.0.1.1").call("GET", "/save/guest", undefined, { cookie: "ib_guest=not-a-real-token-not-a-real-token" });
+      expect(forged.json.save).toBeNull();
+    }, 60_000);
+
+    it("never overwrites a guest's game silently: another page or a new game is a choice", async () => {
+      const guest = new Client("10.0.1.2");
+      const state = playedState(2);
+      expect((await guest.call("PUT", "/save/guest", { state, baseRevision: null })).status).toBe(200);
+      // A page that did not see the last save.
+      const stale = await guest.call("PUT", "/save/guest", { state, baseRevision: 7 });
+      expect(stale.status).toBe(409);
+      expect(stale.json.conflict.revision).toBe(1);
+      // A new game over the kept one: refused unless the guest asked for it.
+      const fresh = createInitialState();
+      expect((await guest.call("PUT", "/save/guest", { state: fresh, baseRevision: 1 })).status).toBe(409);
+      const replaced = await guest.call("PUT", "/save/guest", { state: fresh, baseRevision: 1, replace: true });
+      expect(replaced.status, JSON.stringify(replaced.json)).toBe(200);
+      expect((await guest.call("GET", "/save/guest")).json.save.state.createdAt).toBe(fresh.createdAt);
+    }, 60_000);
+
+    it("holds a guest's game to the same anti-cheat, and logs what it refuses", async () => {
+      const guest = new Client("10.0.1.3");
+      // A first save dated before the server could have seen it: refused, and nothing is kept.
+      const ancient = await guest.call("PUT", "/save/guest", { state: createInitialState(Date.now() - 40 * 86_400_000), baseRevision: null });
+      expect(ancient.status).toBe(422);
+      expect(codes(ancient)).toContain("lineage-age");
+      expect(guest.has("ib_guest")).toBe(false);
+
+      const state = playedState(3);
+      expect((await guest.call("PUT", "/save/guest", { state, baseRevision: null })).status).toBe(200);
+      // Gold out of nowhere.
+      const cheated = structuredClone(state);
+      cheated.gold = 1e30;
+      const rejected = await guest.call("PUT", "/save/guest", { state: cheated, baseRevision: 1 });
+      expect(rejected.status).toBe(422);
+      expect(rejected.json.violations.length).toBeGreaterThan(0);
+      // An hour away the server never saw pass.
+      const greedy = structuredClone(state);
+      greedy.lifetime.offlineSeconds += 3600;
+      const refused = await guest.call("PUT", "/save/guest", { state: greedy, baseRevision: 1 });
+      expect(refused.status).toBe(422);
+      expect(codes(refused)).toContain("time");
+
+      // The last accepted game is what a reload reads.
+      const kept = await guest.call("GET", "/save/guest");
+      expect(kept.json.save.revision).toBe(1);
+      expect(kept.json.save.state.gold).toBe(state.gold);
+      const row = await guestRow(guest);
+      const logged = await sql`select codes from save_rejections where guest_id = ${row!.id}`;
+      expect(logged).toHaveLength(2);
+    }, 60_000);
+
+    it("brings a guest's game to a new account, checked against the save the server kept", async () => {
+      const client = new Client("10.0.1.4");
+      const state = playedState(3);
+      expect((await client.call("PUT", "/save/guest", { state, baseRevision: null })).status).toBe(200);
+      expect((await client.call("POST", "/auth/register", { email: `adopt-${unique}@idlebound.test`, username: freshName("Ado"), password })).status).toBe(201);
+      expect((await client.call("GET", "/auth/me")).json.guest).toBe(true);
+      expect((await client.call("GET", "/save")).json.save).toBeNull();
+
+      // The same game with an hour nobody saw: the guest save is the witness, as between two saves.
+      const greedy = structuredClone(state);
+      greedy.lifetime.offlineSeconds += 3600;
+      const refused = await client.call("PUT", "/save", { state: greedy, baseRevision: null });
+      expect(refused.status).toBe(422);
+      expect(codes(refused)).toContain("time");
+      expect((await client.call("GET", "/save/guest")).json.save.revision).toBe(1);
+
+      // The honest game becomes the account's: one game, one keeper, and a rank at last.
+      const adopted = await client.call("PUT", "/save", { state, baseRevision: null });
+      expect(adopted.status, JSON.stringify(adopted.json)).toBe(200);
+      expect(client.has("ib_guest")).toBe(false);
+      expect(client.has("ib_session")).toBe(true);
+      expect((await client.call("GET", "/save/guest")).json.save).toBeNull();
+      expect((await client.call("GET", "/auth/me")).json.guest).toBe(false);
+      expect((await client.call("GET", "/save")).json.save.state.gold).toBe(state.gold);
+      expect((await client.call("GET", "/leaderboard?board=stage")).json.me.rank).toBeGreaterThanOrEqual(1);
+    }, 60_000);
+
+    it("asks before a guest's game replaces an account's, and lets go of the one not chosen", async () => {
+      const email = `choice-${unique}@idlebound.test`;
+      const owner = new Client("10.0.1.5");
+      expect((await owner.call("POST", "/auth/register", { email, username: freshName("Cho"), password })).status).toBe(201);
+      const accountGame = playedState(1);
+      expect((await owner.call("PUT", "/save", { state: accountGame, baseRevision: null })).status).toBe(200);
+
+      // Elsewhere, ten minutes played without a name, then the walker signs in.
+      const browser = new Client("10.0.1.6");
+      const guestGame = playedState(10);
+      expect((await browser.call("PUT", "/save/guest", { state: guestGame, baseRevision: null })).status).toBe(200);
+      expect((await browser.call("POST", "/auth/login", { email, password })).status).toBe(200);
+
+      // Never a silent overwrite: both games stay where they are until the walker chooses.
+      const silent = await browser.call("PUT", "/save", { state: guestGame, baseRevision: null });
+      expect(silent.status).toBe(409);
+      expect((await browser.call("GET", "/save")).json.save.state.createdAt).toBe(accountGame.createdAt);
+      expect((await browser.call("GET", "/save/guest")).json.save.state.createdAt).toBe(guestGame.createdAt);
+
+      // Without the guest save behind it, the same game claims more time than the account lived.
+      const stranger = await owner.call("PUT", "/save", { state: guestGame, baseRevision: 1, replace: true });
+      expect(stranger.status).toBe(422);
+      expect(codes(stranger)).toContain("lineage-time");
+
+      // The guest's game is chosen: the server kept it, so it replaces the account's and moves in.
+      const chosen = await browser.call("PUT", "/save", { state: guestGame, baseRevision: 1, replace: true });
+      expect(chosen.status, JSON.stringify(chosen.json)).toBe(200);
+      expect(browser.has("ib_guest")).toBe(false);
+      expect((await browser.call("GET", "/save")).json.save.state.createdAt).toBe(guestGame.createdAt);
+      expect((await browser.call("GET", "/save/guest")).json.save).toBeNull();
+
+      // The other choice: the account's game is taken, the guest's is let go.
+      const other = new Client("10.0.1.7");
+      expect((await other.call("PUT", "/save/guest", { state: playedState(2), baseRevision: null })).status).toBe(200);
+      expect((await other.call("POST", "/auth/login", { email, password })).status).toBe(200);
+      const row = await guestRow(other);
+      expect((await other.call("DELETE", "/save/guest")).status).toBe(200);
+      expect(other.has("ib_guest")).toBe(false);
+      expect(await sql`select 1 from guest_saves where id = ${row!.id}`).toHaveLength(0);
+      expect((await other.call("GET", "/save")).json.save.state.createdAt).toBe(guestGame.createdAt);
+    }, 60_000);
+
+    it("purges a guest's game nobody came back to for 30 days, and a visit keeps it", async () => {
+      const { purgeExpired } = await import("./lib/session");
+      const gone = new Client("10.0.1.8");
+      const back = new Client("10.0.1.9");
+      for (const client of [gone, back]) expect((await client.call("PUT", "/save/guest", { state: createInitialState(), baseRevision: null })).status).toBe(200);
+      const goneRow = await guestRow(gone);
+      const backRow = await guestRow(back);
+      await sql`update guest_saves set last_seen_at = now() - interval '31 days' where id = ${goneRow!.id}`;
+      await sql`update guest_saves set last_seen_at = now() - interval '29 days' where id = ${backRow!.id}`;
+
+      // A visit is a reload: it counts, and the cookie slides with it.
+      expect((await back.call("GET", "/save/guest")).json.save.revision).toBe(1);
+      expect(back.lastSetCookies.join()).toMatch(/^ib_guest=/);
+      expect(Date.now() - new Date((await guestRow(back))!.last_seen_at).getTime()).toBeLessThan(60_000);
+
+      await purgeExpired();
+      expect(await sql`select 1 from guest_saves where id = ${goneRow!.id}`).toHaveLength(0);
+      expect(await sql`select 1 from guest_saves where id = ${backRow!.id}`).toHaveLength(1);
+      // The purged game's cookie leads nowhere: it is dropped, and the guest starts anew.
+      expect((await gone.call("GET", "/save/guest")).json.save).toBeNull();
+      expect(gone.has("ib_guest")).toBe(false);
+    }, 60_000);
+
+    it("rate-limits a guest's saves per game and per address", async () => {
+      // One game: six saves a minute.
+      const guest = new Client("10.0.1.10");
+      const state = createInitialState();
+      const statuses: number[] = [];
+      for (let attempt = 0; attempt < 7; attempt += 1) {
+        statuses.push((await guest.call("PUT", "/save/guest", { state, baseRevision: attempt === 0 ? null : attempt })).status);
+      }
+      expect(statuses).toEqual([200, 200, 200, 200, 200, 200, 429]);
+
+      // One address: twenty new guest games an hour.
+      const created: number[] = [];
+      let last = { status: 0, retryAfter: null as string | null };
+      for (let attempt = 0; attempt < 21; attempt += 1) {
+        last = await new Client("10.0.1.11").call("PUT", "/save/guest", { state: createInitialState(), baseRevision: null });
+        created.push(last.status);
+      }
+      expect(created.slice(0, 20).every((status) => status === 200)).toBe(true);
+      expect(last.status).toBe(429);
+      expect(Number(last.retryAfter)).toBeGreaterThan(0);
+
+      // One address: sixty guest saves a minute, all its games together.
+      const crowd = Array.from({ length: 10 }, () => new Client("10.0.1.12"));
+      const kept: number[] = [];
+      for (let round = 0; round < 6; round += 1) {
+        for (const client of crowd) kept.push((await client.call("PUT", "/save/guest", { state, baseRevision: round === 0 ? null : round })).status);
+      }
+      expect(kept.every((status) => status === 200)).toBe(true);
+      const over = await new Client("10.0.1.12").call("PUT", "/save/guest", { state, baseRevision: null });
+      expect(over.status).toBe(429);
+      // Another address is not held back by it.
+      expect((await new Client("10.0.1.13").call("PUT", "/save/guest", { state, baseRevision: null })).status).toBe(200);
+    }, 60_000);
+  });
 
   it("rate-limits login attempts", async () => {
     const client = new Client("10.0.0.9");

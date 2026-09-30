@@ -6,9 +6,11 @@ import {
   PROMISE_BY_HERO,
   companionMet,
   promiseAskable,
+  promiseAsker,
   promiseHolds,
   promiseWhen,
   promiseText,
+  promisesAwaited,
   promisesKept,
   recognitionNeeds,
   standingPromise,
@@ -77,7 +79,7 @@ export function PromiseTab() {
   // Companions met, in the order of the road. One whose request cannot be granted yet (a
   // companion to leave behind who was never met, a night deeper than the walker ever went)
   // waits until it can; Brom stays, and says what he is missing.
-  const unarmed = (def: PromiseDef) => def.kind === "anvil" && companionMet(state, def.hero) && !state.equipment.weapon;
+  const unarmed = (def: PromiseDef) => def.kind === "anvil" && companionMet(state, def.hero) && promiseAsker(state, def.hero) && !state.equipment.weapon;
   const roster = PROMISES.filter((def) => promiseAskable(state, def.hero) || unarmed(def));
 
   return (
@@ -126,7 +128,8 @@ export function PromiseTab() {
                 <blockquote>{lines?.ask}</blockquote>
                 <p className="promise-rule">{describePromise(def, locale)}</p>
                 {needs && needs.promises > 0 ? <p className="promise-needs">{text.needs(needs.promises)}</p> : null}
-                {unarmed(def) ? <p className="modal-hint">{text.noWeapon}</p> : when === null && given?.hero === hero ? <p className="modal-hint">{text.rested}</p> : null}
+                {promisesAwaited(state, hero) > 0 ? <p className="modal-hint">{text.doubles}</p> : null}
+                {unarmed(def) ? <p className="modal-hint">{text.noWeapon}</p> : when === null && given?.hero === hero ? <p className="modal-hint">{text.rested}</p> : when === null && state.lastPromise === hero ? <p className="modal-hint">{text.restedLast}</p> : null}
               </div>
               {chosen ? (
                 <div className="promise-action">

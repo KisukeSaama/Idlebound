@@ -195,7 +195,8 @@ function composeScene(sceneId: string, recipe: SceneRecipe, era: number, options
   }
   const ground = paintGround(recipe);
   const memo = new Map<string, Built | null>();
-  const hazeFrames = [0, 1, 2, 3].map((frame) => paintHazeStructures(recipe, wear, frame));
+  const decor = options.clawless ? CLAWLESS_DECOR : DECOR;
+  const hazeFrames = [0, 1, 2, 3].map((frame) => paintHazeStructures(recipe, wear, frame, decor));
   const hazed = hazeFrames[0] ? (hazeFrames as Pixels[]) : null;
   if (age === 0 && era % ERAS_PER_AGE === 4) sowShards(ground.pixels, ground.water, recipe);
   // Still water mirrors what stands above the horizon, its ripples sliding frame to frame.
@@ -206,7 +207,7 @@ function composeScene(sceneId: string, recipe: SceneRecipe, era: number, options
     { frames: groundFrames, drift: 0, depth: 0.7, ground: true, period: 0.4 },
     ...(hazed ? [{ frames: hazed, drift: 0, depth: 0.7, period: 0.45 }] : []),
     ...(mist ? [{ frames: [mist], drift: recipe.mistDrift ?? 0, depth: 0.3 }] : []),
-    { frames: [0, 1, 2, 3].map((frame) => paintProps(recipe, frame, { wear, water: ground.water, memo, decor: options.clawless ? CLAWLESS_DECOR : DECOR })), drift: 0, depth: 0.7, period: 0.45 },
+    { frames: [0, 1, 2, 3].map((frame) => paintProps(recipe, frame, { wear, water: ground.water, memo, decor })), drift: 0, depth: 0.7, period: 0.45 },
     { frames: [0, 1].map((frame) => paintForeground(recipe, "left", frame)), drift: 0, depth: 1.3, period: 1.1, anchor: "left" },
     { frames: [0, 1].map((frame) => paintForeground(recipe, "right", frame)), drift: 0, depth: 1.3, period: 1.1, anchor: "right" }
   ];

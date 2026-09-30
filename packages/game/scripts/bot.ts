@@ -1,14 +1,13 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
-import { ALTAR_BY_ID, altarCost } from "../src/data/altars";
-import { WEAVES, weaveCost } from "../src/data/descent";
-import { DESCENT_HERO } from "../src/data/descent";
+import { ALTAR_BY_ID } from "../src/data/altars";
+import { DESCENT_HERO, WEAVES, weaveCost, type WeaveId } from "../src/data/descent";
 import { CLICK_HERO_ID, HEROES } from "../src/data/heroes";
 import { relicDensity } from "../src/data/items";
 import { RECOGNITION_HEROES, recognitionNeeds } from "../src/data/lore";
 import { PROMISE_BY_HERO, PROMISE_RUNS, promiseHolds, promiseOf, promisesKept, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
-import { ESSENCE_DPS_BONUS, derive, heroCost, heroCostMultiplier, promiseWhen, strikeFillShare } from "../src/formulas";
+import { ESSENCE_DPS_BONUS, altarPrice, derive, heroCost, heroCostMultiplier, promiseWhen } from "../src/formulas";
 import type { AltarId, Derived, GameState, Item } from "../src/types";
 
 export interface BotOptions {
@@ -90,7 +89,8 @@ export function pledgeAtDusk(engine: GameEngine, now: number, options: BotOption
 
 /**
  * When the bot descends: once the Descent would weave at least `minThreads`, and at least
- * `growth` times the threads woven so far (a second Descent must be worth the climb back).
+ * `growth` times the threads woven so far. The thread doubles with every Age, so `growth: 1`
+ * is a Descent an Age, `0.5` one every 146 stages of new depth.
  */
 export interface DescentPlan {
   minThreads: number;
@@ -112,25 +112,25 @@ export const IDLE_ALTARS: AltarPlan = {
 type Weights = Partial<Record<AltarId, number>>;
 /**
  * Open-ended altars, weighted by how much of their effect reaches the walker: the Blade when
- * the strikes lead (they deal more than the Patience bonus they stand in for), Patience when
- * the company does.
+ * the strikes lead (they deal more than the Patience bonus adds), Patience when the company
+ * does.
  */
 const STRIKE_WEIGHTS: Weights = { might: 1, blade: 0.9, fortune: 0.7 };
 const COMPANY_WEIGHTS: Weights = { might: 1, patience: 0.9, fortune: 0.7 };
 
-/** Whether the walker's strikes, at this pace, deal more than the Patience bonus they stand in for. */
-export function strikesLead(state: GameState, d: Derived, clicksPerSecond: number): boolean {
+/** Whether the walker's strikes, at this pace, deal more than the Patience bonus adds to the company. */
+export function strikesLead(d: Derived, clicksPerSecond: number): boolean {
   const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
-  return strikes * strikeFillShare(state) > d.patienceDps;
+  return strikes > d.patienceDps;
 }
 
 /**
  * Damage a second of the company with a walker striking `clicksPerSecond` times a second
- * (crits averaged): the strikes take the place of the Patience bonus, and add past it.
+ * (crits averaged): the company's damage, Patience bonus included, and every strike on top.
  */
-export function damageRate(state: GameState, d: Derived, clicksPerSecond: number): number {
+export function damageRate(d: Derived, clicksPerSecond: number): number {
   const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
-  return d.dps - d.patienceDps + Math.max(0, d.patienceDps - strikes * strikeFillShare(state)) + strikes;
+  return d.dps + strikes;
 }
 
 /** Average strikes a second of a play style over a whole run. */
@@ -150,7 +150,7 @@ function bestHeroPurchase(engine: GameEngine, now: number, clicksPerSecond: numb
   const s = engine.state;
   const multiplier = heroCostMultiplier(s);
   let best: { id: string; ratio: number } | null = null;
-  const base = damageRate(s, derive(s, now, { ignoreTimed: true }), clicksPerSecond);
+  const base = damageRate(derive(s, now, { ignoreTimed: true }), clicksPerSecond);
   // Companions join in order (a promise may leave one behind, or keep the company small).
   const recruit = nextRecruit(s)?.id;
   for (const hero of HEROES) {
@@ -159,7 +159,7 @@ function bestHeroPurchase(engine: GameEngine, now: number, clicksPerSecond: numb
     const cost = heroCost(hero, level, 1, multiplier);
     if (cost > s.gold) continue;
     s.heroLevels[hero.id] = level + 1;
-    const after = damageRate(s, derive(s, now, { ignoreTimed: true }), clicksPerSecond);
+    const after = damageRate(derive(s, now, { ignoreTimed: true }), clicksPerSecond);
     s.heroLevels[hero.id] = level;
     const gain = after - base;
     const ratio = gain / cost;
@@ -227,7 +227,7 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       lastProgressAt = now;
     } else if (engine.canAscend() && now - lastProgressAt > stagnation) {
       const from = s.maxStage;
-      const leading = strikesLead(s, derive(s, now, { ignoreTimed: true }), averageClicks(options));
+      const leading = strikesLead(derive(s, now, { ignoreTimed: true }), averageClicks(options));
       const gain = engine.ascend(now);
       options.onAscend?.(engine, now, gain, from);
       if (options.descent && wantsDescent(s, options.descent)) {
@@ -249,17 +249,21 @@ function wantsDescent(state: GameState, { minThreads, growth }: DescentPlan): bo
   return canDescend(state) && descentPreview(state) >= Math.max(minThreads, growth * state.lifetime.threads);
 }
 
-/** Threads spent on the cheapest weave first; the Long Thread only matters to a closed game. */
+/** The one weave that compounds: the rest of the threads go to it. */
+const OPEN_WEAVE: WeaveId = "plenty";
+/** Capped weaves bought as soon as they cost little next to the threads held. */
+const WEAVE_SHARE = 0.1;
+
+/**
+ * Threads spent as a reasonable walker would: the capped weaves when cheap (not the Long
+ * Thread, which only matters to a closed game), then every Warp of Plenty the rest affords.
+ */
 export function buyWeaves(engine: GameEngine, now: number) {
   const s = engine.state;
+  const price = (id: WeaveId) => weaveCost(id, s.weaves[id] ?? 0);
   for (let guard = 0; guard < 500; guard += 1) {
-    let cheapest: { id: (typeof WEAVES)[number]["id"]; cost: number } | null = null;
-    for (const weave of WEAVES) {
-      if (weave.id === "long-thread") continue;
-      const cost = weaveCost(weave.id, s.weaves[weave.id] ?? 0);
-      if (cost <= s.threads && (!cheapest || cost < cheapest.cost)) cheapest = { id: weave.id, cost };
-    }
-    if (!cheapest || !engine.buyWeave(cheapest.id, now)) return;
+    const cheap = WEAVES.find((weave) => weave.id !== OPEN_WEAVE && weave.id !== "long-thread" && price(weave.id) <= s.threads * WEAVE_SHARE);
+    if (!engine.buyWeave(cheap?.id ?? OPEN_WEAVE, now)) return;
   }
 }
 
@@ -278,16 +282,26 @@ export function buyAltars(engine: GameEngine, now: number, { milestones }: Altar
   for (let guard = 0; guard < 2000; guard += 1) {
     let bought = false;
     for (const id of milestones) {
-      const cost = altarCost(id, s.altars[id] ?? 0);
+      // The walker's own price: the Knot of Dusk lets the Wanderer's altar grow past its cap.
+      const cost = altarPrice(s, id);
       if (Number.isFinite(cost) && cost <= s.essences * MILESTONE_SHARE && engine.buyAltar(id, now)) bought = true;
     }
     const hold = ESSENCE_DPS_BONUS / (1 + ESSENCE_DPS_BONUS * s.essences);
     let best: { id: AltarId; ratio: number } | null = null;
     for (const [id, weight] of Object.entries(weights) as [AltarId, number][]) {
-      const cost = altarCost(id, s.altars[id] ?? 0);
+      const cost = altarPrice(s, id);
       if (cost > s.essences) continue;
       const ratio = (Math.log(1 + ALTAR_BY_ID[id].valuePerLevel) * weight) / cost;
       if (ratio > hold && (!best || ratio > best.ratio)) best = { id, ratio };
+    }
+    // The Harvest pays in the nights to come: a level is worth the essences it adds to every
+    // later dusk, weighed like the others against keeping the essences.
+    const harvest = s.altars.harvest ?? 0;
+    const harvestCost = altarPrice(s, "harvest");
+    if (harvestCost <= s.essences) {
+      const step = ALTAR_BY_ID.harvest.valuePerLevel;
+      const ratio = Math.log((1 + step * (harvest + 1)) / (1 + step * harvest)) / harvestCost;
+      if (ratio > hold && (!best || ratio > best.ratio)) best = { id: "harvest", ratio };
     }
     if (best && engine.buyAltar(best.id, now)) bought = true;
     if (!bought) return;

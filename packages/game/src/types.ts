@@ -77,6 +77,8 @@ export interface AltarDef {
   stacking: "add" | "mult";
   valuePerLevel: number;
   format: "pct" | "seconds" | "stages" | "flat";
+  /** The night (1: the first) from which the stone answers the walker; one already raised stays open. */
+  night: number;
 }
 
 export type ItemSlot = "weapon" | "armor" | "amulet" | "ring";
@@ -364,8 +366,17 @@ export interface GameState {
   descents: number;
   threads: number;
   weaves: Partial<Record<WeaveId, number>>;
-  /** Essences gathered in all when the last Descent began: threads count from there. */
-  descentMark: number;
+  /**
+   * Threads woven before save version 11, when a Descent wove them from essences: they stay
+   * woven, and the thread of depth only adds past them. Absent from a game begun since.
+   */
+  legacyThreads?: number;
+  /**
+   * The highest level of the Altar of the Harvest the essences of a save older than version 11
+   * could have bought, when above today's cap: its ascensions of then are checked against it.
+   * Absent from a game begun since.
+   */
+  legacyHarvest?: number;
   /** ISO week of the last Caravan purchase (one ware a week). */
   caravanWeek: string;
   /** The engine's random generator, carried by the save: a reload draws the same fates again. */

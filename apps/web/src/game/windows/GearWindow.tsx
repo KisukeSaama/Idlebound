@@ -21,10 +21,12 @@ import {
   itemName,
   promiseAbstains,
   promiseOf,
+  relicCompanyGain,
   salvageValue,
   trimmed,
   wearsRegalia,
   type AffixStat,
+  type GameState,
   type Item,
   type Locale,
   type Rarity
@@ -46,13 +48,13 @@ const BAG_SORTS = ["recent", "rarity", "slot"] as const;
 type BagSort = (typeof BAG_SORTS)[number];
 
 /**
- * How strong a relic is, to rank relics of one rarity: its density first (the stratum it
- * came from), then its affixes, each against its nominal value so every stat weighs alike,
- * forge included.
+ * How strong a relic is, to rank relics of one rarity: what it is worth to the company first
+ * (its score: DPS affix, forge and density), then its affixes, each against its nominal
+ * value so every stat weighs alike, forge included.
  */
-function compareStrength(a: Item, b: Item): number {
+function compareStrength(state: GameState, now: number) {
   const power = (item: Item) => item.affixes.reduce((total, affix) => total + affixValue(item, affix.stat) / AFFIX_BASE[affix.stat], 0);
-  return relicDensity(b) - relicDensity(a) || power(b) - power(a);
+  return (a: Item, b: Item) => relicCompanyGain(state, b, now) - relicCompanyGain(state, a, now) || power(b) - power(a);
 }
 
 const STATS: AffixStat[] = ["dps", "click", "gold", "bossDamage", "critChance", "critDamage", "essence"];
@@ -132,9 +134,14 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
   const main = item.affixes[0];
   const named = item.named ? NAMED_BY_ID[item.named] : undefined;
   const legend = item.named ? g.relics[item.named] : undefined;
-  const delta = compareTo ? affixValue(item, main.stat) - affixValue(compareTo, main.stat) : null;
+  // Its main stat against the worn relic's, when that stat is not the company's damage (the score says that one).
+  const delta = compareTo && main.stat !== "dps" ? affixValue(item, main.stat) - affixValue(compareTo, main.stat) : null;
   const density = relicDensity(item);
   const mult = useMultiplier();
+  const now = state.lastTickAt;
+  const score = relicCompanyGain(state, item, now);
+  const scoreDelta = compareTo ? score / relicCompanyGain(state, compareTo, now) - 1 : null;
+  const signed = (pct: number) => `${pct > 0 ? "+" : pct < 0 ? "-" : ""}${percent(Math.abs(pct), locale)}`;
   return (
     <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: rarityColor(item.rarity, state.settings.colorblind) }}>
       <header className="item-head">
@@ -145,6 +152,14 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
         </div>
         {item.locked ? <span className="item-lock" title={t.windows.gear.lockedTitle}><Picto name="lock" size={18} /></span> : null}
       </header>
+      <p className="item-score" title={t.windows.gear.scoreTitle}>
+        <span>{t.windows.gear.score(mult(score))}</span>
+        {scoreDelta !== null ? (
+          <span className={`item-delta ${scoreDelta > 0.0005 ? "up" : scoreDelta < -0.0005 ? "down" : ""}`}>
+            {scoreDelta > 0.0005 ? "▲" : scoreDelta < -0.0005 ? "▼" : "="} {signed(Math.abs(scoreDelta) < 0.0005 ? 0 : scoreDelta * 100)} {t.windows.gear.versusEquipped}
+          </span>
+        ) : null}
+      </p>
       <ul className="item-affixes">
         {item.affixes.map((affix, index) => (
           <li key={affix.stat} className={index === 0 ? "main" : ""}>{formatAffix(affix.stat, affixValue(item, affix.stat), locale)}</li>
@@ -304,7 +319,8 @@ function Bag() {
   const carried = state.inventory.map((item) => item.uid).join(",");
   const items = useMemo(() => {
     const sorted = [...store.state.inventory];
-    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || compareStrength(a, b));
+    const stronger = compareStrength(store.state, store.state.lastTickAt);
+    if (sort === "rarity") sorted.sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || stronger(a, b));
     if (sort === "slot") sorted.sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
     if (sort === "recent") sorted.reverse();
     return sorted;

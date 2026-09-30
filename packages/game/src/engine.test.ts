@@ -17,10 +17,12 @@ import {
   WOUND_LAST_STAGE,
   ascensionPreview,
   wandererSkip,
-  STRIKE_FILL_SECONDS,
+  altarOpen,
+  altarPrice,
   altarValue,
   bossHp,
   derive,
+  relicCompanyGain,
   essencesForStage,
   heroCost,
   maxAffordableLevels,
@@ -211,13 +213,20 @@ describe("idle and active balance", () => {
     const ratio = clickRatio(state, T0, 5);
     expect(ratio).toBeGreaterThan(0.1);
     expect(ratio).toBeLessThan(1);
-    // Mashing at 10 clicks/s beats an idle player by a modest margin at most.
+    // Mashing at 10 clicks/s beats an idle player by a modest margin at most: strikes add
+    // to the company's damage, Patience bonus included.
     const d = derive(state, T0, { ignoreTimed: true });
-    const active = d.dps - d.patienceDps + Math.max(d.patienceDps, clickRatio(state, T0, 10) * (d.dps - d.patienceDps));
+    const active = d.dps + clickRatio(state, T0, 10) * (d.dps - d.patienceDps);
     expect(active).toBeLessThan(d.dps * 1.5);
   });
 
-  it("gives the Patience bonus to companions only, never to strikes", () => {
+  it("gives the Patience bonus to companions only, never to strikes; Quietus deepens it", () => {
+    const worn = lateGame();
+    const plain = derive(worn, T0).idleBonus;
+    worn.named = ["quietus"];
+    worn.equipment.weapon = { ...generateItem(seededRng(3), 100, { slot: "weapon", rarity: "mythic" }), named: "quietus" };
+    expect(derive(worn, T0).idleBonus).toBeCloseTo(plain * 1.5);
+
     const state = lateGame();
     state.altars.patience = 5;
     const d = derive(state, T0);
@@ -257,32 +266,18 @@ describe("idle and active balance", () => {
 
   const dealt = (clicksPerSecond: number, patience = 5) => strike(wall(patience), T0, 60, clicksPerSecond);
 
-  it("never lets a strike cost the company: strikes take the Patience bonus's place, and add past it", () => {
+  it("adds every strike to the company's damage, which keeps its whole Patience bonus", () => {
     const idle = dealt(0);
-    // A light hand takes the bonus's place blow for blow.
-    const engine = wall(5);
-    expect(strike(engine, T0, 60, 1)).toBeGreaterThanOrEqual(idle * 0.999);
-    expect(engine.patienceShare).toBeLessThan(1);
-    for (const pace of [0.5, 2, 5, 10, 20]) expect(dealt(pace)).toBeGreaterThanOrEqual(idle * 0.999);
-    // Striking hard, the walker deals more than the bonus they replace.
-    expect(dealt(40, 0)).toBeGreaterThan(dealt(0, 0) * 1.05);
-  });
-
-  it("lets a strike wait a few seconds of the Patience bonus at most", () => {
-    const engine = wall(5);
-    const now = T0 + 1000;
-    strike(engine, T0, 1, 0);
-    // One strike far above the bonus: once it has taken its place, the bonus comes back whole.
-    engine.state.buffs.push({ id: "sharpness", until: now + 100 });
-    engine.refresh(now);
-    engine.click(now);
-    engine.state.buffs = [];
-    engine.refresh(now);
-    engine.drainEvents();
-    const d = engine.derived;
-    const companions = strike(engine, now, STRIKE_FILL_SECONDS + 2, 0);
-    expect(companions).toBeGreaterThan(d.dps * (STRIKE_FILL_SECONDS + 2) - d.patienceDps * STRIKE_FILL_SECONDS * 1.01);
-    expect(engine.patienceShare).toBe(1);
+    const d = wall(5).derived;
+    // The company alone deals its DPS, Patience bonus included.
+    expect(idle).toBeGreaterThanOrEqual(d.dps * 60 * 0.99);
+    expect(d.patienceDps).toBeGreaterThan(0);
+    // Every pace adds its strikes on top: never less than the strikes without a crit.
+    for (const pace of [1, 5, 20]) expect(dealt(pace) - idle).toBeGreaterThanOrEqual(pace * 60 * d.click * 0.99);
+    // With or without the bonus, a strike is worth the same.
+    const bare = wall(0).derived;
+    expect(bare.click).toBeCloseTo(d.click);
+    expect(dealt(5, 0) - dealt(0, 0)).toBeGreaterThanOrEqual(5 * 60 * bare.click * 0.99);
   });
 
   it("applies sharpness to the whole click, DPS share included", () => {
@@ -326,6 +321,7 @@ describe("idle and active balance", () => {
     const engine = new GameEngine(lateGame(), seededRng(1), T0);
     engine.state.essences = 1_000;
     engine.state.lifetime.essencesEarned = 1_000;
+    engine.state.lifetime.ascensions = ALTAR_BY_ID.fate.night - 1;
     for (let level = 0; level < 5; level += 1) expect(engine.buyAltar("fate", T0)).toBe(true);
     expect(engine.buyAltar("fate", T0)).toBe(false);
     expect(engine.state.essences).toBe(1_000 - (3 + 6 + 12 + 24 + 48));
@@ -333,6 +329,34 @@ describe("idle and active balance", () => {
     // Open-ended altars multiply their effect at each level.
     engine.state.altars.might = 3;
     expect(altarValue(engine.state, "might")).toBeCloseTo(Math.pow(1 + ALTAR_BY_ID.might.valuePerLevel, 3) - 1);
+  });
+
+  it("wakes the Sanctum in three times: a stone answers from its night on, and one raised stays open", () => {
+    const engine = new GameEngine(lateGame(), seededRng(1), T0);
+    const s = engine.state;
+    s.essences = 1_000;
+    s.lifetime.essencesEarned = 1_000;
+    const opened = (nights: number) => {
+      s.lifetime.ascensions = nights - 1;
+      return ALTARS.filter((altar) => altarOpen(s, altar.id)).map((altar) => altar.id);
+    };
+    expect(opened(1)).toEqual(["might", "blade", "fortune", "patience"]);
+    expect(opened(2)).toHaveLength(4);
+    expect(opened(3)).toEqual(["might", "blade", "fortune", "patience", "time", "treasure", "bargain"]);
+    expect(opened(5)).toHaveLength(ALTARS.length);
+    // On the first night, a stone still asleep takes nothing; an open one does.
+    s.lifetime.ascensions = 0;
+    expect(altarPrice(s, "time")).toBe(Number.POSITIVE_INFINITY);
+    expect(engine.buyAltar("time", T0)).toBe(false);
+    expect(engine.buyAltar("harvest", T0)).toBe(false);
+    expect(s.essences).toBe(1_000);
+    expect(engine.buyAltar("might", T0)).toBe(true);
+    // A save from before: its stones stay open and can still be raised, whatever the night.
+    s.altars.time = 2;
+    expect(altarOpen(s, "time")).toBe(true);
+    expect(engine.buyAltar("time", T0)).toBe(true);
+    expect(s.altars.time).toBe(3);
+    expect(verifyState(s, T0).map((violation) => violation.code)).not.toContain("altar");
   });
 
   it("lets the Altar of the Wanderer skip the first stages of a run, never paying them twice", () => {
@@ -983,5 +1007,24 @@ describe("i18n", () => {
     expect(itemName(legacy, "en")).toBe("Lame fine des plaines");
     expect(itemName({ slot: "weapon", rarity: "epic", level: 1, base: 2 }, "en")).toBe("Enchanted Sword of the Plains");
     expect(itemName({ slot: "weapon", rarity: "epic", level: 1, base: 2 }, "fr")).toBe("Épée enchantée des plaines");
+  });
+});
+
+describe("a relic's worth to the company", () => {
+  it("multiplies the DPS affix (forged) by the density, against the empty slot, and leaves gold out", () => {
+    const state = createInitialState(T0);
+    state.maxStageEver = 200;
+    state.heroLevels = { maelle: 10 };
+    const weapon = { uid: "w", slot: "weapon" as const, rarity: "rare" as const, level: 120, base: 0, affixes: [{ stat: "dps" as const, value: 0.5 }, { stat: "gold" as const, value: 0.3 }], forge: 2 };
+    const ring = { uid: "r", slot: "ring" as const, rarity: "common" as const, level: 10, base: 0, affixes: [{ stat: "gold" as const, value: 0.2 }], forge: 0 };
+    // Stage 120 lies two strata below the present night: ×1.03 twice; two forge levels: +20% on the affix.
+    expect(relicCompanyGain(state, weapon, T0)).toBeCloseTo((1 + 0.5 * 1.2) * 1.03 ** 2);
+    expect(relicCompanyGain(state, ring, T0)).toBe(1);
+    // Against the empty slot, whatever is worn there: the score of a relic in the pack does not move when another is worn.
+    state.equipment.weapon = { ...weapon, uid: "worn", forge: 0 };
+    expect(relicCompanyGain(state, weapon, T0)).toBeCloseTo((1 + 0.5 * 1.2) * 1.03 ** 2);
+    // It is what the company deals with it, over what it deals without.
+    const bare = derive({ ...state, equipment: {} }, T0).dps;
+    expect(derive({ ...state, equipment: { weapon } }, T0).dps / bare).toBeCloseTo(relicCompanyGain(state, weapon, T0));
   });
 });

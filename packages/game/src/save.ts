@@ -169,7 +169,8 @@ export const gameStateSchema = z.object({
   descents: count,
   threads: count,
   weaves: idRecord(z.number().int().min(0).max(WEAVE_LEVEL_MAX), 20),
-  descentMark: positive,
+  legacyThreads: count.optional(),
+  legacyHarvest: z.number().int().min(0).max(1_000).optional(),
   caravanWeek: z.string().max(10),
   rngState: z.number().int().min(0).max(0xffffffff)
 });

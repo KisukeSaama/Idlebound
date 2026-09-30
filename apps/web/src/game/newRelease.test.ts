@@ -70,9 +70,10 @@ describe("NewRelease", () => {
     vi.unstubAllGlobals();
   });
 
-  async function playing(user: typeof USER | null = USER) {
+  /** A signed-in game, or with `user` null a guest's: one the server keeps (`kept`), or not yet. */
+  async function playing(user: typeof USER | null = USER, kept = false) {
     if (user) fetchMock.mockResolvedValueOnce(json({ user })).mockResolvedValueOnce(saved());
-    else fetchMock.mockResolvedValueOnce(json({ user: null }));
+    else fetchMock.mockResolvedValueOnce(json({ user: null, guest: kept })).mockResolvedValueOnce(kept ? saved() : json({ save: null }));
     const store = new GameStore(createInitialState());
     const cloud = new CloudSync(store);
     await cloud.init();
@@ -138,7 +139,17 @@ describe("NewRelease", () => {
     expect(reloads).toBe(1);
   });
 
-  it("never reloads a guest's game", async () => {
+  it("moves a guest's game the server keeps, like an account's", async () => {
+    const { cloud } = await playing(null, true);
+    visibility = "hidden";
+    fetchMock.mockResolvedValueOnce(kept("new")).mockResolvedValueOnce(kept("new"));
+    await cloud.sync();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(reloads).toBe(1);
+    expect(puts()).toBe(2);
+  });
+
+  it("never reloads a guest's game the server does not keep yet", async () => {
     await playing(null);
     fetchMock.mockImplementation(async () => json({ board: "stage", rows: [], me: null }, { release: "new" }));
     await api.leaderboard("stage");

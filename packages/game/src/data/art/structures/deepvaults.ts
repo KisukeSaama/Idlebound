@@ -9,104 +9,73 @@ import type { DecorGrid, StructureRecipe } from "../architecture";
  */
 export const DEEPVAULTS_STRUCTURES: Record<string, StructureRecipe> = {
   "vault-headframe": {
-    w: 64,
-    h: 90,
-    fragile: 50,
+    w: 35,
+    h: 50,
+    fragile: 28,
     growth: 0.12,
     seed: 3101,
     pieces: [
       // The back legs, in shade, then the front legs of the frame, meeting under the head.
-      { beam: [16, 90, 27, 10], width: 3, m: "wood", finish: "planks", lift: -0.6 },
-      { beam: [42, 90, 30, 10], width: 3, m: "wood", finish: "planks", lift: -0.6 },
-      { beam: [8, 90, 25, 6], width: 4, m: "wood", finish: "planks" },
-      { beam: [50, 90, 32, 6], width: 4, m: "wood", finish: "planks" },
-      { beam: [13, 62, 45, 62], width: 3, m: "wood" },
-      { beam: [19, 38, 38, 38], width: 3, m: "wood" },
-      { beam: [15, 60, 36, 40], width: 2, m: "wood", lift: -0.3 },
-      { block: [18, 1, 22, 7], m: "wood", finish: "boards" },
-      { decor: "vault-pulley", at: [25, 12] },
+      { beam: [9, 50, 15, 6], width: 2, m: "wood", finish: "planks", lift: -0.6 },
+      { beam: [23, 50, 17, 6], width: 2, m: "wood", finish: "planks", lift: -0.6 },
+      { beam: [4, 50, 14, 3], width: 2, m: "wood", finish: "planks" },
+      { beam: [28, 50, 18, 3], width: 2, m: "wood", finish: "planks" },
+      { beam: [7, 34, 25, 34], width: 2, m: "wood" },
+      { beam: [10, 21, 21, 21], width: 1, m: "wood" },
+      { beam: [8, 33, 20, 22], width: 1, m: "wood", lift: -0.3 },
+      { block: [10, 1, 12, 3], m: "wood", finish: "boards" },
+      { decor: "vault-pulley", at: [13, 9] },
       // The rope down the shaft, a bucket at its end.
-      { beam: [30, 12, 30, 72], width: 1, m: "cloth" },
-      { poly: [25, 72, 35, 72, 34, 80, 26, 80], m: "wood", finish: "planks" },
-      { beam: [25, 75, 35, 75], width: 1, m: "metal" },
+      { beam: [16, 9, 16, 40], width: 1, m: "cloth" },
+      { poly: [14, 40, 19, 40, 19, 44, 14, 44], m: "wood", finish: "planks" },
       // The scaffold beside it, and the winch at its foot.
-      { block: [0, 74, 22, 3], m: "wood", finish: "boards" },
-      { beam: [2, 77, 2, 90], width: 2, m: "wood" },
-      { beam: [20, 77, 20, 90], width: 2, m: "wood" },
-      { beam: [46, 90, 46, 84], width: 2, m: "wood" },
-      { beam: [44, 83, 58, 83], width: 7, m: "wood", finish: "boards" },
-      { beam: [59, 83, 62, 77], width: 1, m: "metal" },
-      { decor: "vault-lantern", at: [8, 72], keep: true }
+      { block: [0, 41, 12, 1], m: "wood", finish: "boards" },
+      { beam: [1, 42, 1, 50], width: 1, m: "wood" },
+      { beam: [11, 42, 11, 50], width: 1, m: "wood" },
+      { beam: [24, 46, 32, 46], width: 4, m: "wood", finish: "boards" },
+      { decor: "vault-lantern", at: [4, 40], keep: true }
     ]
   },
-  // The Runeguild's winding house over the great shaft: a head-frame of heavy timbers,
-  // braced and bolted, its sheave wheel at the top, the cage hanging on the cable down the
-  // shaft, the winch hut beside it with a lit window, a scaffold with a ladder, crates, a
-  // barrel and a coil of rope at its foot, the guild's sign; the miner's lantern still lit.
+  // The Runeguild's winding house over the great shaft, across the vault: a head-frame of
+  // heavy timbers, braced, its sheave wheel at the top, the cable down the shaft, the winch
+  // hut beside it with a lit window, a scaffold; the miner's lantern still lit.
   "vault-winding-house": {
-    w: 88,
-    h: 120,
-    fragile: 60,
+    w: 44,
+    h: 60,
+    fragile: 30,
     growth: 0.34,
     seed: 3107,
     pieces: [
       // The back legs, in shade, then the front legs, meeting under the sheave.
-      { beam: [14, 114, 30, 14], width: 4, taper: 3, m: "wood", finish: "planks", lift: -0.7 },
-      { beam: [52, 114, 36, 14], width: 4, taper: 3, m: "wood", finish: "planks", lift: -0.7 },
-      // Cross braces, back then front.
-      { beam: [17, 96, 49, 96], width: 3, m: "wood", finish: "boards", lift: -0.5 },
-      { beam: [22, 64, 44, 64], width: 3, m: "wood", finish: "boards", lift: -0.5 },
-      { beam: [18, 94, 45, 66], width: 2, m: "wood", lift: -0.6 },
-      { beam: [48, 94, 21, 66], width: 2, m: "wood", lift: -0.6 },
-      { beam: [4, 114, 28, 10], width: 6, taper: 4, m: "wood", finish: "planks" },
-      { beam: [62, 114, 38, 10], width: 6, taper: 4, m: "wood", finish: "planks" },
-      { beam: [8, 92, 58, 92], width: 4, m: "wood", finish: "boards" },
-      { beam: [16, 60, 50, 60], width: 4, m: "wood", finish: "boards" },
-      { beam: [22, 36, 44, 36], width: 3, m: "wood", finish: "boards" },
-      { beam: [10, 90, 48, 62], width: 3, m: "wood", finish: "planks" },
-      { beam: [56, 90, 18, 62], width: 3, m: "wood", finish: "planks" },
-      { beam: [18, 58, 42, 38], width: 2, m: "wood" },
-      // Iron bolts at the joints.
-      { decor: "vault-bolt", at: [8, 93] },
-      { decor: "vault-bolt", at: [57, 93] },
-      { decor: "vault-bolt", at: [16, 61] },
-      { decor: "vault-bolt", at: [49, 61] },
-      // The head: a platform of boards, its rail, the sheave wheel on it.
-      { block: [18, 16, 32, 5], m: "wood", finish: "boards", lift: 0.2 },
-      { beam: [18, 16, 18, 10], width: 1, m: "wood" },
-      { beam: [50, 16, 50, 10], width: 1, m: "wood" },
-      { beam: [18, 11, 50, 11], width: 1, m: "wood" },
-      { decor: "vault-sheave", at: [26, 16] },
-      { decor: "vault-icicles", at: [21, 24] },
-      // The cable down the shaft to the cage, and across to the winch.
-      { beam: [33, 16, 33, 78], width: 1, m: "metal" },
-      { beam: [40, 10, 70, 70], width: 1, m: "metal", lift: -0.3 },
-      { decor: "vault-cage", at: [29, 90] },
+      { beam: [7, 57, 15, 7], width: 2, m: "wood", finish: "planks", lift: -0.7 },
+      { beam: [26, 57, 18, 7], width: 2, m: "wood", finish: "planks", lift: -0.7 },
+      { beam: [2, 57, 14, 5], width: 3, taper: 2, m: "wood", finish: "planks" },
+      { beam: [31, 57, 19, 5], width: 3, taper: 2, m: "wood", finish: "planks" },
+      // Cross braces.
+      { beam: [4, 46, 29, 46], width: 2, m: "wood", finish: "boards" },
+      { beam: [8, 30, 25, 30], width: 2, m: "wood", finish: "boards" },
+      { beam: [11, 18, 22, 18], width: 1, m: "wood" },
+      { beam: [5, 45, 24, 31], width: 1, m: "wood" },
+      { beam: [28, 45, 9, 31], width: 1, m: "wood" },
+      // The head: a platform of boards, the sheave wheel on it.
+      { block: [9, 8, 16, 3], m: "wood", finish: "boards", lift: 0.2 },
+      { decor: "vault-pulley", at: [13, 8] },
+      // The cable down the shaft, and across to the winch.
+      { beam: [17, 8, 17, 44], width: 1, m: "metal" },
+      { beam: [20, 5, 35, 33], width: 1, m: "metal", lift: -0.3 },
       // The winch hut, planked, its roof shingled, a lit window, the door ajar.
-      { block: [58, 74, 28, 40], m: "wood", finish: "planks" },
-      { block: [84, 76, 4, 38], m: "wood", finish: "planks", side: "right" },
-      { roof: [54, 60, 34, 15], m: "roof", style: "gable", finish: "shingle" },
-      { decor: "vault-icicles", at: [60, 77] },
-      { gap: [72, 84, 8, 9], style: "window", lit: true, frame: "wood" },
-      { gap: [61, 92, 9, 22], style: "door", frame: "wood" },
-      { gap: [68, 70, 4, 3], style: "slit" },
-      { decor: "vault-sign", at: [72, 106] },
-      // The collar of the shaft, dressed stone, runes cut in it.
-      { block: [0, 112, 60, 8], m: "stone", finish: "ashlar" },
-      { decor: "vault-runes", at: [6, 118] },
-      { decor: "vault-runes", at: [50, 118] },
-      // A scaffold on the left, its ladder, the lantern hung from it.
-      { block: [0, 72, 18, 3], m: "wood", finish: "boards" },
-      { beam: [1, 75, 1, 112], width: 2, m: "wood" },
-      { beam: [16, 75, 16, 112], width: 2, m: "wood" },
-      { decor: "vault-ladder", at: [7, 111] },
-      { decor: "vault-lantern", at: [3, 84], keep: true },
-      // Crates, a barrel, a coil of rope.
-      { block: [22, 102, 12, 10], m: "wood", finish: "planks" },
-      { beam: [22, 102, 34, 112], width: 1, m: "wood", lift: 0.4 },
-      { block: [34, 106, 9, 6], m: "wood", finish: "boards", lift: -0.2 },
-      { decor: "vault-barrel", at: [44, 111] },
-      { decor: "vault-coil", at: [13, 111] }
+      { block: [29, 37, 14, 20], m: "wood", finish: "planks" },
+      { block: [42, 38, 2, 19], m: "wood", finish: "planks", side: "right" },
+      { roof: [27, 30, 17, 8], m: "roof", style: "gable", finish: "shingle" },
+      { gap: [36, 42, 4, 5], style: "window", lit: true, frame: "wood" },
+      { gap: [31, 46, 4, 11], style: "door", frame: "wood" },
+      // The collar of the shaft, dressed stone.
+      { block: [0, 56, 30, 4], m: "stone", finish: "ashlar" },
+      // A scaffold on the left, the lantern hung from it.
+      { block: [0, 36, 9, 2], m: "wood", finish: "boards" },
+      { beam: [1, 38, 1, 56], width: 1, m: "wood" },
+      { beam: [8, 38, 8, 56], width: 1, m: "wood" },
+      { decor: "vault-lantern", at: [2, 46], keep: true }
     ]
   },
   // A scaffold tower seen across the vault, platforms and a ladder.
@@ -269,56 +238,10 @@ export const DEEPVAULTS_DECOR: Record<string, DecorGrid> = {
     rows: [".###.", "#mMm#", ".###."],
     legend: { "#": "outline", m: ["metal", 2], M: ["metal", 3] }
   },
-  // The sheave wheel at the top of the head-frame: rim, eight spokes, the hub.
-  "vault-sheave": {
-    rows: [
-      ".....#####.....",
-      "...##MmmmM##...",
-      "..#Mm..m..mM#..",
-      ".#M.m..m..m.M#.",
-      ".#m..m.m.m..m#.",
-      "#M....mmm....M#",
-      "#m....mhm....m#",
-      "#mmmmmhHhmmmmm#",
-      "#m....mhm....m#",
-      "#M....mmm....M#",
-      ".#m..m.m.m..m#.",
-      ".#M.m..m..m.M#.",
-      "..#Mm..m..mM#..",
-      "...##MmmmM##...",
-      ".....#####....."
-    ],
-    legend: { "#": "outline", M: ["metal", 1], m: ["metal", 2], h: ["metal", 3], H: ["metal", 0] }
-  },
-  // An iron bolt plate at a joint of the timbers.
-  "vault-bolt": {
-    rows: ["#m#", "mhm", "#m#"],
-    legend: { "#": "outline", m: ["metal", 1], h: ["metal", 3] }
-  },
-  // The cage on its cable, iron bars, a floor of boards.
-  "vault-cage": {
-    rows: ["....#....", "..#####..", ".#mhmhm#.", ".#m.m.m#.", ".#m.m.m#.", ".#m.m.m#.", ".#m.m.m#.", ".#mmmmm#.", ".#wWwWw#.", "..#####.."],
-    legend: { "#": "outline", m: ["metal", 1], h: ["metal", 3], w: ["wood", 2], W: ["wood", 1] }
-  },
   // A ladder of rough rungs.
   "vault-ladder": {
     rows: Array.from({ length: 38 }, (_, row) => (row % 3 === 0 ? "WwwwW" : "W...W")),
     legend: { W: ["wood", 1], w: ["wood", 2] }
-  },
-  // A barrel hooped in iron.
-  "vault-barrel": {
-    rows: ["..###..", ".#mhm#.", "#wWwWw#", "#mmhmm#", "#wWwWw#", "#WwWwW#", "#mmhmm#", "#wWwWw#", ".#####."],
-    legend: { "#": "outline", m: ["metal", 1], h: ["metal", 3], w: ["wood", 2], W: ["wood", 1] }
-  },
-  // A coil of rope on the ground.
-  "vault-coil": {
-    rows: [".#ccc#.", "#cCcCc#", "#CcCcC#", ".#####."],
-    legend: { "#": "outline", c: ["cloth", 2], C: ["cloth", 1] }
-  },
-  // The Runeguild's sign on its chains, the guild's rune still lit.
-  "vault-sign": {
-    rows: ["m.......m", "m.......m", "#########", "#wWwWwWw#", "#W*w*w*W#", "#wW*W*Ww#", "#########"],
-    legend: { "#": "outline", m: ["metal", 2], w: ["wood", 2], W: ["wood", 1], "*": "glow" }
   },
   "vault-glint": {
     rows: ["*", "*"],

@@ -49,7 +49,17 @@ function walker(): GameState {
   state.stage = 60;
   state.ascensions = [{ at: T0 + 3600_000, maxStage: 60, essences: 100 }];
   state.equipment.weapon = generateItem(seededRng(7), 300, { slot: "weapon", rarity: "epic" });
+  // Everyone half remembers this walker: each may ask for their word.
+  state.recognition = everyone(HALF);
   return state;
+}
+
+/** Runs of Recognition the walker of these tests has with everyone: half remembered. */
+const HALF = RECOGNITION_TIERS[1];
+
+/** Every companion at so many runs of Recognition. */
+function everyone(runs: number): Record<string, number> {
+  return Object.fromEntries(RECOGNITION_HEROES.map((hero) => [hero, runs]));
 }
 
 function engineWith(state: GameState, rng: Rng = seededRng(1), now = NOW) {
@@ -132,6 +142,7 @@ describe("the Promise: what each companion asks", () => {
     expect(promiseAskable(state, "brom")).toBe(false);
     // Brother Cinder asks to walk without Ashka: not before she has been met.
     state.lifetime.bestHired = 8;
+    state.recognition = { maelle: HALF, cendre: HALF };
     expect(promiseAskable(state, "cendre")).toBe(false);
     expect(promiseAskable(state, "maelle")).toBe(true);
     expect(promiseAskable(state, "eldra")).toBe(false);
@@ -139,10 +150,25 @@ describe("the Promise: what each companion asks", () => {
 });
 
 describe("the Promise: a word given at dusk", () => {
-  it("opens with the second night, and is given at once only while the night is still at its dusk", () => {
+  it("opens once a companion half remembers the walker, and is given at once only while the night is still at its dusk", () => {
     const fresh = engineWith(createInitialState(T0), seededRng(1), T0);
     expect(promisesOpen(fresh.state)).toBe(false);
     expect(fresh.pledge("maelle", T0)).toBe(false);
+    // Nights walked are not enough: only who half remembers the walker asks for their word.
+    const stranger = walker();
+    stranger.recognition = { maelle: HALF - 1, brom: HALF };
+    expect(promisesOpen(stranger)).toBe(true);
+    expect(promiseAskable(stranger, "maelle")).toBe(false);
+    expect(promiseAskable(stranger, "brom")).toBe(true);
+    expect(engineWith(stranger).pledge("maelle", NOW)).toBe(false);
+    stranger.recognition = { maelle: HALF - 1 };
+    expect(promisesOpen(stranger)).toBe(false);
+    // And the Ledger refuses a word given to someone who does not remember them.
+    const forged = walker();
+    forged.recognition.maelle = HALF - 1;
+    forged.maxStage = forged.stage = 1;
+    forged.trail.promise = { hero: "maelle", kings: 0 };
+    expect(codes(forged)).toContain("promise");
 
     // A night under way: the word waits for the next dusk.
     const engine = engineWith(walker());
@@ -201,10 +227,10 @@ describe("the Promise: a word given at dusk", () => {
     engine.ascend(now);
     expect(promisesKept(s, "ysolde")).toBe(1);
     // Twice for the one whose word was kept, who reached level 100 too; once for the others who did.
-    expect(recognitionRuns(s, "ysolde")).toBe(2);
+    expect(recognitionRuns(s, "ysolde")).toBe(HALF + 2);
     expect(s.lastPromise).toBe("ysolde");
-    expect(recognitionRuns(s, "maelle")).toBe(1);
-    expect(recognitionRuns(s, "brom")).toBe(1);
+    expect(recognitionRuns(s, "maelle")).toBe(HALF + 1);
+    expect(recognitionRuns(s, "brom")).toBe(HALF + 1);
     const told = engine.drainEvents();
     expect(told).toContainEqual({ type: "promise", heroId: "ysolde", outcome: "kept" });
     expect(told).toContainEqual({ type: "fragment", entry: { source: "promise", hero: "ysolde" } });
@@ -236,8 +262,8 @@ describe("the Promise: a word given at dusk", () => {
     engine.tick(now);
     engine.ascend(now);
     expect(promisesKept(s, "ysolde")).toBe(1);
-    expect(recognitionRuns(s, "ysolde")).toBe(1);
-    expect(recognitionRuns(s, "maelle")).toBe(1);
+    expect(recognitionRuns(s, "ysolde")).toBe(HALF + 1);
+    expect(recognitionRuns(s, "maelle")).toBe(HALF + 1);
     // The dusk after her night: she does not ask for tonight (at the next dusk she may), the others do.
     expect(s.lastPromise).toBe("ysolde");
     expect(promiseWhen(s, "ysolde")).toBe("next");
@@ -343,8 +369,8 @@ describe("the Promise: a word given at dusk", () => {
     expect(told.filter((event) => event.type === "promise")).toEqual([]);
     expect(told.some((event) => event.type === "fragment" && event.entry.source === "promise")).toBe(false);
     expect(promisesKept(s, "cendre")).toBe(0);
-    expect(recognitionRuns(s, "cendre")).toBe(0);
-    expect(recognitionRuns(s, "maelle")).toBe(1);
+    expect(recognitionRuns(s, "cendre")).toBe(HALF);
+    expect(recognitionRuns(s, "maelle")).toBe(HALF + 1);
 
     // A dusk called before the King fell breaks the word, there and then.
     const early = duskWith("nyx");
@@ -631,7 +657,7 @@ describe("the Promise: without the walker", () => {
       const reached = (s.heroLevels[hero] ?? 0) >= 100;
       engine.ascend(now);
       expect(promisesKept(s, hero), hero).toBe(1);
-      expect(recognitionRuns(s, hero), hero).toBe(reached ? 2 : 1);
+      expect(recognitionRuns(s, hero), hero).toBe(HALF + (reached ? 2 : 1));
       expect(verifyState(s, now), hero).toEqual([]);
     }
   }, 120_000);
@@ -670,7 +696,7 @@ describe("the Promise: without the walker", () => {
 
   it("gives the word again after a Descent begun at the same dusk", () => {
     const state = walker();
-    state.recognition = { eldra: RECOGNITION_TIERS[4] };
+    state.recognition.eldra = RECOGNITION_TIERS[4];
     state.promises = { eldra: 2 };
     state.lifetime.ascensionEssences = 1e9;
     const engine = duskWith("mirelle", state);
@@ -807,7 +833,7 @@ describe("the Promise: what the Ledger refuses", () => {
     kept.promises = { cendre: 1 };
     expect(verifyTransition(previous, kept, 60_000).map((violation) => violation.code)).toContain("promise");
     const remembered = structuredClone(previous);
-    remembered.recognition = { cendre: 2 };
+    remembered.recognition.cendre = HALF + 2;
     expect(verifyTransition(previous, remembered, 60_000).map((violation) => violation.code)).toContain("recognition");
     const forgotten = structuredClone(previous);
     forgotten.promises = { cendre: 1 };
@@ -837,7 +863,6 @@ describe("save version 10", () => {
     delete legacy.remembered;
     const migrated = parseState(legacy);
     expect(migrated.version).toBe(SAVE_VERSION);
-    expect(SAVE_VERSION).toBe(10);
     expect(migrated.promises).toEqual({});
     expect(migrated.remembered).toEqual({});
     expect(verifyState(migrated, now)).toEqual([]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { ALTAR_REWORK_NOTICE, CLICK_HERO_ID, HERO_BY_ID, heroCost, isBossStage, SKILLS, isSkillUnlocked } from "@idlebound/game";
+import { ALTAR_REWORK_NOTICE, CLICK_HERO_ID, HARVEST_NOTICE, HARVEST_NOTICE_TOLD, HERO_BY_ID, heroCost, isBossStage, SKILLS, isSkillUnlocked } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
 
@@ -25,6 +25,10 @@ export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
   function pickHint(): Hint | null {
     if (!done.includes(ALTAR_REWORK_NOTICE) && state.lifetime.ascensions > 0) {
       return { id: ALTAR_REWORK_NOTICE, text: m.altarRework, position: "center" };
+    }
+    // The Harvest's cap (save version 11) gave levels back to this walker: said once.
+    if (done.includes(HARVEST_NOTICE) && !done.includes(HARVEST_NOTICE_TOLD)) {
+      return { id: HARVEST_NOTICE_TOLD, text: m.harvestCap, position: "center" };
     }
     if (state.lifetime.ascensions > 0 || done.includes("all")) return null;
     const aldric = state.heroLevels[CLICK_HERO_ID] ?? 0;

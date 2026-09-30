@@ -8,72 +8,48 @@ import type { DecorGrid, StructureRecipe } from "../architecture";
  * its end; lantern posts along the drowned road, still lit for no one.
  */
 export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
-  // Mirelle's house on its stilts, the one place of the Mire still lived in: leaning walls
-  // of planks on a timber frame, a thatch sagging and patched, a crooked stovepipe, the
-  // window lit behind her bottles and the herbs drying above it, a cauldron on the porch,
-  // nets on a pole, a boat moored at the ladder's foot.
+  // Mirelle's house on its stilts, the one place of the Mire still lived in, seen across
+  // the water: leaning walls of planks on a timber frame, a thatch sagging and patched, a
+  // crooked stovepipe, her window lit, a lantern on the porch.
   "mire-alchemist": {
-    w: 84,
-    h: 122,
-    fragile: 44,
+    w: 42,
+    h: 61,
+    fragile: 22,
     growth: 0.55,
     seed: 4105,
     pieces: [
       // Stilts, leaning, braced.
-      { beam: [10, 76, 7, 122], width: 4, m: "wood", finish: "bark" },
-      { beam: [26, 77, 25, 122], width: 4, m: "wood", finish: "bark", lift: -0.3 },
-      { beam: [44, 77, 46, 122], width: 4, m: "wood", finish: "bark" },
-      { beam: [62, 76, 66, 121], width: 4, m: "wood", finish: "bark", lift: -0.3 },
-      { beam: [78, 75, 81, 120], width: 3, m: "wood", finish: "bark" },
-      { beam: [9, 84, 27, 108], width: 2, m: "wood", lift: -0.4 },
-      { beam: [45, 84, 64, 106], width: 2, m: "wood", lift: -0.4 },
-      { beam: [64, 84, 46, 110], width: 2, m: "wood", lift: -0.6 },
+      { beam: [5, 38, 4, 61], width: 2, m: "wood", finish: "bark" },
+      { beam: [13, 39, 13, 61], width: 2, m: "wood", finish: "bark", lift: -0.3 },
+      { beam: [22, 39, 23, 61], width: 2, m: "wood", finish: "bark" },
+      { beam: [31, 38, 33, 61], width: 2, m: "wood", finish: "bark", lift: -0.3 },
+      { beam: [39, 38, 41, 60], width: 2, m: "wood", finish: "bark" },
+      { beam: [5, 42, 14, 54], width: 1, m: "wood", lift: -0.4 },
+      { beam: [32, 42, 23, 55], width: 1, m: "wood", lift: -0.6 },
       // The platform and its porch.
-      { poly: [2, 74, 84, 71, 84, 78, 2, 81], m: "wood", finish: "boards" },
-      { poly: [2, 80, 84, 77, 84, 79, 2, 82], m: "wood", lift: -0.6 },
+      { poly: [1, 37, 42, 36, 42, 39, 1, 41], m: "wood", finish: "boards" },
       // The walls, leaning to the left a little: the front, and the side turned away.
-      { poly: [8, 36, 54, 32, 56, 74, 10, 76], m: "wood", finish: "planks" },
-      { poly: [54, 32, 70, 36, 70, 72, 56, 74], m: "wood", finish: "planks", side: "right" },
-      // The timber frame over the planks.
-      { beam: [9, 38, 10, 75], width: 3, m: "wood", lift: 0.3 },
-      { beam: [54, 33, 55, 74], width: 3, m: "wood", lift: 0.3 },
-      { beam: [9, 56, 55, 53], width: 2, m: "wood", lift: 0.2 },
-      { beam: [69, 37, 70, 72], width: 2, m: "wood" },
+      { poly: [4, 18, 27, 16, 28, 37, 5, 38], m: "wood", finish: "planks" },
+      { poly: [27, 16, 35, 18, 35, 36, 28, 37], m: "wood", finish: "planks", side: "right" },
+      { beam: [5, 19, 5, 38], width: 1, m: "wood", lift: 0.3 },
+      { beam: [27, 17, 28, 37], width: 1, m: "wood", lift: 0.3 },
       // The damp climbing the planks from the water.
-      { poly: [10, 64, 55, 61, 56, 74, 10, 76], m: "wood", finish: "planks", lift: -0.45 },
-      { poly: [56, 62, 70, 64, 70, 72, 56, 74], m: "wood", finish: "planks", side: "right", lift: -0.45 },
-      // The thatch, sagging in the middle, two patches of boards nailed over holes.
-      { roof: [-1, 6, 78, 32], m: "roof", style: "gable", finish: "thatch" },
-      { beam: [4, 37, 37, 7], width: 2, m: "roof", lift: 0.5 },
-      { cut: [30, 6, 38, 11, 46, 6, 40, 3, 36, 3] },
-      { poly: [14, 28, 25, 26, 26, 32, 15, 34], m: "wood", finish: "boards", lift: -0.2 },
-      { poly: [50, 20, 58, 22, 57, 27, 49, 26], m: "wood", finish: "boards", lift: -0.3 },
-      // The crooked stovepipe, and its cap.
-      { beam: [60, 24, 61, 8], width: 3, m: "metal" },
-      { beam: [61, 8, 65, 2], width: 3, m: "metal" },
-      { block: [63, 0, 5, 2], m: "metal", lift: 0.4 },
-      // The door, the window and its shutters, one hanging from a hinge.
-      { gap: [16, 55, 11, 20], style: "door", frame: "wood" },
-      { gap: [32, 42, 12, 10], style: "window", lit: true, frame: "wood" },
-      { block: [27, 41, 5, 12], m: "wood", finish: "planks", lift: 0.2 },
-      { poly: [45, 43, 50, 45, 49, 56, 44, 53], m: "wood", finish: "planks", lift: -0.1 },
-      { gap: [60, 46, 3, 7], style: "slit" },
-      { decor: "mire-herbs", at: [31, 41] },
-      { decor: "mire-crow", at: [35, 5] },
-      { decor: "mire-bottles-row", at: [32, 53] },
-      // The porch: a rail, a lantern, the cauldron, the nets on their pole.
-      { beam: [70, 72, 70, 60], width: 2, m: "wood" },
-      { beam: [70, 61, 84, 60], width: 2, m: "wood" },
-      { beam: [83, 71, 83, 60], width: 2, m: "wood" },
-      { decor: "lantern", at: [75, 70], keep: true },
-      { decor: "mire-cauldron", at: [58, 72] },
-      { beam: [3, 76, 1, 40], width: 2, m: "wood" },
-      { decor: "mire-net", at: [0, 66] },
-      // Down to the water: the ladder, the boat moored at its foot, reeds.
-      { decor: "mire-ladder", at: [30, 101] },
-      { decor: "mire-skiff", at: [22, 121], keep: true },
-      { decor: "mire-reeds", at: [66, 121] },
-      { decor: "mire-reeds", at: [0, 121], flip: true }
+      { poly: [5, 32, 28, 31, 28, 37, 5, 38], m: "wood", finish: "planks", lift: -0.45 },
+      // The thatch, sagging in the middle, a patch of boards nailed over a hole.
+      { roof: [0, 3, 39, 16], m: "roof", style: "gable", finish: "thatch" },
+      { cut: [15, 3, 19, 6, 23, 3, 20, 2, 18, 2] },
+      { poly: [7, 14, 13, 13, 13, 16, 8, 17], m: "wood", finish: "boards", lift: -0.2 },
+      // The crooked stovepipe.
+      { beam: [30, 12, 31, 4], width: 2, m: "metal" },
+      { beam: [31, 4, 33, 1], width: 2, m: "metal" },
+      // The door, the window and its shutter.
+      { gap: [8, 28, 6, 10], style: "door", frame: "wood" },
+      { gap: [16, 21, 6, 5], style: "window", lit: true, frame: "wood" },
+      { block: [14, 21, 2, 6], m: "wood", finish: "planks", lift: 0.2 },
+      // The porch: a rail, and the lantern.
+      { beam: [35, 31, 42, 30], width: 1, m: "wood" },
+      { beam: [42, 36, 42, 30], width: 1, m: "wood" },
+      { decor: "lantern", at: [37, 38], keep: true }
     ]
   },
   // Middle distance: a cottage drowned to its eaves, its chimney still standing.
@@ -191,46 +167,10 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
 };
 
 export const MIRE_DECOR: Record<string, DecorGrid> = {
-  // Herbs hung to dry over the window: bundles, heads down.
-  "mire-herbs": {
-    rows: ["#############", ".h..g..h..g..", ".h..g..h..g..", "hgh.ggghgh.gg", "ggg.hgh.gg.hg", ".g..hg..g..g.", ".g...g..h....", "......g......"],
-    legend: { "#": ["wood", 1], h: ["wood", 3], g: ["cloth", 2] }
-  },
-  // A row of bottles on the sill, black against the light, one glowing.
-  "mire-bottles-row": {
-    rows: [".#...#..*...#.", ".#..###.*..###", "###.#b#*c*.#b#", "#b#.#b#***.#b#", "##############"],
-    legend: { "#": "outline", b: ["metal", 1], "*": "glow", c: "core" }
-  },
-  // The cauldron on the porch, still simmering.
-  "mire-cauldron": {
-    rows: ["...*.*..", "..*.c.*.", "#******#", "#mmmmmm#", ".#mMMm#.", ".#mmmm#.", "..#..#.."],
-    legend: { "#": "outline", m: ["metal", 1], M: ["metal", 2], "*": "glow", c: "core" },
-    frames: [[], [{ x: 2, y: 0, rows: ["*...*", ".c.*."] }], [{ x: 3, y: 0, rows: ["*..", "..c"] }], [{ x: 2, y: 0, rows: [".*.*.", "*.c.."] }]]
-  },
-  // Nets hung on a pole to dry, their floats.
-  "mire-net": {
-    rows: ["#k#k#k#", "k.k.k.k", "#k#k#k#", "k.k.k.k", "#k#k#k#", "k.k.k.k", "#k#k#k#", ".k.k.k.", "..f.f..", ".k...k.", "k.....k"],
-    legend: { "#": ["cloth", 0], k: ["cloth", 2], f: ["wood", 3] }
-  },
   // The ladder from the porch down into the water.
   "mire-ladder": {
     rows: ["w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "w..w", "w..w"],
     legend: { w: ["wood", 1], W: ["wood", 2] }
-  },
-  // Her skiff, tied to the ladder, an oar across it.
-  "mire-skiff": {
-    rows: ["#..................##", "#w#..............#ww#", ".#wwwww.....wwwwwwW#.", "..#wwWWWWWWWWWWWWww#.", "...#WWWWWWWWWWWWWW#..", "....###############..", "..oooooooooooo......."],
-    legend: { "#": "outline", w: ["wood", 3], W: ["wood", 1], o: ["wood", 2] }
-  },
-  // A crow on the ridge, watching the road, one eye catching the light.
-  "mire-crow": {
-    rows: ["...##..", "..#e##.", ".####..", "#####..", ".###...", "..#.#.."],
-    legend: { "#": "outline", e: "glow" }
-  },
-  // Reeds at the foot of the stilts.
-  "mire-reeds": {
-    rows: [".c.....c..", ".c.r...c..", "r..r.r.r.r", "r.r..r.r.r", ".rr.r..rr.", "..r.rr.r..", "..rrr.rr.."],
-    legend: { r: ["cloth", 1], c: ["wood", 1] }
   },
   // Mirelle's bottles on the sill, black against the window, one still glowing.
   "mire-bottles": {

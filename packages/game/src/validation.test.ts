@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
 import { GameEngine } from "./engine";
+import { ALTAR_BY_ID, altarTotalCost, legacyHarvestCost, legacyHarvestPrice } from "./data/altars";
 import { relicDensity } from "./data/items";
-import { WAGER_MAX_GOLD, crystalEssenceReward, derive, stageGold } from "./formulas";
+import { WAGER_MAX_GOLD, crystalEssenceReward, derive, essencesForStage, stageGold } from "./formulas";
 import { generateItem } from "./loot";
 import { seededRng } from "./rng";
 import { parseState } from "./save";
-import { SAVE_VERSION, createInitialState } from "./state";
+import { HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 import type { GameState } from "./types";
 import { verifyNewLineage, verifySaveVersion, verifyState, verifyTransition } from "./validation";
 
@@ -294,5 +295,126 @@ describe("save version 9", () => {
     // Its crystals explain a few essences; its ascensions, the rest.
     expect(migrated.lifetime.ascensionEssences).toBe(1e9);
     expect(verifyState(migrated, LATER)).toEqual([]);
+  });
+});
+
+describe("the Altar of the Harvest, capped and dearer at save version 11", () => {
+  const cap = ALTAR_BY_ID.harvest.maxLevel;
+  const capped = (1 + cap * ALTAR_BY_ID.harvest.valuePerLevel) * 2;
+
+  /** A veteran of version 10 who raised the uncapped Harvest to level 40. */
+  function harvester(): GameState {
+    const state = veteran();
+    state.version = 10;
+    state.altars = { harvest: 40, might: 5 };
+    // Its last nights were multiplied by that Harvest (×5), more than the cap allows today.
+    state.ascensions = state.ascensions.map((record) => ({ ...record, maxStage: 140, essences: 100_000 }));
+    state.essences = state.lifetime.essencesEarned - Math.ceil(legacyHarvestCost(40) + altarTotalCost("might", 5)) - 1_000;
+    return state;
+  }
+
+  it("gives an older save every level back as essences, once, and the Ledger accepts it", () => {
+    const legacy = harvester();
+    expect(legacy.ascensions[0].essences).toBeGreaterThan(essencesForStage(139) * capped);
+    let paid = 0;
+    for (let level = 0; level < 40; level += 1) paid += legacyHarvestPrice(level);
+    const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(migrated.altars).toEqual({ might: 5 });
+    expect(migrated.essences).toBe(legacy.essences + paid);
+    expect(migrated.legacyHarvest).toBeGreaterThanOrEqual(40);
+    expect(migrated.tutorial.done).toContain(HARVEST_NOTICE);
+    expect(verifyState(migrated, LATER)).toEqual([]);
+    // Loaded again, nothing more comes back; the walker raises it again at today's price, up to the cap, plays on and saves.
+    const again = parseState(JSON.parse(JSON.stringify(migrated)));
+    expect(again.essences).toBe(migrated.essences);
+    const engine = new GameEngine(structuredClone(again), seededRng(5), LATER);
+    for (let level = 0; level < cap; level += 1) expect(engine.buyAltar("harvest", LATER)).toBe(true);
+    expect(engine.buyAltar("harvest", LATER)).toBe(false);
+    expect(again.essences - engine.state.essences).toBeGreaterThanOrEqual(altarTotalCost("harvest", cap));
+    const now = run(engine, LATER, 60);
+    expect(verifyState(engine.state, now)).toEqual([]);
+    expect(verifyTransition(again, engine.state, now - LATER)).toEqual([]);
+  });
+
+  it("refunds a few levels too, and tells nothing to a save that never raised it", () => {
+    const modest = veteran();
+    modest.version = 10;
+    modest.altars = { harvest: 3 };
+    modest.essences -= 5 + 7 + 9;
+    const migrated = parseState(JSON.parse(JSON.stringify(modest)));
+    expect(migrated.altars).toEqual({});
+    expect(migrated.essences).toBe(modest.essences + 5 + 7 + 9);
+    expect(migrated.tutorial.done).toContain(HARVEST_NOTICE);
+    expect(verifyState(migrated, LATER)).toEqual([]);
+    const never = veteran();
+    never.version = 10;
+    expect(parseState(JSON.parse(JSON.stringify(never))).tutorial.done).not.toContain(HARVEST_NOTICE);
+    expect(createInitialState(T0).tutorial.done).not.toContain(HARVEST_NOTICE);
+  });
+
+  it("rejects a Harvest above its cap, a forged Harvest of old, and a night richer than the cap pays", () => {
+    const above = veteran();
+    above.altars = { harvest: cap + 1 };
+    above.essences -= Math.ceil(altarTotalCost("harvest", cap + 1)) + 1;
+    expect(codes(verifyState(above, LATER))).toContain("altar");
+
+    // A Harvest of old higher than every essence gathered could have raised.
+    const forged = veteran();
+    forged.legacyHarvest = 500;
+    expect(codes(verifyState(forged, LATER))).toContain("altar");
+
+    // Without it, a night of the history cannot hold what only the uncapped Harvest paid.
+    const rich = veteran();
+    rich.ascensions = rich.ascensions.map((record) => ({ ...record, maxStage: 140, essences: 100_000 }));
+    expect(codes(verifyState(rich, LATER))).toContain("ascension");
+
+    // Between two saves, an older walker's new nights are paid under the cap, and the mark stays.
+    const previous = parseState(JSON.parse(JSON.stringify(harvester())));
+    const night = maxStageEssences(previous) * capped;
+    const honest = structuredClone(previous);
+    honest.lifetime.ascensions += 1;
+    honest.lifetime.ascensionEssences += night;
+    honest.lifetime.essencesEarned += night;
+    expect(verifyTransition(previous, honest, 60_000)).toEqual([]);
+    const generous = structuredClone(previous);
+    generous.lifetime.ascensions += 1;
+    generous.lifetime.ascensionEssences += night * 2;
+    generous.lifetime.essencesEarned += night * 2;
+    expect(codes(verifyTransition(previous, generous, 60_000))).toContain("essence-source");
+    const remarked = structuredClone(previous);
+    remarked.legacyHarvest = (previous.legacyHarvest ?? 0) + 1;
+    expect(codes(verifyTransition(previous, remarked, 60_000))).toContain("altar");
+  });
+});
+
+/** Essences the deepest stage of a walker pays, before any multiplier. */
+function maxStageEssences(state: GameState): number {
+  return essencesForStage(state.maxStageEver - 1);
+}
+
+describe("the Sanctum wakes in three times", () => {
+  it("rejects an altar first raised before its night, and accepts one raised before the rule", () => {
+    const previous = veteran();
+    previous.lifetime.ascensions = 1;
+    previous.ascensions = previous.ascensions.slice(0, 1);
+    previous.altars = { time: 2 };
+    previous.essences -= 100;
+    // The Altar of Time answers from the third night: raised on the second, it is refused.
+    const early = structuredClone(previous);
+    early.altars = { time: 2, harvest: 1 };
+    early.essences -= 5;
+    expect(codes(verifyTransition(previous, early, 60_000))).toContain("altar");
+    // A stone raised before the rule stays open, and an open one may be raised.
+    const honest = structuredClone(previous);
+    honest.altars = { time: 3, might: 1 };
+    honest.essences -= 6;
+    expect(verifyTransition(previous, honest, 60_000)).toEqual([]);
+    // On its night, the stone answers.
+    const later = structuredClone(previous);
+    later.lifetime.ascensions = ALTAR_BY_ID.harvest.night - 1;
+    later.altars = { time: 2, harvest: 1 };
+    later.essences -= 5;
+    expect(codes(verifyTransition(previous, later, 3_600_000))).not.toContain("altar");
   });
 });

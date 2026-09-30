@@ -28,8 +28,7 @@ export const hud = defineMessages({
       clickTitle: "Dégâts par frappe",
       clickLabel: "Frappe",
       essencesTitle: "Essences : +10 % de DPS chacune tant qu'elles ne sont pas dépensées",
-      shardsTitle: "Éclats : à dépenser au marché",
-      notSaved: "Non conservé"
+      shardsTitle: "Éclats : à dépenser au marché"
     },
     nav: {
       label: "Menus du jeu",
@@ -77,8 +76,7 @@ export const hud = defineMessages({
       ritual: (pct: Count) => `Rituel : +${pct} % DPS`,
       ritualShort: (pct: Count) => `+${pct} %`,
       patience: (pct: Count) => `Patience : DPS +${pct} %`,
-      patienceShort: (pct: Count) => `+${pct} %`,
-      patienceTaken: (full: Count, taken: Count) => `Tes frappes remplacent ${taken} % du bonus de Patience (DPS +${full} %)`
+      patienceShort: (pct: Count) => `+${pct} %`
     },
     skills: {
       label: "Pouvoirs",
@@ -119,7 +117,7 @@ export const hud = defineMessages({
       globalDps: (pct: Count) => `DPS de tous les compagnons +${pct} %`,
       click: (mult: Count) => `Dégâts de frappe ×${mult}`,
       clickDps: (pct: Count) => `Chaque frappe inflige aussi ${pct} % de tes DPS`,
-      idleDps: (pct: Count) => `Bonus de Patience : DPS +${pct} % (tes frappes le remplacent, coup pour coup)`,
+      idleDps: (pct: Count) => `Bonus de Patience : tes compagnons frappent +${pct} % plus fort`,
       critChance: (pct: Count) => `+${pct} % de chances de critique`,
       critDamage: (add: Count) => `Multiplicateur des critiques +${add} (×10 de base)`,
       gold: (pct: Count) => `Or gagné +${pct} %`,
@@ -143,7 +141,8 @@ export const hud = defineMessages({
       skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou sur son bouton en bas.`,
       farm: "Tu restes sur l'étape précédente. Renforce-toi, puis reprends la route (bouton Rester → Auto).",
       ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu pour rejoindre le Sanctuaire du Crépuscule.",
-      altarRework: "Les autels ont été refondus : chaque niveau des autels illimités multiplie désormais son effet, et le voyageur fait sauter les premières étapes. Tous tes niveaux t'ont été rendus en essences : choisis de nouveau tes autels dans la fenêtre d'ascension."
+      altarRework: "Les autels ont été refondus : chaque niveau des autels illimités multiplie désormais son effet, et le voyageur fait sauter les premières étapes. Tous tes niveaux t'ont été rendus en essences : choisis de nouveau tes autels dans la fenêtre d'ascension.",
+      harvestCap: "L'autel de la récolte a changé : il s'arrête au niveau 5 et demande davantage. Tous ses niveaux t'ont été rendus en essences."
     },
     fx: {
       crit: "CRITIQUE",
@@ -198,7 +197,16 @@ export const hud = defineMessages({
       takeAccount: "Reprendre la partie du compte",
       weakerTitle: "Effacer la partie du compte ?",
       weakerText: (stage: Count, ascensions: number, time: string) =>
-        `La partie du compte va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`
+        `La partie du compte va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`,
+      /** A guest's game, carried on from another page of the same browser. */
+      guest: {
+        text: "Une autre page a continué ta partie pendant que tu jouais ici. Laquelle veux-tu garder ? L'autre sera définitivement perdue.",
+        kept: "Partie gardée",
+        takeKept: "Reprendre la partie gardée",
+        weakerTitle: "Effacer la partie gardée ?",
+        weakerText: (stage: Count, ascensions: number, time: string) =>
+          `La partie gardée va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`
+      }
     },
     ledgerAway: {
       title: "Le Grand Livre ne répond pas",
@@ -276,8 +284,7 @@ export const hud = defineMessages({
       clickTitle: "Damage per strike",
       clickLabel: "Strike",
       essencesTitle: "Essences: +10% DPS each as long as they are not spent",
-      shardsTitle: "Shards: spend them at the market",
-      notSaved: "Not kept"
+      shardsTitle: "Shards: spend them at the market"
     },
     nav: {
       label: "Game menus",
@@ -325,8 +332,7 @@ export const hud = defineMessages({
       ritual: (pct: Count) => `Ritual: +${pct}% DPS`,
       ritualShort: (pct: Count) => `+${pct}%`,
       patience: (pct: Count) => `Patience: DPS +${pct}%`,
-      patienceShort: (pct: Count) => `+${pct}%`,
-      patienceTaken: (full: Count, taken: Count) => `Your strikes stand in for ${taken}% of the Patience bonus (DPS +${full}%)`
+      patienceShort: (pct: Count) => `+${pct}%`
     },
     skills: {
       label: "Powers",
@@ -367,7 +373,7 @@ export const hud = defineMessages({
       globalDps: (pct: Count) => `All companions' DPS +${pct}%`,
       click: (mult: Count) => `Strike damage ×${mult}`,
       clickDps: (pct: Count) => `Each strike also deals ${pct}% of your DPS`,
-      idleDps: (pct: Count) => `Patience bonus: DPS +${pct}% (your strikes stand in for it, blow for blow)`,
+      idleDps: (pct: Count) => `Patience bonus: your companions hit +${pct}% harder`,
       critChance: (pct: Count) => `+${pct}% critical hit chance`,
       critDamage: (add: Count) => `Critical multiplier +${add} (×10 base)`,
       gold: (pct: Count) => `Gold earned +${pct}%`,
@@ -391,7 +397,8 @@ export const hud = defineMessages({
       skill: (key: string) => `New power unlocked: press ${key} or use its button at the bottom.`,
       farm: "You're staying on the previous stage. Get stronger, then take the road again (Stay → Auto button).",
       ascend: "The Fallen King has fallen! Open “Ascension” in the menu to reach the Sanctum of Dusk.",
-      altarRework: "The altars have been reworked: each level of an open-ended altar now multiplies its effect, and the Wanderer skips the first stages. All your levels were refunded in essences: pick your altars again in the ascension window."
+      altarRework: "The altars have been reworked: each level of an open-ended altar now multiplies its effect, and the Wanderer skips the first stages. All your levels were refunded in essences: pick your altars again in the ascension window.",
+      harvestCap: "The Altar of Harvest has changed: it stops at level 5 and asks for more. All its levels came back to you as essences."
     },
     fx: {
       crit: "CRITICAL",
@@ -446,7 +453,15 @@ export const hud = defineMessages({
       takeAccount: "Resume the account game",
       weakerTitle: "Erase the account game?",
       weakerText: (stage: Count, ascensions: number, time: string) =>
-        `The account game goes further: stage ${stage}, ${ascensions} ascension${ascensions === 1 ? "" : "s"}, ${time} of play. Keeping the current game erases it for good.`
+        `The account game goes further: stage ${stage}, ${ascensions} ascension${ascensions === 1 ? "" : "s"}, ${time} of play. Keeping the current game erases it for good.`,
+      guest: {
+        text: "Another page carried your game on while you played here. Which one do you want to keep? The other will be lost for good.",
+        kept: "Kept game",
+        takeKept: "Resume the kept game",
+        weakerTitle: "Erase the kept game?",
+        weakerText: (stage: Count, ascensions: number, time: string) =>
+          `The kept game goes further: stage ${stage}, ${ascensions} ascension${ascensions === 1 ? "" : "s"}, ${time} of play. Keeping the current game erases it for good.`
+      }
     },
     ledgerAway: {
       title: "The Ledger does not answer",

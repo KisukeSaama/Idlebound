@@ -130,7 +130,7 @@ export const fr: GameText = {
     might: { name: "Autel de puissance", description: "Chaque niveau multiplie ton DPS par 1,10." },
     blade: { name: "Autel de la lame", description: "Chaque niveau multiplie toute ta frappe par 1,1, sa part de tes DPS comprise." },
     fortune: { name: "Autel de fortune", description: "Chaque niveau multiplie ton or par 1,12." },
-    patience: { name: "Autel de la patience", description: "Chaque niveau multiplie le bonus de Patience de tes compagnons par 1,14. Tes frappes le remplacent, coup pour coup." },
+    patience: { name: "Autel de la patience", description: "Ajoute au bonus de Patience, qui fait frapper tes compagnons plus fort. Chaque niveau ajoute plus que le précédent." },
     time: { name: "Autel du temps", description: "+1 s au chrono des élites et des gardiens par niveau." },
     fate: { name: "Autel du destin", description: "+20 % de dégâts critiques par niveau." },
     precision: { name: "Autel de précision", description: "+1 % de chances de critique par niveau." },

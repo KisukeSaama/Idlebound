@@ -1,3 +1,4 @@
+import { GUEST_SAVE_DAYS } from "@idlebound/game";
 import { defineMessages } from "../define";
 
 /** Game figures the copy quotes, read from the game data by the page. `stages` comes formatted. */
@@ -83,7 +84,7 @@ export const landing = defineMessages({
       items: [
         { q: "Qu'est-ce qu'un idle clicker ?", a: "Un jeu incrémental : tu frappes pour attaquer, tu recrutes des compagnons qui attaquent à ta place, et tes chiffres grossissent de façon exponentielle. Page ouverte, le jeu continue même quand tu ne joues pas." },
         { q: "Faut-il frapper sans arrêt ?", a: "Non. Tes coups portent le début de chaque partie, puis tes compagnons prennent le relais. Plus tard, certains talents et l'autel de Patience renforcent leurs dégâts quand tu lâches la souris, tandis que les pouvoirs et les cristaux récompensent les moments où tu es là." },
-        { q: "Faut-il créer un compte pour jouer ?", a: "Non, tu peux commencer tout de suite. Pour garder ta progression, crée un compte : un e-mail, un pseudo et un mot de passe suffisent. Ta partie est alors conservée sur nos serveurs, accessible depuis tous tes appareils, et tu apparais au classement." },
+        { q: "Faut-il créer un compte pour jouer ?", a: `Non, tu peux commencer tout de suite : ta partie est gardée pour ce navigateur, tant que tu y reviens au moins une fois tous les ${GUEST_SAVE_DAYS} jours. Avec un compte (un e-mail, un pseudo et un mot de passe suffisent), elle te suit sur tous tes appareils et tu apparais au classement.` },
         { q: "Le jeu fonctionne-t-il sur mobile ?", a: "Oui. Idlebound s'adapte aux téléphones et aux tablettes, directement dans le navigateur, sans rien installer." },
         { q: "Qu'est-ce que l'ascension ?", a: "Après avoir vaincu le Roi déchu à l'étape 50, tu peux recommencer depuis le début en échange d'essences. Chaque essence augmente tes dégâts et peut être investie dans des autels permanents." },
         { q: "Qu'est-ce que la Descente ?", a: "La seconde renaissance, pour le long cours. Passé l'étape 1000, quand Eldra te fait assez confiance, elle t'ouvre son Métier : tu y laisses tes essences et tes autels pour tisser des fils, qui achètent des Tissages permanents. Tes reliques, ta Chronique et les souvenirs de tes compagnons te suivent." },
@@ -175,7 +176,7 @@ export const landing = defineMessages({
       items: [
         { q: "What is an idle clicker?", a: "An incremental game: you strike to attack, hire companions who attack for you, and your numbers grow exponentially. With the page open, the game keeps going even when you're not playing." },
         { q: "Do I have to strike all the time?", a: "No. Your blows carry the start of each run, then your companions take over. Later on, some talents and the Altar of Patience boost their damage when you let go of the mouse, while powers and crystals reward the moments you're there." },
-        { q: "Do I need an account to play?", a: "No, you can start right away. To keep your progress, create an account: an email, a username and a password are all it takes. Your game is then kept on our servers, available on all your devices, and you show up on the leaderboard." },
+        { q: "Do I need an account to play?", a: `No, you can start right away: your game is kept for this browser, as long as you come back to it at least once every ${GUEST_SAVE_DAYS} days. With an account (an email, a username and a password are all it takes), it follows you on all your devices and you show up on the leaderboard.` },
         { q: "Does the game work on mobile?", a: "Yes. Idlebound adapts to phones and tablets, right in the browser, with nothing to install." },
         { q: "What is ascension?", a: "Once you've defeated the Fallen King at stage 50, you can start over from the beginning in exchange for essences. Each essence increases your damage and can be invested in permanent altars." },
         { q: "What is the Descent?", a: "The second rebirth, for the long haul. Past stage 1000, once Eldra trusts you enough, she opens her Loom to you: you leave your essences and altars there to weave threads, which buy permanent Weaves. Your relics, your Chronicle and what your companions remember all come with you." },

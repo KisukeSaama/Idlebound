@@ -2,10 +2,12 @@
  * Migration of older saves, without the schema: the client runs it on every cloud load, so it
  * stays free of zod and of the server's checks (see save.ts and validation.ts).
  */
+import { ALTAR_BY_ID, legacyHarvestCost, legacyHarvestPrice } from "./data/altars";
+import { WEAVE_LEVEL_MAX, weaveTotalCost } from "./data/descent";
 import { LEGACY_RECOGNITION_TIERS, recognitionTierByRuns } from "./data/lore";
 import { crystalEssenceReward } from "./formulas";
 import { seedFrom } from "./rng";
-import { ALTAR_REWORK_NOTICE, SAVE_VERSION, createInitialState } from "./state";
+import { ALTAR_REWORK_NOTICE, HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 
 /** Fills a save with the fields added since it was written. */
 export function migrateState(raw: unknown): unknown {
@@ -56,9 +58,85 @@ export function migrateState(raw: unknown): unknown {
   // Version 10 brought promises: the last two memories of a companion now ask for a word
   // kept. What a companion already remembered stays remembered, and asks nothing again.
   if (version < 10) merged.remembered = legacyRemembered(merged);
+  // Version 11 weaves the thread from depth, no longer from essences, and priced the Warp of
+  // Plenty anew: the threads an older save wove stay woven, and its Warp is paid again at
+  // today's price with what it cost then.
+  if (version < 11) rethread(merged);
+  // Version 11 also caps the Altar of the Harvest and raises its price: every level an older
+  // save holds comes back as essences, at the price it was paid, and the walker is told once.
+  if (version < 11) keepLegacyHarvest(merged);
+  if (version < 11 && refundHarvest(merged)) {
+    const tutorial = merged.tutorial as { done?: unknown };
+    if (Array.isArray(tutorial.done) && !tutorial.done.includes(HARVEST_NOTICE)) merged.tutorial = { ...tutorial, done: [...tutorial.done, HARVEST_NOTICE] };
+  }
   if (typeof input.rngState !== "number") merged.rngState = seedFrom(typeof merged.createdAt === "number" ? merged.createdAt : 0);
   merged.version = SAVE_VERSION;
   return merged;
+}
+
+/** Levels of the Harvest an older save may hold before the refund gives up (a forged level is left to the checks). */
+const HARVEST_REFUND_MAX = 1_000;
+
+/**
+ * What the ascensions of an older save may have been multiplied by: the highest level of the
+ * uncapped Harvest its essences could have bought, kept once so its ledgers still verify.
+ */
+function keepLegacyHarvest(merged: Record<string, unknown>) {
+  const lifetime = merged.lifetime as Record<string, unknown>;
+  const earned = typeof lifetime.essencesEarned === "number" && Number.isFinite(lifetime.essencesEarned) ? lifetime.essencesEarned : 0;
+  if (!(typeof lifetime.ascensions === "number" && lifetime.ascensions > 0)) return;
+  let level = 0;
+  while (level < HARVEST_REFUND_MAX && legacyHarvestCost(level + 1) <= earned + 1) level += 1;
+  if (level > ALTAR_BY_ID.harvest.maxLevel) merged.legacyHarvest = level;
+}
+
+/**
+ * The Altar of the Harvest had no cap and a lower price before version 11. Its levels go back
+ * to the owned essences at the rounded-up price each one cost, so the essence ledger still
+ * holds, and the walker raises it again at today's price.
+ */
+function refundHarvest(merged: Record<string, unknown>): boolean {
+  const altars = merged.altars;
+  if (!altars || typeof altars !== "object" || typeof merged.essences !== "number") return false;
+  const level = (altars as Record<string, unknown>).harvest;
+  if (typeof level !== "number" || !Number.isInteger(level) || level <= 0 || level > HARVEST_REFUND_MAX) return false;
+  let refund = 0;
+  for (let n = 0; n < level; n += 1) refund += legacyHarvestPrice(n);
+  const { harvest: _harvest, ...others } = altars as Record<string, unknown>;
+  merged.altars = others;
+  merged.essences = merged.essences + refund;
+  return true;
+}
+
+/** Price growth of the Warp of Plenty up to save version 10 (`ceil(2 × 1.6^level)`). */
+const LEGACY_PLENTY = { base: 2, growth: 1.6 };
+
+/** Threads a save written before version 11 spent on its Warp of Plenty. */
+export function legacyPlentySpend(level: number): number {
+  let total = 0;
+  for (let n = 0; n < level; n += 1) total += Math.ceil(LEGACY_PLENTY.base * Math.pow(LEGACY_PLENTY.growth, n));
+  return total;
+}
+
+/**
+ * The threads woven so far are kept as they are (`legacyThreads`). The Warp of Plenty keeps
+ * its levels, paid again at today's price with what they cost then: the difference comes
+ * back as threads, or is taken from the threads held, and a level the save cannot pay goes
+ * back to threads too. The thread ledger holds either way.
+ */
+function rethread(merged: Record<string, unknown>) {
+  delete merged.descentMark;
+  const lifetime = merged.lifetime as Record<string, unknown>;
+  const woven = typeof lifetime.threads === "number" && Number.isFinite(lifetime.threads) ? lifetime.threads : 0;
+  if (woven > 0) merged.legacyThreads = woven;
+  const weaves = merged.weaves && typeof merged.weaves === "object" ? (merged.weaves as Record<string, unknown>) : {};
+  const plenty = Object.hasOwn(weaves, "plenty") && typeof weaves.plenty === "number" && Number.isInteger(weaves.plenty) ? weaves.plenty : 0;
+  if (plenty <= 0 || plenty > WEAVE_LEVEL_MAX || typeof merged.threads !== "number") return;
+  const purse = merged.threads + legacyPlentySpend(plenty);
+  let level = plenty;
+  while (level > 0 && weaveTotalCost("plenty", level) > purse) level -= 1;
+  merged.weaves = { ...weaves, plenty: level };
+  merged.threads = purse - weaveTotalCost("plenty", level);
 }
 
 /** The fourth and fifth tiers companions held under the rule of runs alone (before version 10). */

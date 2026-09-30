@@ -3,9 +3,10 @@ import { playBot } from "../scripts/bot";
 import { chronicleCount, chronicleEntries, milestoneReached, sourceCount, sourceEntries, unreadChronicle } from "./chronicle";
 import { chronicleText, eclipseWord, gameText, kingWord, monsterName, regaliaWord } from "./content";
 import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
+import { ALTAR_BY_ID } from "./data/altars";
 import { KING_FORMS, guardianForStage } from "./data/biomes";
 import { CARAVAN_WARES, caravanWare, isoWeek } from "./data/caravan";
-import { WEAVES, threadsFor, weaveCost } from "./data/descent";
+import { WEAVES, legacyThreadsFor, stageForThreads, threadsFor, weaveCost, weaveTotalCost } from "./data/descent";
 import { ECLIPSE_EVERY, ECLIPSE_HP, EVENTS, SEAM_SECONDS, WAGER_CLICKS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WAGER_REST_SECONDS } from "./data/events";
 import {
   AGE_ECHOES,
@@ -24,6 +25,7 @@ import { GameEngine, canDescend, descentPreview } from "./engine";
 import { MAX_TREASURE_CHANCE, RESPAWN_SECONDS, WAGER_MAX_GOLD, bossHp, derive, essencesForStage, skillCooldownMultiplier, stageGold, stageHp, wagerGold, wandererSkip } from "./formulas";
 import { LOCALES } from "./i18n";
 import { generateItem } from "./loot";
+import { legacyPlentySpend } from "./migrate";
 import { seededRng, type Rng } from "./rng";
 import { parseState } from "./save";
 import { SAVE_VERSION, createInitialState, emptyTrail } from "./state";
@@ -517,10 +519,20 @@ describe("the Descent", () => {
     return state;
   }
 
-  it("opens only at stage 1000 with Eldra remembering, and weaves threads from the essences gathered", () => {
-    expect(threadsFor(1e5)).toBe(0);
-    expect(threadsFor(1e9)).toBe(8);
-    expect(threadsFor(1e15)).toBe(20);
+  it("opens only at stage 1000 with Eldra remembering, and weaves a thread as long as the night went deep", () => {
+    expect(threadsFor(999)).toBe(0);
+    expect(threadsFor(1_000)).toBe(2);
+    expect(threadsFor(2_000)).toBe(32);
+    expect(threadsFor(2_250)).toBe(64);
+    expect(threadsFor(3_000)).toBe(512);
+    expect(stageForThreads(1)).toBe(1_000);
+    expect(stageForThreads(32)).toBe(2_000);
+    expect(stageForThreads(33)).toBe(2_012);
+    for (let threads = 1; threads <= 512; threads += 1) {
+      const stage = stageForThreads(threads);
+      expect(threadsFor(stage)).toBeGreaterThanOrEqual(threads);
+      if (stage > 1_000) expect(threadsFor(stage - 1)).toBeLessThan(threads);
+    }
     const shallow = atTheLoom();
     shallow.maxStageEver = 900;
     expect(canDescend(shallow)).toBe(false);
@@ -529,17 +541,16 @@ describe("the Descent", () => {
     expect(canDescend(stranger)).toBe(false);
     const state = atTheLoom();
     expect(recognitionTier(state, "eldra")).toBe(5);
-    expect(descentPreview(state)).toBe(8);
+    expect(descentPreview(state)).toBe(3);
     const engine = engineWith(state);
-    expect(engine.descend(T0)).toBe(8);
+    expect(engine.descend(T0)).toBe(3);
     const s = engine.state;
     expect(s.descents).toBe(1);
-    expect(s.threads).toBe(8);
+    expect(s.threads).toBe(3);
     expect(s.essences).toBe(0);
     expect(s.altars).toEqual({});
     expect(s.maxStage).toBe(1);
     expect(s.maxStageEver).toBe(1_200);
-    expect(s.descentMark).toBe(1e9);
     expect(descentPreview(s)).toBe(0);
     expect(milestoneReached(s, "descent-1")).toBe(true);
     expect(verifyState(s, LATER)).toEqual([]);
@@ -547,10 +558,10 @@ describe("the Descent", () => {
 
   it("keeps the ascensions a raised Altar of the Harvest paid once a Descent takes the altar back", () => {
     const state = atTheLoom();
-    state.altars = { harvest: 40 };
+    state.altars = { harvest: ALTAR_BY_ID.harvest.maxLevel };
     const engine = engineWith(state);
     const gain = engine.ascend(T0);
-    expect(gain).toBeGreaterThan(essencesForStage(1_199) * 4);
+    expect(gain).toBeGreaterThan(essencesForStage(1_199) * (1 + (ALTAR_BY_ID.harvest.maxLevel - 1) * ALTAR_BY_ID.harvest.valuePerLevel));
     expect(engine.descend(T0)).toBeGreaterThan(0);
     expect(engine.state.altars).toEqual({});
     expect(verifyState(engine.state, LATER)).toEqual([]);
@@ -561,14 +572,34 @@ describe("the Descent", () => {
     expect(codes(forged)).toContain("ascension");
   });
 
+  it("weaves only what a deeper night adds: a Descent no deeper than the last weaves nothing", () => {
+    const engine = engineWith(atTheLoom());
+    engine.descend(T0);
+    const s = engine.state;
+    // The same depth again, with every essence of the first night back: no thread.
+    s.lifetime.essencesEarned = 2e9;
+    s.lifetime.ascensionEssences = 2e9;
+    expect(descentPreview(s)).toBe(0);
+    expect(engine.descend(T0)).toBe(0);
+    expect(s.descents).toBe(2);
+    expect(s.lifetime.threads).toBe(3);
+    // An Age deeper, the thread is twice as long: the Descent weaves the other half.
+    s.maxStageEver = 1_450;
+    expect(descentPreview(s)).toBe(threadsFor(1_450) - 3);
+    expect(engine.descend(T0)).toBe(3);
+    expect(s.lifetime.threads).toBe(6);
+    expect(verifyState(s, LATER)).toEqual([]);
+  });
+
   it("buys Weaves: the Warp of Plenty, the Knot of Dusk, the Seventh Night and its Unweave", () => {
     const engine = engineWith(atTheLoom());
     engine.descend(T0);
     const s = engine.state;
-    // Four Descents' worth of threads, from essences the ascensions can have paid.
+    // The thread of a walker who has been past stage 2250, woven over four Descents.
     s.descents = 4;
-    s.threads = 60;
-    s.lifetime.threads = 68;
+    s.maxStageEver = 2_300;
+    s.threads += threadsFor(2_300) - s.lifetime.threads;
+    s.lifetime.threads = threadsFor(2_300);
     s.lifetime.essencesEarned = 1e15;
     s.lifetime.ascensionEssences = 1e15;
     const before = derive(s, T0).essenceMultiplier;
@@ -618,6 +649,36 @@ describe("the Descent", () => {
     forged.threads = 500;
     forged.lifetime.threads = 500;
     expect(codes(forged)).toContain("descent");
+    // One thread more than the deepest stage weaves, however many Descents and essences.
+    const long = atTheLoom();
+    long.descents = 50;
+    long.lifetime.essencesEarned = 1e30;
+    long.lifetime.ascensionEssences = 1e30;
+    long.lifetime.threads = threadsFor(long.maxStageEver);
+    long.threads = long.lifetime.threads;
+    expect(codes(long)).not.toContain("descent");
+    long.lifetime.threads += 1;
+    long.threads += 1;
+    expect(codes(long)).toContain("descent");
+    // Threads with no Descent behind them, in a save or between two.
+    const loose = atTheLoom();
+    loose.threads = 1;
+    loose.lifetime.threads = 1;
+    expect(codes(loose)).toContain("descent");
+    const before = atTheLoom();
+    before.descents = 1;
+    before.lifetime.threads = 2;
+    const after = structuredClone(before);
+    after.lifetime.threads = 3;
+    after.threads = 1;
+    expect(codes(after)).not.toContain("descent");
+    expect(verifyTransition(before, after, 60_000).map((violation) => violation.code)).toContain("descent");
+    // The threads of the older rule are not claimed afterwards.
+    const claimed = structuredClone(before);
+    claimed.legacyThreads = 8;
+    claimed.lifetime.threads = 8;
+    expect(codes(claimed)).not.toContain("descent");
+    expect(verifyTransition(before, claimed, 60_000).map((violation) => violation.code)).toContain("descent");
     const unknown = atTheLoom();
     unknown.weaves = { excalibur: 1 } as GameState["weaves"];
     expect(codes(unknown)).toContain("descent");
@@ -724,5 +785,92 @@ describe("save version 8", () => {
     engine.ascend(T0);
     for (const hero of RECOGNITION_HEROES) expect(recognitionTier(engine.state, hero), hero).toBe(1);
     expect(milestoneReached(engine.state, "remember-first")).toBe(true);
+  });
+});
+
+describe("save version 11", () => {
+  /** A version 10 save that descended once, under the rule of essences, and wove its Warp. */
+  function descended(): Record<string, unknown> {
+    const state = veteran();
+    state.lastTickAt = LATER;
+    state.recognition = { eldra: RECOGNITION_TIERS[4] };
+    state.promises = { eldra: 2 };
+    state.lifetime.essencesEarned = 1e15;
+    state.lifetime.ascensionEssences = 1e15;
+    state.descents = 1;
+    state.lore.readings = [0];
+    state.lifetime.threads = legacyThreadsFor(1e15);
+    state.weaves = { plenty: 3, "dusk-knot": 1 };
+    state.threads = legacyThreadsFor(1e15) - legacyPlentySpend(3) - weaveTotalCost("dusk-knot", 1);
+    const legacy = JSON.parse(JSON.stringify(state)) as Record<string, unknown>;
+    legacy.version = 10;
+    legacy.descentMark = 1e15;
+    return legacy;
+  }
+
+  it("loads a version 10 save that descended, keeps its threads and Weaves, verifies it and plays on", () => {
+    expect(SAVE_VERSION).toBe(11);
+    const legacy = descended();
+    const migrated = parseState(legacy);
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(migrated).not.toHaveProperty("descentMark");
+    // Twenty threads at stage 1200, where depth alone weaves three: they stay woven.
+    expect(migrated.legacyThreads).toBe(20);
+    expect(migrated.lifetime.threads).toBe(20);
+    // The Warp keeps its three levels, paid again at today's price out of the threads held.
+    expect(migrated.weaves).toEqual({ plenty: 3, "dusk-knot": 1 });
+    expect(migrated.threads).toBe((legacy.threads as number) + legacyPlentySpend(3) - weaveTotalCost("plenty", 3));
+    expect(migrated.threads).toBeGreaterThanOrEqual(0);
+    // With no thread left to pay the difference, a level goes back to threads instead.
+    const bare = descended();
+    bare.weaves = { plenty: 3, "dusk-knot": 1, "humming-loom": 1 };
+    bare.threads = 0;
+    (bare.lifetime as Record<string, number>).threads = legacyPlentySpend(3) + weaveTotalCost("dusk-knot", 1) + weaveTotalCost("humming-loom", 1);
+    const short = parseState(bare);
+    expect(short.weaves.plenty).toBe(2);
+    expect(short.threads).toBe(legacyPlentySpend(3) - weaveTotalCost("plenty", 2));
+    expect(verifyState(short, LATER)).toEqual([]);
+    // A deep Warp cost more then than now: it keeps its levels and threads come back.
+    const deep = descended();
+    deep.weaves = { plenty: 7 };
+    deep.threads = 0;
+    (deep.lifetime as Record<string, number>).threads = legacyPlentySpend(7);
+    deep.descents = 5;
+    (deep.lore as { readings: number[] }).readings = [0, 0, 0, 0, 0];
+    const rich = parseState(deep);
+    expect(rich.weaves.plenty).toBe(7);
+    expect(rich.threads).toBe(legacyPlentySpend(7) - weaveTotalCost("plenty", 7));
+    expect(rich.threads).toBeGreaterThan(0);
+    expect(verifyState(rich, LATER)).toEqual([]);
+    expect(verifyState(migrated, LATER)).toEqual([]);
+    // No new thread until the night goes deeper than those twenty.
+    expect(descentPreview(migrated)).toBe(0);
+    expect(descentPreview({ ...migrated, maxStageEver: stageForThreads(21) })).toBe(1);
+    const engine = engineWith(migrated, seededRng(11), LATER);
+    const later = playBot(engine, LATER, 5 * 60, { clicksPerSecond: 5 });
+    expect(verifyState(engine.state, later)).toEqual([]);
+    expect(verifyTransition(parseState(descended()), engine.state, later - LATER)).toEqual([]);
+  }, 60_000);
+
+  it("loads a version 10 save that never descended with nothing to remember", () => {
+    const engine = engineWith(createInitialState(T0), seededRng(12));
+    const now = playBot(engine, T0, 20 * 60, { clicksPerSecond: 5 });
+    const legacy = JSON.parse(JSON.stringify(engine.state)) as Record<string, unknown>;
+    legacy.version = 10;
+    legacy.descentMark = 0;
+    const migrated = parseState(legacy);
+    expect(migrated).not.toHaveProperty("legacyThreads");
+    expect(migrated).not.toHaveProperty("descentMark");
+    expect(migrated.threads).toBe(0);
+    expect(verifyState(migrated, now)).toEqual([]);
+    expect(verifyTransition(parseState(legacy), migrated, 1000)).toEqual([]);
+  }, 60_000);
+
+  it("refuses older threads the essences of their Descents could not weave", () => {
+    const forged = parseState(descended());
+    forged.legacyThreads = 500;
+    forged.lifetime.threads = 500;
+    forged.threads += 480;
+    expect(codes(forged)).toContain("descent");
   });
 });
