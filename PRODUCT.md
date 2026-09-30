@@ -596,8 +596,9 @@ monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to 
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
 bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
 background tab add and the first hour back with and without the Reunion. The balance
-scripts play each seed (and each profile) in its own process, one per core: the 24 h
-comparison takes about 4 minutes. Over 120 seeds the first ascension comes at 2 h 48
+scripts play each seed (and each profile) in its own process, four at a time at a low
+priority so the machine stays usable (`BALANCE_WORKERS=n` for another count): the 24 h
+comparison takes about a quarter of an hour. Over 120 seeds the first ascension comes at 2 h 48
 (median), 80% of walkers between 2 h 01 and 3 h 43. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
