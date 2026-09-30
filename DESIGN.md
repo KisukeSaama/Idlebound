@@ -72,6 +72,12 @@ Content colors live with the game data, not in CSS:
   `--font-body`. Everything else: a humanist sans with calligraphic roots, very readable.
   Base 16px, line-height 1.5. Labels are sentence case, never tracked capitals (Cinzel is
   the only face in capitals, by design).
+  The two variables are set by `next/font` on `<html>` only: `globals.css` never redefines
+  them (a family name written there would not exist, and every page fell back to the
+  system's faces). Both faces are wider than those fallbacks: an effect chip stays on one
+  line and cuts the end of its name (the tooltip keeps it whole, the timer always shows), a
+  place's name wraps between its words and its column never gets narrower than its longest
+  word, and the companions' buy modes go under the panel's title when the panel is narrow.
 - Numbers that change use `font-variant-numeric: tabular-nums` so they do not jitter.
 - Big numbers are formatted by `formatNumber` (K, M, B, T, Qa… then aa, ab…), with an
   in-game choice of letters, scientific or engineering notation. The same notation is used

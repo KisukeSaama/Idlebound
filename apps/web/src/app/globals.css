@@ -34,8 +34,7 @@
   /* The one bevel: a pixel of light on the top edge of raised things. */
   --bevel: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
-  --font-display: "Cinzel", Georgia, serif;
-  --font-body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  /* --font-display (Cinzel) and --font-body (Alegreya Sans) come from next/font on <html> ([locale]/layout.tsx): defined here too, they would name families that do not exist. */
   color-scheme: dark;
   /*
    * Screens today run from phones to 4K: past a laptop's size the whole interface grows, laid

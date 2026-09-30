@@ -366,7 +366,8 @@ button.resource:hover .resource-label {
 
 .scene-top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  /* The place's name keeps its longest word whole; the effect chips give up the room. */
+  grid-template-columns: minmax(min-content, 1fr) auto minmax(0, 1fr);
   align-items: start;
   gap: 10px;
   padding: 12px 14px 0;
@@ -390,11 +391,13 @@ button.resource:hover .resource-label {
 
 .scene-biome {
   margin-top: 4px;
-  font-size: clamp(1rem, calc(2 * var(--vw)), 1.35rem);
+  /* Cinzel is all capitals, and wide: the size leaves each word of a place's name whole. */
+  font-size: clamp(0.95rem, calc(1.6 * var(--vw)), 1.3rem);
   line-height: 1.15;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
-  /* A long place name wraps rather than losing its end: it is where the walker stands. */
-  overflow-wrap: anywhere;
+  /* A long place name wraps between its words rather than losing its end: it is where the
+     walker stands. A word is only broken when it cannot fit alone. */
+  overflow-wrap: break-word;
 }
 
 /* ------------------------------------------------ stage bar */
@@ -537,18 +540,35 @@ button.resource:hover .resource-label {
   list-style: none;
 }
 
+/* One line, whatever the room: a long effect loses the end of its name (the tooltip keeps
+   it whole), never its timer. */
 .buff-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  max-width: 100%;
   height: 28px;
   padding: 0 8px;
+  white-space: nowrap;
   border-radius: var(--radius-sm);
   background: rgba(7, 6, 12, 0.9);
   border: 1px solid #000;
   box-shadow: 0 0 0 1px rgba(155, 107, 255, 0.6);
   font-size: 0.86rem;
   font-weight: 700;
+}
+
+.buff-chip > svg,
+.buff-time,
+.buff-short {
+  flex: none;
+}
+
+.buff-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .buff-time {
@@ -1176,8 +1196,10 @@ button.resource:hover .resource-label {
 
 .hero-panel-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  /* A narrow panel puts the buy modes under the title rather than cutting the last one. */
   gap: 8px;
   padding: 12px 12px 10px;
   border-bottom: 1px solid var(--border);
