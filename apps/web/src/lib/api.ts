@@ -1,4 +1,4 @@
-import type { GameState } from "@idlebound/game";
+import { isApiError, type ApiError, type GameState, type PasswordIssue, type UsernameIssue } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
 import type { BoardId } from "./boards";
 import { noteServerRelease, RELEASE_HEADER } from "./release";
@@ -17,7 +17,8 @@ export interface AccountUser {
 
 export type ApiResult<T> =
   | { ok: true; data: T; status: number }
-  | { ok: false; error: string; status: number; field?: string; body?: Record<string, unknown> };
+  /** `code`: the API's error code (null when no API answered); `error`: its words for the walker. */
+  | { ok: false; code: ApiError | null; error: string; status: number; field?: string; body?: Record<string, unknown> };
 
 /** A request left unanswered this long counts as a lost connection (the proxy gives up at 15 s). */
 const REQUEST_TIMEOUT_MS = 20_000;
@@ -25,6 +26,26 @@ const REQUEST_TIMEOUT_MS = 20_000;
 /** No answer at all, or the game server behind the proxy is down or busy: worth trying again. */
 export function isUnreachable(result: { ok: boolean; status: number }): boolean {
   return !result.ok && (result.status === 0 || result.status === 429 || result.status >= 500);
+}
+
+/** Words an error answer in the walker's language, with the details its code carries. */
+function describe(code: ApiError | null, body: Record<string, unknown>, status: number): string {
+  const messages = currentMessages();
+  const texts = messages.api;
+  switch (code) {
+    case null:
+      return messages.hud.errors.status(status);
+    case "too_many_attempts":
+      return texts[code](typeof body.retryAfter === "number" ? body.retryAfter : 1);
+    case "invalid_save":
+      return texts[code](typeof body.detail === "string" ? body.detail : "");
+    case "invalid_username":
+      return messages.account.usernameIssues[body.reason as UsernameIssue] ?? texts[code];
+    case "weak_password":
+      return texts.passwordIssues[body.reason as PasswordIssue] ?? texts[code];
+    default:
+      return texts[code];
+  }
 }
 
 async function request<T>(method: string, path: string, body?: unknown, options: { keepalive?: boolean } = {}): Promise<ApiResult<T>> {
@@ -47,7 +68,7 @@ async function request<T>(method: string, path: string, body?: unknown, options:
     });
   } catch {
     clearTimeout(timeout);
-    return { ok: false, status: 0, error: currentMessages().hud.errors.network };
+    return { ok: false, status: 0, code: null, error: currentMessages().hud.errors.network };
   }
   noteServerRelease(response.headers.get(RELEASE_HEADER));
   let json: Record<string, unknown> = {};
@@ -61,12 +82,14 @@ async function request<T>(method: string, path: string, body?: unknown, options:
     clearTimeout(timeout);
   }
   // Every answer of the API is JSON: a success without a readable body was lost on the way.
-  if (response.ok && !readable) return { ok: false, status: 0, error: currentMessages().hud.errors.network };
+  if (response.ok && !readable) return { ok: false, status: 0, code: null, error: currentMessages().hud.errors.network };
   if (!response.ok) {
+    const code = isApiError(json.error) ? json.error : null;
     return {
       ok: false,
       status: response.status,
-      error: typeof json.error === "string" ? json.error : currentMessages().hud.errors.status(response.status),
+      code,
+      error: describe(code, json, response.status),
       field: typeof json.field === "string" ? json.field : undefined,
       body: json
     };
@@ -94,7 +117,7 @@ export const api = {
   register: (email: string, username: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/register", { email, username, password }),
   login: (email: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/login", { email, password }),
   logout: () => request<{ ok: true }>("POST", "/auth/logout"),
-  forgot: (email: string) => request<{ ok: true; message: string }>("POST", "/auth/forgot", { email }),
+  forgot: (email: string) => request<{ ok: true }>("POST", "/auth/forgot", { email }),
   resetPassword: (token: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/reset", { token, password }),
   verifyEmail: (token: string) => request<{ ok: true; username: string }>("POST", "/auth/verify", { token }),
   resendVerification: () => request<{ ok: true }>("POST", "/auth/verify/resend"),

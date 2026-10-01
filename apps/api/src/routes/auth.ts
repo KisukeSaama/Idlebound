@@ -1,4 +1,4 @@
-import { usernameKey, validateUsername, type Locale } from "@idlebound/game";
+import { usernameKey, validateUsername, type ApiError, type Locale } from "@idlebound/game";
 import { and, eq, gt, isNull, ne } from "drizzle-orm";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
@@ -6,7 +6,8 @@ import { db } from "../db/client";
 import { emailVerifications, passwordResets, users } from "../db/schema";
 import { env } from "../env";
 import { guestId } from "../lib/guest";
-import { localeOf, t } from "../lib/i18n";
+import { fail } from "../lib/errors";
+import { localeOf } from "../lib/i18n";
 import { resetPasswordMail, sendMail, verifyEmailMail } from "../lib/mail";
 import { checkPasswordStrength, dummyVerify, hashPassword, verifyPassword } from "../lib/password";
 import { clientIp, limiter, tooMany } from "../lib/rate-limit";
@@ -40,16 +41,16 @@ const deleteBody = z.object({ password });
 const verifyBody = z.object({ token: z.string().min(20).max(100) });
 const emailBody = z.object({ email, password });
 
-/** Parses the JSON body; errors come back in the language of the request. */
-async function body<T>(c: Context, schema: z.ZodType<T>): Promise<{ data: T } | { error: string }> {
+/** Parses the JSON body, or says which error code to answer. */
+async function body<T>(c: Context, schema: z.ZodType<T>): Promise<{ data: T } | { error: ApiError }> {
   let raw: unknown;
   try {
     raw = await c.req.json();
   } catch {
-    return { error: t(c).invalidRequest };
+    return fail("invalid_request");
   }
   const parsed = schema.safeParse(raw);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.path[0] === "email" ? t(c).invalidEmail : t(c).invalidRequest };
+  if (!parsed.success) return fail(parsed.error.issues[0]?.path[0] === "email" ? "invalid_email" : "invalid_request");
   return { data: parsed.data };
 }
 
@@ -95,16 +96,16 @@ export const authRoutes = new Hono()
     const { email: address, password: secret } = parsed.data;
 
     const name = validateUsername(parsed.data.username);
-    if (!name.ok) return c.json({ error: t(c).username[name.reason], field: "username" }, 400);
+    if (!name.ok) return c.json(fail("invalid_username", { reason: name.reason, field: "username" }), 400);
     const weak = checkPasswordStrength(secret, name.value, address);
-    if (weak) return c.json({ error: t(c).password[weak], field: "password" }, 400);
+    if (weak) return c.json(fail("weak_password", { reason: weak, field: "password" }), 400);
 
     const key = usernameKey(name.value);
     const [taken] = await db.select({ email: users.email, key: users.usernameKey }).from(users)
       .where(eq(users.usernameKey, key)).limit(1);
-    if (taken) return c.json({ error: t(c).usernameTaken, field: "username" }, 409);
+    if (taken) return c.json(fail("username_taken", { field: "username" }), 409);
     const [emailTaken] = await db.select({ id: users.id }).from(users).where(eq(users.email, address)).limit(1);
-    if (emailTaken) return c.json({ error: t(c).emailTaken, field: "email" }, 409);
+    if (emailTaken) return c.json(fail("email_taken", { field: "email" }), 409);
 
     const passwordHash = await hashPassword(secret);
     try {
@@ -116,7 +117,7 @@ export const authRoutes = new Hono()
       return c.json({ user: publicUser(user) }, 201);
     } catch (error) {
       // Race between two identical sign-ups: the unique constraint decides.
-      if ((error as { code?: string }).code === "23505") return c.json({ error: t(c).usernameOrEmailTaken }, 409);
+      if ((error as { code?: string }).code === "23505") return c.json(fail("username_or_email_taken"), 409);
       throw error;
     }
   })
@@ -135,7 +136,7 @@ export const authRoutes = new Hono()
 
     const [user] = await db.select().from(users).where(eq(users.email, address)).limit(1);
     const valid = user ? await verifyPassword(secret, user.passwordHash) : await dummyVerify(secret);
-    if (!user || !valid) return c.json({ error: t(c).wrongCredentials }, 401);
+    if (!user || !valid) return c.json(fail("wrong_credentials"), 401);
 
     loginAttempt.reset(attempt);
     await db.update(users).set({ lastLoginAt: new Date(), lastSeenAt: new Date(), inactivityNoticeAt: null, locale: localeOf(c) }).where(eq(users.id, user.id));
@@ -155,7 +156,7 @@ export const authRoutes = new Hono()
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
     const address = parsed.data.email;
     // Same answer whether the account exists or not: no e-mail enumeration.
-    const reply = c.json({ ok: true, message: t(c).forgotSent });
+    const reply = c.json({ ok: true });
     if (forgotAccount.consume(address) > 0) return reply;
 
     const [user] = await db.select().from(users).where(eq(users.email, address)).limit(1);
@@ -178,11 +179,11 @@ export const authRoutes = new Hono()
     const [reset] = await db.select({ userId: passwordResets.userId }).from(passwordResets)
       .where(and(eq(passwordResets.id, id), isNull(passwordResets.usedAt), gt(passwordResets.expiresAt, new Date())))
       .limit(1);
-    if (!reset) return c.json({ error: t(c).resetLinkInvalid }, 400);
+    if (!reset) return c.json(fail("reset_link_invalid"), 400);
     const [user] = await db.select().from(users).where(eq(users.id, reset.userId)).limit(1);
-    if (!user) return c.json({ error: t(c).accountNotFound }, 400);
+    if (!user) return c.json(fail("account_not_found"), 400);
     const weak = checkPasswordStrength(parsed.data.password, user.username, user.email);
-    if (weak) return c.json({ error: t(c).password[weak], field: "password" }, 400);
+    if (weak) return c.json(fail("weak_password", { reason: weak, field: "password" }), 400);
 
     const passwordHash = await hashPassword(parsed.data.password);
     // The link reached the account's mailbox: that confirms the address too.
@@ -198,7 +199,7 @@ export const authRoutes = new Hono()
       await tx.delete(passwordResets).where(and(eq(passwordResets.userId, claimed.userId), ne(passwordResets.id, id)));
       return true;
     });
-    if (!applied) return c.json({ error: t(c).resetLinkInvalid }, 400);
+    if (!applied) return c.json(fail("reset_link_invalid"), 400);
     await destroyAllSessions(user.id);
     await createSession(c, user.id);
     return c.json({ user: publicUser({ ...user, emailVerifiedAt }) });
@@ -213,20 +214,20 @@ export const authRoutes = new Hono()
     const [link] = await db.select().from(emailVerifications)
       .where(and(eq(emailVerifications.id, id), gt(emailVerifications.expiresAt, new Date())))
       .limit(1);
-    if (!link) return c.json({ error: t(c).verifyLinkInvalid }, 400);
+    if (!link) return c.json(fail("verify_link_invalid"), 400);
     // Only the address the link was sent to is confirmed, never one changed since.
     const [user] = await db.update(users).set({ emailVerifiedAt: new Date() })
       .where(and(eq(users.id, link.userId), eq(users.email, link.email)))
       .returning();
     await db.delete(emailVerifications).where(eq(emailVerifications.userId, link.userId));
-    if (!user) return c.json({ error: t(c).verifyLinkInvalid }, 400);
+    if (!user) return c.json(fail("verify_link_invalid"), 400);
     return c.json({ ok: true, username: user.username });
   })
 
   .post("/verify/resend", async (c) => {
     const user = await currentUser(c);
-    if (!user) return c.json({ error: t(c).loginRequired }, 401);
-    if (verifyDeadline(user) === null) return c.json({ error: t(c).alreadyVerified }, 400);
+    if (!user) return c.json(fail("login_required"), 401);
+    if (verifyDeadline(user) === null) return c.json(fail("already_verified"), 400);
     const wait = resendUser.consume(user.id);
     if (wait > 0) return tooMany(c, wait);
     await sendVerification(user, localeOf(c));
@@ -236,24 +237,24 @@ export const authRoutes = new Hono()
   // Fixes a mistyped address before it is confirmed. A confirmed address stays as is.
   .post("/email", async (c) => {
     const user = await currentUser(c);
-    if (!user) return c.json({ error: t(c).loginRequired }, 401);
-    if (verifyDeadline(user) === null) return c.json({ error: t(c).emailLocked }, 403);
+    if (!user) return c.json(fail("login_required"), 401);
+    if (verifyDeadline(user) === null) return c.json(fail("email_locked"), 403);
     const wait = sensitiveUser.consume(user.id);
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, emailBody);
     if ("error" in parsed) return c.json({ error: parsed.error, field: "email" }, 400);
     const [row] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
     if (!row || !(await verifyPassword(parsed.data.password, row.passwordHash))) {
-      return c.json({ error: t(c).wrongPassword, field: "password" }, 401);
+      return c.json(fail("wrong_password", { field: "password" }), 401);
     }
     const address = parsed.data.email;
     if (address !== row.email) {
       const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, address)).limit(1);
-      if (taken) return c.json({ error: t(c).emailTaken, field: "email" }, 409);
+      if (taken) return c.json(fail("email_taken", { field: "email" }), 409);
       try {
         await db.update(users).set({ email: address }).where(eq(users.id, user.id));
       } catch (error) {
-        if ((error as { code?: string }).code === "23505") return c.json({ error: t(c).emailTaken, field: "email" }, 409);
+        if ((error as { code?: string }).code === "23505") return c.json(fail("email_taken", { field: "email" }), 409);
         throw error;
       }
     }
@@ -264,17 +265,17 @@ export const authRoutes = new Hono()
 
   .post("/password", async (c) => {
     const user = await currentUser(c);
-    if (!user) return c.json({ error: t(c).loginRequired }, 401);
+    if (!user) return c.json(fail("login_required"), 401);
     const wait = sensitiveUser.consume(user.id);
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, changeBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
     const [row] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
     if (!row || !(await verifyPassword(parsed.data.currentPassword, row.passwordHash))) {
-      return c.json({ error: t(c).wrongCurrentPassword, field: "currentPassword" }, 401);
+      return c.json(fail("wrong_current_password", { field: "currentPassword" }), 401);
     }
     const weak = checkPasswordStrength(parsed.data.newPassword, row.username, row.email);
-    if (weak) return c.json({ error: t(c).password[weak], field: "newPassword" }, 400);
+    if (weak) return c.json(fail("weak_password", { reason: weak, field: "newPassword" }), 400);
     await db.update(users).set({ passwordHash: await hashPassword(parsed.data.newPassword) }).where(eq(users.id, user.id));
     // A reset link requested before the change must not be able to do anything any more.
     await db.delete(passwordResets).where(eq(passwordResets.userId, user.id));
@@ -285,14 +286,14 @@ export const authRoutes = new Hono()
 
   .delete("/account", async (c) => {
     const user = await currentUser(c);
-    if (!user) return c.json({ error: t(c).loginRequired }, 401);
+    if (!user) return c.json(fail("login_required"), 401);
     const wait = sensitiveUser.consume(user.id);
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, deleteBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
     const [row] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
     if (!row || !(await verifyPassword(parsed.data.password, row.passwordHash))) {
-      return c.json({ error: t(c).wrongPassword, field: "password" }, 401);
+      return c.json(fail("wrong_password", { field: "password" }), 401);
     }
     await db.delete(users).where(eq(users.id, user.id));
     await destroySession(c);

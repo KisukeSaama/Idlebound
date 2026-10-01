@@ -78,6 +78,7 @@ export const account = defineMessages({
     forgotLink: "Mot de passe oublié ?",
     forgotIntro: "Indique ton e-mail : tu recevras un lien pour choisir un nouveau mot de passe.",
     sendLink: "Envoyer le lien",
+    forgotSent: "Si un compte existe pour cet e-mail, un lien vient d'être envoyé.",
     backToLogin: "Retour à la connexion",
     usernameIssues: {
       "too-short": `Le pseudo doit contenir au moins ${USERNAME_MIN} caractères.`,
@@ -170,6 +171,7 @@ export const account = defineMessages({
     forgotLink: "Forgot your password?",
     forgotIntro: "Enter your e-mail: you will receive a link to choose a new password.",
     sendLink: "Send the link",
+    forgotSent: "If an account exists for this e-mail, a link has just been sent.",
     backToLogin: "Back to login",
     usernameIssues: {
       "too-short": `Your username must be at least ${USERNAME_MIN} characters long.`,

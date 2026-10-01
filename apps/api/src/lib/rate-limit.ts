@@ -1,7 +1,7 @@
 import { BlockList, isIP, isIPv6 } from "node:net";
 import type { Context, MiddlewareHandler } from "hono";
 import { env } from "../env";
-import { t } from "./i18n";
+import { fail } from "./errors";
 
 /** Past this size, expired keys are purged before adding one (bounded memory). */
 const MAX_KEYS = 50_000;
@@ -124,7 +124,7 @@ export function resolveClientIp(header: (name: string) => string | undefined): s
 
 export function tooMany(c: Context, retryAfter: number) {
   c.header("Retry-After", String(retryAfter));
-  return c.json({ error: t(c).tooManyAttempts(retryAfter) }, 429);
+  return c.json(fail("too_many_attempts", { retryAfter }), 429);
 }
 
 export function rateLimitByIp(instance: RateLimiter): MiddlewareHandler {

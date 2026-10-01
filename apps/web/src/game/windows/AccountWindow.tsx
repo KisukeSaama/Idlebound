@@ -387,7 +387,7 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
         setPending(true);
         const result = await api.forgot(email);
         setPending(false);
-        setMessage(result.ok ? { ok: true, text: result.data.message } : { ok: false, text: result.error });
+        setMessage(result.ok ? { ok: true, text: text.forgotSent } : { ok: false, text: result.error });
       }}
     >
       <p className="modal-text">{text.forgotIntro}</p>

@@ -3,7 +3,7 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { Hono } from "hono";
 import { db } from "../db/client";
 import { leaderboard, users } from "../db/schema";
-import { t } from "../lib/i18n";
+import { fail } from "../lib/errors";
 import { limiter, rateLimitByIp } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
 
@@ -70,7 +70,7 @@ export const leaderboardRoutes = new Hono()
   .get("/", async (c) => {
     const board = (c.req.query("board") ?? "stage") as BoardId;
     // Object.hasOwn: "toString" or "constructor" are not leaderboards.
-    if (!Object.hasOwn(BOARDS, board)) return c.json({ error: t(c).unknownBoard }, 400);
+    if (!Object.hasOwn(BOARDS, board)) return c.json(fail("unknown_board"), 400);
     const limit = Math.min(100, Math.max(1, Number(c.req.query("limit") ?? 50) || 50));
     const rows = await topRows(board, limit);
 

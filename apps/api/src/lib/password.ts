@@ -1,5 +1,5 @@
 import { randomBytes, scrypt, timingSafeEqual, type ScryptOptions } from "node:crypto";
-import type { PasswordIssue } from "./i18n";
+import type { PasswordIssue } from "@idlebound/game";
 
 /** scrypt (RFC 7914): built into Node, GPU-resistant, no native dependency. */
 const PARAMS = { N: 1 << 15, r: 8, p: 1 } as const;
@@ -42,13 +42,13 @@ const COMMON = new Set([
   "football", "loveyou1", "bonjour1", "idlebound", "idlebound1", "qwerty123", "motdepasse1", "password123"
 ]);
 
-/** Returns why a password is too weak (a key of the localized messages), or null. */
+/** Returns why a password is too weak (sent as the `reason` of a weak-password error), or null. */
 export function checkPasswordStrength(password: string, username: string, email: string): PasswordIssue | null {
-  if (password.length < 8) return "tooShort";
-  if (password.length > 128) return "tooLong";
+  if (password.length < 8) return "too-short";
+  if (password.length > 128) return "too-long";
   const lowered = password.toLowerCase();
-  if (COMMON.has(lowered)) return "tooCommon";
-  if (/^(.)\1+$/.test(password)) return "tooSimple";
-  if (lowered.includes(username.toLowerCase()) || lowered === email.toLowerCase()) return "containsIdentity";
+  if (COMMON.has(lowered)) return "too-common";
+  if (/^(.)\1+$/.test(password)) return "too-simple";
+  if (lowered.includes(username.toLowerCase()) || lowered === email.toLowerCase()) return "contains-identity";
   return null;
 }

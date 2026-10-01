@@ -223,9 +223,7 @@ export const hud = defineMessages({
       network: "Connexion au serveur impossible. Vérifie ta connexion internet.",
       status: (status: Count) => `Le serveur a répondu par une erreur (${status}). Réessaie dans un instant.`,
       sessionExpired: "Session expirée : reconnecte-toi pour garder ta progression.",
-      contextMissing: "Le jeu n'a pas pu démarrer. Recharge la page.",
-      tooLarge: "Envoi trop volumineux pour le serveur. Recharge la page, puis réessaie.",
-      unreachable: "Serveur de jeu injoignable. Réessaie dans un instant."
+      contextMissing: "Le jeu n'a pas pu démarrer. Recharge la page."
     },
     /** Anti-cheat rejections (HTTP 422), by violation code. */
     violations: {
@@ -478,9 +476,7 @@ export const hud = defineMessages({
       network: "Can't reach the server. Check your internet connection.",
       status: (status: Count) => `The server answered with an error (${status}). Try again in a moment.`,
       sessionExpired: "Session expired: log in again to keep your progress.",
-      contextMissing: "The game could not start. Reload the page.",
-      tooLarge: "Too much data for the server at once. Reload the page, then try again.",
-      unreachable: "Game server unreachable. Try again in a moment."
+      contextMissing: "The game could not start. Reload the page."
     },
     violations: {
       generic: "This progress does not follow the rules of the game.",
