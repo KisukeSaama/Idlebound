@@ -627,6 +627,9 @@ rejects real play.
 ## Accounts
 
 - Sign-up asks for **e-mail, username and password (typed twice), nothing else**.
+- The address never shows in full by default (streams, shared screens): the account window,
+  the confirmation notice and the welcome toast show it masked (`a***@h***.fr`), a Show
+  button reveals it until the window closes.
 - **E-mail confirmation**, only when an SMTP server is configured (otherwise the address is
   accepted as is). The player plays and saves right away; the account window shows the
   deadline, a "resend" button and a way to fix a mistyped address (password required).

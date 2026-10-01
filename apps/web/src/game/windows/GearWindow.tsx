@@ -364,7 +364,7 @@ function Bag() {
         {items.map((item) => (
           <ItemCard key={item.uid} item={item} compareTo={state.equipment[item.slot]}>
             <button type="button" className="btn btn-gold btn-sm" disabled={anvil && item.slot === "weapon"} onClick={() => store.act((engine, now) => engine.equip(item.uid, now))}>{text.equip}</button>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act((engine) => engine.toggleLock(item.uid))} aria-pressed={Boolean(item.locked)}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act((engine) => engine.toggleLock(item.uid))} aria-pressed={Boolean(item.locked)} title={item.locked ? text.unlockHint : text.lockHint}>
               {item.locked ? text.unlock : text.lock}
             </button>
             <button type="button" className="btn btn-danger btn-sm" disabled={item.locked} onClick={() => store.act((engine) => engine.salvage(item.uid))}>

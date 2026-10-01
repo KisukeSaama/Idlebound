@@ -4,6 +4,7 @@ import type { BestiaryText } from "../types";
 /**
  * Bestiary of Orvane Keep, the specials and the eleven deeper forms of the King.
  * The Ledger speaks: exact, third person, faintly kind. The King's pages are never jokes.
+ * A King form's lines tell the Truth only as far as its depth has reached (BIBLE 16).
  */
 export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | "lines">> = {
   en: {
@@ -31,129 +32,129 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
     },
     lines: {
       "hour-gargoyle": [
-        "It counts the nights on its own claws. It ran out of claws.",
-        "It has moved on to its teeth. The Ledger lent it a margin, which it has also filled.",
-        "Once a night it turns toward the window and says a number. It is always one higher."
+        "A gargoyle of the keep that counts the nights of the Long Night on its claws. It ran out of claws long ago.",
+        "It moved on to its teeth, then to the margin of the Ledger. The margin is full too.",
+        "Once a night it turns to the window and says tonight's number aloud. It is always one more than yesterday's."
       ],
       "banner-wraith": [
-        "A royal banner that forgot its colors and is looking for them.",
-        "It tried the violet of the fires for a while. It did not suit. Nothing suits it but its own.",
-        "Kaelen could name its colors. When it drifts past, he looks somewhere else."
+        "A royal banner of Orvane whose colors faded in the Pale Year. It drifts through the keep, looking for them.",
+        "It tried the violet of the fires for a while. It did not suit. Nothing suits it but its own colors.",
+        "Kaelen remembers its colors, and could end its search with one word. When it drifts past, he looks away."
       ],
       "fallen-sentinel": [
-        "Kaelen's brothers-in-arms. They salute him before they attack.",
-        "They hold the post they were given on the last evening. Nobody came to relieve them.",
-        "One place in their line is always empty. Every night they close ranks around it, very carefully."
+        "The King's guards, still at their posts. They were Kaelen's brothers-in-arms, and salute him before they attack.",
+        "They hold the post they were given on the last evening before the Long Night. Nobody came to relieve them.",
+        "One place in their line is always empty: Kaelen's. Every night they close ranks around it, very carefully."
       ],
       "hollow-page": [
-        "A page boy's livery with no page boy. Still carrying a message.",
-        "The seal on the letter is the King's. The Ledger has not opened it. Some pages are not its to read.",
-        "It is looking for a knight. Every night it stops beside Kaelen, then decides it was wrong."
+        "An empty page boy's livery, still carrying a sealed letter through the keep.",
+        "The seal on the letter is the King's. The Ledger has not opened it. Some letters are not its to read.",
+        "The letter is addressed to Kaelen. Every night the page stops beside him, then loses its nerve."
       ],
       "last-hound": [
-        "The King's hounds were loosed the night the keep went quiet. They are still following the scent.",
-        "The scent leads out of the keep, across the Mire, into the forest. Then it simply stops.",
-        "Near Kaelen they stop snarling. They sit, look up at him, and wait for an order he never gives."
+        "The King's hounds, loosed the night the keep fell silent. They are still following a scent.",
+        "The scent leads out of the keep, across the Mire and into the forest, then simply stops. They circle it all night.",
+        "It is Kaelen's scent. Near him the hounds stop growling, sit, and wait for an order he never gives."
       ],
       "candle-maid": [
-        "She lights the great hall every night. Nobody has come to dinner in a very long time.",
+        "A servant who lights the great hall every night. Nobody has come to dinner since the Long Night began.",
         "She lays two places: the King's, and one for a guest who is always late. She keeps the soup warm.",
         "She is still on her first wick. The Ledger does not know how, and has decided not to ask."
       ],
       "stone-warden": [
-        "Guards the great hall's door. Nobody has used the door in a very long time.",
+        "A stone statue that guards the door of the great hall. Nobody has used that door in a very long time.",
         "Everyone comes in through the breach in the east wall. The Warden has been told. It prefers the door.",
-        "The last to pass the door were a king and a woman carrying a loom. It has let no one through since."
+        "The last to pass its door were the King and Eldra the weaver, carrying her loom, on the night of the Binding."
       ],
       "ruined-king": [
-        "His crown is cracked. On the rim, worn almost smooth, a single letter: A.",
-        "His throne faces the window, not the door. He does not watch who comes in. He already knows.",
-        "The Ledger has every night he walked. None for the night he sat down. It was meant to be a moment."
+        "Aldemar, last king of Orvane, who falls and rises again every night. His cracked crown still bears an A.",
+        "He asked for the Long Night himself, to keep the Morning out of Orvane. He guards that night still.",
+        "He was the first walker. After countless nights he sat on his throne to rest a moment, and the crown held him."
       ],
       "court-jester": [
-        "Laughs every time you arrive, as if he knew you would. He did.",
+        "The King's jester. He laughs whenever a walker arrives, because every walker comes to kill the King.",
         "The little crowned head on his sceptre has heard all his jokes. It stopped laughing. He has not.",
-        "He keeps one joke he never tells. He says it is about a king, and that it is not funny yet."
+        "He keeps one joke he never tells, about a king who sat down for a moment. He says it is not funny yet."
       ],
       "seam-warden": [
-        "Holds a crack in the night shut with both hands. Beat it and the crack closes.",
-        "It is not holding the crack shut against you. It is holding it shut against the other side.",
-        "Its hands are the same glass as the sky, mended in a dozen places. The Stallkeeper knows the patches."
+        "A guardian that holds a crack in the night shut with both hands. Beat it and the crack closes.",
+        "It is not holding the crack shut against you, but against what lies on the other side: the Morning.",
+        "Its hands are the same glass as the sky, patched in a dozen places. The Stallkeeper did the patching."
       ],
       "walker-echo": [
-        "Another walker's shadow, from another night. Shown with a name from the Roll.",
+        "The shadow of another walker from the Roll, fighting their own night. For a moment, your two nights touch.",
         "It fights beside you for a moment, then goes back to its own night. It never looks to see if you follow.",
-        "Walkers never meet. The Roll is the one place their strands touch. Sometimes, the Ledger admits, the ink runs."
+        "Walkers never meet. The Roll is the one place their nights touch. Sometimes, the Ledger admits, the ink runs."
       ],
       "the-quiet": [
-        "Colorless. Soundless. It is not a Remnant. It is where one used to be.",
-        "The Ledger tried to write its name. The line stayed blank. The ink was there. The name was not.",
-        "It rises from the stratum where a third of the land went missing. Something came close there, once."
+        "Not a Remnant: the hole where one used to be. No color, no sound. It rises from the Void, where Orvane lost a third.",
+        "The Ledger tried to write its name. The line stayed blank. The Quiet erases even the words about it.",
+        "It is what the Morning leaves: things not killed but forgotten whole. Vorn's Biscuit is a piece of it, tamed."
       ],
       "stray-armor": [
-        "An empty suit of plate walking the road in the wrong direction.",
-        "It walks back toward dusk. The Nameless steps aside to let it pass, and bows.",
-        "Scratched inside the helmet, a name worn too thin to read. The Ledger has a guess. It keeps it."
+        "An empty suit of armor walking the road the wrong way, back toward dusk.",
+        "The Nameless, the knight whose armor is empty too, steps aside to let it pass, and bows.",
+        "Scratched inside the helmet: Aldric. Another walker who gave the altars every memory, until only the armor walked."
       ],
       "the-dawn": [
-        "A line of pale light. It does not attack. It only grows.",
-        "The Ledger has tried to record its length. By the time the number is written, it is wrong.",
-        "Near it, the Ledger's ink dries pale. The page is warm, and the Ledger does not know why."
+        "The end of the road: a line of pale light where the Morning begins. It does not attack. It only grows.",
+        "The Ledger tried to record its length. By the time the number is written, it is wrong.",
+        "If it reaches the road, the one who holds Orvane in their sleep wakes up, and Orvane ends. Not tonight."
       ],
       "titan-king": [
-        "Stone to the shoulders. The crown has grown into the bone, the way a root grows round a nail.",
-        "At this depth he is as old as the ground. He does not remember being anything else. The Ledger does.",
-        "Under the stone, where his hand holds the sword, the skin is still warm. The Ledger checked twice."
+        "The Fallen King as the Elder World remembers him: stone to the shoulders, the crown grown into his skull.",
+        "At this depth he is as old as the ground. He no longer remembers being a man. The Ledger remembers for him.",
+        "Under the stone, his sword hand is still warm. He was Aldemar, a man, before the crown kept him on the throne."
       ],
       "hallowed-king": [
-        "Haloed, veiled, hands folded. The priests of this stratum made him a saint. He did not ask.",
-        "He is not praying. The Ledger has listened. He is counting nights, very quietly, and losing count.",
-        "Under the veil his eyes are open. He is watching the road for whoever comes next."
+        "The Fallen King as the priests of the Hallowed saw him: a veiled saint with folded hands. He never asked for it.",
+        "He is not praying. The Ledger has listened: he is counting the nights he walked, and losing count.",
+        "Under the veil his eyes are open. He watches the road for the walker who will one day sit on the throne after him."
       ],
       "star-crowned": [
-        "His crown is a ring of small, cold stars. They were lit to keep someone company.",
-        "One star is missing from the ring. Garrick carries a shard of exactly the right size.",
-        "He holds very still under them, the way you hold still when someone has fallen asleep on your shoulder."
+        "The Fallen King under a crown of small cold stars, from the stratum where the sky itself was made.",
+        "One star is missing from his crown. Garrick carries a shard of exactly the right size, and will not sell it.",
+        "The stars were lit to keep him company through the nights. He has never once let them go out."
       ],
       "woven-king": [
-        "Made of thread. The loose ends run up into the dark, as if someone were still holding them.",
-        "The thread is very fine and very tired. The Ledger knows the hand that spun it, and will not name it.",
-        "Where his heart would be, the weave is doubled, knotted, redone. Someone mended him. Often."
+        "The Fallen King made of thread, like the Long Night itself. His loose ends run up into the dark, to a loom.",
+        "The thread is Eldra's, the weaver who made the Long Night. She spun him too, very carefully.",
+        "Where his heart would be, the weave is knotted and redone many times. Eldra mends him, often."
       ],
       "sketched-king": [
-        "Drawn in charcoal, unshaded, half erased. The sword is only an outline. It still cuts.",
-        "The erased half is still there if you tilt your head: a second crown, smaller, drawn under his.",
-        "His last line stops mid-stroke, as if the hand drawing him had to sit down for a moment."
+        "The Fallen King drawn in charcoal, unshaded, half erased. His sword is only an outline. It still cuts.",
+        "Under the erased half is a smaller crown: the king who wore it before him, and walked before him.",
+        "His last line stops mid-stroke, as if the hand drawing him had grown tired and put the charcoal down."
       ],
       "king-name": [
-        "The letters of a name, standing in the shape of a man. They hold together out of habit.",
-        "The Ledger can read each letter. Not all of them at once. Some names are too heavy to lift together.",
-        "The first three letters are the same as yours. The Ledger stops reading there, every time."
+        "The Fallen King as a name: the letters of ALDEMAR, standing in the shape of a man.",
+        "The Ledger can read each letter, but not all at once. A name this heavy has to be read slowly.",
+        "Its first letter is the same as yours: A, for Aldemar and for Aldric. The Ledger stops reading there."
       ],
       "sleeping-king": [
-        "Asleep on his throne. He still fights, eyes closed, the way you walk a road you know by heart.",
-        "His lips move in his sleep. The Ledger has written it down: one word, \"again\".",
-        "In his dream the night is short and the fields are cut. The Ledger does not wake him."
+        "The Fallen King, asleep on his throne. He still fights with his eyes closed, like a man walking a road by heart.",
+        "He talks in his sleep. The Ledger wrote it down: one word, \"again\".",
+        "He dreams of a short night and a harvest brought in. He is inside the same dream as Orvane. The Ledger lets him be."
       ],
       "window-king": [
-        "Turned away from you, at a bright window. He fights without looking round.",
-        "On the glass, beside his own reflection, there is room for one more. He leaves it free.",
-        "Once, only once, he raised a hand to the glass. The Ledger recorded a greeting. It may have been a goodbye."
+        "The Fallen King with his back to you, at a bright window. He fights without turning round.",
+        "On the glass, beside his reflection, there is room for one more face. He leaves it free.",
+        "Through the window he watches the one who dreams Orvane: you. Once, only once, he waved."
       ],
       "hollow-crown": [
-        "Only the crown, holding the shape of a head that is no longer under it.",
-        "It floats at exactly his height. Nobody told it he left, or it has chosen not to hear.",
-        "Inside the ring the air is warm and shaped like a head. The Ledger notes it is the size of anyone's."
+        "Only the crown, floating, holding the shape of a head that is no longer under it.",
+        "Aldemar has let go of it. The crown floats on at his height, waiting for the next walker who stops.",
+        "The ring fits any head. Whoever stops walking for good is the next one it will hold."
       ],
       "blank-king": [
-        "Almost the color of the page. The Ledger found him only by the shadow of his sword.",
-        "He is fading from the edges in. The Ledger writes his entry in its darkest ink, and presses hard.",
-        "He still rises when you come, though almost nothing is left to rise. It is a matter of manners."
+        "The Fallen King, faded almost to the color of the page. The Ledger found him only by his sword's shadow.",
+        "He fades from the edges in, as Orvane does. The Ledger writes his entry in its darkest ink, and presses hard.",
+        "He still rises when you come, though almost nothing is left of him. It is a matter of manners."
       ],
       aldemar: [
-        "A tired man in plain clothes. No crown. His sword is lowered, and has been for a while.",
-        "Forty years a king. The Ledger keeps another column for him, much longer, with no heading.",
-        "He knows your name. He says it the way you say your own, alone, when you are very tired."
+        "Aldemar himself: a tired man in plain clothes, no crown. His sword is lowered, and has been for a while.",
+        "Forty years a king, and far longer a walker. The Ledger keeps a second column for his nights. It has no end.",
+        "He knows your name. He says it kindly, the way you speak to yourself at the end of a very long night."
       ]
     }
   },
@@ -182,129 +183,129 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
     },
     lines: {
       "hour-gargoyle": [
-        "Elle compte les nuits sur ses griffes. Elle n'a plus de griffes.",
-        "Elle est passée aux dents. Le Grand Livre lui a prêté une marge, qu'elle a remplie aussi.",
-        "Une fois par nuit, elle se tourne vers la fenêtre et dit un nombre. Toujours un de plus."
+        "Une gargouille du donjon qui compte les nuits de la Longue Nuit sur ses griffes. Elle n'en a plus depuis longtemps.",
+        "Elle est passée aux dents, puis à la marge du Grand Livre. La marge est pleine aussi.",
+        "Une fois par nuit, elle se tourne vers la fenêtre et dit à voix haute le compte du soir. Toujours un de plus."
       ],
       "banner-wraith": [
-        "Une bannière royale qui a oublié ses couleurs et les cherche.",
+        "Une bannière royale d'Orvane, délavée pendant l'Année pâle. Elle erre dans le donjon, à la recherche de ses couleurs.",
         "Elle a essayé le violet des feux, un temps. Ça ne lui allait pas. Rien ne lui va, que les siennes.",
-        "Kaelen pourrait lui dire ses couleurs. Quand elle passe, il regarde ailleurs."
+        "Kaelen se souvient de ses couleurs : un mot de lui, et sa quête finirait. Quand elle passe, il regarde ailleurs."
       ],
       "fallen-sentinel": [
-        "Les frères d'armes de Kaelen. Ils le saluent avant d'attaquer.",
-        "Ils tiennent le poste qu'on leur a confié le dernier soir. Personne n'est venu les relever.",
-        "Une place reste toujours vide dans leur rang. Chaque nuit, ils se resserrent autour, avec soin."
+        "Les gardes du roi, toujours à leur poste. Ce sont les frères d'armes de Kaelen : ils le saluent avant d'attaquer.",
+        "Ils tiennent le poste reçu le dernier soir avant la Longue Nuit. Personne n'est venu les relever.",
+        "Une place reste toujours vide dans leur rang : celle de Kaelen. Chaque nuit, ils se resserrent autour, avec soin."
       ],
       "hollow-page": [
-        "Une livrée de page, sans page dedans. Il porte toujours un message.",
+        "Une livrée de page, vide, qui porte toujours une lettre scellée à travers le donjon.",
         "Le sceau de la lettre est celui du roi. Le Grand Livre ne l'a pas ouverte : ce courrier n'est pas pour lui.",
-        "Il cherche un chevalier. Chaque nuit, il s'arrête près de Kaelen, puis décide qu'il s'est trompé."
+        "La lettre est adressée à Kaelen. Chaque nuit, le page s'arrête près de lui, puis perd courage."
       ],
       "last-hound": [
-        "Les chiens du roi ont été lâchés la nuit où le donjon s'est tu. Ils suivent toujours la piste.",
-        "La piste sort du donjon, traverse le marais, entre dans le Bois. Puis elle s'arrête, tout simplement.",
-        "Près de Kaelen, ils cessent de gronder. Ils s'assoient, le regardent, et attendent un ordre qui ne vient pas."
+        "Les chiens du roi, lâchés la nuit où le donjon s'est tu. Ils suivent toujours une piste.",
+        "La piste sort du donjon, traverse le marais, entre dans le Bois, puis s'arrête net. Ils tournent autour toute la nuit.",
+        "C'est l'odeur de Kaelen. Près de lui, ils cessent de gronder, s'assoient, et attendent un ordre qui ne vient pas."
       ],
       "candle-maid": [
-        "Elle allume la grande salle chaque nuit. Personne n'est venu dîner depuis très longtemps.",
+        "Une servante qui allume la grande salle chaque nuit. Personne n'est venu dîner depuis le début de la Longue Nuit.",
         "Elle dresse deux couverts : celui du roi, et celui d'un invité toujours en retard. La soupe reste au chaud.",
         "Elle en est toujours à sa première mèche. Le Grand Livre ignore comment, et a choisi de ne pas demander."
       ],
       "stone-warden": [
-        "Il garde la porte de la grande salle. Personne ne l'a franchie depuis très longtemps.",
+        "Une statue de pierre qui garde la porte de la grande salle. Personne n'a franchi cette porte depuis très longtemps.",
         "Tout le monde entre par la brèche du mur est. On l'a prévenu. Il préfère la porte.",
-        "Les derniers à passer la porte : un roi, et une femme qui portait un métier à tisser. Depuis, personne."
+        "Les derniers à passer sa porte : le roi, et Eldra la tisseuse avec son métier, la nuit où fut tissée la Longue Nuit."
       ],
       "ruined-king": [
-        "Sa couronne est fêlée. Sur le bord, presque effacée, une seule lettre : A.",
-        "Son trône fait face à la fenêtre, pas à la porte. Il ne regarde pas qui entre. Il le sait déjà.",
-        "Le Grand Livre a toutes les nuits qu'il a marché. Aucune pour celle où il s'est assis. Ce devait être un instant."
+        "Aldemar, dernier roi d'Orvane, qui tombe et se relève chaque nuit. Sa couronne fêlée porte encore un A.",
+        "Il a demandé lui-même la Longue Nuit, pour tenir le Matin hors d'Orvane. Il garde encore cette nuit.",
+        "Il fut le premier marcheur. Après des nuits sans nombre, il s'est assis un instant, et la couronne l'a retenu."
       ],
       "court-jester": [
-        "Il rit chaque fois que tu arrives, comme s'il savait que tu viendrais. Il savait.",
+        "Le bouffon du roi. Il rit chaque fois qu'un marcheur arrive : tous viennent tuer le roi.",
         "La petite tête couronnée de sa marotte connaît toutes ses blagues. Elle ne rit plus. Lui, si.",
-        "Il garde une blague qu'il ne raconte jamais. Il dit qu'elle parle d'un roi, et qu'elle n'est pas encore drôle."
+        "Il garde une blague qu'il ne raconte jamais, sur un roi qui s'est assis un instant. Elle n'est pas encore drôle, dit-il."
       ],
       "seam-warden": [
-        "Il tient une fissure de la nuit fermée, à deux mains. Bats-le, et la fissure se referme.",
-        "Ce n'est pas contre toi qu'il la tient fermée. C'est contre ce qui se trouve de l'autre côté.",
-        "Ses mains sont du même verre que le ciel, reprisées en dix endroits. Le Comptoir reconnaît ses pièces."
+        "Un gardien qui tient une fissure de la nuit fermée, à deux mains. Bats-le, et la fissure se referme.",
+        "Ce n'est pas contre toi qu'il la tient fermée, mais contre ce qui attend de l'autre côté : le Matin.",
+        "Ses mains sont du même verre que le ciel, rapiécées en dix endroits. C'est le Comptoir qui a posé les pièces."
       ],
       "walker-echo": [
-        "L'ombre d'un autre marcheur, venue d'une autre nuit. Elle porte un nom du Registre.",
+        "L'ombre d'un autre marcheur du Registre, qui mène sa propre nuit. Un instant, vos deux nuits se touchent.",
         "Il se bat à tes côtés un instant, puis retourne à sa nuit. Il ne se retourne jamais pour voir si tu suis.",
-        "Les marcheurs ne se croisent pas. Le Registre est le seul lieu où leurs fils se touchent. Parfois, l'encre bave."
+        "Les marcheurs ne se croisent pas. Le Registre est le seul lieu où leurs nuits se touchent. Parfois, l'encre bave."
       ],
       "the-quiet": [
-        "Sans couleur. Sans bruit. Ce n'est pas un Vestige. C'est l'endroit où il y en avait un.",
-        "Le Grand Livre a voulu écrire son nom. La ligne est restée blanche. L'encre était là. Le nom, non.",
-        "Il remonte de la strate où un tiers du pays a disparu. Quelque chose s'est approché, là-bas, une fois."
+        "Pas un Vestige : la place vide d'un Vestige, sans couleur ni son. Il vient du Néant, où un tiers d'Orvane a disparu.",
+        "Le Grand Livre a voulu écrire son nom. La ligne est restée blanche. Le Silence efface même les mots sur lui.",
+        "C'est ce que laisse le Matin : des choses non pas tuées, mais oubliées en entier. Biscuit, chez Vorn, en est un morceau."
       ],
       "stray-armor": [
-        "Une armure vide qui suit la route dans le mauvais sens.",
-        "Elle repart vers le crépuscule. Le Sans-Nom s'écarte pour la laisser passer, et s'incline.",
-        "Gravé dans le casque, un nom trop usé pour être lu. Le Grand Livre a une idée. Il la garde pour lui."
+        "Une armure vide qui suit la route à l'envers, vers le crépuscule.",
+        "Le Sans-Nom, le chevalier à l'armure vide lui aussi, s'écarte pour la laisser passer, et s'incline.",
+        "Gravé dans le casque : Aldric. Un marcheur de plus qui a tout donné aux autels, jusqu'à ce que seule l'armure marche."
       ],
       "the-dawn": [
-        "Une ligne de lumière pâle. Elle n'attaque pas. Elle grandit, c'est tout.",
+        "Le bout de la route : une ligne de lumière pâle, là où commence le Matin. Elle n'attaque pas. Elle grandit.",
         "Le Grand Livre a voulu noter sa longueur. Le temps d'écrire le nombre, il est déjà faux.",
-        "Près d'elle, l'encre du Grand Livre sèche pâle. La page est tiède, et il ne sait pas pourquoi."
+        "Si elle atteint la route, celui qui porte Orvane dans son sommeil se réveille, et Orvane finit. Pas cette nuit."
       ],
       "titan-king": [
-        "De pierre jusqu'aux épaules. La couronne a poussé dans l'os, comme une racine autour d'un clou.",
-        "À cette profondeur, il est aussi vieux que le sol. Il ne se souvient pas d'autre chose. Le Grand Livre, si.",
-        "Sous la pierre, là où sa main tient l'épée, la peau est encore tiède. Le Grand Livre a vérifié deux fois."
+        "Le roi déchu tel que s'en souvient le Monde ancien : de pierre jusqu'aux épaules, la couronne soudée au crâne.",
+        "À cette profondeur, il est aussi vieux que le sol. Il ne se souvient plus d'avoir été un homme. Le Grand Livre, si.",
+        "Sous la pierre, sa main d'épée est encore tiède. Il était Aldemar, un homme, avant que la couronne le garde."
       ],
       "hallowed-king": [
-        "Nimbé, voilé, les mains jointes. Les prêtres de cette strate en ont fait un saint. Il n'a rien demandé.",
-        "Il ne prie pas. Le Grand Livre a écouté : il compte les nuits, tout bas, et perd le compte.",
-        "Sous le voile, ses yeux sont ouverts. Il guette sur la route celui qui viendra ensuite."
+        "Le roi déchu tel que le voyaient les prêtres du Sacré : un saint voilé aux mains jointes. Il n'a rien demandé.",
+        "Il ne prie pas. Le Grand Livre a écouté : il compte les nuits qu'il a marché, et perd le compte.",
+        "Sous le voile, ses yeux sont ouverts. Il guette sur la route le marcheur qui s'assiéra un jour après lui."
       ],
       "star-crowned": [
-        "Sa couronne est un anneau de petites étoiles froides. On les a allumées pour tenir compagnie à quelqu'un.",
-        "Il manque une étoile à l'anneau. Garrick a dans son sac un éclat qui a exactement la bonne taille.",
-        "Il se tient très immobile sous elles, comme quand quelqu'un s'est endormi sur ton épaule."
+        "Le roi déchu sous une couronne de petites étoiles froides, venu de la strate où l'on a fait le ciel.",
+        "Il manque une étoile à sa couronne. Garrick a un éclat exactement de la bonne taille, et refuse de le vendre.",
+        "On a allumé ces étoiles pour lui tenir compagnie au fil des nuits. Il n'en a jamais laissé une s'éteindre."
       ],
       "woven-king": [
-        "Fait de fil. Les bouts libres montent dans le noir, comme si quelqu'un les tenait encore.",
-        "Le fil est très fin et très las. Le Grand Livre connaît la main qui l'a filé, et ne la nommera pas.",
-        "À l'endroit du cœur, la trame est doublée, nouée, reprise. Quelqu'un l'a raccommodé. Souvent."
+        "Le roi déchu fait de fil, comme la Longue Nuit. Ses bouts libres montent dans le noir, jusqu'à un métier.",
+        "Le fil est celui d'Eldra, la tisseuse qui a fait la Longue Nuit. Elle l'a filé lui aussi, avec grand soin.",
+        "À l'endroit du cœur, la trame est nouée et reprise maintes fois. Eldra le raccommode, souvent."
       ],
       "sketched-king": [
-        "Dessiné au fusain, sans ombre, à moitié gommé. L'épée n'est qu'un contour. Elle coupe quand même.",
-        "La moitié gommée est encore là, si on penche la tête : une seconde couronne, plus petite, sous la sienne.",
-        "Son dernier trait s'arrête en plein geste, comme si la main qui le traçait avait dû s'asseoir un instant."
+        "Le roi déchu dessiné au fusain, sans ombre, à moitié gommé. L'épée n'est qu'un contour. Elle coupe quand même.",
+        "Sous la moitié gommée, une couronne plus petite : celle du roi d'avant, qui a marché avant lui.",
+        "Son dernier trait s'arrête en plein geste, comme si la main qui le dessinait, fatiguée, avait posé le fusain."
       ],
       "king-name": [
-        "Les lettres d'un nom, debout en forme d'homme. Elles tiennent ensemble par habitude.",
-        "Le Grand Livre sait lire chaque lettre. Pas toutes à la fois : certains noms sont trop lourds d'un seul bloc.",
-        "Les trois premières lettres sont les mêmes que les tiennes. Le Grand Livre s'arrête là, chaque fois."
+        "Le roi déchu devenu un nom : les lettres d'ALDEMAR, debout en forme d'homme.",
+        "Le Grand Livre sait lire chaque lettre, pas toutes à la fois. Un nom aussi lourd se lit lentement.",
+        "Sa première lettre est la même que la tienne : A, pour Aldemar et pour Aldric. Le Grand Livre s'arrête là."
       ],
       "sleeping-king": [
-        "Endormi sur son trône. Il se bat encore, les yeux fermés, comme on suit une route qu'on connaît par cœur.",
-        "Ses lèvres bougent dans son sommeil. Le Grand Livre a noté un seul mot : « encore ».",
-        "Dans son rêve, la nuit est courte et les blés sont fauchés. Le Grand Livre ne le réveille pas."
+        "Le roi déchu, endormi sur son trône. Il se bat les yeux fermés, comme on suit une route qu'on connaît par cœur.",
+        "Il parle en dormant. Le Grand Livre a noté un seul mot : « encore ».",
+        "Il rêve d'une nuit courte et de blés rentrés. Il est dans le même rêve qu'Orvane. Le Grand Livre le laisse dormir."
       ],
       "window-king": [
-        "Dos tourné, devant une fenêtre claire. Il se bat sans se retourner.",
-        "Sur la vitre, à côté de son reflet, il y a la place pour un autre. Il la laisse libre.",
-        "Une fois, une seule, il a levé la main vers la vitre. Le Grand Livre a noté un salut. C'était peut-être un adieu."
+        "Le roi déchu, dos tourné, devant une fenêtre claire. Il se bat sans se retourner.",
+        "Sur la vitre, à côté de son reflet, il y a la place pour un autre visage. Il la laisse libre.",
+        "Par la fenêtre, il regarde celui qui rêve Orvane : toi. Une fois, une seule, il t'a fait signe."
       ],
       "hollow-crown": [
-        "Rien que la couronne, qui garde la forme d'une tête qui n'est plus dessous.",
-        "Elle flotte exactement à sa hauteur. On ne lui a pas dit qu'il était parti, ou elle a choisi de ne pas entendre.",
-        "Dans l'anneau, l'air est tiède et a la forme d'une tête. Le Grand Livre note qu'elle est à la taille de n'importe qui."
+        "Rien que la couronne, qui flotte et garde la forme d'une tête qui n'est plus dessous.",
+        "Aldemar l'a lâchée. Elle flotte encore à sa hauteur, en attendant le prochain marcheur qui s'arrêtera.",
+        "L'anneau va à n'importe quelle tête. Celui qui cessera de marcher pour de bon sera le prochain qu'elle gardera."
       ],
       "blank-king": [
-        "Presque de la couleur de la page. Le Grand Livre ne l'a trouvé qu'à l'ombre de son épée.",
-        "Il s'efface depuis les bords. Le Grand Livre écrit son entrée à l'encre la plus noire, et appuie fort.",
-        "Il se lève encore quand tu arrives, alors qu'il ne reste presque rien pour se lever. Question de politesse."
+        "Le roi déchu, presque de la couleur de la page. Le Grand Livre ne l'a trouvé qu'à l'ombre de son épée.",
+        "Il s'efface depuis les bords, comme Orvane. Le Grand Livre écrit son entrée à l'encre la plus noire, et appuie fort.",
+        "Il se lève encore quand tu arrives, alors qu'il ne reste presque rien de lui. Question de politesse."
       ],
       aldemar: [
-        "Un homme fatigué, en habits simples. Pas de couronne. Son épée est baissée, et depuis un moment.",
-        "Quarante ans roi. Le Grand Livre tient pour lui une autre colonne, bien plus longue, sans titre.",
-        "Il connaît ton nom. Il le dit comme on dit le sien, seul, quand on est très fatigué."
+        "Aldemar lui-même : un homme fatigué, en habits simples, sans couronne. Son épée est baissée, depuis un moment.",
+        "Quarante ans roi, et bien plus longtemps marcheur. Le Grand Livre tient une seconde colonne pour ses nuits. Sans fin.",
+        "Il connaît ton nom. Il le dit avec douceur, comme on se parle à soi-même au bout d'une très longue nuit."
       ]
     }
   }

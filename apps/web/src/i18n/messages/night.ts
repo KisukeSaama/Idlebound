@@ -11,32 +11,32 @@ export const night = defineMessages({
   fr: {
     /** Toast text of an element's first appearance (its title is the window's name). */
     reveal: {
-      map: "La route garde les étapes franchies. Tu peux y revenir.",
-      gear: "Une relique. Tu peux la porter.",
-      market: "Assez d'éclats pour le Comptoir. Il t'attend au marché.",
-      ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension et les autels t'y attendent.",
-      hall: "Le Grand Livre t'ouvre une page : hauts faits, Bestiaire, Chronique.",
-      loom: "Eldra t'attend au Sanctuaire. Son Métier défait la nuit, un fil plus bas.",
-      caravan: "La Roulotte du Comptoir passe entre les nuits. Une marchandise par semaine, au marché.",
-      promise: "Quelqu'un te reconnaît à moitié, et te demande ta parole pour la nuit. Au Sanctuaire.",
-      altars2: "Trois pierres de plus te répondent : le Temps, le Marchandage, le Trésor.",
-      altars3: "Les dernières pierres du Sanctuaire s'éveillent. Treize, à présent."
+      map: "La carte est ouverte : reviens sur une étape déjà franchie pour gagner de l'or sans risque.",
+      gear: "Ta première relique : équipe-la pour ajouter ses bonus à ta compagnie.",
+      market: "Tu as assez d'éclats pour le marché : coffres de reliques, potions et sablier s'y achètent en éclats.",
+      ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension te fait recommencer la route contre des essences, que les autels changent en bonus permanents.",
+      hall: "Le Grand Livre t'ouvre une page : hauts faits (ils augmentent tes dégâts), Bestiaire et Chronique.",
+      loom: "La Descente s'ouvre au Sanctuaire, au Métier d'Eldra : elle efface tes essences et tes autels, et te donne des fils qui achètent des bonus que rien n'efface.",
+      caravan: "La Roulotte du Comptoir est au marché : une marchandise rare à payer en éclats, qui change chaque semaine.",
+      promise: "Au Sanctuaire, un compagnon te demande ta parole : une règle à tenir toute la nuit. Tenue, elle fait avancer ses souvenirs, et ses deux derniers n'arrivent qu'ainsi.",
+      altars2: "Trois nouveaux autels au Sanctuaire : le Temps, le Marchandage et le Trésor.",
+      altars3: "Les six derniers autels du Sanctuaire s'éveillent : treize en tout, à présent."
     },
     /** How a timed event ends, won or not. */
     results: {
-      seam: { won: "La Brèche est refermée.", escaped: "La Brèche se referme sans toi." },
-      quiet: { won: "Le Silence se défait.", escaped: "Le Silence passe son chemin." },
-      stray: { won: "L'armure tombe, vide.", escaped: "L'armure s'éloigne, hors de vue." },
-      wager: { won: "Pip paie, et perd le compte.", escaped: "Pip détale en riant." }
+      seam: { won: "Brèche refermée : son or, un fragment, parfois un éclat ou une relique.", escaped: "La Brèche se referme sans toi. Tu ne perds rien." },
+      quiet: { won: "Le Silence se défait : son or et un fragment.", escaped: "Le Silence passe son chemin. Tu ne perds rien." },
+      stray: { won: "L'armure tombe, vide : son or, et une relique nommée la première fois.", escaped: "L'armure s'éloigne. Tu ne perds rien." },
+      wager: { won: "Pip perd son pari et paie une bourse d'or.", escaped: "Pip détale en riant avec son or. Tu ne perds rien." }
     },
-    walkerNamed: (name: string, seconds: Count) => `L'écho de ${name} se bat à tes côtés pendant ${seconds} s.`,
+    walkerNamed: (name: string, seconds: Count) => `L'écho de ${name} se bat à tes côtés : DPS ×1,25 pendant ${seconds} s.`,
     wager: {
       label: "Pari de Pip",
       strikes: (count: Count, total: Count) => `${count} / ${total} coups`
     },
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds} s`,
     descendedTitle: "La Descente",
-    descendedText: (threads: string) => `+${threads} fils. La nuit reprend, un fil plus bas.`,
+    descendedText: (threads: string) => `+${threads} fils à dépenser au Sanctuaire, dans la Descente. Essences et autels sont effacés, la route reprend à l'étape 1.`,
     cutscene: { skip: "Passer", next: "Continuer" },
     reunionTitle: "Retrouvailles",
     reunionText: (duration: string) => `La compagnie a tenu la route sans toi. Elle frappe trois fois plus fort pendant ${duration}.`,
@@ -50,14 +50,14 @@ export const night = defineMessages({
       moments: "Sur la route",
       companions: "La compagnie",
       hired: "A rejoint la compagnie",
-      talent: (hero: string) => `Technique retrouvée · ${hero}`,
+      talent: (hero: string) => `Talent acheté · ${hero}`,
       passed: (stage: Count) => `Étape ${stage} · la compagnie est passée`,
-      wall: (stage: Count) => `Étape ${stage} · a tenu une fois, puis a cédé`,
-      blocked: (stage: Count) => `Étape ${stage} · barre encore la route`,
+      wall: (stage: Count) => `Étape ${stage} · a d'abord repoussé la compagnie, puis est tombé`,
+      blocked: (stage: Count) => `Étape ${stage} · bloque encore la compagnie : renforce-la pour passer`,
       moreGuardians: (count: number) => (count === 1 ? "Un autre gardien franchi" : `${count} autres gardiens franchis`),
-      moreTalents: (count: number) => (count === 1 ? "Une autre technique retrouvée" : `${count} autres techniques retrouvées`),
+      moreTalents: (count: number) => (count === 1 ? "Un autre talent acheté" : `${count} autres talents achetés`),
       still: "La compagnie a gardé la route. Rien n'a bougé.",
-      fragment: "Gardé pour toi",
+      fragment: "Fragment trouvé",
       moreFragments: (count: number) => (count === 1 ? "Un autre fragment t'attend dans la Chronique" : `${count} autres fragments t'attendent dans la Chronique`),
       resume: "Reprendre la route"
     },
@@ -68,7 +68,7 @@ export const night = defineMessages({
       reunion: "Retrouvailles : dégâts des compagnons ×3"
     },
     darkNight: "Garder le ciel du Royaume",
-    darkNightHint: "En descendant, le ciel pâlit : c'est la route. Coche pour garder la nuit du premier Âge.",
+    darkNightHint: "Plus tu descends, plus le ciel du décor pâlit. Active cette option pour garder le ciel sombre du premier Âge. Rien ne change au jeu.",
     map: {
       stratum: "Strate",
       stratumOption: (label: string, start: Count, end: Count) => `${label} (étapes ${start} à ${end})`
@@ -76,31 +76,31 @@ export const night = defineMessages({
   },
   en: {
     reveal: {
-      map: "The road keeps the stages behind you. You can walk back.",
-      gear: "A relic. You can wear it.",
-      market: "Shards enough for the Stallkeeper. The stall is open at the market.",
-      ascension: "The Sanctum of Dusk opens: ascension and the altars wait for you there.",
-      hall: "The Ledger opens a page for you: deeds, Bestiary, Chronicle.",
-      loom: "Eldra waits in the Sanctum. Her Loom unweaves the night, one thread deeper.",
-      caravan: "The Stallkeeper's Caravan travels between nights. One ware a week, at the market.",
-      promise: "Someone half remembers you, and asks for your word tonight. In the Sanctum.",
-      altars2: "Three more stones answer you: Time, Bargain, Treasure.",
-      altars3: "The last stones of the Sanctum wake. Thirteen, now."
+      map: "The map is open: go back to a stage you already cleared to earn gold safely.",
+      gear: "Your first relic: equip it to add its bonuses to your company.",
+      market: "You have enough shards for the market: relic chests, potions and the hourglass are bought there with shards.",
+      ascension: "The Sanctum of Dusk opens: ascending starts the road over for essences, which the altars turn into permanent bonuses.",
+      hall: "The Ledger opens a page for you: deeds (they raise your damage), Bestiary and Chronicle.",
+      loom: "The Descent opens in the Sanctum, at Eldra's Loom: it wipes your essences and altars, and gives you threads that buy bonuses nothing can take away.",
+      caravan: "The Stallkeeper's Caravan is at the market: one rare ware, paid in shards, that changes every week.",
+      promise: "In the Sanctum, a companion asks for your word: one rule to keep all night. Kept, it moves their memories along, and their last two come only this way.",
+      altars2: "Three new altars in the Sanctum: Time, Bargain and Treasure.",
+      altars3: "The last six altars of the Sanctum wake: thirteen in all, now."
     },
     results: {
-      seam: { won: "The Seam holds shut.", escaped: "The Seam closes without you." },
-      quiet: { won: "The Quiet comes apart.", escaped: "The Quiet moves on." },
-      stray: { won: "The armor falls, empty.", escaped: "The armor walks out of sight." },
-      wager: { won: "Pip pays up, and loses count.", escaped: "Pip runs off, laughing." }
+      seam: { won: "Seam closed: its gold, a fragment, sometimes a shard or a relic.", escaped: "The Seam closes without you. You lose nothing." },
+      quiet: { won: "The Quiet comes apart: its gold and a fragment.", escaped: "The Quiet moves on. You lose nothing." },
+      stray: { won: "The armor falls, empty: its gold, and a named relic the first time.", escaped: "The armor walks away. You lose nothing." },
+      wager: { won: "Pip loses his bet and pays a purse of gold.", escaped: "Pip runs off laughing with his gold. You lose nothing." }
     },
-    walkerNamed: (name: string, seconds: Count) => `The echo of ${name} fights beside you for ${seconds}s.`,
+    walkerNamed: (name: string, seconds: Count) => `The echo of ${name} fights beside you: DPS ×1.25 for ${seconds}s.`,
     wager: {
       label: "Pip's Wager",
       strikes: (count: Count, total: Count) => `${count} / ${total} strikes`
     },
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds}s`,
     descendedTitle: "The Descent",
-    descendedText: (threads: string) => `+${threads} threads. The night begins again, one thread lower.`,
+    descendedText: (threads: string) => `+${threads} threads to spend in the Sanctum, under Descent. Essences and altars are wiped, the road starts again at stage 1.`,
     cutscene: { skip: "Skip", next: "Continue" },
     reunionTitle: "Reunion",
     reunionText: (duration: string) => `The company held the road without you. It strikes three times harder for ${duration}.`,
@@ -113,14 +113,14 @@ export const night = defineMessages({
       moments: "On the road",
       companions: "The company",
       hired: "Joined the company",
-      talent: (hero: string) => `Technique remembered · ${hero}`,
+      talent: (hero: string) => `Talent bought · ${hero}`,
       passed: (stage: Count) => `Stage ${stage} · the company went through`,
-      wall: (stage: Count) => `Stage ${stage} · held once, then gave way`,
-      blocked: (stage: Count) => `Stage ${stage} · still bars the road`,
+      wall: (stage: Count) => `Stage ${stage} · pushed the company back first, then fell`,
+      blocked: (stage: Count) => `Stage ${stage} · still stops the company: strengthen it to get through`,
       moreGuardians: (count: number) => (count === 1 ? "One more guardian passed" : `${count} more guardians passed`),
-      moreTalents: (count: number) => (count === 1 ? "One more technique remembered" : `${count} more techniques remembered`),
+      moreTalents: (count: number) => (count === 1 ? "One more talent bought" : `${count} more talents bought`),
       still: "The company held the road. Nothing moved.",
-      fragment: "Kept for you",
+      fragment: "Fragment found",
       moreFragments: (count: number) => (count === 1 ? "One more fragment waits in the Chronicle" : `${count} more fragments wait in the Chronicle`),
       resume: "Back on the road"
     },
@@ -131,7 +131,7 @@ export const night = defineMessages({
       reunion: "Reunion: companion damage ×3"
     },
     darkNight: "Keep the Kingdom's sky",
-    darkNightHint: "The sky pales as you descend, as the road intends. Check to keep the night of the first Age.",
+    darkNightHint: "The deeper you go, the paler the sky behind the fight. Turn this on to keep the dark sky of the first Age. Nothing else in the game changes.",
     map: {
       stratum: "Stratum",
       stratumOption: (label: string, start: Count, end: Count) => `${label} (stages ${start} to ${end})`

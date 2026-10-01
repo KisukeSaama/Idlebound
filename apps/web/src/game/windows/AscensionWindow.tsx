@@ -18,6 +18,7 @@ import {
   stageForThreads,
   weaveCost,
   weaveLevel,
+  wandererSkip,
   weaveValue
 } from "@idlebound/game";
 import { useState } from "react";
@@ -72,6 +73,8 @@ function Sanctum({ onClose }: { onClose: () => void }) {
   const now = Date.now();
   const preview = ascensionPreview(state, now);
   const canAscend = store.engine.canAscend();
+  // Where the next night starts: past the stages the Altar of the Wanderer clears.
+  const nextStart = wandererSkip(state) + 1;
   // The Nameless asked the walker to keep their essences this night.
   const keeping = promiseAbstains(state, "essences");
   // The stones that answer this walker (the Sanctum wakes in three times); those raised to
@@ -83,7 +86,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
     if (state.settings.confirmAscension) {
       const ok = await ui.confirm({
         title: text.confirmTitle,
-        text: `${text.confirmText(fmt(preview))} ${t.sanctum.kingWaits}`,
+        text: `${text.confirmText(fmt(preview), nextStart)} ${t.sanctum.kingWaits}`,
         confirmLabel: text.confirmLabel
       });
       if (!ok) return;
@@ -113,6 +116,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
             <>
               <p>{text.fromStage} <strong>{state.maxStage}</strong>{text.colon} <strong className="essence-value">{text.gain(fmt(preview))}</strong></p>
               <button type="button" className="btn btn-violet btn-lg" onClick={() => void ascend()}>{text.ascend}</button>
+              <p className="modal-hint">{text.ascendHint(nextStart)}</p>
             </>
           ) : (
             <>
@@ -278,6 +282,8 @@ function Loom({ onClose }: { onClose: () => void }) {
                 type="button"
                 className="btn btn-violet btn-sm"
                 disabled={woven || cost > state.threads}
+                title={woven ? undefined : text.weaveLabel(copy.name, fmt(cost))}
+                aria-label={woven ? undefined : text.weaveLabel(copy.name, fmt(cost))}
                 onClick={() => store.act((engine, time) => engine.buyWeave(weave.id, time))}
               >
                 {woven ? text.woven : text.threadsCount(fmt(cost))}

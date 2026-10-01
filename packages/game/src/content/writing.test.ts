@@ -1,6 +1,11 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import { KING_FORMS } from "../data/biomes";
+import { LOCALES } from "../i18n";
+import { AGE_ECHOES_TEXT } from "./story/ages";
+import { BESTIARY_KEEP_TEXT } from "./story/bestiary-keep";
+import { STRATA_TEXT } from "./story/strata";
 import { DASH, EMOJI, FORBIDDEN_WORDS } from "./writing";
 
 const ROOT = join(import.meta.dirname, "..", "..", "..", "..");
@@ -12,18 +17,22 @@ const ts = (dir: string) => readdirSync(dir).filter((file) => file.endsWith(".ts
 /** Every file that holds text a walker reads: game content in both languages, and the UI. */
 const FILES = [join(CONTENT, "en.ts"), join(CONTENT, "fr.ts"), ...ts(join(CONTENT, "story")), ...ts(MESSAGES)];
 
+/** The Edge of Sleep: from this Age (era 35, stage 1751) on, the Truth is said plainly. */
+const DEEP_AGE = 7;
+const DEEP_ERA = DEEP_AGE * 5;
+
 /**
- * Lines that may use a word of the Truth, each shown only from Age VIII (the Edge of Sleep,
- * era 35) on, as an image. Legal pages need none: their words are plain enough without.
+ * Lines shown only from the Edge of Sleep on, which may use a word of the Truth: the names and
+ * echoes of the deep Ages, the keystones of their strata and the Bestiary of the King's deep forms.
  */
-const DEEP: Record<string, string> = {
-  "The Dreamer's Room": "name of Age IX, shown once its strata are reached",
-  "La Chambre du rêveur": "name of Age IX, shown once its strata are reached",
-  "The first time anyone in Orvane has used the word 'dream'. It was Morgrath, and he spat.": "Age VIII echo",
-  "Pour la première fois, quelqu'un en Orvane a dit le mot « rêve ». C'était Morgrath, et il a craché.": "Age VIII echo",
-  "In his dream the night is short and the fields are cut. The Ledger does not wake him.": "Bestiary line of a King form of Age VIII or deeper",
-  "Dans son rêve, la nuit est courte et les blés sont fauchés. Le Grand Livre ne le réveille pas.": "Bestiary line of a King form of Age VIII or deeper"
-};
+const DEEP = new Set(
+  LOCALES.flatMap((locale) => [
+    ...STRATA_TEXT[locale].ages.slice(DEEP_AGE),
+    ...STRATA_TEXT[locale].keystones.slice(DEEP_ERA).map((line) => line.text),
+    ...AGE_ECHOES_TEXT[locale].slice(DEEP_AGE).flatMap((echoes) => echoes.map((line) => line.text)),
+    ...KING_FORMS.slice(DEEP_AGE).flatMap((form) => BESTIARY_KEEP_TEXT[locale].lines[form] ?? [])
+  ])
+);
 
 /** The text of every string literal of a TypeScript source, template parts and nested ones included. */
 function literals(source: string): string[] {
@@ -100,18 +109,16 @@ describe("the writing rules", () => {
         scanned += 1;
         if (DASH.test(text)) problems.push(`${where}: dash in "${text}"`);
         if (EMOJI.test(text)) problems.push(`${where}: emoji in "${text}"`);
-        if (FORBIDDEN_WORDS.test(text) && !(text in DEEP)) problems.push(`${where}: "${text.match(FORBIDDEN_WORDS)?.[0]}" in "${text}"`);
+        if (FORBIDDEN_WORDS.test(text) && !DEEP.has(text)) problems.push(`${where}: "${text.match(FORBIDDEN_WORDS)?.[0]}" in "${text}"`);
       }
     }
     expect(scanned).toBeGreaterThan(3_000);
     expect(problems).toEqual([]);
   });
 
-  it("allows only lines that still exist and need it", () => {
-    const all = new Set(FILES.flatMap((file) => literals(readFileSync(file, "utf8"))));
-    for (const line of Object.keys(DEEP)) {
-      expect(all.has(line), line).toBe(true);
-      expect(FORBIDDEN_WORDS.test(line), line).toBe(true);
-    }
+  it("lets the Truth be said plainly from the Edge of Sleep on", () => {
+    expect(DEEP.has("The Dreamer's Room")).toBe(true);
+    expect(DEEP.has("The Kingdom")).toBe(false);
+    expect([...DEEP].some((line) => FORBIDDEN_WORDS.test(line))).toBe(true);
   });
 });

@@ -100,10 +100,10 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
   // The King: short, plain, tired, kind. Never a joke.
   "king-tonight": { voice: "king", line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.state} tonight. Walk anyway.` },
   "king-left": { voice: "king", line: (s, h) => `I left ${h.a(s.object)} ${h.in(s.place)}. Leave ${h.them(s.object)} there.` },
-  "king-night": { voice: "king", line: (s) => `Night ${s.night}. I ${s.verb} while you walked.` },
+  "king-night": { voice: "king", line: (s) => `Night ${s.night}. I ${s.verb} while you walked the road to me.` },
   "king-nights": { voice: "king", line: (s, h) => `${s.night} nights, and ${h.the(s.object)} ${h.is(s.object)} no lighter.` },
   "king-mind": { voice: "king", line: (s, h) => `Mind ${h.the(s.object)}. ${h.it(s.object)} ${h.was(s.object)} my father's.` },
-  "king-stop": { voice: "king", line: (s, h) => `I rested ${h.in(s.place)}, once. Walk past it.` },
+  "king-stop": { voice: "king", line: (s, h) => `I rested ${h.in(s.place)}, once, and nearly never got up. Walk past it.` },
   "king-again": { voice: "king", line: (s, h) => `Again, then. ${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.state}, and so am I.` },
   "king-carry": { voice: "king", line: (s) => `You carry my ${s.object.s} better than I did.` },
   "king-tell": { voice: "king", line: (s, h) => `Tell ${s.companion} I kept ${h.the(s.object)}.` },
@@ -131,14 +131,14 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
     voice: "companion",
     line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.color} here. ${h.it(s.object)} ${h.was(s.object)} not, the night before.`
   },
-  "companion-every": { voice: "companion", line: (s) => `Last night, ${s.remnant} ${s.verb}. The night before, too. Both times, I acted as if it were new.` },
+  "companion-every": { voice: "companion", line: (s) => `Last night, ${s.remnant} ${s.verb}. The night before, too: every night repeats. I act as if it were new.` },
 
   // A Remnant, remembering out loud.
   "remnant-then": {
     voice: "remnant",
-    line: (s, h) => `${h.cap(h.a(s.object))}. ${h.cap(h.a(s.object))}. Then you. Then ${h.a(s.object)}, again.`
+    line: (s, h) => `${h.cap(h.a(s.object))}, then ${h.a(s.object2)}, then you. Every night I remember the same things, in the same order.`
   },
-  "remnant-yet": { voice: "remnant", line: (s, h) => `${h.first(s.verb)} ${h.in(s.place)}. You were not there yet. You never are.` },
+  "remnant-yet": { voice: "remnant", line: (s, h) => `${h.first(s.verb)} ${h.in(s.place)}, as I do every night. You always arrive just after.` },
   "remnant-kept": { voice: "remnant", line: (s, h) => `You again. I kept ${h.the(s.object)} for you. Do not touch ${h.them(s.object)}.` },
 
   // Lysandre's notes: confident, footnoted, wrong.
@@ -156,12 +156,12 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
     voice: "unknown",
     line: (s, h) => `Whoever finds ${h.the(s.object)}: ${h.pron(s.object)} ${h.was(s.object)} ${s.color}, once. Remember ${h.them(s.object)} that way.`
   },
-  "unknown-next": { voice: "unknown", line: (s, h) => `I left ${h.a(s.object)} ${h.in(s.place)} for the next one. The next one is you.` },
+  "unknown-next": { voice: "unknown", line: (s, h) => `I walked this road before you, and left ${h.a(s.object)} ${h.in(s.place)} for whoever came next. That is you.` },
 
   // Oriane: present tense, certainties.
   "oriane-tomorrow": {
     voice: "oriane",
-    line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.state}. ${h.it(s.object)} will be ${s.state} tomorrow. I have already heard it.`
+    line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${s.state}. I can already hear tomorrow night: ${h.pron(s.object)} will still be ${s.state}.`
   },
   "oriane-about": {
     voice: "oriane",
@@ -184,30 +184,30 @@ export const EN_TEMPLATES: Record<TemplateId, EnT> = {
   // What stays after an absence: nobody speaks. Second person, past, one image.
   "dream-whose": {
     voice: "none",
-    line: (s, h) => `You were ${h.in(s.place)}. There ${h.was(s.object)} ${h.a(s.object)}, and you knew whose ${h.pron(s.object)} ${h.was(s.object)}.`
+    line: (s, h) => `While you were away, you were back ${h.in(s.place)}. There ${h.was(s.object)} ${h.a(s.object)}, and you knew whose ${h.pron(s.object)} ${h.was(s.object)}.`
   },
   "dream-hands": {
     voice: "none",
-    line: (s, h) => `You walked through ${h.the(s.place)} with ${h.a(s.object)} in your hands. ${h.it(s.object)} ${h.was(s.object)} ${s.state}.`
+    line: (s, h) => `While you were away, you walked through ${h.the(s.place)} with ${h.a(s.object)} in your hands. ${h.it(s.object)} ${h.was(s.object)} ${s.state}.`
   },
-  "dream-seven": { voice: "none", line: (s, h) => `You were seven, and ${h.the(s.place)} ${h.was(s.place)} very big. Somewhere, someone ${s.verb}.` },
+  "dream-seven": { voice: "none", line: (s, h) => `While you were away, you were seven, and ${h.the(s.place)} ${h.was(s.place)} very big. Somewhere, someone ${s.verb}.` },
   "dream-table": {
     voice: "none",
-    line: (s, h) => `There was ${h.a(s.object)} on a table, and ${h.a(s.object2)} beside ${h.them(s.object)}. You did not touch them.`
+    line: (s, h) => `While you were away, you saw ${h.a(s.object)} on a table, and ${h.a(s.object2)} beside ${h.them(s.object)}. You did not touch them.`
   },
   "dream-calling": {
     voice: "none",
-    line: (s, h) => `Someone was calling you from ${h.the(s.place)}. You followed. It was only ${h.a(s.object)}, ${s.state}.`
+    line: (s, h) => `While you were away, someone called you from ${h.the(s.place)}. You followed. It was only ${h.a(s.object)}, ${s.state}.`
   },
 
   // Second readings of a keystone: again, deeper.
   "reading-night": {
     voice: "ledger",
-    line: (s, h) => `Night ${roman(s.descent + 1)}. ${h.cap(h.the(s.place))}, again. ${h.cap(h.a(s.object))} where there was nothing before.`
+    line: (s, h) => `Night ${roman(s.descent + 1)}, one thread deeper. ${h.cap(h.the(s.place))} again, and ${h.a(s.object)} where there was nothing before.`
   },
   "reading-again": {
     voice: "unknown",
-    line: (s, h) => `Read again, deeper: ${h.the(s.object)} ${h.was(s.object)} never ${s.color}. ${h.it(s.object)} ${h.was(s.object)} ${s.state}, all along.`
+    line: (s, h) => `Seen again, one thread deeper: ${h.the(s.object)} ${h.was(s.object)} never ${s.color}. ${h.it(s.object)} ${h.was(s.object)} ${s.state} all along.`
   },
   "reading-pass": {
     voice: "oriane",
@@ -274,13 +274,13 @@ type FrT = Template<FrNoun, FrAdj>;
 export const FR_TEMPLATES: Record<TemplateId, FrT> = {
   "king-tonight": { voice: "king", line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)} ce soir. Marche quand même.` },
   "king-left": { voice: "king", line: (s, h) => `J'ai laissé ${h.a(s.object)} ${h.in(s.place)}. Laisse-${h.them(s.object)} là.` },
-  "king-night": { voice: "king", line: (s, h) => `Nuit ${s.night}. ${h.cap(s.verb)} pendant que tu marchais.` },
+  "king-night": { voice: "king", line: (s, h) => `Nuit ${s.night}. ${h.cap(s.verb)} pendant que tu marchais vers moi.` },
   "king-nights": {
     voice: "king",
     line: (s, h) => `${s.night} nuits, et ${h.the(s.object)} ${s.object.p ? "ne sont" : "n'est"} pas plus ${form(LIGHT, s.object)}.`
   },
   "king-mind": { voice: "king", line: (s, h) => `Attention ${h.at(s.object)}. ${h.it(s.object)} ${h.was(s.object)} à mon père.` },
-  "king-stop": { voice: "king", line: (s, h) => `Je me suis reposé ${h.in(s.place)}, une fois. Passe sans t'arrêter.` },
+  "king-stop": { voice: "king", line: (s, h) => `Je me suis reposé ${h.in(s.place)}, une fois, et j'ai failli ne jamais me relever. Passe sans t'arrêter.` },
   "king-again": { voice: "king", line: (s, h) => `Encore, donc. ${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)}, et moi aussi.` },
   "king-carry": { voice: "king", line: (s) => `Tu portes ${my(s.object)} mieux que moi.` },
   "king-tell": { voice: "king", line: (s, h) => `Dis à ${s.companion} que j'ai gardé ${h.the(s.object)}.` },
@@ -315,10 +315,10 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
     voice: "companion",
     line: (s, h) => `Ici, ${h.the(s.object)} ${h.is(s.object)} ${h.agree(s.color, s.object)}. ${h.it(s.object)} ne l'${h.was(s.object)} pas, la nuit d'avant.`
   },
-  "companion-every": { voice: "companion", line: (s) => `Hier soir, ${s.remnant} ${s.verb}. La veille aussi. Les deux fois, j'ai fait comme si c'était nouveau.` },
+  "companion-every": { voice: "companion", line: (s) => `Hier soir, ${s.remnant} ${s.verb}. La veille aussi : chaque nuit recommence. Je fais comme si c'était nouveau.` },
 
-  "remnant-then": { voice: "remnant", line: (s, h) => `${h.cap(h.a(s.object))}. ${h.cap(h.a(s.object))}. Puis toi. Puis encore ${h.a(s.object)}.` },
-  "remnant-yet": { voice: "remnant", line: (s, h) => `${h.cap(h.first(s.verb))} ${h.in(s.place)}. Tu n'étais pas encore là. Tu ne l'es jamais.` },
+  "remnant-then": { voice: "remnant", line: (s, h) => `${h.cap(h.a(s.object))}, puis ${h.a(s.object2)}, puis toi. Chaque nuit, je me souviens des mêmes choses, dans le même ordre.` },
+  "remnant-yet": { voice: "remnant", line: (s, h) => `${h.cap(h.first(s.verb))} ${h.in(s.place)}, comme chaque nuit. Tu arrives toujours juste après.` },
   "remnant-kept": { voice: "remnant", line: (s, h) => `Encore toi. Je t'ai gardé ${h.the(s.object)}. N'y touche pas.` },
 
   "lysandre-ornament": {
@@ -336,11 +336,11 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
     voice: "unknown",
     line: (s, h) => `À qui trouvera ${h.the(s.object)} : ${h.pron(s.object)} ${h.was(s.object)} ${h.agree(s.color, s.object)}, avant. Souviens-t'en comme ça.`
   },
-  "unknown-next": { voice: "unknown", line: (s, h) => `J'ai laissé ${h.a(s.object)} ${h.in(s.place)} pour le suivant. Le suivant, c'est toi.` },
+  "unknown-next": { voice: "unknown", line: (s, h) => `J'ai marché cette route avant toi, et laissé ${h.a(s.object)} ${h.in(s.place)} pour le suivant. Le suivant, c'est toi.` },
 
   "oriane-tomorrow": {
     voice: "oriane",
-    line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)}. ${h.it(s.object)} le sera encore demain. Je l'ai déjà entendu.`
+    line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)}. J'entends déjà la nuit de demain : ${h.pron(s.object)} le ${s.object.p ? "seront" : "sera"} encore.`
   },
   "oriane-about": {
     voice: "oriane",
@@ -368,28 +368,28 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
     line: (s, h) => `j'ai appris une nouvelle note ${h.at(s.object)}. ${h.pron(s.object)} ${h.does(s.object, s.verb)}. je crois que ça ${s.object.p ? "leur" : "lui"} a plu.`
   },
 
-  "dream-whose": { voice: "none", line: (s, h) => `Tu étais ${h.in(s.place)}. Il y avait ${h.a(s.object)}, et tu savais à qui c'était.` },
+  "dream-whose": { voice: "none", line: (s, h) => `Pendant ton absence, tu étais de retour ${h.in(s.place)}. Il y avait ${h.a(s.object)}, et tu savais à qui c'était.` },
   "dream-hands": {
     voice: "none",
-    line: (s, h) => `Tu traversais ${h.the(s.place)}, ${h.a(s.object)} dans les mains. ${h.it(s.object)} ${h.was(s.object)} ${h.agree(s.state, s.object)}.`
+    line: (s, h) => `Pendant ton absence, tu traversais ${h.the(s.place)}, ${h.a(s.object)} dans les mains. ${h.it(s.object)} ${h.was(s.object)} ${h.agree(s.state, s.object)}.`
   },
   "dream-seven": {
     voice: "none",
-    line: (s, h) => `Tu avais sept ans, et ${h.the(s.place)} ${h.was(s.place)} ${form(HUGE, s.place)}. Quelque part, quelqu'un ${s.verb}.`
+    line: (s, h) => `Pendant ton absence, tu avais sept ans, et ${h.the(s.place)} ${h.was(s.place)} ${form(HUGE, s.place)}. Quelque part, quelqu'un ${s.verb}.`
   },
-  "dream-table": { voice: "none", line: (s, h) => `Il y avait ${h.a(s.object)} sur une table, et ${h.a(s.object2)} à côté. Tu n'y as pas touché.` },
+  "dream-table": { voice: "none", line: (s, h) => `Pendant ton absence, tu as vu ${h.a(s.object)} sur une table, et ${h.a(s.object2)} à côté. Tu n'y as pas touché.` },
   "dream-calling": {
     voice: "none",
-    line: (s, h) => `Quelqu'un t'appelait depuis ${h.the(s.place)}. Tu as suivi la voix. Ce n'était ${onlyA(s.object, h)} ${h.agree(s.state, s.object)}.`
+    line: (s, h) => `Pendant ton absence, quelqu'un t'appelait depuis ${h.the(s.place)}. Tu as suivi la voix. Ce n'était ${onlyA(s.object, h)} ${h.agree(s.state, s.object)}.`
   },
 
   "reading-night": {
     voice: "ledger",
-    line: (s, h) => `Nuit ${roman(s.descent + 1)}. ${h.cap(h.the(s.place))}, encore. ${h.cap(h.a(s.object))}, là où il n'y avait rien.`
+    line: (s, h) => `Nuit ${roman(s.descent + 1)}, un fil plus bas. ${h.cap(h.the(s.place))}, encore, et ${h.a(s.object)} là où il n'y avait rien.`
   },
   "reading-again": {
     voice: "unknown",
-    line: (s, h) => `Relu plus bas : ${h.the(s.object)} n'${h.was(s.object)} jamais ${h.agree(s.color, s.object)}. ${h.it(s.object)} ${h.was(s.object)} ${h.agree(s.state, s.object)}, depuis toujours.`
+    line: (s, h) => `Revu un fil plus bas : ${h.the(s.object)} n'${h.was(s.object)} jamais ${h.agree(s.color, s.object)}. ${h.it(s.object)} ${h.was(s.object)} ${h.agree(s.state, s.object)}, depuis toujours.`
   },
   "reading-pass": {
     voice: "oriane",

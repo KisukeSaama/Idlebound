@@ -18,18 +18,21 @@ the story is laid **over** the mechanics, never against them.
 
 | Level | Who sees it | Rule |
 |---|---|---|
-| **Surface** | Every player | What the game says plainly: names, descriptions, toasts, tutorial. Always true, never the whole truth. |
-| **Hint** | Players who read, collect, return | Fragments, companion memories, bestiary lines, relic legends, the King's Words. Each hint is true from its speaker's point of view; speakers can be wrong. |
-| **Truth** | Writers only | Section 4. **Never displayed as such**, in any language, anywhere. The game circles it; it never says it. |
+| **Surface** | Every player | What the game says plainly: names, descriptions, toasts, tutorial. Always true, always clear: every button, window and tooltip says what it does and what it changes. |
+| **Story** | Players who read, collect, return | Fragments, companion memories, bestiary lines, relic legends, the King's Words. Each line tells something a reader understands on first reading: who, what happened, why it matters. Speakers can be wrong, but they say it clearly. |
+| **Truth** | Revealed in order | Section 4. Layers 1 to 4 are told plainly when their milestone arrives (section 16). Layers 5 and 6 are the final secret: kept for the deep Ages, then said clearly, not in riddles. |
 
 **Rules for anyone who writes content:**
 
 1. The loop is the story. There is no final victory screen, no credits, no "you won".
    Every piece of text must make the next night feel worth walking.
-2. Never explain. Show one object, one gesture, one sentence someone said, and stop.
-   If a line answers a question from section 4, cut it or turn it into a new question.
-3. Every Truth layer gets **at least three independent hints** from three different
-   voices before the calendar lets a player be sure of it (section 16).
+2. Say plainly what things do. Names, descriptions, toasts and scenes tell the walker
+   clearly what happens and what it changes; flavour comes on top, never instead.
+3. Tell the story clearly. A line of lore names who speaks, what happened and why it
+   matters, in words a first reader understands. No riddles, no lines that only make
+   sense to someone who read section 4. A layer of the Truth arrives at its milestone
+   (section 16) and is said plainly then; before it, lines do not spoil it. The only riddles
+   left are those of the secret deeds (section 14.3): guessing them is the point.
 4. Every mechanic has a reason inside the world (section 6). A new mechanic without one
    is not finished.
 5. Product rules still apply: every string in French and English, no em dash, no emoji,
@@ -184,8 +187,9 @@ in the world's own words.
 
 ## 4. The Truth (writers only, never displayed)
 
-The mystery is built in six layers. Each layer recontextualizes the previous one. The
-game reveals them in order through hints (section 16), and never states the last one.
+The story is built in six layers. Each layer recontextualizes the previous one. The
+game reveals them in order (section 16), each one said plainly when its milestone comes.
+Layers 5 and 6 are the final secret, kept for the deep Ages and told clearly there.
 
 **Layer 1: the curse.** *(What the landing page says.)* A cursed kingdom, a Fallen King,
 an adventurer who slays him. Surface level, true enough.
@@ -219,8 +223,8 @@ When the dreamer sleeps (the game closed), the dream runs on for one night, no l
 then the world holds its breath. The
 crystals come only when someone is watching (they only spawn in a visible tab). The
 Awakened is "you, perhaps, in another life". Aldric is "you". **The player is the
-dreamer.** This is never written anywhere. Age IX strata (Lantern, Hearth, Lullaby,
-Window, Glass) and the last keystone make it feel true; the player decides.
+dreamer.** Age IX strata (Lantern, Hearth, Lullaby, Window, Glass) lead to it and the
+last keystones say it plainly.
 
 **Questions the game never answers**, on purpose, forever:
 
@@ -1237,7 +1241,7 @@ refused)". Guests see "Unnamed walker" instead of "Guest".
 A few times in the whole game, never more, the Ledger tells a moment in pictures: a scene
 of three to six shots of the world, one image and one line each, 20 to 40 seconds, the
 night going on beneath. Every scene can be skipped and seen again in the Chronicle. The
-same rules as every line: reveal, never explain; the Truth is never stated.
+same rules as every line: say plainly what happens; the Truth is never stated.
 
 | Scene | When | What it shows |
 |---|---|---|
@@ -1376,7 +1380,7 @@ so a tier added between two others takes the next id and its place by threshold;
 
 ### 14.3 Secret deeds (+20)
 
-Hidden in the Hall until earned (name shown as "???", description as a riddle). One per
+Hidden in the Hall until earned (name shown as "???", description as a riddle: the one place the game keeps riddles, since finding them is the game). One per
 secret of section 15, same order.
 
 | # | Name EN / FR | Riddle shown before (EN) |
@@ -1813,19 +1817,18 @@ In Age X sounds arrive late and muffled; at the Dawn nothing sounds.
 
 > **Shipped**: `packages/game/src/content/writing.test.ts` holds every string of the game
 > content and of the UI messages to the forbidden words, the dash and emoji rules; the few
-> lines of Age VIII and deeper are listed there by hand. The UI says **strike** (FR:
+> lines of Age VIII and deeper (the deep Ages' names and echoes, their keystones, the King's deep forms) are read from the story data and may use them. The UI says **strike** (FR:
 > *frappe*) for the walker's own blow, and the **Ledger** keeps the walker's road.
 
 - **Length:** fragments 140 characters at most, bestiary lines 120, recognition memories
-  and promise lines (asked, kept, broken) 180, relic and altar legends 200. One image per
-  line.
+  and promise lines (asked, kept, broken) 180, relic and altar legends 200. Clear before
+  pretty: a reader understands the line the first time.
 - **Voices:** the King (short, plain, tired, kind), Lysandre (confident, footnoted,
   wrong), Oriane (present tense, certainties), Morgrath (theatrical, honest), Célestine
   (sound words, lowercase feeling), the Stallkeeper (commerce as philosophy), the Ledger
   (exact, third person, faintly kind), the Nameless (two words at most).
 - **Forbidden words before Age VIII:** dream, dreamer, player, screen, tab, click (as a
-  word), save. After Age VIII, only as images (a lamp, a window, a glass), never as
-  explanation.
+  word), save. From Age VIII on, they are said plainly.
 - **French:** *tutoiement* everywhere the walker is addressed; the King says *tu* too.
   Adapt, do not translate: the English and French lines may use different images for the
   same beat. Genders of lexicon entries are data.

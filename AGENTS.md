@@ -67,9 +67,12 @@ swings single seeds by ±50 stages):
 - Tone: warm dark fantasy, melancholy under the jokes. French in _tutoiement_. Adapt, do not
   translate.
 - No em dash, no emoji, in either language.
-- Reveal, never explain. One image, one gesture, one sentence, then stop. Never state the
-  Truth (BIBLE section 4); if a line answers one of its questions, cut it. Each Truth layer
-  needs three hints from three voices first.
+- Say plainly what things do. A mechanic, an upgrade, a relic, a companion or a scene tells
+  the walker clearly what it is and what it changes; flavour comes on top, never instead.
+- Tell the story clearly: every line of lore says who, what happened and why it matters,
+  understood on first reading. No riddles, except the secret deeds, where guessing is the
+  point. The Truth (BIBLE section 4) arrives layer by layer at its milestone (section 16),
+  said plainly then and not spoiled before.
 - Before Age VIII, never write: dream, dreamer, player, screen, tab, click, save.
 - Respect the voices and length limits of BIBLE section 20.
 

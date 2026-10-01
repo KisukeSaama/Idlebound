@@ -30,17 +30,24 @@ function Profile() {
   const ui = useUi();
   const text = useI18n().t.account;
   const [panel, setPanel] = useState<"none" | "password" | "delete">("none");
+  const [showEmail, setShowEmail] = useState(false);
   const user = cloud.user!;
+  const email = showEmail ? user.email : maskEmail(user.email);
   return (
     <section className="account-section">
       <div className="profile-card">
         <div className="profile-avatar" aria-hidden="true">{user.username.charAt(0).toUpperCase()}</div>
         <div>
           <h3>{user.username}</h3>
-          <p className="modal-hint">{user.email}</p>
+          <p className="modal-hint profile-email">
+            <span>{email}</span>
+            <button type="button" className="profile-email-toggle" aria-pressed={showEmail} onClick={() => setShowEmail(!showEmail)}>
+              {showEmail ? text.hideEmail : text.showEmail}
+            </button>
+          </p>
         </div>
       </div>
-      {!user.emailVerified ? <VerifyNotice /> : null}
+      {!user.emailVerified ? <VerifyNotice email={email} /> : null}
       <LedgerStatus />
       <p className="modal-hint">{text.saveInfo}</p>
       <div className="account-actions">
@@ -52,6 +59,17 @@ function Profile() {
       {panel === "delete" ? <DeleteAccount /> : null}
     </section>
   );
+}
+
+/** Hides an address on screen (streams, shared screens) while its owner still recognises it: a***@h***.fr. */
+function maskEmail(email: string): string {
+  const at = email.lastIndexOf("@");
+  if (at < 1) return "***";
+  const domain = email.slice(at + 1);
+  const dot = domain.lastIndexOf(".");
+  const host = dot > 0 ? domain.slice(0, dot) : domain;
+  const tld = dot > 0 ? domain.slice(dot) : "";
+  return `${email.charAt(0)}***@${host.charAt(0)}***${tld}`;
 }
 
 /** What the Ledger holds of this game, an account's or a guest's: state, last save, trouble. */
@@ -77,7 +95,7 @@ function LedgerStatus() {
 }
 
 /** Address to confirm: deadline, resend, and a way to fix a mistyped address. */
-function VerifyNotice() {
+function VerifyNotice({ email }: { email: string }) {
   const cloud = useCloud();
   const { t, locale } = useI18n();
   const text = t.account;
@@ -91,7 +109,7 @@ function VerifyNotice() {
   return (
     <div className={`verify-notice ${overdue ? "is-overdue" : ""}`} role={overdue ? "alert" : undefined}>
       <strong>{text.ledger.seal} <span className="ledger-plain">{text.ledger.sealPlain}</span></strong>
-      <p>{overdue ? text.verifyOverdue(user.email) : text.verifyText(user.email, deadlineText)}</p>
+      <p>{overdue ? text.verifyOverdue(email) : text.verifyText(email, deadlineText)}</p>
       {info ? <p className={info.ok ? "form-success" : "form-error"} role="status">{info.text}</p> : null}
       <div className="account-actions">
         <button
@@ -287,7 +305,7 @@ function RegisterForm() {
         if (!result.ok) return setError({ text: result.error, field: result.field });
         const user = result.data.user;
         await cloud.connect(user);
-        ui.toast({ tone: "success", icon: "cloud", title: text.welcome(user.username), text: user.emailVerified ? text.welcomeText : text.checkInbox(user.email) });
+        ui.toast({ tone: "success", icon: "cloud", title: text.welcome(user.username), text: user.emailVerified ? text.welcomeText : text.checkInbox(maskEmail(user.email)) });
       }}
     >
       <p id="reg-title" className="ledger-voice">{text.ledger.inscribe} <span className="ledger-plain">{text.ledger.inscribePlain}</span></p>
