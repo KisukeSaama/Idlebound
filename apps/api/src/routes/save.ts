@@ -1,4 +1,4 @@
-import { migrateState, type GameState } from "@idlebound/game";
+import { migrateState, type ApiError, type GameState } from "@idlebound/game";
 import { leaderboardSummary, safeParseState, verifyNewLineage, verifySaveVersion, verifyState, verifyTransition, type Violation } from "@idlebound/game/server";
 import { eq, sql as raw } from "drizzle-orm";
 import { Hono, type Context } from "hono";
@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "../db/client";
 import { guestSaves, leaderboard, saveRejections, saves } from "../db/schema";
 import { forgetGuest, guestId, keepGuest, newGuest, renewGuest, visitDue } from "../lib/guest";
-import { t } from "../lib/i18n";
+import { fail } from "../lib/errors";
 import { clientIp, limiter, tooMany } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
 import { verificationOverdue } from "../lib/verification";
@@ -57,13 +57,13 @@ interface Written {
 type Outcome =
   | { status: 200; body: { revision: number; updatedAt: string } }
   | { status: 409 | 422; body: Record<string, unknown> }
-  | { status: 429; body: { error: string }; retryAfter?: number };
+  | { status: 429; body: { error: ApiError }; retryAfter?: number };
 
 /** Where a game is kept: an account's row, or a guest's. Both go through the same checks. */
 interface Ledger {
   /** Key of the replacement limit; null when nothing can be stored under it yet. */
   key: string | null;
-  conflict: string;
+  conflict: ApiError;
   /** The stored game, its row locked until the transaction ends. */
   load(tx: Tx): Promise<Stored | undefined>;
   /** Another game the server already kept and that `next` carries on (a guest's, brought to an account). */
@@ -94,17 +94,17 @@ function stored(row: Stored) {
 }
 
 /** Checks a save against what its ledger holds and writes it. Accounts and guests alike. */
-async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400; body: { error: string } }> {
+async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400; body: { error: ApiError } }> {
   let input: unknown;
   try {
     input = await c.req.json();
   } catch {
-    return { status: 400, body: { error: t(c).invalidRequest } };
+    return { status: 400, body: fail("invalid_request") };
   }
   const parsedBody = putBody.safeParse(input);
-  if (!parsedBody.success) return { status: 400, body: { error: t(c).invalidRequest } };
+  if (!parsedBody.success) return { status: 400, body: fail("invalid_request") };
   const parsed = safeParseState(parsedBody.data.state);
-  if (!parsed.ok) return { status: 400, body: { error: t(c).invalidSave(parsed.error) } };
+  if (!parsed.ok) return { status: 400, body: fail("invalid_save", { detail: parsed.error }) };
   const next = parsed.state;
   const now = Date.now();
   const { baseRevision, replace } = parsedBody.data;
@@ -124,7 +124,7 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
       return { status: 409, body: { error: ledger.conflict, conflict: { revision: existing.revision, updatedAt: existing.updatedAt.toISOString(), cloud: summary(previous!) } } };
     }
     if (existing && replace && ledger.key && replaceLimiter.consume(ledger.key) > 0) {
-      return { status: 429, body: { error: t(c).tooManyReplacements } };
+      return { status: 429, body: fail("too_many_replacements") };
     }
 
     const violations: Violation[] = [...stateViolations];
@@ -150,7 +150,7 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     }
     if (violations.length > 0) {
       await ledger.reject(tx, [...new Set(violations.map((violation) => violation.code))]);
-      return { status: 422, body: { error: t(c).saveRejected, violations: violations.slice(0, MAX_REPORTED_VIOLATIONS) } };
+      return { status: 422, body: fail("save_rejected", { violations: violations.slice(0, MAX_REPORTED_VIOLATIONS) }) };
     }
 
     const revision = (existing?.revision ?? 0) + 1;
@@ -168,16 +168,16 @@ function answer(c: Context, outcome: Awaited<ReturnType<typeof keep>>) {
 export const saveRoutes = new Hono()
   .get("/", async (c) => {
     const user = await currentUser(c);
-    if (!user) return c.json({ error: t(c).loginRequired }, 401);
+    if (!user) return c.json(fail("login_required"), 401);
     const [row] = await db.select().from(saves).where(eq(saves.userId, user.id)).limit(1);
     return c.json({ save: row ? stored(row) : null });
   })
 
   .put("/", async (c) => {
     const user = await currentUser(c);
-    if (!user) return c.json({ error: t(c).loginRequired }, 401);
+    if (!user) return c.json(fail("login_required"), 401);
     // After the grace period, an unconfirmed address blocks saving (loading still works).
-    if (verificationOverdue(user)) return c.json({ error: t(c).emailUnverified, code: "email-unverified" }, 403);
+    if (verificationOverdue(user)) return c.json(fail("email_unverified"), 403);
     const wait = saveLimiter.consume(user.id);
     if (wait > 0) return tooMany(c, wait);
 
@@ -185,7 +185,7 @@ export const saveRoutes = new Hono()
     const moved = { guest: false };
     const outcome = await keep(c, {
       key: user.id,
-      conflict: t(c).saveConflict,
+      conflict: "save_conflict",
       load: async (tx) => (await tx.select().from(saves).where(eq(saves.userId, user.id)).for("update").limit(1))[0],
       // The game this browser played as a guest, when it is the one being saved.
       witness: async (tx, next) => {
@@ -207,7 +207,7 @@ export const saveRoutes = new Hono()
             .values({ userId: user.id, ...values })
             .onConflictDoNothing({ target: saves.userId })
             .returning({ userId: saves.userId });
-          if (inserted.length === 0) return { status: 409, body: { error: t(c).saveConflict } };
+          if (inserted.length === 0) return { status: 409, body: fail("save_conflict") };
         }
         // The guest's game is the account's now: one game, one keeper.
         if (witness && guest) {
@@ -267,7 +267,7 @@ export const saveRoutes = new Hono()
     const cookie: { issued: string | null; lastSeenAt: Date | null } = { issued: null, lastSeenAt: null };
     const outcome = await keep(c, {
       key: id,
-      conflict: t(c).guestSaveConflict,
+      conflict: "guest_save_conflict",
       load: async (tx) => {
         if (!id) return undefined;
         const [row] = await tx.select().from(guestSaves).where(eq(guestSaves.id, id)).for("update").limit(1);
@@ -286,7 +286,7 @@ export const saveRoutes = new Hono()
         }
         // A new guest game (or one whose row is gone): a new row under a new cookie.
         const createWait = guestCreateIp.consume(ip);
-        if (createWait > 0) return { status: 429, body: { error: t(c).tooManyAttempts(createWait) }, retryAfter: createWait };
+        if (createWait > 0) return { status: 429, body: fail("too_many_attempts", { retryAfter: createWait }), retryAfter: createWait };
         const guest = newGuest();
         await tx.insert(guestSaves).values({ id: guest.id, ...values, lastSeenAt: values.updatedAt });
         cookie.issued = guest.token;

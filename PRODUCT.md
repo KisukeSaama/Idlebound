@@ -850,8 +850,11 @@ database (`hidden` flag), for moderation.
 
 ## Languages
 
-French and English everywhere (site, game, API messages, e-mails). The language follows an
-explicit choice made in the game's Settings window, otherwise the browser's languages. URLs
+French and English everywhere (site, game, error messages, e-mails). The language follows an
+explicit choice made in the game's Settings window, otherwise the browser's languages. The API
+speaks English only: its errors are stable codes (`{ "error": "wrong_credentials" }`, list in
+`packages/game/src/api.ts`) that the client words in the walker's language. The e-mails are
+the only text the API writes, in the language of the request that sent them. URLs
 are English and prefixed by the locale (`/fr/play`, `/en/leaderboard`). French is the
 default when the browser states no preference, English when it prefers an unsupported
 language.

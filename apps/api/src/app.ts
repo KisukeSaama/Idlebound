@@ -3,7 +3,7 @@ import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import { sql } from "./db/client";
 import { env } from "./env";
-import { t } from "./lib/i18n";
+import { fail } from "./lib/errors";
 import { authRoutes } from "./routes/auth";
 import { leaderboardRoutes } from "./routes/leaderboard";
 import { saveRoutes } from "./routes/save";
@@ -15,16 +15,16 @@ export function createApp() {
   const app = new Hono();
 
   app.use(secureHeaders({ crossOriginResourcePolicy: "same-origin" }));
-  app.use(bodyLimit({ maxSize: 512 * 1024, onError: (c) => c.json({ error: t(c).requestTooLarge }, 413) }));
+  app.use(bodyLimit({ maxSize: 512 * 1024, onError: (c) => c.json(fail("request_too_large"), 413) }));
 
   // Anti-CSRF: state-changing requests must carry the game client's header (impossible to
   // set from another site without a CORS preflight, which the API refuses) and, when the
   // browser says so, come from our own origin.
   app.use(async (c, next) => {
     if (!SAFE_METHODS.has(c.req.method)) {
-      if (c.req.header("x-idlebound") !== "1") return c.json({ error: t(c).requestRefused }, 403);
+      if (c.req.header("x-idlebound") !== "1") return c.json(fail("request_refused"), 403);
       const origin = c.req.header("origin");
-      if (origin && origin !== siteOrigin && env.NODE_ENV === "production") return c.json({ error: t(c).originRefused }, 403);
+      if (origin && origin !== siteOrigin && env.NODE_ENV === "production") return c.json(fail("origin_refused"), 403);
     }
     await next();
   });
@@ -42,10 +42,10 @@ export function createApp() {
   app.route("/save", saveRoutes);
   app.route("/leaderboard", leaderboardRoutes);
 
-  app.notFound((c) => c.json({ error: t(c).notFound }, 404));
+  app.notFound((c) => c.json(fail("not_found"), 404));
   app.onError((error, c) => {
     console.error(`[api] ${c.req.method} ${c.req.path}`, error);
-    return c.json({ error: t(c).internalError }, 500);
+    return c.json(fail("internal_error"), 500);
   });
 
   return app;

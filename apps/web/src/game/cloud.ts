@@ -395,7 +395,7 @@ export class CloudSync {
         break;
       }
       case 403:
-        if (result.body?.code === "email-unverified") {
+        if (result.code === "email_unverified") {
           this.set({ status: "unverified", message: result.error });
           break;
         }

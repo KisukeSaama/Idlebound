@@ -489,7 +489,7 @@ suite("API (real Postgres)", () => {
 
       // One address: twenty new guest games an hour.
       const created: number[] = [];
-      let last = { status: 0, retryAfter: null as string | null };
+      let last = { status: 0, json: {} as Record<string, any>, retryAfter: null as string | null };
       for (let attempt = 0; attempt < 21; attempt += 1) {
         last = await new Client("10.0.1.11").call("PUT", "/save/guest", { state: createInitialState(), baseRevision: null });
         created.push(last.status);
@@ -497,6 +497,7 @@ suite("API (real Postgres)", () => {
       expect(created.slice(0, 20).every((status) => status === 200)).toBe(true);
       expect(last.status).toBe(429);
       expect(Number(last.retryAfter)).toBeGreaterThan(0);
+      expect(last.json).toEqual({ error: "too_many_attempts", retryAfter: Number(last.retryAfter) });
 
       // One address: sixty guest saves a minute, all its games together.
       const crowd = Array.from({ length: 10 }, () => new Client("10.0.1.12"));
@@ -594,7 +595,7 @@ suite("API (real Postgres)", () => {
       await sql`update users set created_at = now() - interval '4 days' where email = ${email}`;
       const blocked = await client.call("PUT", "/save", { state, baseRevision: 1 });
       expect(blocked.status).toBe(403);
-      expect(blocked.json.code).toBe("email-unverified");
+      expect(blocked.json.error).toBe("email_unverified");
       expect((await client.call("GET", "/save")).status).toBe(200);
 
       // A mistyped address can be fixed, with the password.
@@ -641,14 +642,16 @@ suite("API (real Postgres)", () => {
     expect(response.json.ok).toBe(true);
   });
 
-  it("answers in the language of the request", async () => {
-    const english = await new Client("10.0.0.13").call("POST", "/auth/login", { email: `nobody-${unique}@test.fr`, password: "wrong-password" }, { "accept-language": "en-US,en;q=0.9" });
+  it("answers errors as codes, the same in every language", async () => {
+    const login = { email: `nobody-${unique}@test.fr`, password: "wrong_password" };
+    const english = await new Client("10.0.0.13").call("POST", "/auth/login", login, { "accept-language": "en-US,en;q=0.9" });
+    const french = await new Client("10.0.0.14").call("POST", "/auth/login", login, { "accept-language": "en-US", cookie: "ib_lang=fr" });
     expect(english.status).toBe(401);
-    expect(english.json.error).toBe("Wrong e-mail or password.");
-    // The explicit choice (cookie) wins over the browser languages.
-    const french = await new Client("10.0.0.14").call("POST", "/auth/login", { email: `nobody-${unique}@test.fr`, password: "wrong-password" }, { "accept-language": "en-US", cookie: "ib_lang=fr" });
-    expect(french.json.error).toBe("E-mail ou mot de passe incorrect.");
-    const username = await new Client("10.0.0.15").call("POST", "/auth/register", { email: `short-${unique}@test.fr`, username: "ab", password: "unBonMotDePasse!" }, { "accept-language": "en" });
-    expect(username.json.error).toBe("Your username must be at least 3 characters long.");
+    expect(english.json).toEqual({ error: "wrong_credentials" });
+    expect(french.json).toEqual(english.json);
+    const username = await new Client("10.0.0.15").call("POST", "/auth/register", { email: `short-${unique}@test.fr`, username: "ab", password: "unBonMotDePasse!" });
+    expect(username.json).toEqual({ error: "invalid_username", reason: "too-short", field: "username" });
+    const password = await new Client("10.0.0.16").call("POST", "/auth/register", { email: `weak-${unique}@test.fr`, username: `weak${unique}`.slice(0, 16), password: "motdepasse" });
+    expect(password.json).toEqual({ error: "weak_password", reason: "too-common", field: "password" });
   });
 });

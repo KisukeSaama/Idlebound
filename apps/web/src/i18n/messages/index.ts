@@ -1,5 +1,6 @@
 import type { Locale } from "@idlebound/game";
 import { account } from "./account";
+import { api } from "./api";
 import { chronicle } from "./chronicle";
 import { common } from "./common";
 import { hud } from "./hud";
@@ -14,7 +15,7 @@ import { verify } from "./verify";
 import { windows } from "./windows";
 import { workshop } from "./workshop";
 
-const NAMESPACES = { common, site, landing, leaderboard, privacy, reset, verify, hud, windows, account, workshop, sanctum, chronicle, night };
+const NAMESPACES = { common, site, landing, leaderboard, privacy, reset, verify, hud, api, windows, account, workshop, sanctum, chronicle, night };
 
 type Namespaces = typeof NAMESPACES;
 export type Messages = { [K in keyof Namespaces]: Namespaces[K]["fr"] };

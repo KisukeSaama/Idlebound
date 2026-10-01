@@ -3,9 +3,8 @@
  * through Traefik); the API stays on the internal network. The URL is read at runtime, not
  * at build time, so the same image serves dev and prod.
  */
-import { LOCALE_COOKIE, resolveLocale } from "@idlebound/game";
+import type { ApiError } from "@idlebound/game";
 import type { NextRequest } from "next/server";
-import { messages } from "@/i18n/messages";
 import { ownRelease, RELEASE_HEADER } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
@@ -16,16 +15,16 @@ const FORWARDED_RESPONSE_HEADERS = ["content-type", "set-cookie", "retry-after",
 const MAX_BODY_BYTES = 600 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15_000;
 
-/** The few errors produced by the proxy itself, in the language of the request. */
-function errors(request: NextRequest) {
-  return messages(resolveLocale(request.cookies.get(LOCALE_COOKIE)?.value, request.headers.get("accept-language"))).hud.errors;
-}
-
 /** Every answer tells the page which release serves it: an older page moves to it (see game/newRelease.ts). */
 function stamped(response: Response): Response {
   const release = ownRelease();
   if (release) response.headers.set(RELEASE_HEADER, release);
   return response;
+}
+
+/** The few errors produced by the proxy itself: codes, like the API's, worded by the client. */
+function failure(error: ApiError, status: number): Response {
+  return stamped(Response.json({ error }, { status }));
 }
 
 /** Reads the body, stopping as soon as the limit is exceeded (missing or lying Content-Length). */
@@ -69,7 +68,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
 
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
   const body = hasBody ? await readBody(request) : undefined;
-  if (body === null) return stamped(Response.json({ error: errors(request).tooLarge }, { status: 413 }));
+  if (body === null) return failure("request_too_large", 413);
 
   let upstream: Response;
   try {
@@ -82,7 +81,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
     });
   } catch {
-    return stamped(Response.json({ error: errors(request).unreachable }, { status: 502 }));
+    return failure("unreachable", 502);
   }
 
   const responseHeaders = new Headers();

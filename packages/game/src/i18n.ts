@@ -1,5 +1,5 @@
 /**
- * Locales supported by the whole product (game content, web UI, API messages, e-mails).
+ * Locales supported by the whole product (game content, web UI, e-mails).
  * French is the historical language of the game and the SEO target of the landing page.
  */
 export type Locale = "fr" | "en";
