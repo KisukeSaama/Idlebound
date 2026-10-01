@@ -546,10 +546,10 @@ export default function GameApp() {
             toast({ tone: "gold", icon: "knot", title: words.ready, text: words.readyText });
           } else if (event.outcome === "kept") {
             audio.play("recognition");
-            toast({ tone: "gold", icon: "knot", title: words.kept(name), quote: lines ? { by: name, text: lines.kept } : undefined });
+            toast({ tone: "gold", icon: "knot", title: words.kept(name), text: words.keptText, quote: lines ? { by: name, text: lines.kept } : undefined });
           } else {
             audio.play("error");
-            toast({ tone: "info", icon: "frayed", title: words.broken(name), quote: lines ? { by: name, text: lines.broken } : undefined });
+            toast({ tone: "info", icon: "frayed", title: words.broken(name), text: words.brokenText, quote: lines ? { by: name, text: lines.broken } : undefined });
           }
           break;
         }

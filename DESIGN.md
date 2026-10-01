@@ -145,8 +145,8 @@ Content colors live with the game data, not in CSS:
   stones or the Loom's frame show whole above the words; on phones (520 px and
   less) the banner is a 132 px strip showing the stones and the name and description sit
   under it, then the ascension and the altars; from level 5
-  an altar card carries a "Who raised it" disclosure (tooltip on hover, open on touch).
-  The Loom tab shows the threads, what a Descent takes and keeps, the threads it would weave,
+  an altar card carries an "Altar legend" disclosure (tooltip on hover, open on touch).
+  The Descent tab (Eldra's Loom) shows the threads, what a Descent takes and keeps, the threads it would weave,
   the stage of the next thread, a danger-confirmed Descend button and the eight Weaves as cards.
 - **The Promise** (a folder tab of the ascension window, from the second night): one line on
   the rule, then "Tonight": the word of the night as a framed block (portrait in its frame,
@@ -253,7 +253,7 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Stage bar | stage 2; the Auto/Farm switch after a failed boss or a rebirth |
 | Companions | Aldric, the companions hired, and only the next one, once affordable this night or hired on a past night; talents only reachable or owned; buy modes from 10 levels; "spend while away" with the first companion |
 | Powers | only the unlocked ones; Unweave on key 7 once woven |
-| Loom tab, Caravan | when a Descent is possible or has happened; from the third ascension |
+| Descent tab, Caravan | when a Descent is possible or has happened; from the third ascension |
 | Promise tab | once a companion half remembers the walker (Recognition 2) |
 | Altars | the four open-ended ones at once, three more from the third night, the last six from the fifth; one already raised always |
 | "Keep the Kingdom's sky" | from Age II |
@@ -880,6 +880,8 @@ default 0.6), saved with the other settings.
   account window show the same Ledger states (dot, last save, trouble), never a "not kept"
   call to action; the Roll's boards carry their name in the fiction, the plain
   meaning beneath (`.board-meaning`).
+- **The account's e-mail** shows masked under the username, with a small gold underlined
+  Show / Hide text button beside it (`.profile-email-toggle`); nothing is remembered.
 
 ## Accessibility
 

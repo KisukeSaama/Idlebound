@@ -113,7 +113,7 @@ describe("the strata and the King's forms", () => {
     expect(fragments).toContainEqual({ source: "age", age: 0, index: 0 });
     expect(engine.state.lifetime.kings).toBe(1);
     expect(keystonesFound(engine.state.maxStageEver)).toBe(1);
-    expect(chronicleText({ source: "keystone", era: 0 }, "en").text).toBe("He looked at you as if you were late.");
+    expect(chronicleText({ source: "keystone", era: 0 }, "en").text).toBe("The King looked at you as if you were late. Walkers have fought him every night, longer than anyone remembers. He expected you.");
   });
 });
 

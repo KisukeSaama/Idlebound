@@ -4,6 +4,7 @@ import {
   HERO_BY_ID,
   PROMISES,
   PROMISE_BY_HERO,
+  RECOGNITION_DPS,
   companionMet,
   promiseAskable,
   promiseAsker,
@@ -46,7 +47,7 @@ export function PromiseNotice({ when }: { when: boolean }) {
   return (
     <p className="promise-notice" role="note">
       <Picto name="knot" size={16} />
-      <span><strong>{t.sanctum.promise.toasts.held(g.heroes[standing.def.hero].name)}</strong> {describePromise(standing.def, locale, standing.progress.goal)}</span>
+      <span><strong>{t.sanctum.promise.bound(g.heroes[standing.def.hero].name)}</strong> {describePromise(standing.def, locale, standing.progress.goal)}</span>
     </p>
   );
 }
@@ -84,7 +85,7 @@ export function PromiseTab() {
 
   return (
     <>
-      <p className="modal-hint promise-hint">{text.hint}</p>
+      <p className="modal-hint promise-hint">{text.hint(Math.round(RECOGNITION_DPS * 100))}</p>
 
       <h3 className="section-heading">{text.tonight}</h3>
       {given && status ? (

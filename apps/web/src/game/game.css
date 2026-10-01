@@ -2900,6 +2900,29 @@ button.resource:hover .resource-label {
   margin: 0;
 }
 
+.profile-email {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.profile-email-toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gold);
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.profile-email-toggle:hover {
+  color: var(--text);
+}
+
 .profile-avatar {
   display: grid;
   place-items: center;
