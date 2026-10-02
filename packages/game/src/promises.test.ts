@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { loomPromise, playBot, promisesAvoided, reasonablePromise } from "../scripts/bot";
+import { playBot, promisesAvoided, reasonablePromise } from "../scripts/bot";
 import { chronicleEntries } from "./chronicle";
 import { chronicleText, gameText, promiseText } from "./content";
 import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
 import { HERO_BY_ID } from "./data/heroes";
 import { RECOGNITION_HEROES, RECOGNITION_TIERS, promisesAwaited, recognitionNeeds, recognitionRuns, recognitionTier } from "./data/lore";
-import { PROMISES, PROMISE_BY_HERO, hireBarred, promiseDepth, promiseHolds, promisesKept, promisesOpen, standingPromise } from "./data/promises";
+import { PROMISES, PROMISE_BY_HERO, PROMISE_DOUBLINGS, hireBarred, promiseDepth, promiseHolds, promisesKept, promisesOpen, standingPromise } from "./data/promises";
 import { GameEngine, canDescend, nextRecruit } from "./engine";
 import { BASE_BOSS_TIMER, derive, promiseAskable, promiseWhen } from "./formulas";
 import { LOCALES } from "./i18n";
@@ -663,13 +663,14 @@ describe("the Promise: without the walker", () => {
   }, 120_000);
 
   it("keeps the company small while away until the guardian falls: the autopilot and the catch-up hire nobody past the head", () => {
-    // A minute away, a purse that could pay for everyone: nobody past Kaelen joins before the King.
+    // Ten seconds away (the Rout fells a stage in a quarter of a second), a purse that could
+    // pay for everyone: nobody past Kaelen joins before the King.
     const engine = duskWith("kaelen");
     const s = engine.state;
     s.gold = 1e40;
     s.run.goldEarned = 1e40;
     s.lifetime.goldEarned = 1e40;
-    let now = NOW + 60_000;
+    let now = NOW + 10_000;
     engine.tick(now);
     expect(s.maxStage).toBeLessThan(50);
     expect(Object.keys(s.heroLevels).filter((id) => id !== "aldric")).toEqual(["maelle", "brom", "ysolde", "cendre", "nyx", "garrick", "seraphine", "thorvald", "mirelle", "kaelen"]);
@@ -706,38 +707,50 @@ describe("the Promise: without the walker", () => {
   });
 });
 
+describe("the Promise: what a word kept gives", () => {
+  it("doubles the companion's damage for good with each word kept, five times at most, then they ask no more", () => {
+    const state = walker();
+    state.heroLevels = { maelle: 50 };
+    state.recognition = { maelle: HALF };
+    const base = derive(state, NOW).heroDps.maelle;
+    for (let kept = 1; kept <= PROMISE_DOUBLINGS + 1; kept += 1) {
+      state.promises = { maelle: kept };
+      expect(derive(state, NOW).heroDps.maelle, `${kept}`).toBeCloseTo(base * 2 ** Math.min(kept, PROMISE_DOUBLINGS));
+    }
+    state.promises = { maelle: PROMISE_DOUBLINGS - 1 };
+    expect(promiseAskable(state, "maelle")).toBe(true);
+    state.promises = { maelle: PROMISE_DOUBLINGS };
+    expect(promiseAskable(state, "maelle")).toBe(false);
+    expect(new GameEngine(state, seededRng(1), NOW).pledge("maelle", NOW)).toBe(false);
+  });
+});
+
 describe("the Promise: the bot's policies", () => {
-  it("gives its word in turn, then to whoever only lacks a word kept, Eldra first", () => {
+  it("gives its word to the strongest companion who can ask tonight", () => {
     const state = engineWith(walker()).state;
     // The bot gives its word at dusk, for the night that begins.
     new GameEngine(state, seededRng(1), NOW).ascend(NOW);
-    expect(reasonablePromise(state)).toBe("maelle");
-    state.promises = { maelle: 1 };
-    expect(reasonablePromise(state)).toBe("brom");
-    state.recognition = { kaelen: RECOGNITION_TIERS[3], eldra: RECOGNITION_TIERS[3] - 1 };
-    expect(reasonablePromise(state)).toBe("eldra");
-    state.promises = { maelle: 1, eldra: 1 };
-    expect(reasonablePromise(state)).toBe("kaelen");
-    expect(loomPromise(state)).toBe("eldra");
-    // Eldra had last night's word: even a walker in a hurry gives tonight's to someone else.
-    state.lastPromise = "eldra";
-    expect(loomPromise(state)).toBe("kaelen");
+    expect(reasonablePromise(state)).toBe("awakened");
+    // The Awakened had last night's word: tonight's goes to the next strongest.
+    state.lastPromise = "awakened";
+    expect(reasonablePromise(state)).toBe("aurelion");
+    // Aurelion has had his five words: he asks no more.
+    state.promises = { aurelion: PROMISE_DOUBLINGS };
+    expect(reasonablePromise(state)).toBe("celestine");
     expect(reasonablePromise(createInitialState(T0))).toBeNull();
   });
 
   it("keeps a walker who strikes from promising the sword or the powers away", () => {
     const state = walker();
     new GameEngine(state, seededRng(1), NOW).ascend(NOW);
-    state.promises = { maelle: 1, brom: 1 };
+    // Only the first three companions still have a word to ask.
+    state.promises = Object.fromEntries(RECOGNITION_HEROES.filter((hero) => !["maelle", "brom", "ysolde"].includes(hero)).map((hero) => [hero, PROMISE_DOUBLINGS]));
     expect(promisesAvoided({ clicksPerSecond: 5 })).toEqual(["strikes", "powers"]);
     expect(promisesAvoided({ clicksPerSecond: 5, burst: { everySeconds: 120, seconds: 10 } })).toEqual(["strikes", "powers"]);
     expect(promisesAvoided({ clicksPerSecond: 5, idleFromStage: 20 })).toEqual([]);
-    // Ysolde is next in turn: she asks a walker who lets the company walk, not one who strikes.
+    // Ysolde asks a walker who lets the company walk, not one who strikes.
     expect(reasonablePromise(state, [])).toBe("ysolde");
-    expect(reasonablePromise(state, ["strikes", "powers"])).toBe("cendre");
-    state.promises = { maelle: 1, brom: 1, cendre: 1 };
-    expect(reasonablePromise(state, [])).toBe("ysolde");
-    expect(reasonablePromise(state, ["strikes", "powers"])).toBe("garrick");
+    expect(reasonablePromise(state, ["strikes", "powers"])).toBe("brom");
   });
 
   it("plays honest nights with promises, saved regularly, and the Ledger accepts them", () => {

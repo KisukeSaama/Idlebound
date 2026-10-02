@@ -809,7 +809,6 @@ describe("save version 11", () => {
   }
 
   it("loads a version 10 save that descended, keeps its threads and Weaves, verifies it and plays on", () => {
-    expect(SAVE_VERSION).toBe(11);
     const legacy = descended();
     const migrated = parseState(legacy);
     expect(migrated.version).toBe(SAVE_VERSION);
@@ -871,6 +870,65 @@ describe("save version 11", () => {
     forged.legacyThreads = 500;
     forged.lifetime.threads = 500;
     forged.threads += 480;
+    expect(codes(forged)).toContain("descent");
+  });
+});
+
+describe("save version 12: the Rout, the Loom at stage 2000", () => {
+  /** A version 11 walker at stage 1200 whom Eldra fully remembers: she showed them her Loom. */
+  function shown(): Record<string, unknown> {
+    const state = veteran();
+    state.lastTickAt = LATER;
+    state.recognition = { eldra: RECOGNITION_TIERS[4] };
+    state.promises = { eldra: 2 };
+    state.essences = 1e6;
+    state.lifetime.essencesEarned = 1e9;
+    state.lifetime.ascensionEssences = 1e9;
+    const legacy = JSON.parse(JSON.stringify(state)) as Record<string, unknown>;
+    legacy.version = 11;
+    delete (legacy.lifetime as Record<string, unknown>).routs;
+    return legacy;
+  }
+
+  it("loads a version 11 save, keeps the Loom Eldra showed it, verifies it and plays on with the Rout", () => {
+    expect(SAVE_VERSION).toBe(12);
+    const legacy = shown();
+    const migrated = parseState(legacy);
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(migrated.lifetime.routs).toBe(0);
+    expect(canDescend(migrated)).toBe(true);
+    expect(verifyState(migrated, LATER)).toEqual([]);
+    const engine = engineWith(migrated, seededRng(13), LATER);
+    const later = playBot(engine, LATER, 5 * 60, { clicksPerSecond: 5 });
+    // A strong walker back at stage 1: the road it already walked falls in Routs.
+    expect(engine.state.lifetime.routs).toBeGreaterThan(0);
+    expect(verifyState(engine.state, later)).toEqual([]);
+    expect(verifyTransition(parseState(shown()), engine.state, later - LATER)).toEqual([]);
+  }, 60_000);
+
+  it("opens the Loom at stage 2000 for everyone, and no sooner without Eldra's old rule", () => {
+    const state = veteran();
+    expect(canDescend(state)).toBe(false);
+    // Eldra remembering the walker no longer opens it on its own.
+    state.recognition = { eldra: RECOGNITION_TIERS[4] };
+    state.promises = { eldra: 2 };
+    expect(canDescend({ ...state, maxStageEver: 999 })).toBe(false);
+    const stranger = veteran();
+    stranger.maxStageEver = 1999;
+    expect(canDescend(stranger)).toBe(false);
+    stranger.maxStageEver = 2000;
+    expect(canDescend(stranger)).toBe(true);
+    stranger.lastTickAt = LATER;
+    stranger.lifetime.ascensionEssences = 1e9;
+    stranger.lifetime.essencesEarned = 1e9;
+    const engine = engineWith(stranger, seededRng(14), LATER);
+    expect(engine.descend(LATER)).toBe(threadsFor(2000));
+    expect(threadsFor(2000)).toBe(32);
+    expect(verifyState(engine.state, LATER)).toEqual([]);
+    // A Descent before stage 2000 without Eldra's old rule is refused.
+    const forged = veteran();
+    forged.descents = 1;
+    forged.lore.readings = [0];
     expect(codes(forged)).toContain("descent");
   });
 });

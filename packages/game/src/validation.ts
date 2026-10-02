@@ -14,14 +14,14 @@
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarTotalCost, legacyHarvestCost } from "./data/altars";
 import { BIOMES, KING_FORMS, GUARDIAN_IDS, isBossStage, isKingStage } from "./data/biomes";
-import { DESCENT_HERO, DESCENT_MIN_STAGE, WEAVE_BY_ID, legacyThreadsFor, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
+import { DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, LEGACY_LOOM_HERO, WEAVE_BY_ID, legacyThreadsFor, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
 import { EVENTS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WALKER_DPS } from "./data/events";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
 import { CARAVAN_WARES } from "./data/caravan";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFFS, MARKET_BY_ID } from "./data/market";
 import { CRYSTAL_SHARDS_MAX } from "./engine";
-import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
+import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
 import { maxAffixValue } from "./loot";
 import {
   BESTIARY_BY_ID,
@@ -198,7 +198,10 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   const totalSeconds = state.lifetime.playTime + state.lifetime.offlineSeconds;
   // An hourglass pours an hour of kills at once.
   const pouredSeconds = state.lifetime.hourglasses * 3600;
-  if (state.lifetime.kills > (totalSeconds + pouredSeconds) * MAX_KILLS_PER_SECOND + 10 + state.lifetime.ascensions * maxSkipKills(state)) fail("kills", "Too many kills for the play time.");
+  // A Rout fells a stage in one step, only on a night after the first, under the best stage.
+  if (state.lifetime.routs > (totalSeconds + CLOCK_SLACK_SECONDS) / ROUT_STEP_SECONDS) fail("routs", "Routs faster than the road allows.");
+  if (state.lifetime.routs > (state.lifetime.ascensions + state.descents) * state.maxStageEver) fail("routs", "More Routs than the nights walked allow.");
+  if (state.lifetime.kills > (totalSeconds + pouredSeconds) * MAX_KILLS_PER_SECOND + 10 + state.lifetime.ascensions * maxSkipKills(state) + state.lifetime.routs * MONSTERS_PER_STAGE) fail("kills", "Too many kills for the play time.");
   if (state.lifetime.clicks > state.lifetime.playTime * MAX_CLICKS_PER_SECOND + 10) fail("clicks", "Impossible click rate.");
   // A rebirth takes at least half a minute of the game running (online or caught up), and
   // every stage is left by a kill (the Wanderer's skip counts its kills) or by Unweave, a power.
@@ -524,7 +527,7 @@ function secretPossible(state: GameState, id: SecretId, serverNow: number): bool
 /** The Descent: a thread no longer than the deepest stage weaves, spent only on weaves that exist. */
 function verifyDescent(state: GameState, fail: (code: string, message: string) => void) {
   const lifetime = state.lifetime;
-  if (state.descents > 0 && (state.maxStageEver < DESCENT_MIN_STAGE || recognitionTier(state, DESCENT_HERO) < 5)) fail("descent", "Descent without the Loom.");
+  if (state.descents > 0 && (state.maxStageEver < DESCENT_MIN_STAGE || (state.maxStageEver < DESCENT_OPEN_STAGE && recognitionTier(state, LEGACY_LOOM_HERO) < 5))) fail("descent", "Descent without the Loom.");
   let spent = 0;
   for (const [id, level] of Object.entries(state.weaves)) {
     const weave = WEAVE_BY_ID[id as WeaveId];
@@ -572,7 +575,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
 
   if (next.createdAt !== previous.createdAt) fail("identity", "This save does not continue the previous one.");
 
-  const monotonic = ["clicks", "kills", "bosses", "goldEarned", "essencesEarned", "ascensionEssences", "shardsEarned", "ascensions", "playTime", "offlineSeconds", "crystals", "hourglasses", "itemsFound", "kings", "seams", "threads"] as const;
+  const monotonic = ["clicks", "kills", "bosses", "goldEarned", "essencesEarned", "ascensionEssences", "shardsEarned", "ascensions", "playTime", "offlineSeconds", "crystals", "hourglasses", "itemsFound", "kings", "seams", "threads", "routs"] as const;
   for (const key of monotonic) {
     if (b[key] + EPSILON < a[key]) fail("rollback", `Statistic "${key}" went down.`);
   }
@@ -626,7 +629,11 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   const skipKills = ascensions * maxSkipKills(next);
   // An hourglass pours an hour of kills at once (the Caravan's night, two).
   const hourglasses = Math.max(0, b.hourglasses - a.hourglasses);
-  if (kills > (activeSeconds + Math.max(0, offline) + hourglasses * 3600) * MAX_KILLS_PER_SECOND + 10 + skipKills) fail("kills", "Too many kills for the elapsed time.");
+  // A Rout fells a stage in one step, each stage once a night at most.
+  const routed = Math.max(0, b.routs - a.routs);
+  if (routed > (activeSeconds + Math.max(0, offline)) / ROUT_STEP_SECONDS + 1) fail("routs", "Routs faster than the road allows.");
+  if (routed > (ascensions + Math.max(0, next.descents - previous.descents) + 1) * next.maxStageEver) fail("routs", "More Routs than the nights walked allow.");
+  if (kills > (activeSeconds + Math.max(0, offline) + hourglasses * 3600) * MAX_KILLS_PER_SECOND + 10 + skipKills + routed * MONSTERS_PER_STAGE) fail("kills", "Too many kills for the elapsed time.");
   if (next.maxStageEver - previous.maxStageEver > kills + 1) fail("stage", "Stages cleared without fighting.");
   if (b.ascensions - a.ascensions > elapsed / 30 + 1) fail("ascension", "Too many ascensions.");
   if (next.descents - previous.descents > elapsed / 30 + 1) fail("descent", "Too many Descents.");

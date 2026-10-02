@@ -14,7 +14,7 @@ export const sanctum = defineMessages({
     /** The Promise (BIBLE 12.11): the word given to one companion at dusk. */
     promise: {
       title: "La Promesse",
-      hint: (pct: number) => `Au crépuscule, donne ta parole à un compagnon : toute la nuit suivante, tu ne peux pas faire ce que sa règle interdit. Tenue jusqu'au bout, elle compte pour sa Reconnaissance : ses deux derniers souvenirs en demandent, et le dernier lui donne +${pct} % de dégâts pour toujours.`,
+      hint: (pct: number, max: number) => `Au crépuscule, donne ta parole à un compagnon : toute la nuit suivante, tu ne peux pas faire ce que sa règle interdit. Elle est tenue si tu respectes sa règle jusqu'à ton crépuscule et qu'un Roi tombe cette nuit. Chaque parole tenue double les dégâts de ce compagnon pour toujours, ${max} fois au plus (×${2 ** max}). Ses deux derniers souvenirs en demandent aussi une chacun, et le dernier lui donne encore +${pct} % de dégâts.`,
       tonight: "Cette nuit",
       none: "Aucune parole cette nuit : aucune règle ne te limite.",
       choose: "Choisir un compagnon pour la prochaine nuit",
@@ -27,10 +27,12 @@ export const sanctum = defineMessages({
       noWeapon: "Équipe d'abord une arme : c'est elle qu'il te demande de laisser.",
       rested: "Déjà ta parole cette nuit. Un même compagnon ne peut pas l'avoir deux nuits de suite.",
       restedLast: "Déjà ta parole la nuit dernière. Un même compagnon ne peut pas l'avoir deux nuits de suite.",
-      doubles: "Tenue, cette nuit compte double pour sa Reconnaissance, si son niveau atteint 100.",
+      doubles: "Tenue, cette nuit compte aussi double pour sa Reconnaissance, si son niveau atteint 100.",
+      reward: (total: number) => `Tenue : ses dégâts doublent pour toujours (×${total} en tout).`,
+      fulfilled: (names: string, total: number) => `Toutes leurs paroles sont tenues, leurs dégâts ×${total} pour toujours : ${names}.`,
       breakWord: "Rompre ma parole",
       breakTitle: "Rompre ta parole ?",
-      breakText: "Sa règle ne s'applique plus et tu ne perds aucune force. Mais cette parole ne comptera pas pour sa Reconnaissance, et tu ne pourras pas en donner une autre avant le prochain crépuscule.",
+      breakText: "Sa règle ne s'applique plus et tu ne perds aucune force. Mais cette parole ne doublera pas ses dégâts, ne comptera pas pour sa Reconnaissance, et tu ne pourras pas en donner une autre avant le prochain crépuscule.",
       breakLabel: "Rompre",
       status: {
         given: "Parole donnée",
@@ -42,7 +44,7 @@ export const sanctum = defineMessages({
         ready: "Respecte encore sa règle jusqu'à ton crépuscule, et elle sera tenue.",
         broken: "Sa règle ne s'applique plus. Cette nuit compte comme une nuit ordinaire."
       },
-      kept: (count: number) => (count === 0 ? "Aucune parole tenue" : count === 1 ? "1 parole tenue" : `${count} paroles tenues`),
+      kept: (count: number, max: number, total: number) => `${count} / ${max} parole${count > 1 ? "s" : ""} tenue${count > 1 ? "s" : ""} · dégâts ×${total}`,
       needs: (promises: number) => (promises === 1 ? "Son prochain souvenir demande encore 1 parole tenue." : `Son prochain souvenir demande encore ${promises} paroles tenues.`),
       /** What each kind of promise asks, in plain words. */
       rules: {
@@ -70,9 +72,9 @@ export const sanctum = defineMessages({
         ready: "Parole remplie",
         readyText: "Ce qui t'était demandé est fait. Respecte encore sa règle jusqu'à ton crépuscule, et elle sera tenue.",
         kept: (name: string) => `Parole tenue · ${name}`,
-        keptText: "Elle compte pour sa Reconnaissance.",
+        keptText: (total: number) => `Ses dégâts doublent pour toujours : ×${total} en tout. Elle compte aussi pour sa Reconnaissance.`,
         broken: (name: string) => `Parole rompue · ${name}`,
-        brokenText: "Sa règle ne s'applique plus, mais cette parole ne compte pas pour sa Reconnaissance.",
+        brokenText: "Sa règle ne s'applique plus, mais cette parole ne double pas ses dégâts et ne compte pas pour sa Reconnaissance.",
         held: (name: string) => `Refusé : tu as donné ta parole à ${name}`,
         heldText: (rule: string) => `${rule} Pour le faire quand même, romps ta parole (Ascension, La Promesse).`
       }
@@ -126,7 +128,7 @@ export const sanctum = defineMessages({
     legendSummary: "Altar legend",
     promise: {
       title: "The Promise",
-      hint: (pct: number) => `At dusk, give your word to one companion: for the whole next night, you cannot do what their rule forbids. Kept to the end, it counts toward their Recognition: their last two memories ask for it, and the last one gives them +${pct}% damage for good.`,
+      hint: (pct: number, max: number) => `At dusk, give your word to one companion: for the whole next night, you cannot do what their rule forbids. It is kept if you hold to their rule until your dusk and a King falls that night. Every word kept doubles that companion's damage for good, ${max} times at most (×${2 ** max}). Their last two memories also ask for one each, and the last one gives them another +${pct}% damage.`,
       tonight: "Tonight",
       none: "No word given tonight: no rule limits you.",
       choose: "Choose a companion for the next night",
@@ -139,10 +141,12 @@ export const sanctum = defineMessages({
       noWeapon: "Equip a weapon first: that is what he asks you to leave behind.",
       rested: "They already have your word tonight. A companion cannot have it two nights running.",
       restedLast: "They had your word last night. A companion cannot have it two nights running.",
-      doubles: "Kept, this night counts twice toward their Recognition, if they reach level 100.",
+      doubles: "Kept, this night also counts twice toward their Recognition, if they reach level 100.",
+      reward: (total: number) => `Kept: their damage doubles for good (×${total} in all).`,
+      fulfilled: (names: string, total: number) => `Every word kept, their damage ×${total} for good: ${names}.`,
       breakWord: "Break my word",
       breakTitle: "Break your word?",
-      breakText: "Their rule no longer applies and you lose no strength. But this word will not count toward their Recognition, and you cannot give another before the next dusk.",
+      breakText: "Their rule no longer applies and you lose no strength. But this word will not double their damage nor count toward their Recognition, and you cannot give another before the next dusk.",
       breakLabel: "Break it",
       status: {
         given: "Word given",
@@ -154,7 +158,7 @@ export const sanctum = defineMessages({
         ready: "Keep to its rule until your dusk, and it is kept.",
         broken: "Their rule no longer applies. This night counts as an ordinary one."
       },
-      kept: (count: number) => (count === 0 ? "No word kept" : count === 1 ? "1 word kept" : `${count} words kept`),
+      kept: (count: number, max: number, total: number) => `${count} / ${max} word${count === 1 ? "" : "s"} kept · damage ×${total}`,
       needs: (promises: number) => (promises === 1 ? "Their next memory still needs 1 word kept." : `Their next memory still needs ${promises} words kept.`),
       rules: {
         without: (name: string) => `Do not hire ${name} all night.`,
@@ -181,9 +185,9 @@ export const sanctum = defineMessages({
         ready: "Word fulfilled",
         readyText: "What was asked of you is done. Keep to its rule until your dusk, and it is kept.",
         kept: (name: string) => `Word kept · ${name}`,
-        keptText: "It counts toward their Recognition.",
+        keptText: (total: number) => `Their damage doubles for good: ×${total} in all. It also counts toward their Recognition.`,
         broken: (name: string) => `Word broken · ${name}`,
-        brokenText: "Their rule no longer applies, but this word does not count toward their Recognition.",
+        brokenText: "Their rule no longer applies, but this word does not double their damage nor count toward their Recognition.",
         held: (name: string) => `Refused: you gave your word to ${name}`,
         heldText: (rule: string) => `${rule} To do it anyway, break your word (Ascension, The Promise).`
       }

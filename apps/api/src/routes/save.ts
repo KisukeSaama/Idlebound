@@ -4,11 +4,12 @@ import { eq, sql as raw } from "drizzle-orm";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
 import { db } from "../db/client";
-import { guestSaves, leaderboard, saveRejections, saves } from "../db/schema";
+import { guestSaves, leaderboard, saveRejections, saves, stageHistory } from "../db/schema";
 import { forgetGuest, guestId, keepGuest, newGuest, renewGuest, visitDue } from "../lib/guest";
 import { fail } from "../lib/errors";
 import { clientIp, limiter, tooMany } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
+import { utcDay } from "../lib/stride";
 import { verificationOverdue } from "../lib/verification";
 
 /** At most one save every 10 s per game, an account's or a guest's (the client sends one every 30 s). */
@@ -216,8 +217,15 @@ export const saveRoutes = new Hono()
         }
 
         const board = leaderboardSummary(values.state);
+        // The Stride board: the day's first accepted save records the best stage as the day
+        // began (an account's first save, the stage it arrives with). The save row is locked,
+        // so this account's saves never race here.
+        const [ranked] = await tx.select({ maxStage: leaderboard.maxStage }).from(leaderboard).where(eq(leaderboard.userId, user.id)).limit(1);
+        await tx.insert(stageHistory)
+          .values({ userId: user.id, day: utcDay(values.updatedAt), maxStage: ranked?.maxStage ?? board.maxStage })
+          .onConflictDoNothing();
         await tx.insert(leaderboard)
-          .values({ userId: user.id, ...board, updatedAt: values.updatedAt })
+          .values({ userId: user.id, ...board, updatedAt: values.updatedAt, stageReachedAt: values.updatedAt })
           .onConflictDoUpdate({
             target: leaderboard.userId,
             set: {
@@ -228,6 +236,8 @@ export const saveRoutes = new Hono()
               achievements: raw`greatest(${leaderboard.achievements}, ${board.achievements})`,
               descents: raw`greatest(${leaderboard.descents}, ${board.descents})`,
               playTime: raw`greatest(${leaderboard.playTime}, ${board.playTime})`,
+              // Depth ties go to whoever got there first: the date moves only with the record.
+              stageReachedAt: raw`case when ${board.maxStage} > ${leaderboard.maxStage} then ${values.updatedAt.toISOString()}::timestamptz else ${leaderboard.stageReachedAt} end`,
               updatedAt: values.updatedAt
             }
           });

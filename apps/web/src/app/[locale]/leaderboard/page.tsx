@@ -29,8 +29,9 @@ export default async function LeaderboardPage({ params, searchParams }: Props) {
   const board: BoardId = BOARD_IDS.find((entry) => entry === requested) ?? "stage";
   const format = (row: { value: number; maxStage: number }) =>
     board === "stage" ? l.stageValue(formatNumber(row.value))
-      : board === "descents" ? l.descentsValue(formatNumber(row.value), formatNumber(row.maxStage))
-        : formatNumber(row.value);
+      : board === "week" ? l.strideValue(formatNumber(row.value))
+        : board === "descents" ? l.descentsValue(formatNumber(row.value), formatNumber(row.maxStage))
+          : formatNumber(row.value);
   const data = await fetchLeaderboard(board, 100);
   const play = href(locale, "play");
 
@@ -60,7 +61,7 @@ export default async function LeaderboardPage({ params, searchParams }: Props) {
           <p className="board-empty card">{l.unavailable}</p>
         ) : data.rows.length === 0 ? (
           <p className="board-empty card">
-            {l.empty}<Link href={play}>{l.emptyCta}</Link>
+            {board === "week" ? l.strideEmpty : l.empty}<Link href={play}>{board === "week" ? l.strideEmptyCta : l.emptyCta}</Link>
           </p>
         ) : (
           <div className="card board-table-wrap">

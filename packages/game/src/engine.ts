@@ -2,7 +2,7 @@ import { ACHIEVEMENTS } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID } from "./data/altars";
 import { TREASURE_MONSTER, BIOMES, biomeForStage, bossForStage, eraForStage, guardianForStage, isBiomeBossStage, isBossStage, isKingStage, THE_DAWN } from "./data/biomes";
 import { CARAVAN_BUFF_SECONDS, caravanWare, isoWeek } from "./data/caravan";
-import { DESCENT_HERO, DESCENT_MIN_STAGE, WEAVE_BY_ID, threadsFor, weaveCost, type WeaveId } from "./data/descent";
+import { DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, LEGACY_LOOM_HERO, WEAVE_BY_ID, threadsFor, weaveCost, type WeaveId } from "./data/descent";
 import {
   CARAVAN_MIN_ASCENSIONS,
   ECLIPSE_EVERY,
@@ -91,6 +91,7 @@ import {
   MAX_STAGE,
   MONSTERS_PER_STAGE,
   RESPAWN_SECONDS,
+  ROUT_STEP_SECONDS,
   altarLevel,
   altarPrice,
   ascensionPreview,
@@ -108,6 +109,7 @@ import {
   offlineCapSeconds,
   promiseAskable,
   promiseWhen,
+  routs,
   REUNION_MIN_AWAY_SECONDS,
   REUNION_SHARE,
   shardPrice,
@@ -159,9 +161,18 @@ export function offlineGains(state: GameState, seconds: number, now: number): { 
   return { kills, gold: Math.floor(gold) };
 }
 
-/** Whether the walker may begin a Descent (BIBLE 12.7): deep enough, and Eldra remembers them. */
+/** Whether the walker may begin a Descent (BIBLE 12.7): the night has gone deep enough. */
 export function canDescend(state: GameState): boolean {
-  return state.maxStageEver >= DESCENT_MIN_STAGE && recognitionTier(state, DESCENT_HERO) >= 5;
+  return loomShown(state);
+}
+
+/**
+ * Whether Eldra has shown her Loom: past `DESCENT_OPEN_STAGE`, or (before save version 12)
+ * from stage 1000 once she fully remembered the walker.
+ */
+export function loomShown(state: GameState): boolean {
+  if (state.maxStageEver >= DESCENT_OPEN_STAGE) return true;
+  return state.maxStageEver >= DESCENT_MIN_STAGE && (state.descents > 0 || recognitionTier(state, LEGACY_LOOM_HERO) >= 5);
 }
 
 /** Stages of the guardians the company passed while away, in order. */
@@ -945,6 +956,15 @@ export class GameEngine {
             s.trail.eclipse = false;
           }
           this.promiseBossFell(stage);
+        } else if (routs(s, stage, d)) {
+          // The Rout, as in an open tab: the whole stage falls in one step.
+          if (ROUT_STEP_SECONDS > time) break;
+          time -= ROUT_STEP_SECONDS;
+          const done = MONSTERS_PER_STAGE - s.kills;
+          kills += done;
+          sliceGold += done * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+          this.recordStageKills(stage, done);
+          s.lifetime.routs += 1;
         } else {
           const perKill = stageHp(stage) / d.dps + RESPAWN_SECONDS;
           const needed = MONSTERS_PER_STAGE - s.kills;
@@ -1130,6 +1150,10 @@ export class GameEngine {
     let gold = stageGold(stage);
     let event: MonsterState["event"];
     let eclipse = false;
+    if (stage === s.maxStage && routs(s, stage, d)) {
+      this.rout();
+      return;
+    }
     this.clickedThisFight = false;
 
     if (isBossStage(stage)) {
@@ -1271,6 +1295,30 @@ export class GameEngine {
     s.respawnIn = RESPAWN_SECONDS;
     s.bossTimeLeft = 0;
     if (id === "seam" || id === "quiet" || id === "stray") this.emit({ type: "event", id, won: false });
+  }
+
+  /**
+   * The Rout: the rest of the frontier stage falls at once, with the kills and gold it would
+   * have given (a golden rat's share at its odds), and the road goes on to the next stage.
+   */
+  private rout() {
+    const s = this.state;
+    const d = this.derived;
+    const stage = s.stage;
+    const kills = MONSTERS_PER_STAGE - s.kills;
+    const gold = kills * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+    this.earnGold(gold);
+    s.run.kills += kills;
+    s.lifetime.kills += kills;
+    s.lifetime.routs += 1;
+    this.recordStageKills(stage, kills);
+    if (stage <= NOTCH_LAST_STAGE) {
+      s.trail.fieldKills += kills;
+      if (s.trail.fieldKills >= NOTCH_KILLS) this.discover("thousandth-notch");
+    }
+    this.emit({ type: "rout", stage, kills, gold });
+    this.advance();
+    s.respawnIn = ROUT_STEP_SECONDS;
   }
 
   private kill(now: number) {

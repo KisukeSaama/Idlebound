@@ -4,10 +4,12 @@ import {
   HERO_BY_ID,
   PROMISES,
   PROMISE_BY_HERO,
+  PROMISE_DOUBLINGS,
   RECOGNITION_DPS,
   companionMet,
   promiseAskable,
   promiseAsker,
+  promiseDoublings,
   promiseHolds,
   promiseWhen,
   promiseText,
@@ -80,12 +82,15 @@ export function PromiseTab() {
   // Companions met, in the order of the road. One whose request cannot be granted yet (a
   // companion to leave behind who was never met, a night deeper than the walker ever went)
   // waits until it can; Brom stays, and says what he is missing.
-  const unarmed = (def: PromiseDef) => def.kind === "anvil" && companionMet(state, def.hero) && promiseAsker(state, def.hero) && !state.equipment.weapon;
+  const unarmed = (def: PromiseDef) => def.kind === "anvil" && companionMet(state, def.hero) && promiseAsker(state, def.hero) && promisesKept(state, def.hero) < PROMISE_DOUBLINGS && !state.equipment.weapon;
   const roster = PROMISES.filter((def) => promiseAskable(state, def.hero) || unarmed(def));
+  // Whoever has had all their words asks no more: they are named below, with what they won.
+  const fulfilled = PROMISES.filter((def) => promisesKept(state, def.hero) >= PROMISE_DOUBLINGS).map((def) => g.heroes[def.hero].name);
+  const doubled = (heroId: string, more = 0) => 2 ** Math.min(PROMISE_DOUBLINGS, promiseDoublings(state, heroId) + more);
 
   return (
     <>
-      <p className="modal-hint promise-hint">{text.hint(Math.round(RECOGNITION_DPS * 100))}</p>
+      <p className="modal-hint promise-hint">{text.hint(Math.round(RECOGNITION_DPS * 100), PROMISE_DOUBLINGS)}</p>
 
       <h3 className="section-heading">{text.tonight}</h3>
       {given && status ? (
@@ -98,6 +103,7 @@ export function PromiseTab() {
             </header>
             <blockquote>{status === "broken" ? promiseText(given.hero, locale)?.broken : promiseText(given.hero, locale)?.ask}</blockquote>
             {status !== "broken" ? <p className="promise-rule">{describePromise(PROMISE_BY_HERO[given.hero], locale, given.goal)}</p> : null}
+            {status !== "broken" ? <p className="promise-reward">{text.reward(doubled(given.hero, 1))}</p> : null}
             <p className="modal-hint">{text.statusHint[status]}</p>
           </div>
           {status !== "broken" ? <button type="button" className="btn btn-ghost btn-sm" onClick={() => void breakWord()}>{text.breakWord}</button> : null}
@@ -124,10 +130,11 @@ export function PromiseTab() {
               <div className="promise-body">
                 <header>
                   <h4>{name} <span className="hero-title">{g.heroes[hero].title}</span></h4>
-                  <span className="promise-kept">{text.kept(kept)}</span>
+                  <span className="promise-kept">{text.kept(kept, PROMISE_DOUBLINGS, doubled(hero))}</span>
                 </header>
                 <blockquote>{lines?.ask}</blockquote>
                 <p className="promise-rule">{describePromise(def, locale)}</p>
+                <p className="promise-reward">{text.reward(doubled(hero, 1))}</p>
                 {needs && needs.promises > 0 ? <p className="promise-needs">{text.needs(needs.promises)}</p> : null}
                 {promisesAwaited(state, hero) > 0 ? <p className="modal-hint">{text.doubles}</p> : null}
                 {unarmed(def) ? <p className="modal-hint">{text.noWeapon}</p> : when === null && given?.hero === hero ? <p className="modal-hint">{text.rested}</p> : when === null && state.lastPromise === hero ? <p className="modal-hint">{text.restedLast}</p> : null}
@@ -154,6 +161,7 @@ export function PromiseTab() {
           );
         })}
       </ol>
+      {fulfilled.length > 0 ? <p className="modal-hint promise-fulfilled">{text.fulfilled(fulfilled.join(", "), 2 ** PROMISE_DOUBLINGS)}</p> : null}
     </>
   );
 }

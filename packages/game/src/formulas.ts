@@ -1,11 +1,12 @@
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTAR_BY_ID, altarCost, altarEffect } from "./data/altars";
+import { isBossStage } from "./data/biomes";
 import { WEAVE_BY_ID, type WeaveId } from "./data/descent";
 import { REMEMBRANCE_FRAGMENTS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WALKER_DPS, remembranceNight } from "./data/events";
 import { CLICK_HERO_ID, HEROES, UPGRADE_BY_ID } from "./data/heroes";
 import { EQUIPMENT_CAP, FORGE_STEP, forgeCost, relicDensity } from "./data/items";
 import { RECOGNITION_DPS, bestiaryGoldBonus, recognitionTier, rememberedCompanions } from "./data/lore";
-import { PROMISE_BY_HERO, promiseAtDusk, promiseDepth, promiseGrantable, promiseOf } from "./data/promises";
+import { PROMISE_BY_HERO, promiseAtDusk, promiseDepth, promiseDoublings, promiseGrantable, promiseOf } from "./data/promises";
 import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia, wornItems } from "./data/relics";
 import type { AffixStat, AltarId, BuffId, Derived, GameState, HeroDef, Item } from "./types";
 
@@ -17,6 +18,13 @@ export const BASE_CRIT_MULTIPLIER = 10;
 export const BASE_TREASURE_CHANCE = 0.01;
 export const RESPAWN_SECONDS = 0.35;
 export const BOSS_RESPAWN_SECONDS = 0.8;
+/**
+ * The Rout (BIBLE 6.1): on a stretch of road walked on an earlier night, Remnants the company
+ * would unmake within this many seconds break all at once, and the whole stage falls.
+ */
+export const ROUT_SECONDS = 0.1;
+/** The fastest the road goes by in a Rout: one stage per this many seconds at the very least. */
+export const ROUT_STEP_SECONDS = 0.25;
 export const ASCENSION_MIN_STAGE = 51;
 /**
  * A guardian or an elite of the present night keeps its wounds: after a failed fight, this
@@ -62,6 +70,14 @@ export function bossHpMultiplier(stage: number): number {
 
 export function bossHp(stage: number): number {
   return stageHp(stage) * bossHpMultiplier(stage);
+}
+
+/**
+ * Whether a stage routs (see `ROUT_SECONDS`): a stage of normal Remnants under the walker's
+ * best stage ever, against a company that would unmake one of them in a blink.
+ */
+export function routs(state: GameState, stage: number, d: Derived): boolean {
+  return !isBossStage(stage) && stage < state.maxStageEver && stageHp(stage) <= (d.dps + d.click * d.autoClicksPerSecond) * ROUT_SECONDS;
 }
 
 /**
@@ -277,6 +293,8 @@ export function derive(state: GameState, now: number, options: DeriveOptions = {
     heroMult[hero.id] = milestoneMultiplier(state.heroLevels[hero.id] ?? 0);
     // A companion who fully remembers the walker fights harder (Recognition 5).
     if (recognitionTier(state, hero.id) >= 5) heroMult[hero.id] *= 1 + RECOGNITION_DPS;
+    // Every word kept to a companion doubles their damage for good (the Promise).
+    heroMult[hero.id] *= 2 ** promiseDoublings(state, hero.id);
   }
 
   for (const upgradeId of state.heroUpgrades) {

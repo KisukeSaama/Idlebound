@@ -1,6 +1,7 @@
 "use client";
 
 import { INVENTORY_LIMIT, MARKET_OFFERS, caravanWare, isoWeek, namedEffect, offlineGains, promiseAbstains, shardPrice, type CaravanWareId } from "@idlebound/game";
+import type { ChestId } from "@idlebound/game/art";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { audio } from "../audio";
@@ -65,8 +66,8 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
       <Caravan now={now} hourglass={hourglass} />
       <div className="market-grid">
         {MARKET_OFFERS.map((offer) => {
-          const chest = offer.id === "chest" || offer.id === "great-chest";
-          const blocked = (chest && state.inventory.length >= INVENTORY_LIMIT) || (offer.id === "hourglass" && hourglass <= 0) || promiseAbstains(state, "shards");
+          const chest: ChestId | null = offer.id === "chest" || offer.id === "great-chest" ? offer.id : null;
+          const blocked = (chest !== null && state.inventory.length >= INVENTORY_LIMIT) || (offer.id === "hourglass" && hourglass <= 0) || promiseAbstains(state, "shards");
           const copy = g.market[offer.id];
           const price = shardPrice(state, offer.cost);
           return (
@@ -75,15 +76,16 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
               <h3>{copy.name}</h3>
               <p>{copy.description}</p>
               {offer.id === "hourglass" ? <p className="market-preview"><GoldIcon size={14} /> {hourglass > 0 ? fmt(hourglass) : text.hireFirst}</p> : null}
-              {chest && state.inventory.length >= INVENTORY_LIMIT ? <p className="market-preview warn"><Picto name="warning" size={14} /> {text.inventoryFull}</p> : null}
+              {chest !== null && state.inventory.length >= INVENTORY_LIMIT ? <p className="market-preview warn"><Picto name="warning" size={14} /> {text.inventoryFull}</p> : null}
               <button
                 type="button"
                 className="btn btn-gold btn-sm"
                 disabled={state.shards < price || blocked}
                 onClick={() => {
-                  const ok = store.act((engine, time) => engine.buyOffer(offer.id, time));
+                  const buy = () => store.act((engine, time) => engine.buyOffer(offer.id, time));
+                  const ok = chest ? ui.openChest(chest, buy) : buy();
                   if (!ok) audio.play("error");
-                  else if (!chest && offer.id !== "hourglass") ui.toast({ tone: "success", icon: OFFER_PICTO[offer.id], title: copy.name, text: text.effectActive });
+                  else if (!chest && offer.id !== "hourglass") ui.toast({ tone: "success", icon: OFFER_PICTO[offer.id], title: copy.name, text: text.effectActive, stack: `market:${offer.id}` });
                 }}
               >
                 <Price cost={offer.cost} price={price} />

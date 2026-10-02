@@ -18,7 +18,7 @@ export const night = defineMessages({
       hall: "Le Grand Livre t'ouvre une page : hauts faits (ils augmentent tes dégâts), Bestiaire et Chronique.",
       loom: "La Descente s'ouvre au Sanctuaire, au Métier d'Eldra : elle efface tes essences et tes autels, et te donne des fils qui achètent des bonus que rien n'efface.",
       caravan: "La Roulotte du Comptoir est au marché : une marchandise rare à payer en éclats, qui change chaque semaine.",
-      promise: "Au Sanctuaire, un compagnon te demande ta parole : une règle à tenir toute la nuit. Tenue, elle fait avancer ses souvenirs, et ses deux derniers n'arrivent qu'ainsi.",
+      promise: "Au Sanctuaire, un compagnon te demande ta parole : une règle à tenir toute la nuit. Tenue, elle double ses dégâts pour toujours.",
       altars2: "Trois nouveaux autels au Sanctuaire : le Temps, le Marchandage et le Trésor.",
       altars3: "Les six derniers autels du Sanctuaire s'éveillent : treize en tout, à présent."
     },
@@ -83,7 +83,7 @@ export const night = defineMessages({
       hall: "The Ledger opens a page for you: deeds (they raise your damage), Bestiary and Chronicle.",
       loom: "The Descent opens in the Sanctum, at Eldra's Loom: it wipes your essences and altars, and gives you threads that buy bonuses nothing can take away.",
       caravan: "The Stallkeeper's Caravan is at the market: one rare ware, paid in shards, that changes every week.",
-      promise: "In the Sanctum, a companion asks for your word: one rule to keep all night. Kept, it moves their memories along, and their last two come only this way.",
+      promise: "In the Sanctum, a companion asks for your word: one rule to keep all night. Kept, it doubles their damage for good.",
       altars2: "Three new altars in the Sanctum: Time, Bargain and Treasure.",
       altars3: "The last six altars of the Sanctum wake: thirteen in all, now."
     },

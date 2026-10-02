@@ -191,6 +191,11 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
         const { x, y } = center();
         spawn(`fx-gold ${event.monster.kind === "treasure" ? "treasure" : ""}`, `+${fmtRef.current(event.gold)}`, x, y + 40, 1100);
         if (event.shards > 0) spawn("fx-shards", currentMessages().hud.fx.shards(event.shards), x + 50, y + 10, 1300);
+      } else if (event.type === "rout") {
+        // A whole stage comes apart at once: its gold rises, and the road says why.
+        const { x, y } = center();
+        spawn("fx-gold", `+${fmtRef.current(event.gold)}`, x, y + 40, 900);
+        spawn("fx-rout", currentMessages().hud.fx.rout(event.stage), x, y - 30, 900);
       }
     });
     return () => {

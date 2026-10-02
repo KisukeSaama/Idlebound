@@ -767,6 +767,106 @@ export const CARAVAN_ICONS: Record<CaravanWareId, IconRecipe> = {
   }
 };
 
+/** The chests the stall sells: the ones opened before the walker's eyes. */
+export type ChestId = Extract<MarketOfferId, "chest" | "great-chest">;
+
+/**
+ * A chest 30 pixels wide, in four parts drawn through `ICON_INK`: the closed lid, the lid
+ * tipped back on its hinges (its underside), the open mouth (the back rim, then the dark
+ * inside where the light comes from) and the front of the body. The generator stacks them,
+ * bottoms aligned, and adds the ink outline.
+ */
+export interface ChestRecipe {
+  lid: readonly string[];
+  lidOpen: readonly string[];
+  mouth: readonly string[];
+  body: readonly string[];
+}
+
+export const CHESTS: Record<ChestId, ChestRecipe> = {
+  // A crate of the road: planks of old wood, two iron bands, a gold lock.
+  chest: {
+    lid: [
+      "......nnnnnnnnnnnnnnnnnn......",
+      "...nlhnnnnnnnnnnnnnnnnnnlhb...",
+      "..nBlhBBBBBBBBBBBBBBBBBBlhBb..",
+      ".nBBlhBBBBBBBBBBBBBBBBBBlhBBb.",
+      ".nbblhbbbbbbbbbbbbbbbbbblhbbb.",
+      ".nBBlhBBBBBBBBBBBBBBBBBBlhBBb.",
+      ".nBBlhBBBBBBBYGGgBBBBBBBlhBBb.",
+      ".nBBlhBBBBBBBYGGgBBBBBBBlhBBb.",
+      ".lhhhhhhhhhhhYGGGhhhhhhhhhhhh."
+    ],
+    lidOpen: [
+      "..nnnnnnnnnnnnnnnnnnnnnnnnnn..",
+      ".nBB44BBBBBBBBBBBBBBBBBB44BBb.",
+      ".nww44wwwwwwwwwwwwwwwwww44wwb.",
+      ".nww44wwwwwwwwwwwwwwwwww44wwb.",
+      ".nww44wwwwwwwwwwwwwwwwww44wwb.",
+      ".lhhhhhhhhhhhhhhhhhhhhhhhhhhh."
+    ],
+    mouth: [
+      ".lhhhhhhhhhhhhhhhhhhhhhhhhhhh.",
+      ".n11111111111111111111111111b."
+    ],
+    body: [
+      ".lhhhhhhhhhhhgGGghhhhhhhhhhhh.",
+      ".nBBlhBBBBBBBGYGgBBBBBBBlhBBb.",
+      ".nBBlhBBBBBBBG11gBBBBBBBlhBBb.",
+      ".nBBlhBBBBBBBGG1gBBBBBBBlhBBb.",
+      ".nbblhbbbbbbbggggbbbbbbblhbbb.",
+      ".nBBlhBBBBBBBBBBBBBBBBBBlhBBb.",
+      ".nBBlhBBBBBBBBBBBBBBBBBBlhBBb.",
+      ".nBBlhBBBBBBBBBBBBBBBBBBlhBBb.",
+      ".nbblhbbbbbbbbbbbbbbbbbblhbbb.",
+      ".nBBhhBBBBBBBBBBBBBBBBBBhhBBb.",
+      ".nBBhhBBBBBBBBBBBBBBBBBBhhBBb.",
+      ".wwwhhwwwwwwwwwwwwwwwwwwhhwww."
+    ]
+  },
+  // The great chest: a reliquary of royal violet bound in gold, a gem on its roof and in its lock.
+  "great-chest": {
+    lid: [
+      "..............PL..............",
+      "......aaaaaaaapPaaaaaaaa......",
+      "...aYGaaaaaaaaaaaaaaaaaaYGS...",
+      "..ayYGyyyyyyyyyyyyyyyyyyYGyS..",
+      ".ayyYGyyyyyyyyyyyyyyyyyyYGyyS.",
+      ".aSSYGSSSSSSSSSSSSSSSSSSYGSSS.",
+      ".ayyYGyyyyyyyyyyyyyyyyyyYGyyS.",
+      ".ayyYGyyyyyyyYGGgyyyyyyyYGyyS.",
+      ".ayyYGyyyyyyyYGGgyyyyyyyYGyyS.",
+      ".YGGGGGGGGGGGYGGGGGGGGGGGGGGG."
+    ],
+    lidOpen: [
+      "..aaaaaaaaaaaaaaaaaaaaaaaaaa..",
+      ".ayyggyyyyyyyyyyyyyyyyyyggyyS.",
+      ".a22gg222222222222222222gg22S.",
+      ".a22gg222222222222222222gg22S.",
+      ".a22gg222222222222222222gg22S.",
+      ".YGGGGGGGGGGGGGGGGGGGGGGGGGGG."
+    ],
+    mouth: [
+      ".YGGGGGGGGGGGGGGGGGGGGGGGGGGG.",
+      ".a11111111111111111111111111S."
+    ],
+    body: [
+      ".YGGGGGGGGGGGgGGgGGGGGGGGGGGG.",
+      ".ayyYGyyyyyyyGPLgyyyyyyyYGyyS.",
+      ".ayyYGyyyyyyyGPPgyyyyyyyYGyyS.",
+      ".ayyYGyyyyyyyGG1gyyyyyyyYGyyS.",
+      ".aSSYGSSSSSSSggggSSSSSSSYGSSS.",
+      ".ayyYGyyyyyyyyyyyyyyyyyyYGyyS.",
+      ".ayyYGyyyyyyyyyyyyyyyyyyYGyyS.",
+      ".ayyYGyyyyyyyyyyyyyyyyyyYGyyS.",
+      ".aSSYGSSSSSSSSSSSSSSSSSSYGSSS.",
+      ".ayyGGyyyyyyyyyyyyyyyyyyGGyyS.",
+      ".ayyGGyyyyyyyyyyyyyyyyyyGGyyS.",
+      ".SSSGGSSSSSSSSSSSSSSSSSSGGSSS."
+    ]
+  }
+};
+
 /**
  * The wandering crystal (16 × 24): three facets that catch the light in turn. `0` to `3`
  * are steps of the essence ramp, `f` marks the facets that light up frame by frame.

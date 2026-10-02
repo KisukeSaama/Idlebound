@@ -537,6 +537,117 @@ suite("API (real Postgres)", () => {
     expect((await owner.call("POST", "/auth/login", { email, password })).status).toBe(200);
   }, 60_000);
 
+  describe("the Roll's ties and the Stride", () => {
+    const password = "Un-Mot-De-Passe-Solide";
+    /** A unique height on the boards, far above any honest test game. */
+    const height = 1_000_000 + (Date.now() % 1_000_000);
+
+    async function walker(ip: string, prefix: string) {
+      const client = new Client(ip);
+      const username = freshName(prefix);
+      expect((await client.call("POST", "/auth/register", { email: `${prefix.toLowerCase()}-${unique}@idlebound.test`, username, password })).status).toBe(201);
+      const state = playedState(1);
+      const first = await client.call("PUT", "/save", { state, baseRevision: null });
+      expect(first.status, JSON.stringify(first.json)).toBe(200);
+      const [{ id }] = await sql`select id from users where username = ${username}`;
+      return { client, username, id: id as string, state, revision: first.json.revision as number };
+    }
+
+    /** A board read past the 30 s cache: every limit is its own cache entry. */
+    let limit = 100;
+    const read = async (client: Client, board: string) => (await client.call("GET", `/leaderboard?board=${board}&limit=${limit--}`)).json;
+
+    it("breaks Depth ties by who reached the stage first, a date the server sets only with the record", async () => {
+      const early = await walker("10.0.0.50", "Ear");
+      const late = await walker("10.0.0.51", "Lat");
+
+      // The first save dates the record with the server's acceptance time.
+      const [fresh] = await sql`select stage_reached_at, updated_at from leaderboard where user_id = ${early.id}`;
+      expect(new Date(fresh.stage_reached_at).getTime()).toBe(new Date(fresh.updated_at).getTime());
+
+      // A save that does not raise the record keeps its date.
+      await sql`update leaderboard set stage_reached_at = now() - interval '3 hours' where user_id = ${early.id}`;
+      const same = await early.client.call("PUT", "/save", { state: early.state, baseRevision: early.revision });
+      expect(same.status, JSON.stringify(same.json)).toBe(200);
+      const [kept] = await sql`select stage_reached_at from leaderboard where user_id = ${early.id}`;
+      expect(Date.now() - new Date(kept.stage_reached_at).getTime()).toBeGreaterThan(2 * 3_600_000);
+      // A save that raises it dates it again.
+      await sql`update leaderboard set max_stage = max_stage - 1 where user_id = ${early.id}`;
+      const raised = await early.client.call("PUT", "/save", { state: early.state, baseRevision: same.json.revision });
+      expect(raised.status, JSON.stringify(raised.json)).toBe(200);
+      const [moved] = await sql`select stage_reached_at, max_stage from leaderboard where user_id = ${early.id}`;
+      expect(Date.now() - new Date(moved.stage_reached_at).getTime()).toBeLessThan(60_000);
+      expect(moved.max_stage).toBe(early.state.maxStageEver);
+
+      // Same stage: whoever got there first ranks higher, in the rows and in their own rank.
+      await sql`update leaderboard set max_stage = ${height}, stage_reached_at = now() - interval '2 hours' where user_id = ${early.id}`;
+      await sql`update leaderboard set max_stage = ${height}, stage_reached_at = now() - interval '1 hour' where user_id = ${late.id}`;
+      const board = await read(early.client, "stage");
+      const names = board.rows.map((row: { username: string }) => row.username);
+      expect(names.indexOf(early.username)).toBeGreaterThanOrEqual(0);
+      expect(names.indexOf(late.username)).toBe(names.indexOf(early.username) + 1);
+      const lateRank = (await read(late.client, "stage")).me.rank;
+      expect(lateRank).toBe(board.me.rank + 1);
+      // The Night board breaks its ties the same way.
+      expect((await read(late.client, "descents")).me.rank).toBeGreaterThan((await read(early.client, "descents")).me.rank);
+
+      // A hidden row leaves the Roll: the walker behind it moves up.
+      await sql`update leaderboard set hidden = true where user_id = ${early.id}`;
+      const after = await read(late.client, "stage");
+      expect(after.rows.some((row: { username: string }) => row.username === early.username)).toBe(false);
+      expect(after.me.rank).toBe(lateRank - 1);
+    }, 60_000);
+
+    it("ranks the stages gained over the last 7 days, from accepted saves only", async () => {
+      const first = await walker("10.0.0.52", "Str");
+      const second = await walker("10.0.0.53", "Stw");
+
+      // The day's first save wrote the best stage the account began the day with: no gain yet.
+      const [today] = await sql`select day::text as day, max_stage from stage_history where user_id = ${first.id}`;
+      expect(today.max_stage).toBe(first.state.maxStageEver);
+      expect((await read(first.client, "week")).me).toBeNull();
+
+      // The day's first save notes the best stage before it, never the one it brings.
+      await sql`delete from stage_history where user_id = ${first.id}`;
+      await sql`update leaderboard set max_stage = max_stage - 1 where user_id = ${first.id}`;
+      const next = await first.client.call("PUT", "/save", { state: first.state, baseRevision: first.revision });
+      expect(next.status, JSON.stringify(next.json)).toBe(200);
+      const [noted] = await sql`select max_stage from stage_history where user_id = ${first.id} and day = ${today.day}::date`;
+      expect(noted.max_stage).toBe(first.state.maxStageEver - 1);
+      expect((await read(first.client, "week")).me).toEqual({ rank: expect.any(Number), value: 1 });
+
+      // Two walkers gained as much this week: whoever reached their best first ranks higher.
+      // The gain is unique to this run, so games left by earlier runs never share it.
+      const gain = height - 999_000;
+      // The week starts at the earliest day of the window; older days count for nothing.
+      for (const [account, hours] of [[first, 2], [second, 1]] as const) {
+        await sql`update leaderboard set max_stage = ${height}, stage_reached_at = now() - make_interval(hours => ${hours}) where user_id = ${account.id}`;
+        await sql`delete from stage_history where user_id = ${account.id}`;
+        await sql`insert into stage_history (user_id, day, max_stage) values (${account.id}, current_date - 7, 1), (${account.id}, current_date - 6, ${height - gain}), (${account.id}, current_date, ${height - 1})`;
+      }
+      const board = await read(first.client, "week");
+      const row = board.rows.find((entry: { username: string }) => entry.username === first.username);
+      expect(row.value).toBe(gain);
+      const names = board.rows.map((entry: { username: string }) => entry.username);
+      expect(names.indexOf(second.username)).toBe(names.indexOf(first.username) + 1);
+      expect(board.me).toEqual({ rank: expect.any(Number), value: gain });
+      const secondRank = (await read(second.client, "week")).me.rank;
+      expect(secondRank).toBe(board.me.rank + 1);
+
+      // Hidden rows stay hidden.
+      await sql`update leaderboard set hidden = true where user_id = ${first.id}`;
+      const after = await read(second.client, "week");
+      expect(after.rows.some((entry: { username: string }) => entry.username === first.username)).toBe(false);
+      expect(after.me.rank).toBe(secondRank - 1);
+
+      // The purge keeps only the window.
+      const { purgeExpired } = await import("./lib/session");
+      await purgeExpired();
+      expect(await sql`select 1 from stage_history where user_id = ${second.id} and day < current_date - 6`).toHaveLength(0);
+      expect(await sql`select 1 from stage_history where user_id = ${second.id}`).toHaveLength(2);
+    }, 60_000);
+  });
+
   it("refuses leaderboards inherited from the prototype", async () => {
     const response = await new Client("10.0.0.11").call("GET", "/leaderboard?board=constructor");
     expect(response.status).toBe(400);

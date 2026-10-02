@@ -74,9 +74,21 @@ export const PROMISE_RUNS = 2;
 /** The company keeps this many seconds of margin before a seam, the night it promised never to be pushed back. */
 export const UNFAILING_MARGIN_SECONDS = 1;
 
+/**
+ * A word kept is the one thing that crosses the dusk: the companion carries it and fights
+ * for it. Each word kept doubles that companion's damage for good, up to this many words
+ * (×32); past them the companion has nothing left to ask.
+ */
+export const PROMISE_DOUBLINGS = 5;
+
 /** Promises kept to a companion, all nights together. */
 export function promisesKept(state: GameState, heroId: string): number {
   return Object.hasOwn(state.promises, heroId) ? state.promises[heroId] : 0;
+}
+
+/** Words kept to a companion that still count toward their damage (`PROMISE_DOUBLINGS` at most). */
+export function promiseDoublings(state: GameState, heroId: string): number {
+  return Math.min(PROMISE_DOUBLINGS, promisesKept(state, heroId));
 }
 
 /** Every promise kept. */
@@ -110,6 +122,7 @@ export function promisesOpen(state: GameState): boolean {
 export function promiseGrantable(state: GameState, heroId: string): boolean {
   const def = Object.hasOwn(PROMISE_BY_HERO, heroId) ? PROMISE_BY_HERO[heroId] : undefined;
   if (!def || !promiseAsker(state, heroId) || !companionMet(state, heroId)) return false;
+  if (promisesKept(state, heroId) >= PROMISE_DOUBLINGS) return false;
   if (def.kind === "without") return companionMet(state, def.other);
   if (def.kind === "anvil") return state.equipment.weapon !== undefined;
   if (def.kind === "further") return state.ascensions.length > 0;

@@ -154,12 +154,16 @@ Content colors live with the game data, not in CSS:
   a ghost "Break my word" key, danger-confirmed); a gold thread, brighter once the word would
   hold at dusk, grey once broken, when the request gives way to what the companion said. Then
   "Whom to give your word": the companions met as a roster (rows alternating like the
-  companions' list): portrait, name and title, words kept, the request in italics, the rule,
+  companions' list): portrait, name and title, words kept out of five with the damage they
+  give ("2 / 5 words kept · damage ×4"), the request in italics, the rule, what the word gives
+  in bold `--gold` (`.promise-reward`: "Kept: their damage doubles for good (×8 in all)"),
   a line in `--gold-2` when their next memory waits for a word, and one raised key ("Give my
   word", or "At the next dusk" once the night is under way, or for the companion who had
   last night's word; disabled for tonight's, with "Nobody asks two nights running"). A
   companion whose request the walker's best stage cannot meet yet is not listed. The one chosen for the next
   dusk shows a knot and "Take back". On phones the key goes under the text, full width.
+  Companions who have had their five words leave the roster and are named under it, with
+  their ×32 (`.promise-fulfilled`). Tonight's word shows its reward line too.
   Inside a window the toasts wait, so what the word forbids there is said in place
   (`.promise-notice`: the knot, "Your word holds you" and the rule, over the altars, the
   stall, the forge) and the keys it forbids are disabled.
@@ -253,7 +257,7 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Stage bar | stage 2; the Auto/Farm switch after a failed boss or a rebirth |
 | Companions | Aldric, the companions hired, and only the next one, once affordable this night or hired on a past night; talents only reachable or owned; buy modes from 10 levels; "spend while away" with the first companion |
 | Powers | only the unlocked ones; Unweave on key 7 once woven |
-| Descent tab, Caravan | when a Descent is possible or has happened; from the third ascension |
+| Descent tab, Caravan | when a Descent is possible (best stage 2000) or has happened; from the third ascension |
 | Promise tab | once a companion half remembers the walker (Recognition 2) |
 | Altars | the four open-ended ones at once, three more from the third night, the last six from the fifth; one already raised always |
 | "Keep the Kingdom's sky" | from Age II |
@@ -761,6 +765,29 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   line rises in 0.9 s once the shot is in. With reduced motion every shot holds its first
   frame (the guardian already gone) and fades in over 0.4 s. Keys go to the scene first:
   Enter or Space moves on, Escape ends, Tab moves between the two buttons.
+- **A chest opened at the stall** (`components/ChestOpening.tsx`, `pixel/chest.ts`, art in
+  `CHESTS`): buying a relic chest or a great chest opens it over everything, on the night
+  ink, on its own 80 x 100 grid at the largest whole scale its box holds (a fixed box, so the
+  chest never changes size when the card comes in): on a wide display (1000 px and wider,
+  landscape) the chest takes the whole height in the middle and the card comes in on its
+  right; elsewhere the chest fills the width and what height the card leaves under it. The chest (30 pixels wide, four hand-drawn
+  parts: lid, lid tipped back, mouth, body) drops in with a puff of dust, then knocks once for
+  each rarity it climbs, from the lowest it can hold (common, or epic for the great chest) up
+  to the relic's: each knock shakes it, lights the seam under its lid in that rarity's ramp
+  and sends a ring out, the knock a little higher in pitch each time. Then the lid bursts up and
+  tips back, a column of light (white heart, the rarity's ramp, a dithered edge) rises and
+  narrows, two rings and 28 sparks fly, and a vertical reel of relics climbs out of the mouth
+  (one every 40 pixels, thinning out at the top),
+  fast then slower over 3 s between two gold arrowheads, a click at each relic that passes
+  them. It stops a little off the middle of the chest's relic and slides back onto it; the
+  relics of the reel are drawn at the chest's own odds (every slot alike, rarities by their
+  weight, none below the chest's lowest), seeded by the relic's id, never weighted toward a
+  near miss. Then rings and sparks burst from it, a chord rises (longer for rarer), the other
+  relics go by eighths, and it hangs in two dithered rings of its light, motes climbing from
+  the chest under it. Its item card follows,
+  with "Worn at once" when its slot was empty, and "Take it". The loot toast is not shown for
+  it. A press, Enter, Space or "Open it now" jumps to the relic; Escape closes. With reduced
+  motion the risen relic is shown at once, still, and fades in.
 - **Lines over the scene** (the opening line, what stays after an absence): one line in a
   band at the top of the arena, right under the scene's top bar, in the sky above the
   creature's head, never over it: small Cinzel (0.82 to 1 rem), centered, on a strip of night
@@ -769,6 +796,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   again." in gold, fading in and out over 7 s (a plain hold then fade with reduced motion,
   from the setting or the system).
 - Damage numbers float up from the pointer; crits are bigger and gold; gold gains rise.
+  A Rout (a whole stage falling at once) raises its gold and, above it, "Rout · stage N" in
+  Cinzel `--gold-2` (`.fx-rout`); the first one is explained by a toast.
   Companion damage shows once per second beside the monster's body, in `--companion` mint under a
   small "COMPANIONS" label (same pattern as the "CRITICAL" label), as large as a click
   number but with a calmer rise, so passive damage reads as clearly as clicks.
@@ -820,6 +849,9 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   On portrait phones two compact toasts at most are shown (the rest wait their turn), docked
   across the scene between its top bar and the monster's HP bar, in both tabs: never over
   the companions' list and its buy buttons.
+- Repeated toasts stack: buying the same Market offer again while its toast still waits or
+  shows adds to a pill beside the title (x1, x2, x3; the count pops once per buy, not
+  under reduced motion) and restarts that toast's time on screen, instead of one toast per buy.
 - Capped equipment totals carry a small gold "MAX" pill whose tooltip explains that relic
   bonuses above the cap do not count.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%. The panel keeps the

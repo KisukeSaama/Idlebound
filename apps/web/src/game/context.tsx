@@ -3,6 +3,7 @@
 import { formatNumber, type CutsceneId } from "@idlebound/game";
 import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
 import { currentMessages } from "@/i18n/client";
+import type { ChestId } from "@idlebound/game/art";
 import type { CloudSync } from "./cloud";
 import type { PictoName } from "./icons";
 import { reveals, type RevealId, type Reveals } from "./shell";
@@ -18,6 +19,8 @@ export interface ToastInput {
   quote?: { by: string; text: string };
   icon?: PictoName;
   color?: string;
+  /** Toasts sharing this key while one is still waiting or shown count up in it (x2, x3) instead of piling. */
+  stack?: string;
 }
 
 export interface GameUi {
@@ -26,6 +29,8 @@ export interface GameUi {
   toast: (toast: ToastInput) => void;
   /** Plays one of the Ledger's scenes over everything. */
   playCutscene: (id: CutsceneId) => void;
+  /** Buys a chest with `buy` and opens it before the walker's eyes: its relic is shown there, not in a toast. */
+  openChest: (chest: ChestId, buy: () => boolean) => boolean;
   confirm: (options: { title: string; text: string; confirmLabel: string; danger?: boolean }) => Promise<boolean>;
 }
 

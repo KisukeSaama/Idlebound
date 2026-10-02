@@ -65,7 +65,13 @@ export const windows = defineMessages({
       balanceHint: "Gagnés sur les gardiens, les cristaux errants et en recyclant ton butin.",
       hireFirst: "Recrute d'abord un compagnon : ce gain dépend de leurs dégâts",
       inventoryFull: "Inventaire plein",
-      effectActive: "Effet actif."
+      effectActive: "Effet actif.",
+      opening: {
+        label: "Le coffre s'ouvre",
+        skip: "Ouvrir tout de suite",
+        take: "Prendre",
+        worn: "Portée aussitôt : cet emplacement était vide."
+      }
     },
     ascension: {
       confirmTitle: "Faire ton ascension ?",
@@ -131,6 +137,8 @@ export const windows = defineMessages({
       yourRankValue: (value: string) => `avec ${value}`,
       nextSaveJoins: "Le Grand Livre t'ajoutera au classement dans quelques instants.",
       nobodyYet: "Aucun nom n'est encore inscrit. Personne n'est classé.",
+      strideStill: "Tu n'as pas encore gagné d'étape au cours des 7 derniers jours. Chaque nouvelle étape atteinte t'inscrit ici.",
+      strideNobody: "Personne n'est encore descendu plus loin au cours des 7 derniers jours.",
       loading: "Chargement…",
       bestiaryTab: (count: number, total: number) => `Bestiaire (${count}/${total})`,
       chronicleTab: (unread: number) => (unread > 0 ? `Chronique (${unread})` : "Chronique"),
@@ -237,7 +245,13 @@ export const windows = defineMessages({
       balanceHint: "Earned from guardians, wandering crystals and by salvaging your loot.",
       hireFirst: "Hire a companion first: this gain depends on their damage",
       inventoryFull: "Inventory full",
-      effectActive: "Effect active."
+      effectActive: "Effect active.",
+      opening: {
+        label: "The chest opens",
+        skip: "Open it now",
+        take: "Take it",
+        worn: "Worn at once: that slot was empty."
+      }
     },
     ascension: {
       confirmTitle: "Ascend now?",
@@ -303,6 +317,8 @@ export const windows = defineMessages({
       yourRankValue: (value: string) => `with ${value}`,
       nextSaveJoins: "The Ledger will add you to the leaderboard in a few moments.",
       nobodyYet: "No name is inscribed yet. Nobody is ranked.",
+      strideStill: "You have not gained a stage in the last 7 days yet. Every new stage you reach writes you here.",
+      strideNobody: "Nobody has gone deeper in the last 7 days yet.",
       loading: "Loading…",
       bestiaryTab: (count: number, total: number) => `Bestiary (${count}/${total})`,
       chronicleTab: (unread: number) => (unread > 0 ? `Chronicle (${unread})` : "Chronicle"),
