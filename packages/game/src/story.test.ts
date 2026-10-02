@@ -874,7 +874,7 @@ describe("save version 11", () => {
   });
 });
 
-describe("save version 12: the Rout, the Loom at stage 1500", () => {
+describe("save version 12: the Rout, the Loom at stage 2000", () => {
   /** A version 11 walker at stage 1200 whom Eldra fully remembers: she showed them her Loom. */
   function shown(): Record<string, unknown> {
     const state = veteran();
@@ -906,7 +906,7 @@ describe("save version 12: the Rout, the Loom at stage 1500", () => {
     expect(verifyTransition(parseState(shown()), engine.state, later - LATER)).toEqual([]);
   }, 60_000);
 
-  it("opens the Loom at stage 1500 for everyone, and no sooner without Eldra's old rule", () => {
+  it("opens the Loom at stage 2000 for everyone, and no sooner without Eldra's old rule", () => {
     const state = veteran();
     expect(canDescend(state)).toBe(false);
     // Eldra remembering the walker no longer opens it on its own.
@@ -914,18 +914,18 @@ describe("save version 12: the Rout, the Loom at stage 1500", () => {
     state.promises = { eldra: 2 };
     expect(canDescend({ ...state, maxStageEver: 999 })).toBe(false);
     const stranger = veteran();
-    stranger.maxStageEver = 1499;
+    stranger.maxStageEver = 1999;
     expect(canDescend(stranger)).toBe(false);
-    stranger.maxStageEver = 1500;
+    stranger.maxStageEver = 2000;
     expect(canDescend(stranger)).toBe(true);
     stranger.lastTickAt = LATER;
     stranger.lifetime.ascensionEssences = 1e9;
     stranger.lifetime.essencesEarned = 1e9;
     const engine = engineWith(stranger, seededRng(14), LATER);
-    expect(engine.descend(LATER)).toBe(threadsFor(1500));
-    expect(threadsFor(1500)).toBe(8);
+    expect(engine.descend(LATER)).toBe(threadsFor(2000));
+    expect(threadsFor(2000)).toBe(32);
     expect(verifyState(engine.state, LATER)).toEqual([]);
-    // A Descent before stage 1500 without Eldra's old rule is refused.
+    // A Descent before stage 2000 without Eldra's old rule is refused.
     const forged = veteran();
     forged.descents = 1;
     forged.lore.readings = [0];

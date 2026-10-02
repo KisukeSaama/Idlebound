@@ -1188,8 +1188,8 @@ PRODUCT.md notes the known limit: progress flattens after two weeks, and keeping
 apart needs a second prestige layer. The Descent is that layer, told as the story's
 deepest act.
 
-- **Unlock** (shipped, save version 12): best stage ever 1500. Eldra shows her loom once the
-  night has gone deep enough for a thread worth the stones it costs (8 threads). Before, it
+- **Unlock** (shipped, save version 12): best stage ever 2000. Eldra shows her loom once the
+  night has gone past the Edge of Sleep, where the road slows for good without her. Before, it
   asked for stage 1000 and her Recognition 5, a gate nobody could see coming; a walker she
   showed it to that way keeps it.
 - **In the world:** Eldra unweaves the whole Sanctum and weaves the Long Night again, one

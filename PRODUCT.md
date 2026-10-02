@@ -303,8 +303,10 @@ whole night (BIBLE 12.11).
 
 The second layer of rebirth, for the long run (it keeps players apart after weeks of play).
 
-- **Unlock**: a best stage of 1500 ever: Eldra shows her Loom, where the first Descent weaves
-  8 threads, announced once by a toast. Before save version 12 the Loom opened at stage 1000
+- **Unlock**: a best stage of 2000 ever: Eldra shows her Loom, where the first Descent weaves
+  32 threads, announced once by a toast. Without a Descent the bot reaches it in about a
+  week, where the road flattens. Opened at stage 1500 (day 2), the Descents came every other
+  day and the bot stood at 2948 on day 14, the Dawn in sight. Before save version 12 the Loom opened at stage 1000
   with Eldra's Recognition 5; a walker she showed it to that way keeps it.
 - **A Descent** resets everything an ascension resets, plus the essences and the altars;
   it keeps relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime
@@ -729,7 +731,7 @@ rejects real play.
 - **Save version 12** brings the Rout (`lifetime.routs`, 0 for an older save: the checks
   bound it by play time, one stage every 0.25 s, and by the nights walked, never more than
   the best stage a night, and every kill of a Rout counts against it) and opens the Loom at
-  stage 1500 (an older save that Eldra showed it to keeps it). A word kept now doubles the
+  stage 2000 (an older save that Eldra showed it to keeps it). A word kept now doubles the
   companion's damage: the promises kept an older save holds count at once. Tested: a version
   11 save parses, verifies, plays on with Routs and saves again.
 - **Save version 11** weaves the thread from depth. The threads an older save wove stay
@@ -816,7 +818,7 @@ echo by guardians), echoes by the strata reached, Age echoes by keystones, Seams
 Quiet, songs by crystals, returns by time away, sayings by play time, Recognition by
 ascensions, Lessons, events and altar legends by their tables, named relics by a source
 the save reached (and their slot and rarity), secrets by their conditions. The Descent is
-bounded by its unlock (stage 1500, or stage 1000 with Eldra's Recognition 5 for older saves), threads by the best stage (never
+bounded by its unlock (stage 2000, or stage 1000 with Eldra's Recognition 5 for older saves), threads by the best stage (never
 more woven than it weaves, none without a Descent, none between two saves without one; the
 threads a save wove before version 11 by the essences of its Descents, never changed after),
 Weaves by their caps and the threads woven; Kings, Seams, threads, Descents, secrets and

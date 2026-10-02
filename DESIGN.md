@@ -257,7 +257,7 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Stage bar | stage 2; the Auto/Farm switch after a failed boss or a rebirth |
 | Companions | Aldric, the companions hired, and only the next one, once affordable this night or hired on a past night; talents only reachable or owned; buy modes from 10 levels; "spend while away" with the first companion |
 | Powers | only the unlocked ones; Unweave on key 7 once woven |
-| Descent tab, Caravan | when a Descent is possible (best stage 1500) or has happened; from the third ascension |
+| Descent tab, Caravan | when a Descent is possible (best stage 2000) or has happened; from the third ascension |
 | Promise tab | once a companion half remembers the walker (Recognition 2) |
 | Altars | the four open-ended ones at once, three more from the third night, the last six from the fifth; one already raised always |
 | "Keep the Kingdom's sky" | from Age II |

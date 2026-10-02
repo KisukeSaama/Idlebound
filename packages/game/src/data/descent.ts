@@ -22,10 +22,11 @@ export interface WeaveDef {
 /** Threads are woven from this deepest stage on (see `threadsFor`). */
 export const DESCENT_MIN_STAGE = 1000;
 /**
- * Eldra shows her Loom once the night has gone this deep: the first stage whose thread is
- * worth the stones it costs (8 threads), where the road starts to slow for good.
+ * Eldra shows her Loom once the night has gone this deep: past the Edge of Sleep, where the
+ * road slows for good without it, about a week into the game. The first Descent weaves 32
+ * threads there. Sooner, Descents came every other day and the Dawn fell within two weeks.
  */
-export const DESCENT_OPEN_STAGE = 1500;
+export const DESCENT_OPEN_STAGE = 2000;
 /**
  * Before save version 12 the Loom opened with Eldra's Recognition 5 from stage 1000: a walker
  * she showed it to that way keeps it.
