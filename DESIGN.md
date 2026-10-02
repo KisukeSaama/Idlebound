@@ -723,7 +723,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   only their knockback. On death they hold whole for 0.16 s (a pale light, then thrown back
   2 px), so a monster struck down while it gathers is still seen, then come apart
   into their own pixels, which drift up and turn into gold motes flying to the gold counter
-  (guardians shed violet ones too). Elites and guardians pulse a 1 px outline in the biome's
+  (guardians shed violet ones too). The counter takes the kill's gold when the first motes
+  land, 1.06 s after the kill (0.4 s, the fade, with reduced motion), never before. Elites and guardians pulse a 1 px outline in the biome's
   accent, Pip in gold only while he dares the walker (a golden rat that just runs has none,
   so the ring alone asks for strikes): it thins to a dotted line and fills again in whole
   dither steps.
@@ -855,7 +856,9 @@ late (220 ms) and muffled (a 520 Hz low-pass). At the Dawn every sound falls sil
 context sleeps while sound is off or the page hidden.
 
 Settings: a sound switch (everything) and an **Effects** slider (`settings.volume`,
-default 0.6), saved with the other settings.
+default 0.6), saved with the other settings. The slider runs from 0 to 100 % in steps
+of 1, shown beside it, and sets a cube-law gain (`(step / 100)³`) so the quiet end gets most
+of the course.
 
 ## Voice and copy
 

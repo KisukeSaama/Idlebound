@@ -9,7 +9,7 @@
 import type { MonsterState, StrikeStyle } from "@idlebound/game";
 import { C, RAMPS, rampFor, resolveCreature, SCENE_HEIGHT, type Pal } from "@idlebound/game/art";
 import { eclipseRing, greyPixels, remembrancePixels, SEAM_MARGIN, seamPixels, seamSpan, unfinishedOrder, unfinishedPixels, unfinishedShare, UNFINISHED_STEPS } from "./events";
-import { companionRamp, drawMotes, drawShot, Particles, shotBackAngle, shotDuration, type Mote, type Shot } from "./fx";
+import { companionRamp, drawMotes, drawShot, Particles, SCATTER_LIFE, shotBackAngle, shotDuration, type Mote, type Shot } from "./fx";
 import type { NightGrade } from "./night";
 import { fadeStep, FADE_STEPS, hash2 } from "./pixels";
 import { sceneRecipe, type SceneOptions } from "./scene";
@@ -57,6 +57,9 @@ const HOLD_SECONDS = 0.16;
 const HOLD_FLASH_SECONDS = 0.06;
 /** With reduced motion a slain monster fades out instead, over this. */
 const FADE_OUT_SECONDS = 0.4;
+
+/** Seconds from a kill until its gold reaches the counter: the hold, then the motes' flight. */
+export const goldLandsAfter = (reducedMotion: boolean) => (reducedMotion ? FADE_OUT_SECONDS : HOLD_SECONDS + SCATTER_LIFE);
 /** The monster flashes at most three times a second, however fast the blows land: never a strobe. */
 const FLASH_GAP_SECONDS = 1 / 3;
 /** The Lantern Queen's flight across the sky during a Crystal Storm. */
