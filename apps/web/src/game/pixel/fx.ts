@@ -34,6 +34,9 @@ export interface Particle {
   group?: number;
 }
 
+/** Shortest life of a scattered pixel: the first gold motes reach the counter then. */
+export const SCATTER_LIFE = 0.9;
+
 export class Particles {
   private list: Particle[] = [];
   private rng: Rng;
@@ -82,7 +85,7 @@ export class Particles {
           ay: -10,
           color: css(pixels.idx[at]),
           born: now,
-          life: 0.9 + this.rng() * 0.5,
+          life: SCATTER_LIFE + this.rng() * 0.5,
           turn: 0.28 + this.rng() * 0.25,
           late: violet && r < 0.18 ? css(C.essenceBright) : css(r < 0.5 ? C.gold : C.goldLight),
           tx: target.x + (this.rng() - 0.5) * 6,

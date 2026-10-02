@@ -11,12 +11,27 @@ import { Modal } from "../components/Modal";
 
 const NOTATIONS: Notation[] = ["letters", "scientific", "engineering"];
 const PREFERENCES: LocalePreference[] = ["auto", ...LOCALES];
+/** The effects slider moves in hundredths of its course. */
+const VOLUME_STEPS = 100;
+
+/**
+ * The ear hears loudness on a logarithmic scale: a cube law spreads the quiet end over most
+ * of the course, where a linear gain crammed it into the first few steps.
+ */
+function gainForStep(step: number) {
+  return (step / VOLUME_STEPS) ** 3;
+}
+
+function stepForGain(gain: number) {
+  return Math.round(Math.cbrt(gain) * VOLUME_STEPS);
+}
 
 export function SettingsWindow({ onClose }: { onClose: () => void }) {
   const { state, store } = useGame();
   const { t, g, preference, setPreference } = useI18n();
   const text = t.windows.settings;
   const settings = state.settings;
+  const volumeStep = stepForGain(settings.volume);
   const update = (patch: Partial<typeof settings>) => store.act((engine) => Object.assign(engine.state.settings, patch));
   // Language the browser asks for, shown next to "Automatic". Read after mount (no navigator on the server).
   const [detected, setDetected] = useState<(typeof LOCALES)[number] | null>(null);
@@ -53,7 +68,22 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
         <Toggle label={text.sound} hint={text.soundHint} checked={settings.sound} onChange={(value) => { update({ sound: value }); if (value) { audio.setEnabled(true); audio.unlock(); audio.play("coin"); } }} />
         <div className="setting-row">
           <label htmlFor="volume">{text.volume}</label>
-          <input id="volume" type="range" min={0} max={1} step={0.05} value={settings.volume} disabled={!settings.sound} onChange={(event) => update({ volume: Number(event.target.value) })} onPointerUp={() => audio.play("hit")} />
+          <span className="volume-control">
+            <input
+              id="volume"
+              type="range"
+              min={0}
+              max={VOLUME_STEPS}
+              step={1}
+              value={volumeStep}
+              aria-valuetext={text.volumeValue(volumeStep)}
+              disabled={!settings.sound}
+              onChange={(event) => update({ volume: gainForStep(Number(event.target.value)) })}
+              onPointerUp={() => audio.play("hit")}
+              onKeyUp={() => audio.play("hit")}
+            />
+            <output htmlFor="volume" className="volume-value">{text.volumeValue(volumeStep)}</output>
+          </span>
         </div>
         <div className="setting-row">
           <span id="notation-label">{text.notation}</span>

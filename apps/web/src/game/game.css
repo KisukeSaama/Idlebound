@@ -3049,6 +3049,20 @@ button.resource:hover .resource-label {
   accent-color: var(--gold);
 }
 
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Fixed width: the slider does not shift as the figure grows from 0 to 100. */
+.volume-value {
+  min-width: 4.5ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
 .segmented {
   display: flex;
   gap: 4px;

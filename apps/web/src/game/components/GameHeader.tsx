@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { href } from "@/i18n/routing";
 import type { CloudStatus } from "../cloud";
-import { useCloud, useFormat, useGame, useReveals, useUi } from "../context";
+import { useCloud, useFormat, useGame, useReveals, useStoreRef, useUi } from "../context";
 import { ClickIcon, EssenceIcon, GoldIcon, Picto, ShardIcon, SwordIcon } from "../icons";
+import { goldLandsAfter } from "../pixel/arena";
 
 /**
  * States of the Ledger worth more than a dot: a word and a sign, read aloud when they come.
@@ -31,7 +33,7 @@ export function GameHeader() {
       <div className="resource-bar" role="status" aria-live="off">
         <div className="resource resource-gold" title={m.gold}>
           <GoldIcon size={22} />
-          <span className="resource-value resource-value-fixed" data-testid="gold">{fmt(state.gold)}</span>
+          <GoldValue />
         </div>
         {shown.dps ? (
           <div className={`resource${freshClass("dps")}`} title={m.dpsTitle}>
@@ -77,5 +79,45 @@ export function GameHeader() {
       </button>
       <span className="visually-hidden" role="status" aria-live="polite">{trouble ?? ""}</span>
     </header>
+  );
+}
+
+/**
+ * The purse. A kill's gold is counted when its motes reach the counter, not when the monster
+ * falls: until then the counter leaves out the gold still in flight. The purse is read from the
+ * store itself, already holding that gold when the kill is told, never from a render behind it.
+ */
+function GoldValue() {
+  const store = useStoreRef();
+  const fmt = useFormat();
+  const [inFlight, setInFlight] = useState(0);
+
+  useEffect(() => {
+    const flying = new Map<ReturnType<typeof setTimeout>, number>();
+    const total = () => {
+      let sum = 0;
+      for (const value of flying.values()) sum += value;
+      return sum;
+    };
+    const unsubscribe = store.onFx((event) => {
+      if (event.type !== "kill" || !(event.gold > 0)) return;
+      const still = store.state.settings.reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const id = setTimeout(() => {
+        flying.delete(id);
+        setInFlight(total());
+      }, goldLandsAfter(still) * 1000);
+      flying.set(id, event.gold);
+      setInFlight(total());
+    });
+    return () => {
+      unsubscribe();
+      for (const id of flying.keys()) clearTimeout(id);
+    };
+  }, [store]);
+
+  return (
+    <span className="resource-value resource-value-fixed" data-testid="gold">
+      {fmt(Math.max(0, store.state.gold - inFlight))}
+    </span>
   );
 }
