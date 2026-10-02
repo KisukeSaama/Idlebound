@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useI18n } from "@/i18n/client";
 import type { ToastInput } from "../context";
 import { Picto } from "../icons";
 import { pageRect } from "../pixel/surface";
@@ -8,6 +9,8 @@ import { monsterOnPage } from "./SceneCanvas";
 
 export interface Toast extends ToastInput {
   id: number;
+  /** How many times a stacked toast was told while it waited or showed. */
+  count?: number;
 }
 
 /** Space between the scene's top bar (stages, active effects) and the first toast. */
@@ -121,6 +124,7 @@ function dock(container: HTMLElement, top: number, room: Room | null) {
 export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const reposition = useRef<() => void>(() => {});
+  const { t } = useI18n();
 
   // Toasts sit right under the scene's top bar, which grows with the active-effect chips and
   // moves when the page scrolls on mobile: its bottom edge is measured, never guessed, so a
@@ -182,7 +186,14 @@ export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boole
         <div key={toast.id} className={`toast toast-${toast.tone}`} style={toast.color ? { ["--toast-color" as string]: toast.color } : undefined}>
           {toast.icon ? <Picto name={toast.icon} size={28} className="toast-icon" /> : null}
           <div>
-            <div className="toast-title">{toast.title}</div>
+            <div className="toast-title">
+              {toast.title}
+              {toast.count ? (
+                <span key={toast.count} className="toast-count">
+                  {t.hud.toasts.count(toast.count)}
+                </span>
+              ) : null}
+            </div>
             {toast.text ? <div className="toast-text">{toast.text}</div> : null}
             {toast.quote ? (
               <figure className="toast-quote">

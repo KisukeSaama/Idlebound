@@ -1650,6 +1650,118 @@ button.resource:hover .resource-label {
   to { opacity: 1; }
 }
 
+/* ------------------------------------------------ a chest opened at the stall */
+
+.chest-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  /* The chest keeps its place and its scale when the relic's card comes in under it. */
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  justify-items: center;
+  gap: 12px;
+  padding: max(16px, env(safe-area-inset-top), 3vh) 16px max(16px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  animation: fade-in 200ms ease-out;
+}
+
+.chest-opening-stage {
+  display: grid;
+  place-items: end center;
+  width: 100%;
+  /* As large as the display allows, leaving room under it for the relic's card. */
+  height: clamp(200px, calc(100dvh - 400px), 125vw);
+  cursor: pointer;
+}
+
+/*
+ * A wide display: the chest takes the whole height in the middle, and the relic's card
+ * comes in beside it, on the right, without moving it.
+ */
+@media (min-width: 1000px) and (min-aspect-ratio: 5/4) {
+  .chest-opening {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-rows: 1fr 1fr;
+    align-content: stretch;
+    column-gap: 24px;
+    row-gap: 16px;
+    padding: 24px 16px;
+  }
+
+  .chest-opening-stage {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    place-items: center;
+    width: min(calc((100dvh - 48px) * 0.8), calc(100vw - 680px));
+    height: calc(100dvh - 48px);
+  }
+
+  .chest-opening-reveal {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    justify-self: start;
+    width: min(380px, 100%);
+  }
+
+  .chest-opening-controls {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: start;
+    justify-self: start;
+    width: min(380px, 100%);
+  }
+}
+
+.chest-opening.is-revealed .chest-opening-stage {
+  cursor: default;
+}
+
+.chest-opening-canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.chest-opening-reveal {
+  display: grid;
+  gap: 8px;
+  width: min(380px, 100%);
+}
+
+.chest-opening-reveal > * {
+  animation: chest-reveal 360ms ease-out both;
+}
+
+.chest-opening-worn {
+  margin: 0;
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.chest-opening-controls {
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes chest-reveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.reduced-motion .chest-opening-reveal > * {
+  animation-name: fade-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chest-opening-reveal > * {
+    animation-name: fade-in;
+  }
+}
+
 .scene-list ul {
   display: flex;
   flex-wrap: wrap;
@@ -3439,6 +3551,33 @@ kbd {
 .toast-title {
   font-weight: 750;
   font-size: 0.92rem;
+}
+
+/* A stacked toast counts its repeats beside the title; each new one pops the count once. */
+.toast-count {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--toast-color) 30%, #13111b);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  animation: toast-count-pop 220ms ease-out;
+}
+
+@keyframes toast-count-pop {
+  from { transform: scale(1.4); }
+}
+
+.reduced-motion .toast-count {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-count {
+    animation: none;
+  }
 }
 
 .toast-loot .toast-title {

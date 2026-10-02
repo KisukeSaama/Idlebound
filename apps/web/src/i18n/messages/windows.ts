@@ -65,7 +65,13 @@ export const windows = defineMessages({
       balanceHint: "Gagnés sur les gardiens, les cristaux errants et en recyclant ton butin.",
       hireFirst: "Recrute d'abord un compagnon : ce gain dépend de leurs dégâts",
       inventoryFull: "Inventaire plein",
-      effectActive: "Effet actif."
+      effectActive: "Effet actif.",
+      opening: {
+        label: "Le coffre s'ouvre",
+        skip: "Ouvrir tout de suite",
+        take: "Prendre",
+        worn: "Portée aussitôt : cet emplacement était vide."
+      }
     },
     ascension: {
       confirmTitle: "Faire ton ascension ?",
@@ -239,7 +245,13 @@ export const windows = defineMessages({
       balanceHint: "Earned from guardians, wandering crystals and by salvaging your loot.",
       hireFirst: "Hire a companion first: this gain depends on their damage",
       inventoryFull: "Inventory full",
-      effectActive: "Effect active."
+      effectActive: "Effect active.",
+      opening: {
+        label: "The chest opens",
+        skip: "Open it now",
+        take: "Take it",
+        worn: "Worn at once: that slot was empty."
+      }
     },
     ascension: {
       confirmTitle: "Ascend now?",

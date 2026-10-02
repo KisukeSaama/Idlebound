@@ -372,7 +372,9 @@ The second layer of rebirth, for the long run (it keeps players apart after week
   elixir (20, gold ×2), striking scroll (25, 5 clicks/s), golden hourglass (60, 1 h of gold
   now). Timed buffs last 10 min and stack without limit (anti-cheat: the time left on them
   never exceeds what every shard ever earned could buy). Chests are refused when the inventory
-  is full, the hourglass when it would pay nothing. The Stallkeeper's Token takes 10% off
+  is full, the hourglass when it would pay nothing. A chest bought there opens before the
+  walker's eyes: it knocks once per rarity climbed, bursts open, and a reel of relics (drawn at the chest's
+  own odds) turns and slows down onto the relic it held. The Stallkeeper's Token takes 10% off
   every price. From the third ascension, the Caravan (see Events) brings one more ware a
   week.
 

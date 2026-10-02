@@ -27,7 +27,11 @@ type Sound =
   | "kingWord"
   | "dream"
   | "quiet"
-  | "pip";
+  | "pip"
+  | "rattle"
+  | "unseal"
+  | "tick"
+  | "found";
 
 const MASTER_GAIN = 0.5;
 /** Share of the volume left to every other sound while the Quiet passes. */
@@ -209,7 +213,8 @@ class AudioEngine {
     source.stop(start + duration);
   }
 
-  play(sound: Sound) {
+  /** `step`: how far up a climbing sound has gone (a chest's knocks, the rarity it opens on). */
+  play(sound: Sound, step = 0) {
     // At the Dawn, nothing sounds.
     if (!this.enabled || this.place.dawn || !this.context || this.context.state !== "running") return;
     const now = performance.now();
@@ -309,6 +314,25 @@ class AudioEngine {
         this.tone(2300 * pitch, 0.06, { type: "square", gain: 0.04, slideTo: 3000, delay: 0.08 });
         this.tone(1320, 0.08, { type: "square", gain: 0.06, delay: 0.22 });
         this.tone(1760, 0.16, { type: "square", gain: 0.06, delay: 0.28 });
+        break;
+      case "rattle":
+        // A knock on old wood, a little higher each time, and a chime once past the first.
+        this.burst(0.07, 700 * pitch, 0.3);
+        this.tone(120 * (1 + step * 0.15), 0.1, { type: "triangle", gain: 0.28, slideTo: 70 });
+        if (step > 0) this.tone(523 * 2 ** (step / 3), 0.25, { type: "triangle", gain: 0.08, delay: 0.03 });
+        break;
+      case "unseal":
+        // The lid bursts.
+        this.burst(0.35, 1400, 0.32, 0, 5200);
+        this.tone(90, 0.3, { type: "sine", gain: 0.35, slideTo: 45 });
+        break;
+      case "tick":
+        // A relic of the reel passes the gold marks.
+        this.tone(2200 * pitch, 0.025, { type: "square", gain: 0.035 });
+        break;
+      case "found":
+        // The reel stops: a chord rises, one note longer for each rarity up.
+        [523, 659, 784, 1046, 1319].slice(0, 2 + step).forEach((frequency, index) => this.tone(frequency, 0.5 + step * 0.1, { type: "triangle", gain: 0.12, delay: index * 0.07 }));
         break;
     }
   }

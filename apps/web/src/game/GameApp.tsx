@@ -34,7 +34,8 @@ import {
   type AbsenceAccount,
   type ChronicleEntry,
   type CutsceneId,
-  type GameEvent
+  type GameEvent,
+  type Item
 } from "@idlebound/game";
 import { currentLocale, currentMessages, useI18n } from "@/i18n/client";
 import { api } from "@/lib/api";
@@ -51,6 +52,7 @@ import { useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
+import { ChestOpening, type ChestOpeningRequest } from "./components/ChestOpening";
 import { Cutscene } from "./components/Cutscene";
 import { ReunionModal } from "./components/ReunionModal";
 import { GameHeader } from "./components/GameHeader";
@@ -110,6 +112,9 @@ export default function GameApp() {
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
   const [reunion, setReunion] = useState<{ account: AbsenceAccount; seconds: number } | null>(null);
   const [cutscene, setCutscene] = useState<CutsceneId | null>(null);
+  const [chest, setChest] = useState<ChestOpeningRequest | null>(null);
+  /** While a chest is being bought, the relics it gives, kept for its opening instead of a toast. */
+  const chestLoot = useRef<Item[] | null>(null);
   const [mobileTab, setMobileTab] = useState<"heroes" | "scene">("heroes");
   const [ready, setReady] = useState(false);
   const toastId = useRef(0);
@@ -126,22 +131,51 @@ export default function GameApp() {
   const pump = useMemo(() => {
     const line: Toast[] = [];
     let onScreen: Toast[] = [];
+    /** The leaving timer of each toast on screen, restarted when a stacked toast counts one more. */
+    const timers = new Map<number, ReturnType<typeof setTimeout>>();
+    const roomOnScreen = () => (window.matchMedia(PHONE_QUERY).matches ? TOASTS_ON_PHONE : TOASTS_ON_DESKTOP);
+    const schedule = (entry: Toast) => {
+      clearTimeout(timers.get(entry.id));
+      const duration = entry.quote ? 8000 : entry.tone === "danger" ? 4500 : 3800;
+      timers.set(entry.id, setTimeout(() => {
+        timers.delete(entry.id);
+        onScreen = onScreen.filter((item) => item.id !== entry.id);
+        setToasts(onScreen);
+        next();
+      }, line.length > roomOnScreen() ? Math.min(duration, RUSHED_TOAST_MS) : duration));
+    };
     const next = () => {
       if (holding.current) return;
-      const room = window.matchMedia(PHONE_QUERY).matches ? TOASTS_ON_PHONE : TOASTS_ON_DESKTOP;
+      const room = roomOnScreen();
       let changed = false;
       while (onScreen.length < room && line.length > 0) {
         const entry = line.shift() as Toast;
         onScreen = [...onScreen, entry];
         changed = true;
-        const duration = entry.quote ? 8000 : entry.tone === "danger" ? 4500 : 3800;
-        setTimeout(() => {
-          onScreen = onScreen.filter((item) => item.id !== entry.id);
-          setToasts(onScreen);
-          next();
-        }, line.length > room ? Math.min(duration, RUSHED_TOAST_MS) : duration);
+        schedule(entry);
       }
       if (changed) setToasts(onScreen);
+    };
+    /**
+     * A toast with a `stack` key that is already waiting or shown is not told again: the one
+     * there counts one more, and on screen it stays its full time from now.
+     */
+    const add = (entry: Toast) => {
+      const same = entry.stack === undefined ? undefined : [...onScreen, ...line].find((item) => item.stack === entry.stack);
+      if (!same) {
+        line.push({ ...entry, count: entry.stack === undefined ? undefined : 1 });
+        next();
+        return;
+      }
+      const counted = { ...entry, id: same.id, count: (same.count ?? 1) + 1 };
+      const waiting = line.indexOf(same);
+      if (waiting >= 0) {
+        line[waiting] = counted;
+        return;
+      }
+      onScreen = onScreen.map((item) => (item === same ? counted : item));
+      schedule(counted);
+      setToasts(onScreen);
     };
     /**
      * What a scene says is not told twice: a toast, waiting or shown, whose text is one of
@@ -155,14 +189,14 @@ export default function GameApp() {
       setToasts(onScreen);
       next();
     };
-    return { add: (entry: Toast) => { line.push(entry); next(); }, next, forget };
+    return { add, next, forget };
   }, []);
   const toast = useCallback((input: ToastInput) => {
     toastId.current += 1;
     pump.add({ ...input, id: toastId.current });
   }, [pump]);
 
-  const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null;
+  const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null || chest !== null;
   // A newer release waits for a calm screen: nothing open, no toast still to be read.
   const fading = useNewRelease(cloud, !covered && toasts.length === 0);
   useEffect(() => {
@@ -182,6 +216,18 @@ export default function GameApp() {
     closeWindow: () => setOpenWindow(null),
     toast,
     playCutscene: setCutscene,
+    openChest: (id, buy) => {
+      const caught: Item[] = [];
+      chestLoot.current = caught;
+      let bought = false;
+      try {
+        bought = buy();
+      } finally {
+        chestLoot.current = null;
+      }
+      if (bought && caught[0]) setChest({ chest: id, item: caught[0] });
+      return bought;
+    },
     confirm: (options) => new Promise<boolean>((resolve) => setConfirmRequest({ ...options, resolve }))
   }), [toast, store]);
 
@@ -415,6 +461,11 @@ export default function GameApp() {
           break;
         }
         case "loot": {
+          // A chest opened before the walker's eyes tells its relic itself.
+          if (chestLoot.current) {
+            chestLoot.current.push(event.item);
+            break;
+          }
           audio.play("loot");
           haptics.pulse("loot");
           const legend = event.item.named ? g.relics[event.item.named]?.legend : undefined;
@@ -642,6 +693,7 @@ export default function GameApp() {
         {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
         <CloudChoiceModal />
         {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
+        {chest ? <ChestOpening request={chest} onDone={() => setChest(null)} /> : null}
         {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
         {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
         <Toasts toasts={toasts} held={covered} />
