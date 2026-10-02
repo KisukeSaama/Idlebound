@@ -54,6 +54,7 @@ market is French-speaking, with a full English version.
 | Element | Rule |
 |---|---|
 | Stages | 10 monsters per stage. Technical cap at stage 3000 (floating-point precision). |
+| Rout | On a stage under the best stage ever (so never on the first night), when the company would fell one of its monsters in under 0.1 s (companion DPS plus automatic strikes), the whole stage falls at once: its remaining kills, their gold (a golden rat's share at its odds) and the Bestiary, then the next stage, one stage every 0.25 s. Elites and guardians are still fought. The catch-up (hidden tab, closed game) routs the same way. The first Rout is explained once by a toast; each shows "Rout · stage N" and its gold. |
 | Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through; the Keep's gate (stage 45), the King and the strata below heal whole. |
 | Biomes | 5 biomes of 10 stages, six normal creatures, an elite and a guardian each: the Verdant Plains (Field Rat, Jumpy Boar, Carrion Crow, Hollow Scarecrow, Lantern Moth, Dusk Hare; Last Reaper; Moss Alpha), the Dark Forest (Shade Wolf, Briar Witch, Grove Spinner, Mourning Owl, Toadstool Choir, Whispering Bramble; Root Knight; Heart of the Old Grove), the Forgotten Caves (Blind Crawler, Echo Bat, Crystal Mite, Drip Leech, Haunted Cart, Hollow Canary; Miner's Shade; Stone Devourer), the Corrupted Marsh (Bog Remnant, Rot Toad, Will-o'-Wisp, Drowned Courtier, Peat Cutter, Mire Heron; Mire Colossus; Baron of Rot) and the Fallen King's Ruins (Gargoyle of the Hours, Banner Wraith, Fallen Sentinel, Hollow Page, Hound of the Last Hunt, Candle Maid; Stone Warden; the King). |
 | The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000, the last one, the Dawn stands in his place. |
@@ -104,12 +105,14 @@ late game; mashing the mouse is never required.
 - **Targets** (checked by tests and `npm run balance -- 24 compare 5`, median of 5 seeds):
   with every talent and no altar, 5 clicks/s add about half of companion DPS; a click build
   with every crit investment maxed (no Blade) stays under 6× at 5 clicks/s. At 24 h (median
-  of 9 seeds, every profile giving its word at each dusk, each companion in turn, among the
-  promises its style can keep: a profile that strikes gives no word to Ysolde nor to Nyx)
-  every style stands within a quarter of the others (the best over the worst: 1.14): 10
-  clicks/s leads (950), then 5/s (903), continuous bursts (891), the occasional player (867,
-  back every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
-  blocks the company, 4 h of real play), 2/s (851) and idle (836). Strikes add on top of the
+  of 9 seeds, every profile giving its word at each dusk to the strongest companion who can
+  ask, among the promises its style can keep: a profile that strikes gives no word to
+  Ysolde nor to Nyx) every style stands within a quarter of the others (the best over the
+  worst: 1.08): 10 clicks/s leads (1009), then the occasional player (1007, back every hour
+  for 10 minutes, the tab left open to the autopilot, ascending when a boss blocks the
+  company, 4 h of real play), idle (984), continuous bursts (982), 2/s (937) and 5/s (936).
+  Before the Rout and the doubling words (save version 11) the same runs stood at 836 to
+  950 (1.14). Strikes add on top of the
   Patience bonus since save version 11, so the walkers who strike gained depth; a walker
   whose strikes come in bursts wins a stage now and then that the company alone could not,
   and the bot calls its dusk once the road only creeps (from the second night, three new
@@ -118,8 +121,8 @@ late game; mashing the mouse is never required.
   clicks lead the company (they deal more than the Patience bonus), Patience otherwise:
   at 10 clicks/s the strikes are then almost all the damage (clicks 325 times the company
   without its bonus), and 8 h away adds only 1 stage to that walker. 8 h in a background tab
-  after 24 h of play adds 18 to 44 stages to the others (median per profile), and the
-  Reunion doubles the first hour back (+12 to +29 stages instead of +5 to +16). The 72 h bot (5 clicks/s, seed 42, a word
+  after 24 h of play adds 15 to 43 stages to the others (median per profile), and the
+  Reunion doubles the first hour back (+13 to +20 stages instead of +5 to +13). The 72 h bot (5 clicks/s, seed 42, a word
   given each night) reaches stage 1518 after 12 ascensions (500 at 16 h, 1000 at 30 h), and
   in a week 1960 after 26, each ascension adding fewer stages past 1000 (+120, +98, +70,
   +58, +70, then about +25 in the last days): no runaway. Before the Promise the same seed
@@ -256,14 +259,18 @@ whole night (BIBLE 12.11).
   without being there. Only the walker breaks it, on purpose (a confirmed key in the
   Sanctum), or by calling the dusk too early; Eldra's also breaks when a seam closes.
 - **Kept** at dusk when what it asks was done **and a King fell that night** (at the head of
-  the run, after the word was given). Their words join the Chronicle the first time, and the
+  the run, after the word was given). **Each word kept doubles that companion's damage for
+  good**, five words at most (×32); a companion who has had their five asks no more and
+  leaves the list, named under it with their ×32. Each card says what the word gives
+  ("Kept: their damage doubles for good (×N in all)") and how many were kept. Their words
+  join the Chronicle the first time, and the
   night counts **2 runs** of Recognition for that companion instead of 1 when both hold:
   they reached level 100 that night, and their memories were still waiting for a word (two
   per companion: one for the fourth memory, one for the fifth). Otherwise it counts 1: a
   word kept to a companion who stayed under level 100, or a third word to one who has had
   their two.
-- **Broken**: no power is lost and nothing is forbidden any more; the night counts like any
-  other, the companion says one line and their medallion keeps an undone knot until dusk.
+- **Broken**: no power is lost and nothing is forbidden any more; the word doubles nothing,
+  the night counts like any other, the companion says one line and their medallion keeps an undone knot until dusk.
   Nothing goes to the Chronicle.
 - **Recognition asks for it**: tiers at 1, 3, 7, 15 and **32** runs (the last was 30), and
   the fourth and fifth memories each ask one promise kept to that companion. What a
@@ -292,21 +299,13 @@ whole night (BIBLE 12.11).
 | Aurelion | No blow for 10 s at the start of every fight with the King |
 | The Awakened | The Awakened is not hired all night |
 
-- **The Loom's day** (`npx tsx packages/game/scripts/loom.ts 12 6`, bot at 5 clicks/s,
-  median of 6 seeds): a walker who gives their word each night, each companion in turn and
-  first to whoever only lacks a word to remember more (Eldra before the others), opens the
-  Loom and descends on **day 8.7** (29 nights, 27 promises kept), as before the Promise. The
-  worst case, a walker who gives Eldra their word every night the rules allow (every other
-  night), opens it on **day 8.1** (30 nights): only her two awaited words count double, so
-  hurrying gains half a day. (With every kept word counting double, the same walker opened
-  it on day 5.7, and on day 3.7 without the rest of a night: hence the two rules.)
-
 ### The Descent
 
 The second layer of rebirth, for the long run (it keeps players apart after weeks of play).
 
-- **Unlock**: a best stage of 1000 ever and Eldra's Recognition 5 (she shows her Loom): 32
-  runs with her, and two promises kept to her.
+- **Unlock**: a best stage of 1500 ever: Eldra shows her Loom, where the first Descent weaves
+  8 threads, announced once by a toast. Before save version 12 the Loom opened at stage 1000
+  with Eldra's Recognition 5; a walker she showed it to that way keeps it.
 - **A Descent** resets everything an ascension resets, plus the essences and the altars;
   it keeps relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime
   statistics and the best stage ever.
@@ -589,8 +588,7 @@ opens again, within the same cap as a hidden tab.
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
 (`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 48, stage 50 in
-1 h 41, first ascension at 2 h 54, stage 100 at 4 h 38 (4 h 16 without a word given on the
-second night: Maëlle's keeps the company to the two of them until the first guardian), then
+1 h 41, first ascension at 2 h 53, stage 100 at 4 h 27, then
 steady progress carried by ascensions. A naive walker (it buys the newest companion it can afford, never the best
 value) loses 2 min 27 at the stage 20 guardian, 2 min 33 at the stage 30 guardian and
 3 min 09 at the stage 40 guardian (median of
@@ -728,6 +726,12 @@ rejects real play.
 - In the choice between two games, keeping the current one when the account's game is
   further along (best stage, then play time) asks for confirmation, naming what will be
   erased (stage, ascensions, play time).
+- **Save version 12** brings the Rout (`lifetime.routs`, 0 for an older save: the checks
+  bound it by play time, one stage every 0.25 s, and by the nights walked, never more than
+  the best stage a night, and every kill of a Rout counts against it) and opens the Loom at
+  stage 1500 (an older save that Eldra showed it to keeps it). A word kept now doubles the
+  companion's damage: the promises kept an older save holds count at once. Tested: a version
+  11 save parses, verifies, plays on with Routs and saves again.
 - **Save version 11** weaves the thread from depth. The threads an older save wove stay
   woven (`legacyThreads`, written once by the migration, never changed after): its next
   Descent adds only what its best stage weaves beyond them. Its Warp of Plenty keeps its
@@ -812,7 +816,7 @@ echo by guardians), echoes by the strata reached, Age echoes by keystones, Seams
 Quiet, songs by crystals, returns by time away, sayings by play time, Recognition by
 ascensions, Lessons, events and altar legends by their tables, named relics by a source
 the save reached (and their slot and rarity), secrets by their conditions. The Descent is
-bounded by its unlock (stage 1000, Eldra's Recognition), threads by the best stage (never
+bounded by its unlock (stage 1500, or stage 1000 with Eldra's Recognition 5 for older saves), threads by the best stage (never
 more woven than it weaves, none without a Descent, none between two saves without one; the
 threads a save wove before version 11 by the essences of its Descents, never changed after),
 Weaves by their caps and the threads woven; Kings, Seams, threads, Descents, secrets and
@@ -839,14 +843,33 @@ save's row is locked.
 
 ## Leaderboard
 
-The **Roll of the Bound** (FR: *le Registre des Liés*): a public page with five boards, each
-named in the fiction with its plain meaning beneath: **Depth** (highest stage), **Nights**
-(ascensions), **Light** (essences collected), **Deeds** (achievements) and **Night**
-(Descents, highest stage breaking ties). The landing page shows the top 10 by stage and the
-number of ranked players. Logged-in players see their own rank, also in the Hall of the
-game, where the Night board appears once the Descent is open to the walker. A guest has no
-row: the rank comes with the account, from its first accepted save. A row can be hidden by hand in the
-database (`hidden` flag), for moderation.
+The **Roll of the Bound** (FR: *le Registre des Liés*): a public page with six boards, each
+named in the fiction with its plain meaning beneath: **Depth** (highest stage), **Stride**
+(FR: *Foulée*, stages gained in the last 7 days), **Nights** (ascensions), **Light**
+(essences collected), **Deeds** (achievements) and **Night** (Descents, highest stage
+breaking ties). The landing page shows the top 10 by stage and the number of ranked players.
+Logged-in players see their own rank, also in the Hall of the game, where the Night board
+appears once the Descent is open to the walker. A guest has no row: the rank comes with the
+account, from its first accepted save. A row can be hidden by hand in the database
+(`hidden` flag), for moderation: it leaves every board, and nobody counts it in their rank.
+
+- **Who got there first.** Among equal stages (Depth, and Night once Descents are equal),
+  whoever reached that stage first ranks higher, everywhere a rank is computed (the boards,
+  the walker's own rank, the landing page's top 10). The date is the server's: the moment it
+  accepted the save that raised the account's best stage (`stage_reached_at`). A save that
+  does not raise the best stage leaves the date alone. Rows that existed before this rule
+  took their last update time. The game ends at stage 3000, so the top of Depth fills with
+  equal stages: the date keeps it meaningful.
+- **Stride: stages gained in the last 7 days.** Today and the six days before it (UTC
+  calendar days of the server's clock). The day's first accepted save of an account writes
+  the account's best stage as the day began (`stage_history`, one row per account and day);
+  the earliest row of the window is where the week started, and the gain is the best stage
+  now minus that. Only accepted saves count, so the board inherits the anti-cheat. An
+  account's first save starts its week at the stage it brings. Only walkers who gained at
+  least one stage appear; a walker who gained none sees so in the Hall instead of a rank.
+  Ties go to whoever reached their current best stage first. Rows older than the window are
+  deleted by the periodic purge, so an account keeps at most 7. Visible from the start, like
+  Depth, so a newcomer can rank above walkers who stopped.
 
 ## Languages
 

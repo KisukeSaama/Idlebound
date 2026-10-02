@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, doublePrecision, index, integer, jsonb, pgTable, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -80,13 +80,33 @@ export const leaderboard = pgTable("leaderboard", {
   descents: integer("descents").notNull().default(0),
   playTime: integer("play_time").notNull().default(0),
   hidden: boolean("hidden").notNull().default(false),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  /**
+   * When the server accepted the save that raised `maxStage` to its current value: among
+   * equal stages, whoever got there first ranks higher. Never a client-provided time.
+   */
+  stageReachedAt: timestamp("stage_reached_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [
-  index("leaderboard_stage_idx").on(sql`${table.maxStage} desc`, table.updatedAt),
+  index("leaderboard_stage_idx").on(sql`${table.maxStage} desc`, table.stageReachedAt),
   index("leaderboard_ascensions_idx").on(sql`${table.ascensions} desc`),
   index("leaderboard_essences_idx").on(sql`${table.essences} desc`),
   index("leaderboard_achievements_idx").on(sql`${table.achievements} desc`),
   index("leaderboard_descents_idx").on(sql`${table.descents} desc`, sql`${table.maxStage} desc`)
+]);
+
+/**
+ * The Stride board (stages gained over the last 7 days). One row per account and per UTC day
+ * with at least one accepted save: the account's best stage when that day began, written by
+ * the day's first save. The earliest row of the window is where the week started; rows older
+ * than the window are pruned (see lib/session.ts), so an account keeps at most 7.
+ */
+export const stageHistory = pgTable("stage_history", {
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  day: date("day", { mode: "string" }).notNull(),
+  maxStage: integer("max_stage").notNull()
+}, (table) => [
+  primaryKey({ columns: [table.userId, table.day] }),
+  index("stage_history_day_idx").on(table.day)
 ]);
 
 /** Log of saves rejected by the anti-cheat (audit): an account's, or a guest's. */

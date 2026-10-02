@@ -5,6 +5,7 @@ import {
   BESTIARY_BY_ID,
   BIOMES,
   PROMISE_BY_HERO,
+  promiseDoublings,
   SKILLS,
   SKILL_BY_ID,
   WALKER_MIN_ASCENSIONS,
@@ -72,6 +73,8 @@ const FIRST_DUSK_NIGHT = 1;
 const ALWAYS_TOLD: ReadonlySet<ChronicleEntry["source"]> = new Set(["keystone", "milestone"]);
 /** Events told by their own window rather than a toast (the Caravan is bought at the stall). */
 const QUIET_EVENTS: ReadonlySet<string> = new Set(["caravan"]);
+/** Tutorial id kept once the first Rout was told. */
+const ROUT_TOLD = "rout";
 /** How long a newly earned element of the shell glows. */
 const FRESH_MS = 4_000;
 /**
@@ -371,6 +374,14 @@ export default function GameApp() {
           if (event.monster.eclipse) toast({ tone: "violet", icon: "crown", title: g.events.eclipse.name, quote: { by: g.speakers.king, text: eclipseWord(store.state.lifetime.ascensions, locale) } });
           if (event.monster.kind === "boss" || event.monster.kind === "miniboss") haptics.pulse("kill");
           break;
+        case "rout":
+          audio.play("coin");
+          // The first Rout says what happened, once.
+          if (!store.state.tutorial.done.includes(ROUT_TOLD)) {
+            toast({ tone: "info", icon: "sparkle", title: m.routTitle, text: m.routText });
+            store.apply((current) => current.completeTutorial(ROUT_TOLD));
+          }
+          break;
         case "spawn":
           if (event.monster.kind === "boss") audio.play("boss");
           // The Quiet: every other sound drops for a while.
@@ -546,7 +557,7 @@ export default function GameApp() {
             toast({ tone: "gold", icon: "knot", title: words.ready, text: words.readyText });
           } else if (event.outcome === "kept") {
             audio.play("recognition");
-            toast({ tone: "gold", icon: "knot", title: words.kept(name), text: words.keptText, quote: lines ? { by: name, text: lines.kept } : undefined });
+            toast({ tone: "gold", icon: "knot", title: words.kept(name), text: words.keptText(2 ** promiseDoublings(store.state, event.heroId)), quote: lines ? { by: name, text: lines.kept } : undefined });
           } else {
             audio.play("error");
             toast({ tone: "info", icon: "frayed", title: words.broken(name), text: words.brokenText, quote: lines ? { by: name, text: lines.broken } : undefined });

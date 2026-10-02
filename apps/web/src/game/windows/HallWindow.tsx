@@ -477,7 +477,8 @@ function Leaderboard() {
 
   // Rows of the board just chosen only: the previous board's stay hidden while it loads.
   const shown = data && data.board === board ? data : null;
-  const value = (row: { value: number; maxStage: number }) => (board === "descents" ? roll.descentsValue(fmt(row.value), fmt(row.maxStage)) : fmt(row.value));
+  const value = (row: { value: number; maxStage: number }) =>
+    board === "descents" ? roll.descentsValue(fmt(row.value), fmt(row.maxStage)) : board === "week" ? roll.strideValue(fmt(row.value)) : fmt(row.value);
 
   return (
     <div>
@@ -498,11 +499,12 @@ function Leaderboard() {
       ) : shown?.me ? (
         <p className="board-cta">{text.yourRankLabel} <strong>#{shown.me.rank}</strong> {text.yourRankValue(value({ value: shown.me.value, maxStage: state.maxStageEver }))}</p>
       ) : (
-        <p className="board-cta">{text.nextSaveJoins}</p>
+        // The Stride lists only walkers who went deeper this week.
+        <p className="board-cta">{board === "week" && shown ? text.strideStill : text.nextSaveJoins}</p>
       )}
       {error ? <p className="form-error">{error}</p> : null}
       {shown ? (
-        shown.rows.length === 0 ? <p className="empty-state">{text.nobodyYet}</p> : (
+        shown.rows.length === 0 ? <p className="empty-state">{board === "week" ? text.strideNobody : text.nobodyYet}</p> : (
           <ol className="board-list">
             {shown.rows.map((row) => (
               <li key={row.rank} className={cloud.user?.username === row.username ? "me" : ""}>

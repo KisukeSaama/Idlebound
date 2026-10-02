@@ -1,10 +1,10 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
 import { ALTAR_BY_ID } from "../src/data/altars";
-import { DESCENT_HERO, WEAVES, weaveCost, type WeaveId } from "../src/data/descent";
-import { CLICK_HERO_ID, HEROES } from "../src/data/heroes";
+import { WEAVES, weaveCost, type WeaveId } from "../src/data/descent";
+import { CLICK_HERO_ID, HERO_BY_ID, HEROES } from "../src/data/heroes";
 import { relicDensity } from "../src/data/items";
-import { RECOGNITION_HEROES, recognitionNeeds } from "../src/data/lore";
-import { PROMISE_BY_HERO, PROMISE_RUNS, promiseHolds, promiseOf, promisesKept, standingPromise, type PromiseAbstains } from "../src/data/promises";
+import { RECOGNITION_HEROES } from "../src/data/lore";
+import { PROMISE_BY_HERO, promiseHolds, promiseOf, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
 import { ESSENCE_DPS_BONUS, altarPrice, derive, heroCost, heroCostMultiplier, promiseWhen } from "../src/formulas";
@@ -50,39 +50,24 @@ export function promisesAvoided(options: BotOptions): readonly PromiseAbstains[]
   return averageClicks(options) > 0 ? ["strikes", "powers"] : [];
 }
 
-/** Companions the walker can give their word to at this dusk, who still have something to remember. */
+/** Companions the walker can give their word to at this dusk, nothing their play style would break. */
 function askable(state: GameState, avoid: readonly PromiseAbstains[]): string[] {
   return RECOGNITION_HEROES.filter((hero) => {
     const def = PROMISE_BY_HERO[hero];
     if (def.kind === "abstain" && avoid.includes(def.from)) return false;
-    return promiseWhen(state, hero) === "tonight" && recognitionNeeds(state, hero) !== null;
+    return promiseWhen(state, hero) === "tonight";
   });
 }
 
 /**
- * A reasonable walker's promises. First the companion who only lacks a word kept to remember
- * more (Eldra before the others: she holds the Loom); otherwise each in turn, the one the
- * walker has kept the fewest promises to. Nobody who already remembers everything, nobody
- * two nights running, nothing the walker's own style would break.
+ * A reasonable walker's promises: a word kept doubles a companion's damage for good, so it
+ * goes to the strongest companion who can ask tonight, the one who joins the company last.
+ * Nobody two nights running, nothing the walker's own style would break.
  */
 export const reasonablePromise: PromisePolicy = (state, avoid = []) => {
   const open = askable(state, avoid);
-  const waiting = open.filter((hero) => {
-    const needs = recognitionNeeds(state, hero)!;
-    return needs.promises > 0 && needs.runs <= PROMISE_RUNS;
-  });
-  if (waiting.includes(DESCENT_HERO)) return DESCENT_HERO;
-  if (waiting.length > 0) return waiting[0];
-  let turn: string | null = null;
-  for (const hero of open) if (turn === null || promisesKept(state, hero) < promisesKept(state, turn)) turn = hero;
-  return turn;
+  return open.length > 0 ? open.reduce((best, hero) => (HERO_BY_ID[hero].index > HERO_BY_ID[best].index ? hero : best)) : null;
 };
-
-/**
- * A walker in a hurry for the Loom, the worst case for its day: their word goes to Eldra
- * every night she can be asked (every other night), and to the others in turn in between.
- */
-export const loomPromise: PromisePolicy = (state, avoid = []) => (askable(state, avoid).includes(DESCENT_HERO) ? DESCENT_HERO : reasonablePromise(state, avoid));
 
 /** At dusk, before anything else: the bot chooses who gets its word for the night. */
 export function pledgeAtDusk(engine: GameEngine, now: number, options: BotOptions) {

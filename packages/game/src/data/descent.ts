@@ -19,10 +19,18 @@ export interface WeaveDef {
   valuePerLevel: number;
 }
 
-/** A Descent asks for this deepest stage ever… */
+/** Threads are woven from this deepest stage on (see `threadsFor`). */
 export const DESCENT_MIN_STAGE = 1000;
-/** …and for Eldra to remember the walker fully (she shows the Loom at Recognition 5). */
-export const DESCENT_HERO = "eldra";
+/**
+ * Eldra shows her Loom once the night has gone this deep: the first stage whose thread is
+ * worth the stones it costs (8 threads), where the road starts to slow for good.
+ */
+export const DESCENT_OPEN_STAGE = 1500;
+/**
+ * Before save version 12 the Loom opened with Eldra's Recognition 5 from stage 1000: a walker
+ * she showed it to that way keeps it.
+ */
+export const LEGACY_LOOM_HERO = "eldra";
 
 export const WEAVES: readonly WeaveDef[] = [
   /**

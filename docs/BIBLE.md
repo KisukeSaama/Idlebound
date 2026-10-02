@@ -271,6 +271,7 @@ Every existing system, what it is in the world, and the word the UI can lean on.
 | Boss timer (30 s) | The **seam** of the hour: a guardian can only be beaten while the seam it holds is open. When it closes, the night pushes the walker back. |
 | Failing a boss, one stage back, farm mode | "The night pushes back." The walker trains on the previous stretch until strong enough. |
 | A guardian of the present night keeps its wounds (shipped) | A Remnant remembers the blows of the night too: the walker who comes back finds it still bleeding light. Deeper memories are too dense to keep a wound, and the King's seam closes whole. |
+| The Rout (shipped, save version 12) | **Rout** (FR: *Débandade*). On a stretch of road the walker already walked on an earlier night, Remnants the company would unmake in a blink do not wait to be struck one by one: worn-out memories that know how this ends, they all come apart at once and the whole stage falls. Never on the first night, never an elite or a guardian, never past the best stage: the road the walker has not walked yet is fought. |
 | Auto-advance | The walker's will to go on. Turning it off is choosing to stay a while. |
 | HP curve (steeper by segment) | Older memories are denser. The Remnants of deeper strata are heavier to unmake. |
 | Eras (every 50 stages) | Strata of the night's memory (section 9). |
@@ -405,7 +406,7 @@ one).
 
 ### 6.8 Achievements, statistics, the Roll
 
-> **Shipped**: the five boards (Night included) on the public page and in the Hall.
+> **Shipped**: the six boards (Night and Stride included) on the public page and in the Hall.
 
 - **Achievements** are **Deeds** (FR: *Hauts faits*) written in the Ledger. Their permanent
   DPS bonus is the weight of a deed: the night itself respects what you have done.
@@ -422,6 +423,10 @@ one).
 
   With the Descent (section 12.7), a fifth board: **Night** (FR: *Nuit*), the number of
   Descents, then Depth as a tiebreak.
+
+  A sixth board, **Stride** (FR: *Foulée*): how far the walker went in the last seven
+  nights. The road ends, so Depth stops telling walkers apart near its end; the Stride says
+  who is walking now. On equal Depth, the Ledger honours whoever got there first.
 
 ---
 
@@ -1183,7 +1188,10 @@ PRODUCT.md notes the known limit: progress flattens after two weeks, and keeping
 apart needs a second prestige layer. The Descent is that layer, told as the story's
 deepest act.
 
-- **Unlock:** best stage ever 1000 and Eldra's Recognition 5 (she shows you her loom).
+- **Unlock** (shipped, save version 12): best stage ever 1500. Eldra shows her loom once the
+  night has gone deep enough for a thread worth the stones it costs (8 threads). Before, it
+  asked for stage 1000 and her Recognition 5, a gate nobody could see coming; a walker she
+  showed it to that way keeps it.
 - **In the world:** Eldra unweaves the whole Sanctum and weaves the Long Night again, one
   thread deeper. The walker loses the stones (altars) and the memories (essences) and
   keeps what cannot be unwoven: relics, shards, deeds, the Chronicle, Recognition.
@@ -1276,7 +1284,11 @@ walker can take it back, on purpose.
   stretch of road cleared, nothing the word forbids already done), otherwise for the next
   dusk. A word given at a dusk where a Descent begins is given again below.
 - **Kept** at dusk when the night met what it asked **and its King fell** (a King beaten at
-  the head of the run since the word was given: the night has to be walked). The night then
+  the head of the run since the word was given: the night has to be walked). **A word kept
+  doubles that companion's damage for good** (shipped, save version 12), five words at most
+  (×32): a word is the one thing that crosses the dusk, and the companion fights for it.
+  Each request says so before it is given; a companion who has had their five asks no more.
+  The night then
   counts **twice** in that companion's Recognition (12.2) if they also reached level 100
   that night and their memories were still waiting for a word (two per companion, the ones
   their last two memories ask); once otherwise (a word kept to someone who stayed behind, or

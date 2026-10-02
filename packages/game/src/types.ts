@@ -178,6 +178,8 @@ export interface LifetimeStats extends StatBlock {
   kings: number;
   seams: number;
   threads: number;
+  /** Stages that fell in a Rout (see `routs`). */
+  routs: number;
 }
 
 export interface AscensionRecord {
@@ -419,6 +421,8 @@ export type GameEvent =
   | { type: "dps"; damage: number }
   | { type: "kill"; monster: MonsterState; gold: number; shards: number }
   | { type: "spawn"; monster: MonsterState }
+  /** A Rout: the rest of a stage fell at once (`kills` Remnants, `gold` earned). */
+  | { type: "rout"; stage: number; kills: number; gold: number }
   | { type: "stage"; stage: number; biomeChanged: boolean }
   | { type: "bossFailed"; stage: number }
   | { type: "loot"; item: Item }

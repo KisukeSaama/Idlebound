@@ -147,9 +147,12 @@ export const hud = defineMessages({
     fx: {
       crit: "CRITIQUE",
       companions: "COMPAGNONS",
-      shards: (count: number) => `+${count} éclat${count > 1 ? "s" : ""}`
+      shards: (count: number) => `+${count} éclat${count > 1 ? "s" : ""}`,
+      rout: (stage: Count) => `Débandade · étape ${stage}`
     },
     toasts: {
+      routTitle: "Débandade",
+      routText: "Tu as déjà parcouru cette étape une nuit passée, et ta compagnie écrase ses Vestiges : ils se défont tous d'un coup. L'étape entière tombe avec son or, et la route file ainsi jusqu'au premier monstre qui résiste.",
       bossFailedTitle: "La nuit te repousse",
       bossFailedText: "Tu recules d'une étape. Renforce tes compagnons, puis repasse en Auto (bouton Rester) pour le retenter.",
       bossFailedWounded: (pct: number) => `Il garde ses blessures : il reviendra avec ${pct} % de vie en moins. Repasse en Auto (bouton Rester) pour le retenter.`,
@@ -401,9 +404,12 @@ export const hud = defineMessages({
     fx: {
       crit: "CRITICAL",
       companions: "COMPANIONS",
-      shards: (count: number) => `+${count} shard${count > 1 ? "s" : ""}`
+      shards: (count: number) => `+${count} shard${count > 1 ? "s" : ""}`,
+      rout: (stage: Count) => `Rout · stage ${stage}`
     },
     toasts: {
+      routTitle: "Rout",
+      routText: "You walked this stage on an earlier night, and your company overwhelms its Remnants: they all come apart at once. The whole stage falls, gold included, and the road runs on like this until a monster holds.",
       bossFailedTitle: "The night pushes you back",
       bossFailedText: "You drop back one stage. Strengthen your companions, then switch back to Auto (the Stay button) to try again.",
       bossFailedWounded: (pct: number) => `It keeps its wounds: it will come back with ${pct}% less health. Switch back to Auto (the Stay button) to try again.`,

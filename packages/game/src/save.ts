@@ -106,7 +106,8 @@ export const gameStateSchema = z.object({
     bestHired: count,
     kings: count,
     seams: count,
-    threads: count
+    threads: count,
+    routs: count
   }),
   ascensions: z.array(z.object({ at: finite, maxStage: stageNumber, essences: positive, threads: count.optional() })).max(200),
   settings: z.object({

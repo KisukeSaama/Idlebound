@@ -1028,3 +1028,86 @@ describe("a relic's worth to the company", () => {
     expect(derive({ ...state, equipment: { weapon } }, T0).dps / bare).toBeCloseTo(relicCompanyGain(state, weapon, T0));
   });
 });
+
+describe("the Rout", () => {
+  /** A walker back at the start of a night, far stronger than the first stretch of road. */
+  function returning(levels = 400, best = 300): GameEngine {
+    const state = createInitialState(T0 - 200 * 3600_000);
+    state.lastTickAt = T0;
+    state.maxStageEver = best;
+    state.lifetime.playTime = 100 * 3600;
+    state.lifetime.ascensions = 10;
+    state.lifetime.kills = 1_000_000;
+    state.lifetime.bosses = 100_000;
+    state.lifetime.kings = 50;
+    state.lifetime.bestHired = 21;
+    state.lifetime.bestLevelSum = 10_000;
+    state.heroLevels = { maelle: levels };
+    state.run.goldEarned = 1e30;
+    state.lifetime.goldEarned = 1e30;
+    return new GameEngine(state, seededRng(3), T0);
+  }
+
+  it("fells a whole stage walked on an earlier night at once, with its kills and gold", () => {
+    const engine = returning();
+    const s = engine.state;
+    expect(derive(s, T0).dps * 0.1).toBeGreaterThan(stageHp(1));
+    const kills = s.lifetime.kills;
+    const gold = s.gold;
+    const now = run(engine, T0, 3);
+    const routs = engine.drainEvents().filter((event) => event.type === "rout");
+    expect(routs.length).toBeGreaterThanOrEqual(5);
+    expect(routs[0]).toMatchObject({ type: "rout", stage: 1, kills: MONSTERS_PER_STAGE });
+    expect(s.lifetime.routs).toBe(routs.length);
+    expect(s.lifetime.kills - kills).toBeGreaterThanOrEqual(routs.length * MONSTERS_PER_STAGE);
+    expect(s.gold).toBeGreaterThan(gold);
+    // Ten stages and more in three seconds, guardians fought on the way.
+    expect(s.maxStage).toBeGreaterThan(10);
+    expect(verifyState(s, now)).toEqual([]);
+  });
+
+  it("stops at the walker's best stage, at every elite and guardian, and before a company too weak", () => {
+    const engine = returning(400, 4);
+    run(engine, T0, 3);
+    const stages = engine.drainEvents().flatMap((event) => (event.type === "rout" ? [event.stage] : []));
+    expect(stages).toEqual([1, 2, 3]);
+    // The first night routs nothing: there is no road walked before it.
+    const first = returning(400, 1);
+    first.state.lifetime.ascensions = 0;
+    run(first, T0, 3);
+    expect(first.state.lifetime.routs).toBe(0);
+    const weak = returning(1);
+    run(weak, T0, 3);
+    expect(weak.state.lifetime.routs).toBe(0);
+  });
+
+  it("routs while the walker is away too", () => {
+    const engine = returning();
+    const now = T0 + 60_000;
+    engine.tick(now);
+    expect(engine.state.lifetime.routs).toBeGreaterThan(0);
+    expect(engine.state.maxStage).toBeGreaterThan(20);
+    expect(verifyState(engine.state, now)).toEqual([]);
+  });
+
+  it("refuses Routs the road and the nights could not give", () => {
+    const fast = returning().state;
+    fast.lifetime.routs = 1e7;
+    expect(verifyState(fast, T0).map((violation) => violation.code)).toContain("routs");
+    const firstNight = returning(400, 50).state;
+    firstNight.lifetime.ascensions = 0;
+    firstNight.lifetime.routs = 1;
+    expect(verifyState(firstNight, T0).map((violation) => violation.code)).toContain("routs");
+    // Kills a Rout would explain, without the Routs: too many for the time.
+    const engine = returning();
+    const before = JSON.parse(JSON.stringify(engine.state)) as GameState;
+    const now = run(engine, T0, 3);
+    expect(verifyTransition(before, engine.state, now - T0)).toEqual([]);
+    const forged = JSON.parse(JSON.stringify(engine.state)) as GameState;
+    forged.lifetime.routs = before.lifetime.routs;
+    expect(verifyTransition(before, forged, now - T0).map((violation) => violation.code)).toContain("kills");
+    const hurried = JSON.parse(JSON.stringify(engine.state)) as GameState;
+    hurried.lifetime.routs += 100;
+    expect(verifyTransition(before, hurried, now - T0).map((violation) => violation.code)).toContain("routs");
+  });
+});

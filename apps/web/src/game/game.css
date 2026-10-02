@@ -686,6 +686,19 @@ button.resource:hover .resource-label {
   font-size: 1.8rem;
 }
 
+.fx-rout {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  color: var(--gold-2);
+  text-shadow: 0 2px 0 #3b2608;
+  animation: gold-rise 900ms ease-out forwards;
+}
+
 .fx-shards {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -4776,6 +4789,16 @@ kbd {
 .promise-rule {
   font-size: 0.82rem;
   color: var(--muted);
+}
+
+.promise-reward {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.promise-fulfilled {
+  margin-top: 8px;
 }
 
 .promise-needs {

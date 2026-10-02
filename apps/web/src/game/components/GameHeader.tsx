@@ -100,7 +100,7 @@ function GoldValue() {
       return sum;
     };
     const unsubscribe = store.onFx((event) => {
-      if (event.type !== "kill" || !(event.gold > 0)) return;
+      if ((event.type !== "kill" && event.type !== "rout") || !(event.gold > 0)) return;
       const still = store.state.settings.reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const id = setTimeout(() => {
         flying.delete(id);

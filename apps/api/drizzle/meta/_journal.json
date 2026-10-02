@@ -43,6 +43,13 @@
       "when": 1790766585316,
       "tag": "0005_guest_saves",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790971887202,
+      "tag": "0006_leaderboard_stride",
+      "breakpoints": true
     }
   ]
 }

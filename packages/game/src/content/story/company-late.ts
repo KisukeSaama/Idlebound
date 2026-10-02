@@ -41,7 +41,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         { by: "Eldra", text: "Your cloak is torn at the shoulder. She mends it with a thread of light that does not quite match, and bites it off. \"There. It will hold tonight.\"" },
         { by: "Eldra", text: "She never says \"the King\". She says \"him\", and her hands stop weaving while she says it. She knew Aldemar before the Long Night began." },
         { by: "Eldra", text: "\"I wove this night. The King asked me to, to keep the Morning out of Orvane. I am sorry for what it costs you.\" The shuttle moves again. \"Not for doing it.\"" },
-        { by: "Eldra", text: "She shows you her loom, taller than the keep, strung with every night there has been. \"I can weave the night again, one thread deeper. It will cost you your stones.\"" }
+        { by: "Eldra", text: "She shows you her loom, taller than the keep. \"Once the night is deep enough, I weave it again, one thread deeper. It costs you your stones, and it is worth it.\"" }
       ],
       morgrath: [
         { by: "Morgrath", text: "\"You. The sword with no conversation. Do try not to die before I have finished despising you.\"" },
@@ -164,7 +164,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         { by: "Eldra", text: "Ta cape est déchirée à l'épaule. Elle la reprise d'un fil de lumière pas tout à fait assorti, et le coupe avec les dents. « Voilà. Ça tiendra cette nuit. »" },
         { by: "Eldra", text: "Elle ne dit jamais « le roi ». Elle dit « lui », et ses mains cessent de tisser le temps que dure le mot. Elle connaissait Aldemar avant la Longue Nuit." },
         { by: "Eldra", text: "« J'ai tissé cette nuit. Le Roi me l'a demandé, pour garder le Matin hors d'Orvane. Je suis désolée de ce qu'elle te coûte. » La navette repart. « Pas de l'avoir faite. »" },
-        { by: "Eldra", text: "Elle te montre son métier, plus haut que le donjon, tendu de toutes les nuits qui ont été. « Je peux retisser la nuit, un fil plus bas. Ça te coûtera tes pierres. »" }
+        { by: "Eldra", text: "Elle te montre son métier, plus haut que le donjon. « Quand la nuit est assez profonde, je la retisse, un fil plus bas. Ça te coûte tes pierres, et ça en vaut la peine. »" }
       ],
       morgrath: [
         { by: "Morgrath", text: "« Toi. L'épée sans conversation. Tâche de ne pas mourir avant que j'aie fini de te mépriser. »" },

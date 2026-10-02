@@ -1,25 +1,38 @@
-import { and, count, desc, eq, gt, or, sql as raw } from "drizzle-orm";
+import { and, count, desc, eq, gt, gte, lt, or, sql as raw, type SQL } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { Hono } from "hono";
 import { db } from "../db/client";
-import { leaderboard, users } from "../db/schema";
+import { leaderboard, stageHistory, users } from "../db/schema";
 import { fail } from "../lib/errors";
 import { limiter, rateLimitByIp } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
+import { strideStart } from "../lib/stride";
+
+interface ColumnBoard {
+  column: AnyPgColumn;
+  /** Second key, higher first (the Night board: Descents, then Depth). */
+  tiebreak?: AnyPgColumn;
+  /** Last key, earlier first: who got there first. */
+  first: AnyPgColumn;
+}
 
 /**
  * Leaderboards by id; the web app localizes their titles. A board ranks by its column, then
- * by its tiebreak (the Night board: Descents, then Depth), then by who got there first.
+ * by its tiebreak, then by who got there first. Depth and Night count from the save that
+ * raised the best stage (`stage_reached_at`), so equal stages keep the order they were reached in.
  */
-export const BOARDS: Record<"stage" | "ascensions" | "essences" | "achievements" | "descents", { column: AnyPgColumn; tiebreak?: AnyPgColumn }> = {
-  stage: { column: leaderboard.maxStage },
-  ascensions: { column: leaderboard.ascensions },
-  essences: { column: leaderboard.essences },
-  achievements: { column: leaderboard.achievements },
-  descents: { column: leaderboard.descents, tiebreak: leaderboard.maxStage }
+export const BOARDS: Record<"stage" | "ascensions" | "essences" | "achievements" | "descents", ColumnBoard> = {
+  stage: { column: leaderboard.maxStage, first: leaderboard.stageReachedAt },
+  ascensions: { column: leaderboard.ascensions, first: leaderboard.updatedAt },
+  essences: { column: leaderboard.essences, first: leaderboard.updatedAt },
+  achievements: { column: leaderboard.achievements, first: leaderboard.updatedAt },
+  descents: { column: leaderboard.descents, tiebreak: leaderboard.maxStage, first: leaderboard.stageReachedAt }
 };
 
-export type BoardId = keyof typeof BOARDS;
+/** Every board: the column boards, and the Stride (stages gained over the last 7 days). */
+export type BoardId = keyof typeof BOARDS | "week";
+
+const isBoard = (board: string): board is BoardId => board === "week" || Object.hasOwn(BOARDS, board);
 
 type BoardRow = { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number };
 
@@ -44,12 +57,37 @@ function topRows(board: BoardId, limit: number): Promise<BoardRow[]> {
   return rows;
 }
 
+/**
+ * The Stride: each account with a save in the last 7 days, and the best stage it had when its
+ * first day of the window began (the earliest row, as the best stage never goes down).
+ */
+function strideStarts(now: Date) {
+  return db
+    .select({ userId: stageHistory.userId, strideStart: raw<number>`min(${stageHistory.maxStage})`.as("stride_start") })
+    .from(stageHistory)
+    .where(gte(stageHistory.day, strideStart(now)))
+    .groupBy(stageHistory.userId)
+    .as("stride");
+}
+
+/** What a board ranks by, from the highest value to the lowest: the value, then its tiebreaks. */
+function boardOrder(board: BoardId, now: Date) {
+  if (board === "week") {
+    const starts = strideStarts(now);
+    const value: SQL<number> = raw<number>`${leaderboard.maxStage} - ${starts.strideStart}`;
+    // Only walkers who went deeper this week: a still week is not a place on this board.
+    return { value, tiebreak: undefined, first: leaderboard.stageReachedAt, starts, ranked: gt(value, 0) };
+  }
+  const { column, tiebreak, first } = BOARDS[board];
+  return { value: raw<number>`${column}`, tiebreak, first, starts: undefined, ranked: undefined };
+}
+
 async function queryTopRows(board: BoardId, limit: number): Promise<BoardRow[]> {
-  const { column, tiebreak } = BOARDS[board];
-  const rows = await db
+  const { value, tiebreak, first, starts, ranked } = boardOrder(board, new Date());
+  const base = db
     .select({
       username: users.username,
-      value: column,
+      value,
       maxStage: leaderboard.maxStage,
       ascensions: leaderboard.ascensions,
       achievements: leaderboard.achievements,
@@ -57,10 +95,32 @@ async function queryTopRows(board: BoardId, limit: number): Promise<BoardRow[]> 
     })
     .from(leaderboard)
     .innerJoin(users, eq(users.id, leaderboard.userId))
-    .where(eq(leaderboard.hidden, false))
-    .orderBy(desc(column), ...(tiebreak ? [desc(tiebreak)] : []), leaderboard.updatedAt)
+    .$dynamic();
+  const joined = starts ? base.innerJoin(starts, eq(starts.userId, leaderboard.userId)) : base;
+  const rows = await joined
+    .where(and(eq(leaderboard.hidden, false), ranked))
+    .orderBy(desc(value), ...(tiebreak ? [desc(tiebreak)] : []), first)
     .limit(limit);
   return rows.map((row, index) => ({ rank: index + 1, ...row, value: Number(row.value) }));
+}
+
+/** The logged-in walker's place: one more than the visible rows ranked above theirs. */
+async function rankOf(board: BoardId, userId: string): Promise<{ rank: number; value: number } | null> {
+  const { value, tiebreak, first, starts, ranked } = boardOrder(board, new Date());
+  const mineQuery = db.select({ value, tie: tiebreak ?? value, first }).from(leaderboard).$dynamic();
+  const [mine] = await (starts ? mineQuery.innerJoin(starts, eq(starts.userId, leaderboard.userId)) : mineQuery)
+    .where(and(eq(leaderboard.userId, userId), ranked))
+    .limit(1);
+  if (!mine) return null;
+  // Ranked above: a better value, or the same value and a better tiebreak, or all equal and
+  // there first.
+  const there = lt(first, mine.first);
+  const tied = tiebreak ? or(gt(tiebreak, mine.tie), and(eq(tiebreak, mine.tie), there)) : there;
+  const ahead = or(gt(value, mine.value), and(eq(value, mine.value), tied));
+  const aboveQuery = db.select({ total: count() }).from(leaderboard).$dynamic();
+  const [above] = await (starts ? aboveQuery.innerJoin(starts, eq(starts.userId, leaderboard.userId)) : aboveQuery)
+    .where(and(eq(leaderboard.hidden, false), ranked, ahead));
+  return { rank: Number(above.total) + 1, value: Number(mine.value) };
 }
 
 let statsCache: { at: number; value: { players: number; bestStage: number } } | null = null;
@@ -68,25 +128,14 @@ let statsCache: { at: number; value: { players: number; bestStage: number } } | 
 export const leaderboardRoutes = new Hono()
   .use(rateLimitByIp(readLimiter))
   .get("/", async (c) => {
-    const board = (c.req.query("board") ?? "stage") as BoardId;
+    const board = c.req.query("board") ?? "stage";
     // Object.hasOwn: "toString" or "constructor" are not leaderboards.
-    if (!Object.hasOwn(BOARDS, board)) return c.json(fail("unknown_board"), 400);
+    if (!isBoard(board)) return c.json(fail("unknown_board"), 400);
     const limit = Math.min(100, Math.max(1, Number(c.req.query("limit") ?? 50) || 50));
     const rows = await topRows(board, limit);
 
-    let me: { rank: number; value: number } | null = null;
     const user = await currentUser(c);
-    if (user) {
-      const { column, tiebreak } = BOARDS[board];
-      const [mine] = await db.select({ value: column, tie: tiebreak ?? column }).from(leaderboard).where(eq(leaderboard.userId, user.id)).limit(1);
-      if (mine) {
-        // Ranked above: a better value, or the same value and a better tiebreak.
-        const ahead = tiebreak ? or(gt(column, mine.value), and(eq(column, mine.value), gt(tiebreak, mine.tie))) : gt(column, mine.value);
-        const [above] = await db.select({ total: count() }).from(leaderboard)
-          .where(and(eq(leaderboard.hidden, false), ahead));
-        me = { rank: Number(above.total) + 1, value: Number(mine.value) };
-      }
-    }
+    const me = user ? await rankOf(board, user.id) : null;
     // The answer depends on the session cookie: a shared cache must never mix the two.
     c.header("Cache-Control", user ? "private, no-store" : "public, max-age=30");
     c.header("Vary", "Cookie");

@@ -3,11 +3,12 @@ import { and, eq, gt, lt } from "drizzle-orm";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { db } from "../db/client";
-import { emailVerifications, passwordResets, saveRejections, sessions, users } from "../db/schema";
+import { emailVerifications, passwordResets, saveRejections, sessions, stageHistory, users } from "../db/schema";
 import { env } from "../env";
 import { purgeGuestSaves } from "./guest";
 import { localeOf } from "./i18n";
 import { purgeInactiveAccounts, purgeUnverifiedAccounts } from "./inactivity";
+import { strideStart } from "./stride";
 
 export const SESSION_COOKIE = "ib_session";
 const SESSION_DAYS = 30;
@@ -97,4 +98,6 @@ export async function purgeExpired() {
   await db.delete(passwordResets).where(lt(passwordResets.expiresAt, now));
   await db.delete(emailVerifications).where(lt(emailVerifications.expiresAt, now));
   await db.delete(saveRejections).where(lt(saveRejections.createdAt, new Date(now.getTime() - REJECTION_RETENTION_DAYS * DAY)));
+  // The Stride board only reads the last 7 days.
+  await db.delete(stageHistory).where(lt(stageHistory.day, strideStart(now)));
 }

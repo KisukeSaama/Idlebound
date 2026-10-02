@@ -236,7 +236,8 @@ describe("Recognition", () => {
     expect(recognitionTier(state, "maelle")).toBe(4);
     state.promises = { maelle: 2 };
     expect(recognitionTier(state, "maelle")).toBe(5);
-    expect(derive(state, T0).heroDps.maelle).toBeCloseTo(base * 1.1);
+    // Her fifth memory, and the two words kept to her that each double her damage.
+    expect(derive(state, T0).heroDps.maelle).toBeCloseTo(base * 1.1 * 2 ** 2);
     expect(verifyState(state, T0 + 500 * 3600_000).map((violation) => violation.code)).not.toContain("recognition");
     // A night counts once, twice with a promise kept: never more.
     state.recognition = { maelle: state.lifetime.ascensions + 3 };
