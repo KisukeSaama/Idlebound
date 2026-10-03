@@ -146,7 +146,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
                 <span className="altar-level">{text.altarLevel(level, max)}</span>
               </header>
               <p>{copy.description}</p>
-              <p className="altar-value">{text.current} <strong>{formatAltarValue(altar, level, locale, max)}</strong> → {formatAltarValue(altar, level + 1, locale, max)}</p>
+              <p className="altar-value">{text.current} <strong>{formatAltarValue(altar, level, locale, state.settings.notation, max)}</strong> → {formatAltarValue(altar, level + 1, locale, state.settings.notation, max)}</p>
               {legend ? (
                 <details className="altar-legend">
                   <summary title={`${legend.text} (${legend.by})`}>{t.sanctum.legendSummary}</summary>
@@ -178,7 +178,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
               return (
                 <li key={altar.id} title={g.altars[altar.id].description}>
                   <strong>{g.altars[altar.id].name}</strong>
-                  <span>{formatAltarValue(altar, state.altars[altar.id] ?? 0, locale, max)}</span>
+                  <span>{formatAltarValue(altar, state.altars[altar.id] ?? 0, locale, state.settings.notation, max)}</span>
                 </li>
               );
             })}

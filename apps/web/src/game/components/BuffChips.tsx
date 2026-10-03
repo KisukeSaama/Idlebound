@@ -4,6 +4,7 @@ import { SKILL_BY_ID, type BuffId, type SkillId } from "@idlebound/game";
 import type { CSSProperties } from "react";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
+import { percentValue } from "../text";
 import { BUFF_PICTO, Picto, SKILL_PICTO, type PictoName } from "../icons";
 
 export function BuffChips() {
@@ -23,7 +24,7 @@ export function BuffChips() {
   }
   if (state.ritualStacks > 0) chips.push({ key: "ritual", icon: SKILL_PICTO.ritual, label: m.ritual(state.ritualStacks * 5), short: m.ritualShort(state.ritualStacks * 5), seconds: -1 });
   if (derived.idleBonus > 0) {
-    const bonus = Math.round(derived.idleBonus * 100);
+    const bonus = percentValue(derived.idleBonus, state.settings.notation);
     chips.push({ key: "idle", icon: "lotus", label: m.patience(bonus), short: m.patienceShort(bonus), seconds: -1 });
   }
 

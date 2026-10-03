@@ -1,7 +1,12 @@
-import { altarEffect, formatPercent, gameText, trimmed, type AffixStat, type AltarDef, type HeroEffect, type Locale, type PromiseDef } from "@idlebound/game";
+import { altarEffect, formatPercent, gameText, trimmed, type AffixStat, type AltarDef, type HeroEffect, type Locale, type Notation, type PromiseDef } from "@idlebound/game";
 import { messages } from "@/i18n/messages";
 
 const pct = (value: number) => Math.round(value * 100);
+
+/** A ratio as a percentage number without its sign, in the walker's notation past 1000 ("10.3K"). */
+export function percentValue(ratio: number, notation: Notation): string {
+  return formatPercent(ratio, notation, "en").replace("%", "");
+}
 
 /** Sentence describing a talent effect. */
 export function describeEffect(effect: HeroEffect, heroName: string, locale: Locale): string {
@@ -51,11 +56,11 @@ export function formatAffix(stat: AffixStat, value: number, locale: Locale): str
 }
 
 /** Current total bonus of an altar at a given level, within this walker's cap (`maxLevel`). */
-export function formatAltarValue(altar: AltarDef, level: number, locale: Locale, maxLevel = altar.maxLevel): string {
+export function formatAltarValue(altar: AltarDef, level: number, locale: Locale, notation: Notation, maxLevel = altar.maxLevel): string {
   const t = messages(locale).hud.altarValue;
   const value = altarEffect(altar, level, maxLevel);
   switch (altar.format) {
-    case "pct": return t.pct(formatPercent(value, "letters", "en").replace("%", ""));
+    case "pct": return t.pct(percentValue(value, notation));
     case "seconds": return t.seconds(value);
     case "stages": return level === 0 ? t.none : t.stages(value);
     case "flat": return level === 0 ? t.none : t.stage(value);
