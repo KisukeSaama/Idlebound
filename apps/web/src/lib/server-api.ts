@@ -1,18 +1,9 @@
 import "server-only";
-
-export interface LeaderboardRow {
-  rank: number;
-  username: string;
-  value: number;
-  maxStage: number;
-  ascensions: number;
-  achievements: number;
-  descents: number;
-}
+import type { BoardId, RollRow } from "./boards";
 
 export interface LeaderboardResponse {
-  board: string;
-  rows: LeaderboardRow[];
+  board: BoardId;
+  rows: RollRow[];
 }
 
 const base = () => (process.env.INTERNAL_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
@@ -28,8 +19,8 @@ async function getJson<T>(path: string): Promise<T | null> {
   }
 }
 
-export function fetchLeaderboard(board: string, limit = 50) {
-  return getJson<LeaderboardResponse>(`/leaderboard?board=${encodeURIComponent(board)}&limit=${limit}`);
+export function fetchLeaderboard(board: BoardId, limit = 50) {
+  return getJson<LeaderboardResponse>(`/leaderboard?board=${board}&limit=${limit}`);
 }
 
 export function fetchStats() {

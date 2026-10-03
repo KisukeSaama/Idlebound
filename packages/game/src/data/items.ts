@@ -62,12 +62,15 @@ export const AFFIX_CAP: Partial<Record<AffixStat, number>> = {
 
 /**
  * Caps on the total bonus of the four equipped relics. Critical hits only apply to clicks:
- * uncapped, late relics would make clicking dwarf companion DPS again.
+ * uncapped, late relics would make clicking dwarf companion DPS again. Damage to elites and
+ * guardians stays under their HP multiplier (×6 and ×10): uncapped, forged late relics made
+ * them fall faster than the Remnants of their own stage.
  */
 export const EQUIPMENT_CAP: Partial<Record<AffixStat, number>> = {
   critChance: AFFIX_CAP.critChance! * 2,
   essence: AFFIX_CAP.essence! * 4,
-  critDamage: 0.5
+  critDamage: 0.5,
+  bossDamage: 3
 };
 
 export const INVENTORY_LIMIT = 48;

@@ -51,6 +51,7 @@ import { describePromise } from "./text";
 import { useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
+import { ElsewhereModal } from "./components/ElsewhereModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
 import { ChestOpening, type ChestOpeningRequest } from "./components/ChestOpening";
 import { Cutscene } from "./components/Cutscene";
@@ -197,8 +198,9 @@ export default function GameApp() {
   }, [pump]);
 
   const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null || chest !== null;
-  // A newer release waits for a calm screen: nothing open, no toast still to be read.
-  const fading = useNewRelease(cloud, !covered && toasts.length === 0);
+  // A newer release waits only while a reload would take something from the screen: a
+  // scene, a chest, a question, a toast still to be read. An open window comes back closed.
+  const fading = useNewRelease(cloud, confirmRequest === null && reunion === null && cutscene === null && chest === null && toasts.length === 0);
   useEffect(() => {
     holding.current = covered;
     if (!covered) pump.next();
@@ -249,11 +251,13 @@ export default function GameApp() {
     see();
     void cloud.init().finally(() => {
       if (cancelled) return;
-      store.start();
+      // Played on another page: the game stands still until the walker takes it back.
+      if (!cloud.elsewhere) store.start();
       setReady(true);
     });
     const onVisibility = () => {
       if (!see()) void cloud.sync({ keepalive: true });
+      else cloud.resume();
     };
     const onLeave = (event: BeforeUnloadEvent) => {
       // The last uploads failed (server away) or the session ended: what was played since is only here.
@@ -692,6 +696,7 @@ export default function GameApp() {
         </div>
         {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
         <CloudChoiceModal />
+        <ElsewhereModal />
         {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
         {chest ? <ChestOpening request={chest} onDone={() => setChest(null)} /> : null}
         {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}

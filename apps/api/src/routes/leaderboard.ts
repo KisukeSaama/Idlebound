@@ -1,40 +1,34 @@
-import { and, count, desc, eq, gt, gte, lt, or, sql as raw, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, lt, ne, not, or, sql as raw, type SQL } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { Hono } from "hono";
 import { db } from "../db/client";
-import { leaderboard, stageHistory, users } from "../db/schema";
+import { leaderboard, users } from "../db/schema";
 import { fail } from "../lib/errors";
 import { limiter, rateLimitByIp } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
-import { strideStart } from "../lib/stride";
-
-interface ColumnBoard {
-  column: AnyPgColumn;
-  /** Second key, higher first (the Night board: Descents, then Depth). */
-  tiebreak?: AnyPgColumn;
-  /** Last key, earlier first: who got there first. */
-  first: AnyPgColumn;
-}
 
 /**
- * Leaderboards by id; the web app localizes their titles. A board ranks by its column, then
- * by its tiebreak, then by who got there first. Depth and Night count from the save that
- * raised the best stage (`stage_reached_at`), so equal stages keep the order they were reached in.
+ * The four boards of the Roll; the web app words them. `stage` is the official one: the highest
+ * stage reached. The others are all-time tallies with no end (Kings felled, promises kept,
+ * crystals caught): a walker enters them with the first one. Every board breaks its ties by
+ * the highest stage, then by who reached it first (`stage_reached_at`, the server's time).
  */
-export const BOARDS: Record<"stage" | "ascensions" | "essences" | "achievements" | "descents", ColumnBoard> = {
-  stage: { column: leaderboard.maxStage, first: leaderboard.stageReachedAt },
-  ascensions: { column: leaderboard.ascensions, first: leaderboard.updatedAt },
-  essences: { column: leaderboard.essences, first: leaderboard.updatedAt },
-  achievements: { column: leaderboard.achievements, first: leaderboard.updatedAt },
-  descents: { column: leaderboard.descents, tiebreak: leaderboard.maxStage, first: leaderboard.stageReachedAt }
-};
+export const BOARDS = {
+  stage: leaderboard.maxStage,
+  kings: leaderboard.kings,
+  promises: leaderboard.promises,
+  crystals: leaderboard.crystals
+} satisfies Record<string, AnyPgColumn>;
 
-/** Every board: the column boards, and the Stride (stages gained over the last 7 days). */
-export type BoardId = keyof typeof BOARDS | "week";
+export type BoardId = keyof typeof BOARDS;
 
-const isBoard = (board: string): board is BoardId => board === "week" || Object.hasOwn(BOARDS, board);
+// Object.hasOwn: "toString" or "constructor" are not leaderboards.
+const isBoard = (board: string): board is BoardId => Object.hasOwn(BOARDS, board);
 
-type BoardRow = { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number };
+type BoardRow = { rank: number; username: string; value: number; maxStage: number; reachedAt: string };
+
+/** Walkers shown on each side of the logged-in walker. */
+const AROUND = 2;
 
 interface CachedBoard {
   at: number;
@@ -46,11 +40,35 @@ const CACHE_MS = 30_000;
 const cache = new Map<string, CachedBoard>();
 const readLimiter = limiter(120, 60_000);
 
+/** A board's order from the best down: its value, then the highest stage, then who got there first. */
+const best = (column: AnyPgColumn) => [desc(column), desc(leaderboard.maxStage), asc(leaderboard.stageReachedAt)];
+const worst = (column: AnyPgColumn) => [asc(column), asc(leaderboard.maxStage), desc(leaderboard.stageReachedAt)];
+
+/** The rows a board ranks: never a hidden one, and on a tally only those with one at least. */
+const ranked = (column: AnyPgColumn) => and(eq(leaderboard.hidden, false), gt(column, 0));
+
+/** A board's rows with their names. */
+function named(column: AnyPgColumn) {
+  return db
+    .select({ username: users.username, value: column, maxStage: leaderboard.maxStage, reachedAt: leaderboard.stageReachedAt, hidden: leaderboard.hidden })
+    .from(leaderboard)
+    .innerJoin(users, eq(users.id, leaderboard.userId))
+    .$dynamic();
+}
+
+const toRow = (row: { username: string; value: unknown; maxStage: number; reachedAt: Date }, rank: number): BoardRow =>
+  ({ rank, username: row.username, value: Number(row.value), maxStage: row.maxStage, reachedAt: row.reachedAt.toISOString() });
+
 function topRows(board: BoardId, limit: number): Promise<BoardRow[]> {
   const key = `${board}:${limit}`;
   const cached = cache.get(key);
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.rows;
-  const rows = queryTopRows(board, limit);
+  const column = BOARDS[board];
+  const rows = named(column)
+    .where(ranked(column))
+    .orderBy(...best(column))
+    .limit(limit)
+    .then((found) => found.map((row, index) => toRow(row, index + 1)));
   cache.set(key, { at: Date.now(), rows });
   // A failed query is not cached: the next request retries.
   rows.catch(() => { if (cache.get(key)?.rows === rows) cache.delete(key); });
@@ -58,69 +76,35 @@ function topRows(board: BoardId, limit: number): Promise<BoardRow[]> {
 }
 
 /**
- * The Stride: each account with a save in the last 7 days, and the best stage it had when its
- * first day of the window began (the earliest row, as the best stage never goes down).
+ * The logged-in walker's place on a board (one more than the ranked rows above theirs) and the
+ * walkers just ahead and just behind. Nothing on a tally they have none of yet. A hidden walker
+ * still sees their place, but nobody around.
  */
-function strideStarts(now: Date) {
-  return db
-    .select({ userId: stageHistory.userId, strideStart: raw<number>`min(${stageHistory.maxStage})`.as("stride_start") })
-    .from(stageHistory)
-    .where(gte(stageHistory.day, strideStart(now)))
-    .groupBy(stageHistory.userId)
-    .as("stride");
-}
-
-/** What a board ranks by, from the highest value to the lowest: the value, then its tiebreaks. */
-function boardOrder(board: BoardId, now: Date) {
-  if (board === "week") {
-    const starts = strideStarts(now);
-    const value: SQL<number> = raw<number>`${leaderboard.maxStage} - ${starts.strideStart}`;
-    // Only walkers who went deeper this week: a still week is not a place on this board.
-    return { value, tiebreak: undefined, first: leaderboard.stageReachedAt, starts, ranked: gt(value, 0) };
-  }
-  const { column, tiebreak, first } = BOARDS[board];
-  return { value: raw<number>`${column}`, tiebreak, first, starts: undefined, ranked: undefined };
-}
-
-async function queryTopRows(board: BoardId, limit: number): Promise<BoardRow[]> {
-  const { value, tiebreak, first, starts, ranked } = boardOrder(board, new Date());
-  const base = db
-    .select({
-      username: users.username,
-      value,
-      maxStage: leaderboard.maxStage,
-      ascensions: leaderboard.ascensions,
-      achievements: leaderboard.achievements,
-      descents: leaderboard.descents
-    })
-    .from(leaderboard)
-    .innerJoin(users, eq(users.id, leaderboard.userId))
-    .$dynamic();
-  const joined = starts ? base.innerJoin(starts, eq(starts.userId, leaderboard.userId)) : base;
-  const rows = await joined
-    .where(and(eq(leaderboard.hidden, false), ranked))
-    .orderBy(desc(value), ...(tiebreak ? [desc(tiebreak)] : []), first)
-    .limit(limit);
-  return rows.map((row, index) => ({ rank: index + 1, ...row, value: Number(row.value) }));
-}
-
-/** The logged-in walker's place: one more than the visible rows ranked above theirs. */
-async function rankOf(board: BoardId, userId: string): Promise<{ rank: number; value: number } | null> {
-  const { value, tiebreak, first, starts, ranked } = boardOrder(board, new Date());
-  const mineQuery = db.select({ value, tie: tiebreak ?? value, first }).from(leaderboard).$dynamic();
-  const [mine] = await (starts ? mineQuery.innerJoin(starts, eq(starts.userId, leaderboard.userId)) : mineQuery)
-    .where(and(eq(leaderboard.userId, userId), ranked))
-    .limit(1);
+async function standing(board: BoardId, userId: string): Promise<{ me: BoardRow; around: BoardRow[] } | null> {
+  const column = BOARDS[board];
+  const [mine] = await named(column).where(and(eq(leaderboard.userId, userId), gt(column, 0))).limit(1);
   if (!mine) return null;
-  // Ranked above: a better value, or the same value and a better tiebreak, or all equal and
-  // there first.
-  const there = lt(first, mine.first);
-  const tied = tiebreak ? or(gt(tiebreak, mine.tie), and(eq(tiebreak, mine.tie), there)) : there;
-  const ahead = or(gt(value, mine.value), and(eq(value, mine.value), tied));
-  const aboveQuery = db.select({ total: count() }).from(leaderboard).$dynamic();
-  const [above] = await (starts ? aboveQuery.innerJoin(starts, eq(starts.userId, leaderboard.userId)) : aboveQuery)
-    .where(and(eq(leaderboard.hidden, false), ranked, ahead));
-  return { rank: Number(above.total) + 1, value: Number(mine.value) };
+  const ahead: SQL = or(
+    gt(column, mine.value),
+    and(eq(column, mine.value), gt(leaderboard.maxStage, mine.maxStage)),
+    and(eq(column, mine.value), eq(leaderboard.maxStage, mine.maxStage), lt(leaderboard.stageReachedAt, mine.reachedAt))
+  )!;
+  const [above] = await db.select({ total: count() }).from(leaderboard).where(and(ranked(column), ahead));
+  const me = toRow(mine, Number(above.total) + 1);
+  if (mine.hidden) return { me, around: [] };
+
+  const [before, after] = await Promise.all([
+    named(column).where(and(ranked(column), ahead)).orderBy(...worst(column)).limit(AROUND),
+    named(column).where(and(ranked(column), ne(leaderboard.userId, userId), not(ahead))).orderBy(...best(column)).limit(AROUND)
+  ]);
+  return {
+    me,
+    around: [
+      ...before.reverse().map((row, index) => toRow(row, me.rank - before.length + index)),
+      me,
+      ...after.map((row, index) => toRow(row, me.rank + index + 1))
+    ]
+  };
 }
 
 let statsCache: { at: number; value: { players: number; bestStage: number } } | null = null;
@@ -129,17 +113,16 @@ export const leaderboardRoutes = new Hono()
   .use(rateLimitByIp(readLimiter))
   .get("/", async (c) => {
     const board = c.req.query("board") ?? "stage";
-    // Object.hasOwn: "toString" or "constructor" are not leaderboards.
     if (!isBoard(board)) return c.json(fail("unknown_board"), 400);
     const limit = Math.min(100, Math.max(1, Number(c.req.query("limit") ?? 50) || 50));
     const rows = await topRows(board, limit);
 
     const user = await currentUser(c);
-    const me = user ? await rankOf(board, user.id) : null;
+    const place = user ? await standing(board, user.id) : null;
     // The answer depends on the session cookie: a shared cache must never mix the two.
     c.header("Cache-Control", user ? "private, no-store" : "public, max-age=30");
     c.header("Vary", "Cookie");
-    return c.json({ board, rows, me });
+    return c.json({ board, rows, me: place?.me ?? null, around: place?.around ?? [] });
   })
 
   .get("/stats", async (c) => {

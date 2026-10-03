@@ -212,6 +212,19 @@ export const hud = defineMessages({
           `La partie gardée va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`
       }
     },
+    elsewhere: {
+      playHere: "Jouer ici",
+      open: {
+        title: "Ta partie est ouverte ailleurs",
+        voice: "Un seul marcheur, une seule route. Le Grand Livre te voit déjà marcher ailleurs.",
+        text: "Ta partie tourne en ce moment sur un autre appareil ou dans une autre page. La reprendre ici l'arrête là-bas, et elle continue d'ici telle que le serveur l'a gardée."
+      },
+      taken: {
+        title: "Ta partie continue ailleurs",
+        voice: "Ta route s'écrit ailleurs à présent. Le Grand Livre t'attend là où tu marches.",
+        text: "Tu as repris ta partie sur un autre appareil ou dans une autre page, alors elle s'est arrêtée ici. Tu peux la reprendre ici à tout moment : elle s'arrêtera là-bas."
+      }
+    },
     ledgerAway: {
       title: "Le Grand Livre ne répond pas",
       voice: "Ta route y est toujours écrite. On frappe encore à sa porte.",
@@ -467,6 +480,19 @@ export const hud = defineMessages({
         weakerTitle: "Erase the kept game?",
         weakerText: (stage: Count, ascensions: number, time: string) =>
           `The kept game goes further: stage ${stage}, ${ascensions} ascension${ascensions === 1 ? "" : "s"}, ${time} of play. Keeping the current game erases it for good.`
+      }
+    },
+    elsewhere: {
+      playHere: "Play here",
+      open: {
+        title: "Your game is open elsewhere",
+        voice: "One walker, one road. The Ledger already sees you walking elsewhere.",
+        text: "Your game is running right now on another device or in another page. Taking it here stops it there, and it carries on from here as the server kept it."
+      },
+      taken: {
+        title: "Your game goes on elsewhere",
+        voice: "Your road is written elsewhere now. The Ledger waits for you where you walk.",
+        text: "You picked your game up on another device or in another page, so it stopped here. You can take it back here at any time: it will stop there."
       }
     },
     ledgerAway: {

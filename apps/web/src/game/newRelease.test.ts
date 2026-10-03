@@ -24,6 +24,7 @@ describe("NewRelease", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
   let reloads: number;
   let fades: boolean[];
+  let calm: boolean;
   let running: { store: GameStore; cloud: CloudSync; watch: NewRelease } | null;
 
   function events(target: EventTarget) {
@@ -56,6 +57,7 @@ describe("NewRelease", () => {
     vi.stubGlobal("fetch", fetchMock);
     reloads = 0;
     fades = [];
+    calm = true;
     running = null;
   });
 
@@ -78,7 +80,7 @@ describe("NewRelease", () => {
     const cloud = new CloudSync(store);
     await cloud.init();
     store.start();
-    const watch = new NewRelease(cloud, { calm: () => true, fade: (fading) => fades.push(fading), reload: () => (reloads += 1) });
+    const watch = new NewRelease(cloud, { calm: () => calm, fade: (fading) => fades.push(fading), reload: () => (reloads += 1) });
     watch.start();
     running = { store, cloud, watch };
     return running;
@@ -99,27 +101,50 @@ describe("NewRelease", () => {
     expect(stored.get("idlebound:release:reloaded-for")).toBe("new");
   });
 
-  it("lets a watched page play on, then fades out after a quiet while", async () => {
+  it("fades a watched page out at once, then moves it once its game is saved", async () => {
     const { cloud } = await playing();
     fetchMock.mockImplementation(async () => kept("new"));
     await cloud.sync();
-    await vi.advanceTimersByTimeAsync(25_000);
-    expect(fades).toEqual([]);
-    await vi.advanceTimersByTimeAsync(5_000);
+    await vi.advanceTimersByTimeAsync(0);
     expect(fades).toEqual([true]);
     expect(reloads).toBe(0);
     await vi.advanceTimersByTimeAsync(FADE_MS);
     expect(reloads).toBe(1);
   });
 
-  it("stays when the walker touches the game during the fade", async () => {
+  it("holds input during the fade: touching the game does not keep the old page", async () => {
     const { cloud } = await playing();
     fetchMock.mockImplementation(async () => kept("new"));
     await cloud.sync();
-    await vi.advanceTimersByTimeAsync(30_000);
+    await vi.advanceTimersByTimeAsync(0);
+    const touch = new Event("pointerdown", { cancelable: true });
+    win.dispatchEvent(touch);
+    expect(touch.defaultPrevented).toBe(true);
+    await vi.advanceTimersByTimeAsync(FADE_MS);
     expect(fades).toEqual([true]);
+    expect(reloads).toBe(1);
+  });
+
+  it("waits while a reload would take something from the screen", async () => {
+    const { cloud, watch } = await playing();
+    calm = false;
+    fetchMock.mockImplementation(async () => kept("new"));
+    await cloud.sync();
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(fades).toEqual([]);
+    calm = true;
+    void watch.attempt();
+    await vi.advanceTimersByTimeAsync(FADE_MS);
+    expect(reloads).toBe(1);
+  });
+
+  it("stays when a scene opens during the fade", async () => {
+    const { cloud } = await playing();
+    fetchMock.mockImplementation(async () => kept("new"));
+    await cloud.sync();
+    await vi.advanceTimersByTimeAsync(0);
     const sent = puts();
-    win.dispatchEvent(new Event("pointerdown"));
+    calm = false;
     await vi.advanceTimersByTimeAsync(FADE_MS);
     expect(fades).toEqual([true, false]);
     expect(reloads).toBe(0);
@@ -153,7 +178,7 @@ describe("NewRelease", () => {
     await playing(null);
     fetchMock.mockImplementation(async () => json({ board: "stage", rows: [], me: null }, { release: "new" }));
     await api.leaderboard("stage");
-    // Watched and quiet: not even a fade.
+    // Watched and calm: not even a fade.
     await vi.advanceTimersByTimeAsync(60_000);
     expect(fades).toEqual([]);
     visibility = "hidden";

@@ -21,7 +21,7 @@ import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SL
 import { CARAVAN_WARES } from "./data/caravan";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFFS, MARKET_BY_ID } from "./data/market";
 import { CRYSTAL_SHARDS_MAX } from "./engine";
-import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
+import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, equipmentBonus, equipmentBonusUncapped, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
 import { maxAffixValue } from "./loot";
 import {
   BESTIARY_BY_ID,
@@ -335,7 +335,10 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     const derived = derive(state, serverNow, { ignoreTimed: true });
     // Every click a crit at maximum rate, ×10 for the crystals' "sharpness" bonus.
     const burstClick = derived.click * Math.max(1, derived.critMultiplier) * MAX_CLICKS_PER_SECOND * 10;
-    const maxDps = (derived.dps * MAX_TIMED_DPS + burstClick) * derived.bossDamage * (isKingStage(lastBoss) ? derived.kingDamage : 1) * derived.baronDamage;
+    // Relics past the cap on damage to guardians count whole: that boss may have fallen
+    // before the cap existed, and the worn relics are verified above either way.
+    const bossDamage = (derived.bossDamage * (1 + equipmentBonusUncapped(state, "bossDamage"))) / (1 + equipmentBonus(state, "bossDamage"));
+    const maxDps = (derived.dps * MAX_TIMED_DPS + burstClick) * bossDamage * (isKingStage(lastBoss) ? derived.kingDamage : 1) * derived.baronDamage;
     // ×10 margin: items salvaged since, rounding, chained overcharge crystals…
     // A boss of the present night may have kept its wounds from earlier fights.
     const wounds = lastBoss <= WOUND_LAST_STAGE && !isKingStage(lastBoss) ? 1 - WOUND_CAP : 1;
@@ -696,15 +699,13 @@ export function verifyNewLineage(previous: GameState, next: GameState, elapsedMs
   return [];
 }
 
-/** Summary used by the leaderboard. */
+
+/** What the Roll ranks, from a save the anti-cheat accepted: the best stage and three tallies. */
 export function leaderboardSummary(state: GameState) {
   return {
     maxStage: state.maxStageEver,
-    ascensions: state.lifetime.ascensions,
-    essences: Math.floor(state.lifetime.essencesEarned),
-    achievements: state.achievements.length,
-    descents: state.descents,
-    playTime: Math.floor(state.lifetime.playTime)
+    kings: state.lifetime.kings,
+    promises: promisesKeptInAll(state),
+    crystals: state.lifetime.crystals
   };
 }
-

@@ -15,13 +15,13 @@ import {
   bestiaryMet,
   bestiaryPageComplete,
   bestiaryTier,
-  canDescend,
   chronicleCount,
   chronicleText,
   formatDuration,
   gameText,
   intlLocale,
   kingWord,
+  promisesKeptInAll,
   seenOf,
   sourceCount,
   sourceEntries,
@@ -37,7 +37,8 @@ import {
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
-import { BOARD_IDS, api, type BoardId, type LeaderboardData } from "@/lib/api";
+import { BOARD_IDS, api, type BoardId, type LeaderboardData, type RollRow } from "@/lib/api";
+import { boardValue } from "@/lib/boards";
 import { perPublish, useCloud, useFormat, useGame, useStoreRef, useUi } from "../context";
 import { Picto, TrophyIcon } from "../icons";
 import { Modal } from "../components/Modal";
@@ -445,7 +446,10 @@ function Stats() {
   );
 }
 
-/** The Roll: its boards under their names in the fiction, the plain meaning beneath. */
+/**
+ * The Roll: its boards (each tally once the walker has one), the board's rule, the walkers
+ * around this one, then the top of the board.
+ */
 function Leaderboard() {
   const cloud = useCloud();
   const ui = useUi();
@@ -454,9 +458,8 @@ function Leaderboard() {
   const text = t.windows.hall;
   const roll = t.leaderboard;
   const fmt = useFormat();
-  // The Night board (Descents) appears with the Descent itself.
-  const night = state.descents > 0 || canDescend(state);
-  const boards = BOARD_IDS.filter((id) => id !== "descents" || night);
+  const tallies: Record<BoardId, number> = { stage: 1, kings: state.lifetime.kings, promises: promisesKeptInAll(state), crystals: state.lifetime.crystals };
+  const boards = BOARD_IDS.filter((id) => tallies[id] > 0);
   const [board, setBoard] = useRemembered<BoardId>("roll-board", boards, "stage");
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -477,45 +480,66 @@ function Leaderboard() {
 
   // Rows of the board just chosen only: the previous board's stay hidden while it loads.
   const shown = data && data.board === board ? data : null;
-  const value = (row: { value: number; maxStage: number }) =>
-    board === "descents" ? roll.descentsValue(fmt(row.value), fmt(row.maxStage)) : board === "week" ? roll.strideValue(fmt(row.value)) : fmt(row.value);
+  const me = shown?.me ?? null;
+  // The walkers around matter when the walker's own line is not already among the top rows.
+  const around = me && shown && !shown.rows.some((row) => row.rank === me.rank) ? shown.around : [];
 
   return (
     <div>
       <p className="roll-title">{roll.title}</p>
-      <div className="board-tabs-inline" role="tablist" aria-label={roll.tabsLabel}>
-        {boards.map((id) => (
-          <button key={id} type="button" role="tab" aria-selected={board === id} className={board === id ? "active" : ""} onClick={() => setBoard(id)}>
-            {roll.boards[id]}
-          </button>
-        ))}
-      </div>
-      <p className="board-meaning">{roll.meanings[board]}</p>
+      {boards.length > 1 ? (
+        <div className="board-tabs-inline" role="tablist" aria-label={roll.tabsLabel}>
+          {boards.map((id) => (
+            <button key={id} type="button" role="tab" aria-selected={board === id} className={board === id ? "active" : ""} onClick={() => setBoard(id)}>
+              {roll.boards[id]}
+              {id === "stage" ? <span className="board-official">{roll.official}</span> : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <p className="board-rule">{roll.rules[board]}{board === "stage" ? "" : ` ${roll.ties}`}</p>
       {!cloud.user ? (
         <p className="board-cta">
           {text.joinPrompt}{" "}
           <button type="button" className="btn btn-gold btn-sm" onClick={() => ui.openWindow("account")}>{text.createAccount}</button>
         </p>
-      ) : shown?.me ? (
-        <p className="board-cta">{text.yourRankLabel} <strong>#{shown.me.rank}</strong> {text.yourRankValue(value({ value: shown.me.value, maxStage: state.maxStageEver }))}</p>
-      ) : (
-        // The Stride lists only walkers who went deeper this week.
-        <p className="board-cta">{board === "week" && shown ? text.strideStill : text.nextSaveJoins}</p>
-      )}
+      ) : me ? (
+        <p className="board-cta">{text.yourRankLabel} <strong>#{me.rank}</strong> {text.yourRankValue(boardValue(roll, board, me.value, fmt))}</p>
+      ) : shown ? (
+        <p className="board-cta">{text.nextSaveJoins}</p>
+      ) : null}
       {error ? <p className="form-error">{error}</p> : null}
+      {around.length > 0 ? (
+        <section>
+          <h3 className="section-heading">{roll.around}</h3>
+          <RollList board={board} rows={around} me={me} />
+        </section>
+      ) : null}
       {shown ? (
-        shown.rows.length === 0 ? <p className="empty-state">{board === "week" ? text.strideNobody : text.nobodyYet}</p> : (
-          <ol className="board-list">
-            {shown.rows.map((row) => (
-              <li key={row.rank} className={cloud.user?.username === row.username ? "me" : ""}>
-                <span className={`rank rank-${row.rank}`}>{row.rank}</span>
-                <span className="board-name">{row.username}</span>
-                <span className="board-value">{value(row)}</span>
-              </li>
-            ))}
-          </ol>
+        shown.rows.length === 0 ? <p className="empty-state">{text.nobodyYet}</p> : (
+          <section>
+            {around.length > 0 ? <h3 className="section-heading">{roll.top}</h3> : null}
+            <RollList board={board} rows={shown.rows} me={me} />
+          </section>
         )
       ) : !error ? <p className="empty-state">{text.loading}</p> : null}
     </div>
+  );
+}
+
+/** Walkers of a board, the walker's own line marked. */
+function RollList({ board, rows, me }: { board: BoardId; rows: RollRow[]; me: RollRow | null }) {
+  const { t } = useI18n();
+  const fmt = useFormat();
+  return (
+    <ol className="board-list">
+      {rows.map((row) => (
+        <li key={row.rank} className={me?.rank === row.rank ? "me" : ""}>
+          <span className={`rank rank-${row.rank}`}>{row.rank}</span>
+          <span className="board-name">{row.username}</span>
+          <span className="board-value">{boardValue(t.leaderboard, board, row.value, fmt)}</span>
+        </li>
+      ))}
+    </ol>
   );
 }

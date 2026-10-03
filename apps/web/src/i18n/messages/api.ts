@@ -44,6 +44,7 @@ export const api = defineMessages<ApiTexts>({
     "save_conflict": "Deux fils portent ton nom (ta partie a changé depuis un autre appareil).",
     "guest_save_conflict": "Deux fils pour un seul marcheur (ta partie a changé depuis une autre page).",
     "too_many_replacements": "Trop de parties remplacées. Réessaie plus tard.",
+    "game_elsewhere": "Ta partie a été reprise sur un autre appareil ou dans une autre page.",
     "save_rejected": "Le Grand Livre ne peut pas écrire ce qui n'est pas arrivé (partie refusée par la vérification anti-triche).",
     passwordIssues: {
       "too-short": "Le mot de passe doit contenir au moins 8 caractères.",
@@ -83,6 +84,7 @@ export const api = defineMessages<ApiTexts>({
     "save_conflict": "Two threads carry your name (your game was changed from another device).",
     "guest_save_conflict": "Two threads for a single walker (your game was changed from another page).",
     "too_many_replacements": "Too many games replaced. Try again later.",
+    "game_elsewhere": "Your game was picked up on another device or in another page.",
     "save_rejected": "The Ledger cannot write what did not happen (game rejected by the anti-cheat check).",
     passwordIssues: {
       "too-short": "Your password must be at least 8 characters long.",

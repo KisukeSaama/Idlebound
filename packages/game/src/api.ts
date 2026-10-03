@@ -39,6 +39,8 @@ export const API_ERRORS = [
   "save_conflict",
   "guest_save_conflict",
   "too_many_replacements",
+  /** Another page took the game over: this one stops playing it. */
+  "game_elsewhere",
   /** With `violations`: the anti-cheat findings, each with its own code. */
   "save_rejected"
 ] as const;

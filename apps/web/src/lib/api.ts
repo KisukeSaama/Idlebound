@@ -1,9 +1,9 @@
 import { isApiError, type ApiError, type GameState, type PasswordIssue, type UsernameIssue } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
-import type { BoardId } from "./boards";
+import type { BoardId, RollRow } from "./boards";
 import { noteServerRelease, RELEASE_HEADER } from "./release";
 
-export { BOARD_IDS, type BoardId } from "./boards";
+export { BOARD_IDS, type BoardId, type RollRow } from "./boards";
 
 export interface AccountUser {
   id: string;
@@ -107,8 +107,10 @@ export interface CloudSave {
 
 export interface LeaderboardData {
   board: BoardId;
-  rows: { rank: number; username: string; value: number; maxStage: number; ascensions: number; achievements: number; descents: number }[];
-  me: { rank: number; value: number } | null;
+  rows: RollRow[];
+  /** The logged-in walker's own row, and the walkers just ahead and behind (theirs included). */
+  me: RollRow | null;
+  around: RollRow[];
 }
 
 export const api = {
@@ -126,8 +128,20 @@ export const api = {
   deleteAccount: (password: string) => request<{ ok: true }>("DELETE", "/auth/account", { password }),
   /** The account's game, or with `guest` the one kept for this browser without an account. */
   getSave: (guest = false) => request<{ save: CloudSave | null }>("GET", guest ? "/save/guest" : "/save"),
-  putSave: (state: GameState, baseRevision: number | null, replace = false, keepalive = false, guest = false) =>
-    request<{ revision: number; updatedAt: string }>("PUT", guest ? "/save/guest" : "/save", { state, baseRevision, replace }, { keepalive }),
+  /**
+   * Opens the stored game in the page `holder`, which plays it from now on. `elsewhere`: another
+   * page plays it right now and keeps it (nothing changed); `force` takes it over all the same.
+   */
+  openSave: (holder: string, force = false, guest = false) =>
+    request<{ save: CloudSave | null; elsewhere: boolean }>("POST", guest ? "/save/guest/open" : "/save/open", { holder, force }),
+  /** `release`: the page is out of sight, and lets the game go once it is kept. */
+  putSave: (state: GameState, baseRevision: number | null, options: { replace?: boolean; keepalive?: boolean; guest?: boolean; holder?: string; release?: boolean } = {}) =>
+    request<{ revision: number; updatedAt: string }>(
+      "PUT",
+      options.guest ? "/save/guest" : "/save",
+      { state, baseRevision, replace: options.replace ?? false, holder: options.holder, release: options.release },
+      { keepalive: options.keepalive }
+    ),
   dropGuestSave: () => request<{ ok: true }>("DELETE", "/save/guest"),
-  leaderboard: (board: BoardId) => request<LeaderboardData>("GET", `/leaderboard?board=${encodeURIComponent(board)}&limit=50`)
+  leaderboard: (board: BoardId) => request<LeaderboardData>("GET", `/leaderboard?board=${board}&limit=50`)
 };

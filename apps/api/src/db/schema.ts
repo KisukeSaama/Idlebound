@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, index, integer, jsonb, pgTable, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -50,7 +50,13 @@ export const saves = pgTable("saves", {
   revision: integer("revision").notNull().default(1),
   /** Lineage id: the game's creation date on the client. */
   gameCreatedAt: bigint("game_created_at", { mode: "number" }).notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  /**
+   * The page playing this game right now (a random id per browser tab), and when it last
+   * said so. Another page opens it only by taking it over; null once the page let it go.
+   */
+  holder: text("holder"),
+  heldAt: timestamp("held_at", { withTimezone: true })
 });
 
 /**
@@ -67,18 +73,19 @@ export const guestSaves = pgTable("guest_saves", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   /** Last visit (day precision on reads), used to purge games nobody comes back to. */
-  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow()
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  /** The page playing this game right now, and when it last said so (see `saves`). */
+  holder: text("holder"),
+  heldAt: timestamp("held_at", { withTimezone: true })
 }, (table) => [index("guest_saves_last_seen_idx").on(table.lastSeenAt)]);
 
 export const leaderboard = pgTable("leaderboard", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
   maxStage: integer("max_stage").notNull().default(1),
-  ascensions: integer("ascensions").notNull().default(0),
-  essences: doublePrecision("essences").notNull().default(0),
-  achievements: integer("achievements").notNull().default(0),
-  /** Descents (BIBLE 12.7): the Night board, Depth breaking ties. */
-  descents: integer("descents").notNull().default(0),
-  playTime: integer("play_time").notNull().default(0),
+  /** The three other boards: Kings felled, promises kept, crystals caught (all time). */
+  kings: integer("kings").notNull().default(0),
+  promises: integer("promises").notNull().default(0),
+  crystals: integer("crystals").notNull().default(0),
   hidden: boolean("hidden").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   /**
@@ -88,25 +95,9 @@ export const leaderboard = pgTable("leaderboard", {
   stageReachedAt: timestamp("stage_reached_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [
   index("leaderboard_stage_idx").on(sql`${table.maxStage} desc`, table.stageReachedAt),
-  index("leaderboard_ascensions_idx").on(sql`${table.ascensions} desc`),
-  index("leaderboard_essences_idx").on(sql`${table.essences} desc`),
-  index("leaderboard_achievements_idx").on(sql`${table.achievements} desc`),
-  index("leaderboard_descents_idx").on(sql`${table.descents} desc`, sql`${table.maxStage} desc`)
-]);
-
-/**
- * The Stride board (stages gained over the last 7 days). One row per account and per UTC day
- * with at least one accepted save: the account's best stage when that day began, written by
- * the day's first save. The earliest row of the window is where the week started; rows older
- * than the window are pruned (see lib/session.ts), so an account keeps at most 7.
- */
-export const stageHistory = pgTable("stage_history", {
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  day: date("day", { mode: "string" }).notNull(),
-  maxStage: integer("max_stage").notNull()
-}, (table) => [
-  primaryKey({ columns: [table.userId, table.day] }),
-  index("stage_history_day_idx").on(table.day)
+  index("leaderboard_kings_idx").on(sql`${table.kings} desc`),
+  index("leaderboard_promises_idx").on(sql`${table.promises} desc`),
+  index("leaderboard_crystals_idx").on(sql`${table.crystals} desc`)
 ]);
 
 /** Log of saves rejected by the anti-cheat (audit): an account's, or a guest's. */

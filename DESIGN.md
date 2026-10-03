@@ -135,9 +135,10 @@ Content colors live with the game data, not in CSS:
   statistics, leaderboard. The Chronicle opens on the Night list (one line per night, the
   King's Word in italics), then one section per source with its count and an "N new" pill,
   newest first, eight entries shown and "Show more" by fifty. Keystones carry their stratum
-  and Age. The leaderboard shows the Roll's names (Depth, Nights, Light, Deeds, Night) with
-  their plain meaning as subtitle; the Night board appears in the Hall once a Descent is
-  possible. Ranks are square labels with a black line (gold, silver, bronze for the first
+  and Age. The leaderboard shows the board's rule in one plain sentence under its tabs
+  (Depth, marked "Official", then each tally once the walker has one: Kingslayer, Word Kept,
+  The Watch; no tabs while Depth is alone), the walker's rank, "Around you" (two walkers
+  ahead, two behind) when the walker is not among the top rows, then the top. Ranks are square labels with a black line (gold, silver, bronze for the first
   three, as on the public Roll); the walker's own line is marked in gold. Statistics set their
   records beside the table as rows of the same height, level with its body.
 - **The Sanctum and the Loom** (ascension window): a pixel banner of the place with its name
@@ -385,7 +386,10 @@ server page):
 
 Every count on it comes from the game data. World art on server pages goes through the
 client `Art` component, which takes plain data. The 404 page shows the Field Rat. The
-leaderboard page uses square tabs (the open one in gold) and a table with alternating rows.
+leaderboard page uses square tabs (the open one in gold, Depth marked "Official"), the board's
+rule in one plain sentence (the tie rule beneath it, smaller, on the tallies), "Around you" for
+a logged-in walker past the rows shown (their line in gold), and a table with alternating rows
+whose last column is the date reached on Depth and the highest stage on the tallies.
 
 There is **no language switcher in the header**. The language is chosen automatically, or
 in the game's Settings window; the footer link is the only switch on public pages.
@@ -956,7 +960,7 @@ of the course.
   The countdown is not read aloud; the state is.
 - **Newer release**: before a watched page reloads onto a newer release, a `--bg` veil
   fades over everything in 0.7 s (ease-in) while every sound fades out, so the page lands
-  on the loading screen's own ground. No text. Input passes through the veil and cancels
-  it (the veil and the sound come back). A plain fade, kept under the reduced motion setting
+  on the loading screen's own ground. No text. Input is held under the veil; only a scene
+  the game opens meanwhile cancels it (the veil and the sound come back). A plain fade, kept under the reduced motion setting
   (the system preference cuts it, like every animation).
 - `<html lang>` follows the current locale.
