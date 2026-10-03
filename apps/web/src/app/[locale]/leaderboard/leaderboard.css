@@ -79,7 +79,6 @@
   }
 }
 
-/* The Roll: each board's name on the Roll, its plain meaning beneath. */
 .board-subtitle {
   margin-top: -0.4rem;
   color: var(--muted) !important;
@@ -87,20 +86,39 @@
   font-style: italic;
 }
 
-.board-tabs a {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.2;
+/* Depth is the board that counts: its tab says so. */
+.board-official {
+  margin-left: 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
-.board-tab-meaning {
-  font-size: 0.8rem;
-  font-weight: 500;
-  opacity: 0.85;
+/* What the board ranks, said plainly above it. */
+.board-rule {
+  margin: 0 0 1.2rem;
+  color: var(--text) !important;
 }
 
-.board-th-meaning {
-  text-transform: none;
-  letter-spacing: 0;
+.board-ties {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.board-around {
+  margin-bottom: 1.5rem;
+}
+
+.board-section-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
+}
+
+/* The walker's own line: marked in gold, like everything that is theirs. */
+.board-table tbody tr.me td {
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
 }

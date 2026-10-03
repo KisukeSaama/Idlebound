@@ -44,6 +44,31 @@ export interface Reaching {
   nextAt: number;
 }
 
+/** Where this page's id waits while the page reloads (see `pageId`). */
+const PAGE_KEY = "idlebound.page";
+
+/**
+ * This page's id, by which the server knows which page plays the game. A reload of the same
+ * tab keeps it (the server still sees the same page), a duplicated tab never shares it: the
+ * key only exists while the page is away, so a copy made while it runs has none.
+ */
+function pageId(): string {
+  try {
+    const kept = sessionStorage.getItem(PAGE_KEY);
+    sessionStorage.removeItem(PAGE_KEY);
+    if (kept) return kept;
+  } catch {
+    // Storage blocked: a new id each load, the server only asks one question more.
+  }
+  return crypto.randomUUID();
+}
+
+/**
+ * Another page plays this game: "open" when this page found it so at load, "taken" when the
+ * walker took it over from another page while this one played.
+ */
+export type Elsewhere = "open" | "taken";
+
 /** A guest game short enough to give way to the account's without asking. */
 function isFresh(state: GameState): boolean {
   return state.lifetime.playTime < 90 && state.lifetime.ascensions === 0 && state.maxStageEver <= 3;
@@ -70,6 +95,10 @@ export class CloudSync {
   pendingChoice: CloudSave | null = null;
   /** Set while the server cannot be reached at load; null once it answered. */
   reaching: Reaching | null = null;
+  /** The game is played on another page: this one stands still until the walker takes it back. */
+  elsewhere: Elsewhere | null = null;
+  /** This page, for the server: one page at a time plays a game. */
+  readonly holder = pageId();
   /** The stored game (the account's, or the guest's) was never read: nothing is uploaded over it. */
   private unread = false;
   /** The stored game is being read: no upload leaves before the comparison is made. */
@@ -109,7 +138,7 @@ export class CloudSync {
     for (const listener of this.listeners) listener();
   }
 
-  private set(patch: Partial<Pick<CloudSync, "status" | "message" | "user" | "lastSyncAt" | "revision" | "pendingChoice" | "reaching">>) {
+  private set(patch: Partial<Pick<CloudSync, "status" | "message" | "user" | "lastSyncAt" | "revision" | "pendingChoice" | "reaching" | "elsewhere">>) {
     Object.assign(this, patch);
     this.emit();
   }
@@ -128,7 +157,8 @@ export class CloudSync {
           if (event.type === "achievement" || event.type === "loot" || (event.type === "stage" && event.biomeChanged)) this.requestSave();
         }),
         this.watchReturn(),
-        this.watchNetwork()
+        this.watchNetwork(),
+        this.watchPage()
       ];
     }
     this.timer ??= setInterval(() => {
@@ -174,7 +204,7 @@ export class CloudSync {
   private async enter(): Promise<boolean> {
     this.reading = true;
     this.set({ user: null, status: "syncing", message: null, revision: null });
-    const result = await api.getSave(true);
+    const result = await api.openSave(this.holder, false, true);
     this.reading = false;
     if (!result.ok) {
       this.unread = true;
@@ -191,7 +221,7 @@ export class CloudSync {
       return true;
     }
     const local = this.store.state;
-    if (isFresh(local) || local.createdAt === kept.state.createdAt) this.adopt(kept);
+    if (isFresh(local) || local.createdAt === kept.state.createdAt) this.take(kept, result.data.elsewhere);
     // Played on while the kept game could not be read: the walker chooses.
     else this.set({ pendingChoice: kept, status: "idle" });
     return true;
@@ -241,6 +271,31 @@ export class CloudSync {
     return () => window.removeEventListener("online", onOnline);
   }
 
+  /** The page goes (a reload, a closed tab): its id waits for a reload of the same tab. */
+  private watchPage() {
+    const onHide = () => {
+      try {
+        sessionStorage.setItem(PAGE_KEY, this.holder);
+      } catch {
+        // Storage blocked: the reload gets a new id.
+      }
+    };
+    // Back from the browser's page cache: the page runs on, its id is in hand again.
+    const onShow = () => {
+      try {
+        sessionStorage.removeItem(PAGE_KEY);
+      } catch {
+        // Nothing was kept.
+      }
+    };
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("pageshow", onShow);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("pageshow", onShow);
+    };
+  }
+
   /**
    * After login, sign-up, or on start. False when the server did not answer: the account's
    * game is then still unread, and later syncs read it before writing anything.
@@ -252,7 +307,7 @@ export class CloudSync {
     this.startOver = false;
     this.reading = true;
     this.set({ user, status: "syncing", message: null, revision: null });
-    const result = await api.getSave();
+    const result = await api.openSave(this.holder);
     this.reading = false;
     if (!result.ok) {
       this.unread = true;
@@ -268,7 +323,7 @@ export class CloudSync {
       return true;
     }
     if (isFresh(local) || local.createdAt === cloud.state.createdAt) {
-      this.adopt(cloud);
+      this.take(cloud, result.data.elsewhere);
       return true;
     }
     // The guest game differs from the account's game: the player chooses.
@@ -300,6 +355,46 @@ export class CloudSync {
     const unblocked = this.status === "unverified" && user.emailVerified;
     this.set({ user, ...(unblocked ? { status: "idle" as const, message: null } : {}) });
     if (unblocked) void this.sync();
+  }
+
+  /** The stored game is this page's game: it runs here, or waits while another page plays it. */
+  private take(cloud: CloudSave, elsewhere: boolean) {
+    if (!elsewhere) {
+      this.adopt(cloud);
+      return;
+    }
+    // Shown as the server keeps it, standing still, under the question.
+    this.place(cloud);
+    this.standAside("open", cloud.revision);
+  }
+
+  /** Another page plays the game: this one stops, and saves nothing until it is taken back. */
+  private standAside(elsewhere: Elsewhere, revision = this.revision) {
+    this.store.stop();
+    if (this.saveTimer) clearTimeout(this.saveTimer);
+    this.saveTimer = null;
+    this.set({ elsewhere, status: "idle", message: null, revision });
+  }
+
+  /**
+   * The walker plays here: the game is taken from the other page as the server last kept it,
+   * and the other page stops at its next save. What it played since then is not kept.
+   */
+  async takeOver() {
+    const guest = this.user === null;
+    const result = await api.openSave(this.holder, true, guest);
+    if (!result.ok) {
+      this.set({ message: result.error });
+      return;
+    }
+    const cloud = result.data.save;
+    if (cloud) this.adopt(cloud);
+    // The game is gone from the server meanwhile: the one in hand is kept from scratch.
+    else this.set({ pendingChoice: null, revision: null, status: "idle", message: null });
+    const stood = this.elsewhere !== null;
+    this.set({ elsewhere: null });
+    if (stood) this.store.start();
+    if (!cloud) void this.sync();
   }
 
   adopt(cloud: CloudSave) {
@@ -341,7 +436,8 @@ export class CloudSync {
     const cloud = this.pendingChoice;
     if (!cloud) return;
     if (choice === "cloud") {
-      this.adopt(cloud);
+      // Taken as the server keeps it now, even from a page that plays it.
+      await this.takeOver();
       return;
     }
     this.set({ pendingChoice: null, revision: cloud.revision });
@@ -372,7 +468,9 @@ export class CloudSync {
     // The state is serialized as the request leaves, before any await: no copy is needed.
     // A keepalive request is capped at 64 KB by browsers: a larger save goes as a plain one.
     const lasting = keepalive && new TextEncoder().encode(JSON.stringify(this.store.state)).length <= KEEPALIVE_MAX_BYTES;
-    const result = await api.putSave(this.store.state, baseRevision, replace, lasting, guest);
+    // Out of sight, the page lets the game go once it is kept: another page opens it at once.
+    const release = document.visibilityState === "hidden";
+    const result = await api.putSave(this.store.state, baseRevision, { replace, keepalive: lasting, guest, holder: this.holder, release });
     if (result.ok) {
       if (guest) {
         this.guestKept = true;
@@ -390,6 +488,10 @@ export class CloudSync {
         this.set({ user: null, status: "offline", message: currentMessages().hud.errors.sessionExpired });
         break;
       case 409: {
+        if (result.code === "game_elsewhere") {
+          this.standAside("taken");
+          break;
+        }
         const cloud = await api.getSave(guest);
         if (cloud.ok && cloud.data.save) this.set({ pendingChoice: cloud.data.save, status: "idle", message: result.error });
         break;
@@ -421,9 +523,18 @@ export class CloudSync {
     return false;
   }
 
+  /**
+   * The page comes back in sight: it saves soon, which holds the game again, or learns at once
+   * that another page took it meanwhile.
+   */
+  resume() {
+    if (Date.now() - this.lastUploadAt >= MIN_UPLOAD_GAP_MS) void this.sync();
+    else this.requestSave();
+  }
+
   /** Schedules an early save after a player action or a milestone. */
   requestSave() {
-    if (this.adrift || this.pendingChoice || this.status === "rejected" || this.status === "unverified" || this.saveTimer) return;
+    if (this.adrift || this.elsewhere || this.pendingChoice || this.status === "rejected" || this.status === "unverified" || this.saveTimer) return;
     const delay = Math.max(SAVE_DEBOUNCE_MS, this.lastUploadAt + MIN_UPLOAD_GAP_MS - Date.now());
     this.saveTimer = setTimeout(() => {
       this.saveTimer = null;
@@ -434,7 +545,7 @@ export class CloudSync {
 
   /** Periodic sync, after a player action, on page hide, or on logout. */
   async sync(options: { force?: boolean; keepalive?: boolean } = {}) {
-    if (this.adrift || this.pendingChoice || this.reading) return;
+    if (this.adrift || this.elsewhere || this.pendingChoice || this.reading) return;
     // The stored game was never read (server away at sign-in, or at load): read it first,
     // never write over it blind. A page-hide save has no time for that.
     if (this.unread) {
@@ -474,7 +585,7 @@ export class CloudSync {
 
   /** The stored game (an account's or a guest's) is loaded, and the server takes its saves: it can be handed over. */
   keepsGame() {
-    return !this.adrift && this.revision !== null && !this.unread && !this.pendingChoice && this.status !== "rejected" && this.status !== "unverified";
+    return !this.adrift && !this.elsewhere && this.revision !== null && !this.unread && !this.pendingChoice && this.status !== "rejected" && this.status !== "unverified";
   }
 
   /** Leaving the page now would lose what was played: the last saves failed, or the session ended. */
@@ -517,8 +628,10 @@ export class CloudSync {
     this.unread = false;
     this.adrift = false;
     this.startOver = false;
-    this.set({ user: null, status: "idle", revision: null, lastSyncAt: null, message: null, pendingChoice: null });
+    const stood = this.elsewhere !== null;
+    this.set({ user: null, status: "idle", revision: null, lastSyncAt: null, message: null, pendingChoice: null, elsewhere: null });
     this.store.replaceState(createInitialState());
+    if (stood) this.store.start();
     if (this.guestKept) await this.enter();
   }
 

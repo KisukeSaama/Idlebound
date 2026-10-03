@@ -180,14 +180,15 @@ suite("API (real Postgres)", () => {
     expect(cloud.json.save.revision).toBe(1);
     expect(cloud.json.save.state.gold).toBe(state.gold);
 
-    const board = await client.call("GET", "/leaderboard?board=stage");
+    const board = await client.call("GET", "/leaderboard");
     expect(board.status).toBe(200);
+    expect(board.json.me).toEqual({ rank: expect.any(Number), username: board.json.me.username, value: state.maxStageEver, maxStage: state.maxStageEver, reachedAt: expect.any(String) });
     expect(board.json.me.rank).toBeGreaterThanOrEqual(1);
-    // The Night board: Descents first, Depth breaking the tie.
-    const night = await client.call("GET", "/leaderboard?board=descents");
-    expect(night.status).toBe(200);
-    expect(night.json.me).toEqual({ rank: expect.any(Number), value: 0 });
-    expect(night.json.rows.every((row: { descents: number }) => typeof row.descents === "number")).toBe(true);
+    expect(board.json.around).toContainEqual(board.json.me);
+    // A tally the walker has none of yet: no place on it.
+    const kings = await client.call("GET", "/leaderboard?board=kings");
+    expect(kings.status).toBe(200);
+    expect(kings.json.me).toBeNull();
 
     // Log out, then log in.
     await client.call("POST", "/auth/logout");
@@ -292,6 +293,53 @@ suite("API (real Postgres)", () => {
     expect(cloud.json.save.revision).toBe(1);
   }, 60_000);
 
+  it("lets one page at a time play a game, and another take it over when asked", async () => {
+    const email = `hold-${unique}@idlebound.test`;
+    const password = "Un-Mot-De-Passe-Solide";
+    const desk = new Client("10.0.0.41");
+    expect((await desk.call("POST", "/auth/register", { email, username: freshName("Hol"), password })).status).toBe(201);
+    const phone = new Client("10.0.0.42");
+    expect((await phone.call("POST", "/auth/login", { email, password })).status).toBe(200);
+    const deskPage = "desk-page-00000000001";
+    const phonePage = "phone-page-0000000001";
+    const state = playedState(2);
+
+    // Nothing kept yet: nothing to open. The desk's first save holds the game.
+    expect((await desk.call("POST", "/save/open", { holder: deskPage })).json).toEqual({ save: null, elsewhere: false });
+    expect((await desk.call("PUT", "/save", { state, baseRevision: null, holder: deskPage })).status).toBe(200);
+
+    // The phone opens it while the desk plays: it is asked, and nothing changes.
+    const asked = await phone.call("POST", "/save/open", { holder: phonePage });
+    expect(asked.json).toMatchObject({ elsewhere: true, save: { revision: 1 } });
+    expect((await desk.call("PUT", "/save", { state, baseRevision: 1, holder: deskPage })).status).toBe(200);
+
+    // Played here: the phone takes the game as the server keeps it, the desk stops at its next save.
+    expect((await phone.call("POST", "/save/open", { holder: phonePage, force: true })).json).toMatchObject({ elsewhere: false, save: { revision: 2 } });
+    const stopped = await desk.call("PUT", "/save", { state, baseRevision: 2, holder: deskPage });
+    expect(stopped.status).toBe(409);
+    expect(stopped.json.error).toBe("game_elsewhere");
+    expect((await phone.call("PUT", "/save", { state, baseRevision: 2, holder: phonePage })).json.revision).toBe(3);
+
+    // Out of sight, the phone keeps the game and lets it go: the desk opens it without a question.
+    expect((await phone.call("PUT", "/save", { state, baseRevision: 3, holder: phonePage, release: true })).status).toBe(200);
+    expect((await desk.call("POST", "/save/open", { holder: deskPage })).json).toMatchObject({ elsewhere: false, save: { revision: 4 } });
+    // A page silent past the hold (closed, asleep) holds nothing either.
+    await sql`update saves set held_at = now() - interval '3 minutes' where holder = ${deskPage}`;
+    expect((await phone.call("POST", "/save/open", { holder: phonePage })).json.elsewhere).toBe(false);
+    // An id the server cannot trust to be a page's is refused.
+    expect((await phone.call("POST", "/save/open", { holder: "x" })).status).toBe(400);
+  }, 60_000);
+
+  it("asks a guest's second page too, and finds nothing without a guest's game", async () => {
+    const guest = new Client("10.0.1.40");
+    const state = playedState(2);
+    expect((await guest.call("POST", "/save/guest/open", { holder: "guest-page-0000000001" })).json).toEqual({ save: null, elsewhere: false });
+    expect((await guest.call("PUT", "/save/guest", { state, baseRevision: null, holder: "guest-page-0000000001" })).status).toBe(200);
+    expect((await guest.call("POST", "/save/guest/open", { holder: "guest-page-0000000002" })).json).toMatchObject({ elsewhere: true, save: { revision: 1 } });
+    expect((await guest.call("POST", "/save/guest/open", { holder: "guest-page-0000000002", force: true })).json.elsewhere).toBe(false);
+    expect((await guest.call("PUT", "/save/guest", { state, baseRevision: 1, holder: "guest-page-0000000001" })).json.error).toBe("game_elsewhere");
+  }, 60_000);
+
   describe("guest games", () => {
     const password = "Un-Mot-De-Passe-Solide";
     const codes = (answer: { json: Record<string, any> }) => answer.json.violations.map((violation: { code: string }) => violation.code);
@@ -327,7 +375,7 @@ suite("API (real Postgres)", () => {
       // No account: no rank, and the account's routes stay closed.
       const [{ ranked: after }] = await sql`select count(*)::int as ranked from leaderboard`;
       expect(after).toBe(before);
-      expect((await guest.call("GET", "/leaderboard?board=stage")).json.me).toBeNull();
+      expect((await guest.call("GET", "/leaderboard")).json.me).toBeNull();
       expect((await guest.call("GET", "/save")).status).toBe(401);
       expect((await guest.call("PUT", "/save", { state, baseRevision: null })).status).toBe(401);
 
@@ -409,7 +457,7 @@ suite("API (real Postgres)", () => {
       expect((await client.call("GET", "/save/guest")).json.save).toBeNull();
       expect((await client.call("GET", "/auth/me")).json.guest).toBe(false);
       expect((await client.call("GET", "/save")).json.save.state.gold).toBe(state.gold);
-      expect((await client.call("GET", "/leaderboard?board=stage")).json.me.rank).toBeGreaterThanOrEqual(1);
+      expect((await client.call("GET", "/leaderboard")).json.me.rank).toBeGreaterThanOrEqual(1);
     }, 60_000);
 
     it("asks before a guest's game replaces an account's, and lets go of the one not chosen", async () => {
@@ -537,7 +585,7 @@ suite("API (real Postgres)", () => {
     expect((await owner.call("POST", "/auth/login", { email, password })).status).toBe(200);
   }, 60_000);
 
-  describe("the Roll's ties and the Stride", () => {
+  describe("the Roll's ties and the walkers around", () => {
     const password = "Un-Mot-De-Passe-Solide";
     /** A unique height on the boards, far above any honest test game. */
     const height = 1_000_000 + (Date.now() % 1_000_000);
@@ -555,7 +603,7 @@ suite("API (real Postgres)", () => {
 
     /** A board read past the 30 s cache: every limit is its own cache entry. */
     let limit = 100;
-    const read = async (client: Client, board: string) => (await client.call("GET", `/leaderboard?board=${board}&limit=${limit--}`)).json;
+    const read = async (client: Client, board = "stage") => (await client.call("GET", `/leaderboard?board=${board}&limit=${limit--}`)).json;
 
     it("breaks Depth ties by who reached the stage first, a date the server sets only with the record", async () => {
       const early = await walker("10.0.0.50", "Ear");
@@ -582,69 +630,67 @@ suite("API (real Postgres)", () => {
       // Same stage: whoever got there first ranks higher, in the rows and in their own rank.
       await sql`update leaderboard set max_stage = ${height}, stage_reached_at = now() - interval '2 hours' where user_id = ${early.id}`;
       await sql`update leaderboard set max_stage = ${height}, stage_reached_at = now() - interval '1 hour' where user_id = ${late.id}`;
-      const board = await read(early.client, "stage");
+      const board = await read(early.client);
       const names = board.rows.map((row: { username: string }) => row.username);
       expect(names.indexOf(early.username)).toBeGreaterThanOrEqual(0);
       expect(names.indexOf(late.username)).toBe(names.indexOf(early.username) + 1);
-      const lateRank = (await read(late.client, "stage")).me.rank;
+      const lateRank = (await read(late.client)).me.rank;
       expect(lateRank).toBe(board.me.rank + 1);
-      // The Night board breaks its ties the same way.
-      expect((await read(late.client, "descents")).me.rank).toBeGreaterThan((await read(early.client, "descents")).me.rank);
 
       // A hidden row leaves the Roll: the walker behind it moves up.
       await sql`update leaderboard set hidden = true where user_id = ${early.id}`;
-      const after = await read(late.client, "stage");
+      const after = await read(late.client);
       expect(after.rows.some((row: { username: string }) => row.username === early.username)).toBe(false);
       expect(after.me.rank).toBe(lateRank - 1);
     }, 60_000);
 
-    it("ranks the stages gained over the last 7 days, from accepted saves only", async () => {
-      const first = await walker("10.0.0.52", "Str");
-      const second = await walker("10.0.0.53", "Stw");
-
-      // The day's first save wrote the best stage the account began the day with: no gain yet.
-      const [today] = await sql`select day::text as day, max_stage from stage_history where user_id = ${first.id}`;
-      expect(today.max_stage).toBe(first.state.maxStageEver);
-      expect((await read(first.client, "week")).me).toBeNull();
-
-      // The day's first save notes the best stage before it, never the one it brings.
-      await sql`delete from stage_history where user_id = ${first.id}`;
-      await sql`update leaderboard set max_stage = max_stage - 1 where user_id = ${first.id}`;
-      const next = await first.client.call("PUT", "/save", { state: first.state, baseRevision: first.revision });
-      expect(next.status, JSON.stringify(next.json)).toBe(200);
-      const [noted] = await sql`select max_stage from stage_history where user_id = ${first.id} and day = ${today.day}::date`;
-      expect(noted.max_stage).toBe(first.state.maxStageEver - 1);
-      expect((await read(first.client, "week")).me).toEqual({ rank: expect.any(Number), value: 1 });
-
-      // Two walkers gained as much this week: whoever reached their best first ranks higher.
-      // The gain is unique to this run, so games left by earlier runs never share it.
-      const gain = height - 999_000;
-      // The week starts at the earliest day of the window; older days count for nothing.
-      for (const [account, hours] of [[first, 2], [second, 1]] as const) {
-        await sql`update leaderboard set max_stage = ${height}, stage_reached_at = now() - make_interval(hours => ${hours}) where user_id = ${account.id}`;
-        await sql`delete from stage_history where user_id = ${account.id}`;
-        await sql`insert into stage_history (user_id, day, max_stage) values (${account.id}, current_date - 7, 1), (${account.id}, current_date - 6, ${height - gain}), (${account.id}, current_date, ${height - 1})`;
+    it("shows the walkers just ahead and just behind, with their ranks", async () => {
+      const walkers = await Promise.all(["10.0.0.52", "10.0.0.53", "10.0.0.54", "10.0.0.55", "10.0.0.56"].map((ip, index) => walker(ip, `Ar${index}`)));
+      // A unique height, above the earlier test's: five walkers in a row, the first one deepest.
+      for (const [index, account] of walkers.entries()) {
+        await sql`update leaderboard set max_stage = ${height + 10 - index} where user_id = ${account.id}`;
       }
-      const board = await read(first.client, "week");
-      const row = board.rows.find((entry: { username: string }) => entry.username === first.username);
-      expect(row.value).toBe(gain);
-      const names = board.rows.map((entry: { username: string }) => entry.username);
-      expect(names.indexOf(second.username)).toBe(names.indexOf(first.username) + 1);
-      expect(board.me).toEqual({ rank: expect.any(Number), value: gain });
-      const secondRank = (await read(second.client, "week")).me.rank;
-      expect(secondRank).toBe(board.me.rank + 1);
+      const middle = await read(walkers[2].client);
+      expect(middle.around.map((row: { username: string }) => row.username)).toEqual(walkers.map((account) => account.username));
+      expect(middle.around.map((row: { rank: number }) => row.rank)).toEqual([0, 1, 2, 3, 4].map((offset) => middle.me.rank - 2 + offset));
+      expect(middle.around[2]).toEqual(middle.me);
+      // Each rank around agrees with that walker's own.
+      expect((await read(walkers[1].client)).me.rank).toBe(middle.me.rank - 1);
+      expect((await read(walkers[4].client)).me.rank).toBe(middle.me.rank + 2);
 
-      // Hidden rows stay hidden.
-      await sql`update leaderboard set hidden = true where user_id = ${first.id}`;
-      const after = await read(second.client, "week");
-      expect(after.rows.some((entry: { username: string }) => entry.username === first.username)).toBe(false);
-      expect(after.me.rank).toBe(secondRank - 1);
+      // A hidden walker leaves everyone else's surroundings, and sees nobody around.
+      await sql`update leaderboard set hidden = true where user_id = ${walkers[1].id}`;
+      const shifted = await read(walkers[2].client);
+      expect(shifted.around.map((row: { username: string }) => row.username)).not.toContain(walkers[1].username);
+      expect(shifted.me.rank).toBe(middle.me.rank - 1);
+      expect((await read(walkers[1].client)).around).toEqual([]);
+    }, 60_000);
 
-      // The purge keeps only the window.
-      const { purgeExpired } = await import("./lib/session");
-      await purgeExpired();
-      expect(await sql`select 1 from stage_history where user_id = ${second.id} and day < current_date - 6`).toHaveLength(0);
-      expect(await sql`select 1 from stage_history where user_id = ${second.id}`).toHaveLength(2);
+    it("ranks the tallies from the first one, the highest stage breaking ties", async () => {
+      const deep = await walker("10.0.0.57", "Tdp");
+      const shallow = await walker("10.0.0.58", "Tsh");
+      const none = await walker("10.0.0.59", "Tno");
+      // A unique count, far above any honest test game; the same for both walkers.
+      const tally = height;
+      for (const [account, stage] of [[deep, 20], [shallow, 10]] as const) {
+        await sql`update leaderboard set kings = ${tally}, promises = ${tally}, crystals = ${tally}, max_stage = ${stage} where user_id = ${account.id}`;
+      }
+      await sql`update leaderboard set kings = 0, promises = 0, crystals = 0 where user_id = ${none.id}`;
+      for (const board of ["kings", "promises", "crystals"]) {
+        const seen = await read(deep.client, board);
+        const names = seen.rows.map((row: { username: string }) => row.username);
+        expect(names.indexOf(shallow.username)).toBe(names.indexOf(deep.username) + 1);
+        expect(names).not.toContain(none.username);
+        expect(seen.me).toMatchObject({ value: tally, maxStage: 20 });
+        expect((await read(shallow.client, board)).me.rank).toBe(seen.me.rank + 1);
+        expect((await read(none.client, board)).me).toBeNull();
+      }
+      // A save writes the tallies it carries, and never lowers a better one already kept.
+      await sql`update leaderboard set kings = ${tally} where user_id = ${none.id}`;
+      const saved = await none.client.call("PUT", "/save", { state: none.state, baseRevision: none.revision });
+      expect(saved.status, JSON.stringify(saved.json)).toBe(200);
+      const [kept] = await sql`select kings, crystals from leaderboard where user_id = ${none.id}`;
+      expect(kept).toEqual({ kings: tally, crystals: none.state.lifetime.crystals });
     }, 60_000);
   });
 

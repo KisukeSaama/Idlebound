@@ -5,8 +5,6 @@ import { onNewerRelease } from "@/lib/release";
 import { audio } from "./audio";
 import type { CloudSync } from "./cloud";
 
-/** A watched page waits this long without input before it moves on. */
-const QUIET_MS = 30_000;
 const CHECK_MS = 5_000;
 /** The scene fades out this long before the page goes (kept in step with game.css). */
 export const FADE_MS = 700;
@@ -32,7 +30,7 @@ function rememberReload(release: string) {
   }
 }
 
-/** From the last save to the reload, no input reaches the game: nothing played is left behind. */
+/** From the fade to the reload, no input reaches the game: nothing played is left behind. */
 function holdInput(): () => void {
   const swallow = (event: Event) => {
     event.preventDefault();
@@ -54,15 +52,14 @@ export interface NewReleaseHost {
 }
 
 /**
- * A newer release was deployed while the game was open: once everything played is on the
- * server, the page reloads onto it. A hidden page goes at once, and the walker comes back to
- * the new one. A watched page waits for a calm moment (no input for a while, nothing open),
- * then fades out; any input during the fade keeps it. A game the server does not keep never
- * reloads (see CloudSync.handOver).
+ * A newer release was deployed while the game was open: as soon as everything played is on
+ * the server, the page reloads onto it. A hidden page goes at once. A watched page goes as
+ * soon as nothing a reload would take away is on screen (a scene, a chest, a toast), held
+ * from input while it fades out. A game the server does not keep never reloads (see
+ * CloudSync.handOver).
  */
 export class NewRelease {
   private target: string | null = null;
-  private lastInput = Date.now();
   private busy = false;
   private disposed = false;
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -74,20 +71,11 @@ export class NewRelease {
   ) {}
 
   start() {
-    const onInput = () => {
-      this.lastInput = Date.now();
-    };
     const onVisibility = () => void this.attempt();
-    window.addEventListener("pointerdown", onInput);
-    window.addEventListener("keydown", onInput);
     document.addEventListener("visibilitychange", onVisibility);
     this.cleanups = [
       onNewerRelease((release) => this.found(release)),
-      () => {
-        window.removeEventListener("pointerdown", onInput);
-        window.removeEventListener("keydown", onInput);
-        document.removeEventListener("visibilitychange", onVisibility);
-      }
+      () => document.removeEventListener("visibilitychange", onVisibility)
     ];
   }
 
@@ -103,16 +91,19 @@ export class NewRelease {
     const target = this.target;
     if (!target || this.busy || this.disposed || !this.cloud.keepsGame()) return false;
     const hidden = document.visibilityState === "hidden";
-    if (!hidden && (!this.host.calm() || Date.now() - this.lastInput < QUIET_MS)) return false;
+    if (!hidden && !this.host.calm()) return false;
     this.busy = true;
+    const release = holdInput();
     if (!hidden) {
-      const fadeAt = Date.now();
       this.host.fade(true);
       audio.hush(true);
       await new Promise((resolve) => setTimeout(resolve, FADE_MS));
-      if (this.disposed || this.lastInput >= fadeAt || !this.host.calm()) return this.stay();
+      // The game ran on during the fade: a scene it opened stays on screen.
+      if (this.disposed || !this.host.calm()) {
+        release();
+        return this.stay();
+      }
     }
-    const release = holdInput();
     if (await this.cloud.handOver()) {
       rememberReload(target);
       this.host.reload();
@@ -142,8 +133,11 @@ export class NewRelease {
 export function useNewRelease(cloud: CloudSync, calm: boolean): boolean {
   const [fading, setFading] = useState(false);
   const calmRef = useRef(calm);
+  const watchRef = useRef<NewRelease | null>(null);
   useEffect(() => {
     calmRef.current = calm;
+    // The screen just cleared: a waiting release goes now, not at the next check.
+    if (calm) void watchRef.current?.attempt();
   }, [calm]);
   useEffect(() => {
     const watch = new NewRelease(cloud, {
@@ -152,7 +146,11 @@ export function useNewRelease(cloud: CloudSync, calm: boolean): boolean {
       reload: () => window.location.reload()
     });
     watch.start();
-    return () => watch.dispose();
+    watchRef.current = watch;
+    return () => {
+      watchRef.current = null;
+      watch.dispose();
+    };
   }, [cloud]);
   return fading;
 }

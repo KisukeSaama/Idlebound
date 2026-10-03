@@ -227,11 +227,17 @@ export function affixValue(item: Item, stat: AffixStat): number {
   return base * (1 + item.forge * FORGE_STEP);
 }
 
-export function equipmentBonus(state: GameState, stat: AffixStat): number {
+/** The total bonus of the worn relics, before `EQUIPMENT_CAP`. */
+export function equipmentBonusUncapped(state: GameState, stat: AffixStat): number {
   let total = 0;
   for (const item of wornItems(state)) total += affixValue(item, stat);
   // The Thousandth Arrow's critical chance counts toward the same cap.
   if (stat === "critChance") total += namedEffect(state, "critChance");
+  return total;
+}
+
+export function equipmentBonus(state: GameState, stat: AffixStat): number {
+  const total = equipmentBonusUncapped(state, stat);
   const cap = EQUIPMENT_CAP[stat];
   return cap === undefined ? total : Math.min(total, cap);
 }

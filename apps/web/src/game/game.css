@@ -4620,10 +4620,22 @@ kbd {
   color: var(--gold-2);
 }
 
-.board-meaning {
-  margin: -4px 0 10px;
-  font-size: 0.78rem;
-  color: var(--faint);
+/* What the board ranks, said plainly before any name on it. */
+.board-rule {
+  margin: 0 0 12px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Depth is the board that counts: its tab says so. */
+.board-official {
+  margin-left: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .ledger-voice {

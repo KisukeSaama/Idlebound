@@ -4,12 +4,11 @@ import { eq, sql as raw } from "drizzle-orm";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
 import { db } from "../db/client";
-import { guestSaves, leaderboard, saveRejections, saves, stageHistory } from "../db/schema";
+import { guestSaves, leaderboard, saveRejections, saves } from "../db/schema";
 import { forgetGuest, guestId, keepGuest, newGuest, renewGuest, visitDue } from "../lib/guest";
 import { fail } from "../lib/errors";
 import { clientIp, limiter, tooMany } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
-import { utcDay } from "../lib/stride";
 import { verificationOverdue } from "../lib/verification";
 
 /** At most one save every 10 s per game, an account's or a guest's (the client sends one every 30 s). */
@@ -18,6 +17,8 @@ const saveLimiter = limiter(6, 60_000);
 const replaceLimiter = limiter(3, 60 * 60_000);
 /** Rejections logged per game: a client looping on a refused save cannot flood the audit table. */
 const rejectionLog = limiter(30, 60 * 60_000);
+/** Opening a game (each page load, each takeover): far more than a walker needs. */
+const openLimiter = limiter(10, 60_000);
 /** Guest saves from one address, all games together: ten guests at full pace behind one router. */
 const guestSaveIp = limiter(60, 60_000);
 /** New guest games from one address: each one is a row the server keeps for weeks. */
@@ -32,12 +33,31 @@ const MAX_REPORTED_VIOLATIONS = 20;
  */
 const MAX_GUEST_AGE_MS = 30 * 86_400_000;
 
+/**
+ * A page in sight saves every 30 s at most: one silent for this long (closed, asleep, offline)
+ * no longer holds its game, and another page opens it without asking.
+ */
+const HOLD_MS = 2 * 60_000;
+
+/** A page's id: random, chosen by the page, only ever compared with another. */
+const holderId = z.string().min(16).max(64);
+
 const putBody = z.object({
   state: z.unknown(),
   /** Revision the client builds on; null for a first save. */
   baseRevision: z.number().int().nullable(),
   /** Replaces the stored save with a game from another lineage (explicit player choice). */
-  replace: z.boolean().optional()
+  replace: z.boolean().optional(),
+  /** The page sending the save; absent from pages older than the hold (they hold nothing). */
+  holder: holderId.optional(),
+  /** The page is out of sight: the game is saved, and any other page may take it at once. */
+  release: z.boolean().optional()
+});
+
+const openBody = z.object({
+  holder: holderId,
+  /** Takes the game even from a page playing it right now (explicit player choice). */
+  force: z.boolean().optional()
 });
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -46,6 +66,8 @@ interface Stored {
   state: unknown;
   revision: number;
   updatedAt: Date;
+  holder: string | null;
+  heldAt: Date | null;
 }
 
 interface Written {
@@ -53,6 +75,9 @@ interface Written {
   revision: number;
   gameCreatedAt: number;
   updatedAt: Date;
+  /** Left out by a page that sent no id: the hold stays as it was. */
+  holder?: string | null;
+  heldAt?: Date | null;
 }
 
 type Outcome =
@@ -86,6 +111,11 @@ function summary(state: GameState) {
   };
 }
 
+/** Another page played this game a moment ago, and has not let it go. */
+function heldElsewhere(row: Stored, holder: string, now: number): boolean {
+  return row.holder !== null && row.holder !== holder && row.heldAt !== null && now - row.heldAt.getTime() < HOLD_MS;
+}
+
 /** What `GET` answers for a stored game. */
 function stored(row: Stored) {
   // The time the server saw pass since this save: the most a closed game may be credited
@@ -108,7 +138,7 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
   if (!parsed.ok) return { status: 400, body: fail("invalid_save", { detail: parsed.error }) };
   const next = parsed.state;
   const now = Date.now();
-  const { baseRevision, replace } = parsedBody.data;
+  const { baseRevision, replace, holder, release } = parsedBody.data;
   // Checks that need no stored data run before the transaction: the row lock and the
   // pooled connection are held only for what depends on the previous save.
   const stateViolations = verifyState(next, now);
@@ -118,6 +148,11 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     // The stored save may predate the current version: compare like with like.
     const previous = existing ? (migrateState(existing.state) as GameState) : undefined;
 
+    // Another page plays this game: it was taken over from here, this page stops. Replacing
+    // the game is a choice made in sight, and takes it over too.
+    if (existing && holder && !replace && heldElsewhere(existing, holder, now)) {
+      return { status: 409, body: fail("game_elsewhere") };
+    }
     // Another revision (another device) or another game (new game): the player must choose
     // explicitly, never a silent overwrite.
     const otherLineage = existing && previous && previous.createdAt !== next.createdAt;
@@ -156,8 +191,34 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
 
     const revision = (existing?.revision ?? 0) + 1;
     const updatedAt = new Date(now);
-    const refused = await ledger.write(tx, existing, { state: next, revision, gameCreatedAt: next.createdAt, updatedAt }, witness);
+    const hold = holder === undefined ? {} : release ? { holder: null, heldAt: null } : { holder, heldAt: updatedAt };
+    const refused = await ledger.write(tx, existing, { state: next, revision, gameCreatedAt: next.createdAt, updatedAt, ...hold }, witness);
     return refused ?? { status: 200, body: { revision, updatedAt: updatedAt.toISOString() } };
+  });
+}
+
+/**
+ * A page opens the stored game: it holds it from now on, unless another page plays it right
+ * now and the walker did not ask to take it over (`elsewhere`, nothing changed). The game is
+ * answered either way, so the page shows it.
+ */
+async function open<Row extends Stored>(c: Context, load: (tx: Tx) => Promise<Row | undefined>, hold: (tx: Tx, holder: string, at: Date) => Promise<void>) {
+  let input: unknown;
+  try {
+    input = await c.req.json();
+  } catch {
+    return null;
+  }
+  const parsed = openBody.safeParse(input);
+  if (!parsed.success) return null;
+  const { holder, force } = parsed.data;
+  return db.transaction(async (tx) => {
+    const row = await load(tx);
+    if (!row) return { row, elsewhere: false };
+    const now = Date.now();
+    if (!force && heldElsewhere(row, holder, now)) return { row, elsewhere: true };
+    await hold(tx, holder, new Date(now));
+    return { row, elsewhere: false };
   });
 }
 
@@ -172,6 +233,22 @@ export const saveRoutes = new Hono()
     if (!user) return c.json(fail("login_required"), 401);
     const [row] = await db.select().from(saves).where(eq(saves.userId, user.id)).limit(1);
     return c.json({ save: row ? stored(row) : null });
+  })
+
+  .post("/open", async (c) => {
+    const user = await currentUser(c);
+    if (!user) return c.json(fail("login_required"), 401);
+    const wait = openLimiter.consume(user.id);
+    if (wait > 0) return tooMany(c, wait);
+    const opened = await open(
+      c,
+      async (tx) => (await tx.select().from(saves).where(eq(saves.userId, user.id)).for("update").limit(1))[0],
+      async (tx, holder, heldAt) => {
+        await tx.update(saves).set({ holder, heldAt }).where(eq(saves.userId, user.id));
+      }
+    );
+    if (!opened) return c.json(fail("invalid_request"), 400);
+    return c.json({ save: opened.row ? stored(opened.row) : null, elsewhere: opened.elsewhere });
   })
 
   .put("/", async (c) => {
@@ -217,13 +294,6 @@ export const saveRoutes = new Hono()
         }
 
         const board = leaderboardSummary(values.state);
-        // The Stride board: the day's first accepted save records the best stage as the day
-        // began (an account's first save, the stage it arrives with). The save row is locked,
-        // so this account's saves never race here.
-        const [ranked] = await tx.select({ maxStage: leaderboard.maxStage }).from(leaderboard).where(eq(leaderboard.userId, user.id)).limit(1);
-        await tx.insert(stageHistory)
-          .values({ userId: user.id, day: utcDay(values.updatedAt), maxStage: ranked?.maxStage ?? board.maxStage })
-          .onConflictDoNothing();
         await tx.insert(leaderboard)
           .values({ userId: user.id, ...board, updatedAt: values.updatedAt, stageReachedAt: values.updatedAt })
           .onConflictDoUpdate({
@@ -231,11 +301,9 @@ export const saveRoutes = new Hono()
             set: {
               // A replacement may lower a record: keep the best verified one.
               maxStage: raw`greatest(${leaderboard.maxStage}, ${board.maxStage})`,
-              ascensions: raw`greatest(${leaderboard.ascensions}, ${board.ascensions})`,
-              essences: raw`greatest(${leaderboard.essences}, ${board.essences})`,
-              achievements: raw`greatest(${leaderboard.achievements}, ${board.achievements})`,
-              descents: raw`greatest(${leaderboard.descents}, ${board.descents})`,
-              playTime: raw`greatest(${leaderboard.playTime}, ${board.playTime})`,
+              kings: raw`greatest(${leaderboard.kings}, ${board.kings})`,
+              promises: raw`greatest(${leaderboard.promises}, ${board.promises})`,
+              crystals: raw`greatest(${leaderboard.crystals}, ${board.crystals})`,
               // Depth ties go to whoever got there first: the date moves only with the record.
               stageReachedAt: raw`case when ${board.maxStage} > ${leaderboard.maxStage} then ${values.updatedAt.toISOString()}::timestamptz else ${leaderboard.stageReachedAt} end`,
               updatedAt: values.updatedAt
@@ -263,6 +331,28 @@ export const saveRoutes = new Hono()
       renewGuest(c);
     }
     return c.json({ save: stored(row) });
+  })
+
+  .post("/guest/open", async (c) => {
+    const id = guestId(c);
+    const wait = openLimiter.consume(id ?? `ip:${clientIp(c)}`);
+    if (wait > 0) return tooMany(c, wait);
+    const opened = await open(
+      c,
+      async (tx) => (id ? (await tx.select().from(guestSaves).where(eq(guestSaves.id, id)).for("update").limit(1))[0] : undefined),
+      async (tx, holder, heldAt) => {
+        await tx.update(guestSaves).set({ holder, heldAt }).where(eq(guestSaves.id, id!));
+      }
+    );
+    if (!opened) return c.json(fail("invalid_request"), 400);
+    const { row, elsewhere } = opened;
+    // Purged, or adopted by an account from another tab: the cookie leads nowhere.
+    if (!row && id) forgetGuest(c);
+    if (row && id && visitDue(row.lastSeenAt)) {
+      await db.update(guestSaves).set({ lastSeenAt: new Date() }).where(eq(guestSaves.id, id));
+      renewGuest(c);
+    }
+    return c.json({ save: row ? stored(row) : null, elsewhere });
   })
 
   .put("/guest", async (c) => {

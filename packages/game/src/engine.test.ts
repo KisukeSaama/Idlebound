@@ -5,7 +5,7 @@ import { ACHIEVEMENTS } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarCost, altarTotalCost } from "./data/altars";
 import { BIOMES, TREASURE_MONSTER, isKingStage } from "./data/biomes";
 import { HEROES, HERO_BY_ID } from "./data/heroes";
-import { SLOTS, SLOT_BASE_COUNT } from "./data/items";
+import { SLOTS, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
 import { MARKET_OFFERS } from "./data/market";
 import { SKILLS } from "./data/skills";
 import { GameEngine } from "./engine";
@@ -21,6 +21,7 @@ import {
   altarPrice,
   altarValue,
   bossHp,
+  bossHpMultiplier,
   derive,
   relicCompanyGain,
   essencesForStage,
@@ -294,6 +295,17 @@ describe("idle and active balance", () => {
       state.equipment[slot] = { ...generateItem(seededRng(3), 100, { slot }), affixes: [{ stat: "critDamage", value: 5 }] };
     }
     expect(derive(state, T0).critMultiplier).toBeCloseTo(base * 1.5);
+  });
+
+  it("caps the damage of relics to elites and guardians under their HP multiplier", () => {
+    const state = lateGame();
+    for (const slot of SLOTS) {
+      state.equipment[slot] = { ...generateItem(seededRng(3), 2500, { slot, rarity: "mythic" }), forge: 20, affixes: [{ stat: "bossDamage", value: 5 }] };
+    }
+    const d = derive(state, T0);
+    expect(d.bossDamage).toBeCloseTo(4);
+    // With the Scales of Aurelion on top, an elite still outlasts a Remnant of its stage.
+    expect(d.bossDamage * 1.2).toBeLessThan(bossHpMultiplier(1501));
   });
 
   it("bounds a click build with every crit investment maxed", () => {
@@ -817,6 +829,19 @@ describe("anti-cheat", () => {
     cheated.maxStageEver = 400;
     cheated.stage = 400;
     expect(verifyState(cheated, now).map((v) => v.code)).toContain("power");
+  });
+
+  it("counts relics past the cap when checking the last guardian beaten", () => {
+    const engine = newGame();
+    const now = run(engine, T0, 60, 5);
+    const state = structuredClone(engine.state);
+    state.maxStage = 400;
+    state.maxStageEver = 400;
+    state.stage = 400;
+    for (const slot of SLOTS) {
+      state.equipment[slot] = { ...generateItem(seededRng(3), 1, { slot }), affixes: [{ stat: SLOT_MAIN_STAT[slot], value: slot === "armor" ? 1e60 : 0.1 }] };
+    }
+    expect(verifyState(state, now).map((v) => v.code)).not.toContain("power");
   });
 
   it("detects companion levels bought without gold", () => {

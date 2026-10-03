@@ -108,9 +108,11 @@ late game; mashing the mouse is never required.
   of 9 seeds, every profile giving its word at each dusk to the strongest companion who can
   ask, among the promises its style can keep: a profile that strikes gives no word to
   Ysolde nor to Nyx) every style stands within a quarter of the others (the best over the
-  worst: 1.08): 10 clicks/s leads (1009), then the occasional player (1007, back every hour
-  for 10 minutes, the tab left open to the autopilot, ascending when a boss blocks the
-  company, 4 h of real play), idle (984), continuous bursts (982), 2/s (937) and 5/s (936).
+  worst: 1.23): the occasional player leads (1186, back every hour for 10 minutes, the tab
+  left open to the autopilot, ascending when a boss blocks the company, 4 h of real play),
+  then 10 clicks/s (1069), continuous bursts (1020), 5/s (1014), idle (987) and 2/s (961).
+  Before the cap on damage to guardians the same runs stood at 936 to 1009 (1.08): every
+  style went deeper with the cap, the occasional player most (+179).
   Before the Rout and the doubling words (save version 11) the same runs stood at 836 to
   950 (1.14). Strikes add on top of the
   Patience bonus since save version 11, so the walkers who strike gained depth; a walker
@@ -235,7 +237,7 @@ their base. The Vestment of Cinders makes Golden Rain last 45 s.
   essences at the old prices (on the server and in the client) and a one-time notice
   invites the player to choose again. The same version made the essence formula about four
   times more generous (20 instead of 5 as its base, 3 instead of 1 per stage past 50); since
-  it only grew, older ascension records and the essence leaderboard stay valid.
+  it only grew, older ascension records stay valid.
 
 ### The Promise
 
@@ -335,15 +337,15 @@ The second layer of rebirth, for the long run (it keeps players apart after week
 - The Warp of Plenty is the one weave that compounds. Its price grows by a fifth a level
   (it was `2 × 1.6^level`) while the thread doubles with every Age, so each Age buys fewer
   levels than the last: the Descents carry the walker down without running away.
-- Each Descent reopens the strata's keystones in a second reading. The Roll has a fifth
-  board, Night (Descents, then the best stage).
+- Each Descent reopens the strata's keystones in a second reading.
 
 ### Relics and market
 
 - **4 slots** (weapon, armor, amulet, ring), each with a fixed main stat (DPS, boss damage,
   click damage, gold). Boss damage applies to clicks and to companion DPS against bosses.
-  Totals are capped for crit chance (+16%), essences (+100%) and
-  critical damage (+50%).
+  Totals are capped for crit chance (+16%), essences (+100%), critical damage (+50%) and
+  boss damage (+300%: ×4, ×4.8 with the Scales of Aurelion, so an elite at ×6 HP and a
+  guardian at ×10 always outlast a monster of their stage).
 - **5 rarities** (common, rare, epic, legendary, mythic) with 1 to 4 affixes; legendary and
   mythic add an ascension-essence affix. Power scales with the stage the item dropped at.
 - **Density**: a worn relic multiplies companion damage (and the clicks' share of it) by
@@ -721,10 +723,11 @@ rejects real play.
   first save, never a game refused or waiting on its address, never while the stored game
   loads or a choice is open), and
   only once a last save is confirmed: the game loop stops, the save goes as keepalive, and
-  input is held until the reload. A hidden tab goes at once. A watched one waits for 30 s
-  without input with nothing open (window, dialog, Reunion) and no toast on screen, then
-  fades out in 0.7 s; any input during the fade keeps the page, and a failed save leaves it
-  playing (checked again every 5 s). A tab reloads at most once per release (session
+  input is held until the reload. A hidden tab goes at once. A watched one goes as soon as
+  nothing a reload would take away is on screen (a scene, a chest, a dialog, a Reunion, a
+  toast; an open window does not hold it and comes back closed): input is held and it fades
+  out in 0.7 s, unless a scene opens meanwhile. A failed save leaves it playing (checked
+  again every 5 s, and at once when the screen clears). A tab reloads at most once per release (session
   storage), so a stale cache cannot loop it. The reloaded page catches up the seconds the
   hand-over took, like any reload, and a page opened out of sight starts out of sight.
 - In the choice between two games, keeping the current one when the account's game is
@@ -847,33 +850,41 @@ save's row is locked.
 
 ## Leaderboard
 
-The **Roll of the Bound** (FR: *le Registre des Liés*): a public page with six boards, each
-named in the fiction with its plain meaning beneath: **Depth** (highest stage), **Stride**
-(FR: *Foulée*, stages gained in the last 7 days), **Nights** (ascensions), **Light**
-(essences collected), **Deeds** (achievements) and **Night** (Descents, highest stage
-breaking ties). The landing page shows the top 10 by stage and the number of ranked players.
-Logged-in players see their own rank, also in the Hall of the game, where the Night board
-appears once the Descent is open to the walker. A guest has no row: the rank comes with the
-account, from its first accepted save. A row can be hidden by hand in the database
-(`hidden` flag), for moderation: it leaves every board, and nobody counts it in their rank.
+The **Roll of the Bound** (FR: *le Registre des Liés*): a public page with four boards, each
+under a name and one plain sentence saying what it ranks. **Depth** (FR: *Profondeur*) is the
+official one, marked so and shown first: the highest stage ever reached. It sums up the whole
+game (push, hit a wall, ascend, push further, then Descend past stage 2000): an ascension or a
+Descent never lowers it. The three others are all-time tallies with no end, each telling
+something else about a walker:
 
-- **Who got there first.** Among equal stages (Depth, and Night once Descents are equal),
-  whoever reached that stage first ranks higher, everywhere a rank is computed (the boards,
-  the walker's own rank, the landing page's top 10). The date is the server's: the moment it
-  accepted the save that raised the account's best stage (`stage_reached_at`). A save that
-  does not raise the best stage leaves the date alone. Rows that existed before this rule
-  took their last update time. The game ends at stage 3000, so the top of Depth fills with
+| Board | Code | Ranks | What it says |
+|---|---|---|---|
+| **Depth** (official) | `stage` | Highest stage ever reached | How far the walker went. |
+| **Kingslayer** (FR: *Régicide*) | `kings` | Kings felled, all time | Power and persistence: a King guards every 50th stage and rises each night. |
+| **Word Kept** (FR: *Parole tenue*) | `promises` | Promises kept to companions, all time | Nights well led: one word a night at most, kept only if the King falls. |
+| **The Watch** (FR: *La Veille*) | `crystals` | Crystals caught, all time | Presence: crystals fall only while the walker watches, and fade in seconds. |
+
+Every value comes from saves the anti-cheat accepted, and the leaderboard keeps each
+player's best verified values (a replacement never lowers them). The landing page shows the
+top 10 of Depth and the number of ranked players. Logged-in players see their own rank and
+the two walkers just ahead and just behind them ("Around you"), on the public page and in the
+Hall of the game; in the Hall, a tally's board appears once the walker has one. A walker
+enters a tally with its first one: a zero is not a place. A guest has no row: the rank comes
+with the account, from its first accepted save. A row can be hidden by hand in the database
+(`hidden` flag), for moderation: it leaves every board, and nobody counts it in their rank;
+its walker still sees their own rank, but nobody around.
+
+- **Who got there first.** Among equal stages, whoever reached that stage first ranks
+  higher, everywhere a rank is computed (the boards, the walker's own rank and surroundings,
+  the landing page's top 10). The date is the server's: the moment it accepted the save that
+  raised the account's best stage (`stage_reached_at`). A save that does not raise the best
+  stage leaves the date alone. The game ends at stage 3000, so the top of Depth fills with
   equal stages: the date keeps it meaningful.
-- **Stride: stages gained in the last 7 days.** Today and the six days before it (UTC
-  calendar days of the server's clock). The day's first accepted save of an account writes
-  the account's best stage as the day began (`stage_history`, one row per account and day);
-  the earliest row of the window is where the week started, and the gain is the best stage
-  now minus that. Only accepted saves count, so the board inherits the anti-cheat. An
-  account's first save starts its week at the stage it brings. Only walkers who gained at
-  least one stage appear; a walker who gained none sees so in the Hall instead of a rank.
-  Ties go to whoever reached their current best stage first. Rows older than the window are
-  deleted by the periodic purge, so an account keeps at most 7. Visible from the start, like
-  Depth, so a newcomer can rank above walkers who stopped.
+- **Tallies' ties.** On an equal tally, the highest stage ranks higher, then whoever reached
+  it first.
+- **Earlier boards.** Stride, Nights, Light, Deeds and Night were retired with
+  migration 0008: their columns and the `stage_history` table are gone; the three tallies were
+  filled from each account's stored save.
 
 ## Languages
 

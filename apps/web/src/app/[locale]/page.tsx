@@ -193,7 +193,7 @@ export default async function LandingPage({ params }: Props) {
                     <tr key={row.rank}>
                       <td><span className={`rank rank-${row.rank}`}>{row.rank}</span></td>
                       <td className="name">{row.username}</td>
-                      <td className="value">{l.board.value(formatNumber(row.value))}</td>
+                      <td className="value">{l.board.value(formatNumber(row.maxStage))}</td>
                     </tr>
                   ))}
                 </tbody>
