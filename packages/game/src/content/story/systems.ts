@@ -24,7 +24,6 @@ const sFr = (count: number, word: string) => (count > 1 ? `${word}s` : word);
 const BUFF_MINUTES = CARAVAN_BUFF_SECONDS / 60;
 const COOLDOWN_CAP = p(1 - COOLDOWN_FLOOR);
 const RAIN_SECONDS = SKILL_BY_ID.goldrain.duration;
-const UNWEAVE_MINUTES = SKILL_BY_ID.unweave.cooldown / 60;
 const WALKER_BONUS = p(WALKER_DPS - 1);
 const REGALIA_BONUS = p(REGALIA_KING_DAMAGE);
 
@@ -300,7 +299,7 @@ const en: SystemsText = {
     "eldra-thread": { name: "Eldra's Thread", description: "Every power is ready again at once." },
     "three-chests": { name: "Three Crates from the Road", description: "Three relic chests, found along the road, somewhere, some night." }
   },
-  unweave: { name: "Unweave", description: `Skip the stage you are on and go to the next one. Only on your furthest stage, never an elite's or a guardian's. Recharge: ${UNWEAVE_MINUTES} min.` },
+  unweave: { name: "Unweave", description: `Skip the stage you are on and go to the next one. Only on your furthest stage, never an elite's or a guardian's.` },
   crown: {
     name: "The Crown of Orvane",
     hover: "It cannot be worn. It wears you.",
@@ -580,7 +579,7 @@ const fr: SystemsText = {
     "eldra-thread": { name: "Fil d'Eldra", description: "Tous tes pouvoirs sont aussitôt de nouveau prêts." },
     "three-chests": { name: "Trois caisses de la route", description: "Trois coffres de relique, trouvés sur la route, quelque part, une nuit." }
   },
-  unweave: { name: "Détisser", description: `Franchis l'étape où tu te trouves et passe à la suivante. Seulement sur ta plus lointaine étape, jamais celle d'une élite ou d'un gardien. Recharge : ${UNWEAVE_MINUTES} min.` },
+  unweave: { name: "Détisser", description: `Franchis l'étape où tu te trouves et passe à la suivante. Seulement sur ta plus lointaine étape, jamais celle d'une élite ou d'un gardien.` },
   crown: {
     name: "La Couronne d'Orvane",
     hover: "Elle ne se porte pas. C'est elle qui te porte.",

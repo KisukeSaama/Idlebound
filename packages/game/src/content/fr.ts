@@ -13,7 +13,12 @@ import { roman } from "./roman";
 import type { GameText } from "./types";
 
 const n = (value: number) => value.toLocaleString("fr-FR");
-const exp = (value: number) => value.toExponential(0).replace("e+", "e");
+/** A duration in hours, minutes and seconds, the empty parts left out (`1 h 12 min`). */
+const clock = (seconds: number) => {
+  const total = Math.round(seconds);
+  const parts = [[Math.floor(total / 3600), "h"], [Math.floor(total / 60) % 60, "min"], [total % 60, "s"]] as const;
+  return parts.filter(([value]) => value > 0).map(([value, unit]) => `${value} ${unit}`).join(" ") || "0 s";
+};
 const s = (count: number, word: string) => (count > 1 ? `${word}s` : word);
 
 const RARITY_ADJECTIVE = {
@@ -118,14 +123,15 @@ export const fr: GameText = {
     "awakened-10": "Premier pas", "awakened-25": "Destinée", "awakened-50": "Éveil", "awakened-100": "Transcendance", "awakened-150": "Infini"
   },
   skills: {
-    frenzy: { name: "Frénésie", description: "Ta lame frappe seule 10 fois par seconde pendant 30 s. Recharge : 10 min." },
-    rally: { name: "Cri de ralliement", description: "Maëlle sonne du cor : tous tes compagnons infligent le double de dégâts pendant 30 s. Recharge : 10 min." },
-    hawkeye: { name: "Œil de faucon", description: "Ysolde te prête les yeux des arbres : +50 % de chances que tes frappes soient critiques (dix fois les dégâts, ou plus) pendant 30 s. Recharge : 20 min." },
-    goldrain: { name: "Pluie d'or", description: "Frère Cendre prie Messire Pip : tout l'or gagné est triplé pendant 30 s. Recharge : 30 min." },
-    ritual: { name: "Rituel de résonance", description: "Nyx t'accorde au rythme de la nuit : tes compagnons infligent +5 % de dégâts jusqu'à ta prochaine ascension. Chaque usage ajoute 5 % de plus. Recharge : 1 h." },
-    echo: { name: "Écho temporel", description: "Garrick frappe une veine d'écho : le dernier pouvoir utilisé, s'il se recharge encore, est aussitôt de nouveau prêt. Recharge : 1 h." },
+    frenzy: { name: "Frénésie", description: "Ta lame frappe seule 10 fois par seconde pendant 30 s." },
+    rally: { name: "Cri de ralliement", description: "Maëlle sonne du cor : tous tes compagnons infligent le double de dégâts pendant 30 s." },
+    hawkeye: { name: "Œil de faucon", description: "Ysolde te prête les yeux des arbres : +50 % de chances que tes frappes soient critiques (dix fois les dégâts, ou plus) pendant 30 s." },
+    goldrain: { name: "Pluie d'or", description: "Frère Cendre prie Messire Pip : tout l'or gagné est triplé pendant 30 s." },
+    ritual: { name: "Rituel de résonance", description: "Nyx t'accorde au rythme de la nuit : tes compagnons infligent +5 % de dégâts jusqu'à ta prochaine ascension. Chaque usage ajoute 5 % de plus." },
+    echo: { name: "Écho temporel", description: "Garrick frappe une veine d'écho : le dernier pouvoir utilisé, s'il se recharge encore, est aussitôt de nouveau prêt." },
     unweave: SYSTEMS_TEXT.fr.unweave
   },
+  skillRecharge: (seconds) => `Recharge : ${clock(seconds)}.`,
   altars: {
     might: { name: "Autel de puissance", description: "Tes compagnons infligent plus de dégâts : chaque niveau les multiplie par 1,10." },
     blade: { name: "Autel de la lame", description: "Tes frappes font plus mal : chaque niveau multiplie leurs dégâts par 1,10, y compris la part qui vient de tes compagnons." },
@@ -181,7 +187,7 @@ export const fr: GameText = {
     crits: (t) => `Inflige ${n(t)} coups critiques.`,
     kills: (t) => `Vaincs ${n(t)} monstres.`,
     bosses: (t) => `Vaincs ${n(t)} ${t > 1 ? "élites et gardiens" : "élite ou gardien"}.`,
-    gold: (t) => `Gagne ${exp(t)} pièces d'or au total.`,
+    gold: (t, big) => `Gagne ${big(t)} pièces d'or au total.`,
     treasure: (t) => `Vaincs ${n(t)} ${s(t, "rat")} ${s(t, "doré")}.`,
     crystal: (t) => `Attrape ${n(t)} ${t > 1 ? "cristaux errants" : "cristal errant"}.`,
     levels: (t) => `Cumule ${n(t)} niveaux, Aldric et compagnons ensemble, au cours d'une même nuit.`,
@@ -192,7 +198,7 @@ export const fr: GameText = {
     essences: (t) => `Récolte ${n(t)} essences au total.`,
     legend: (t) => `Trouve ${t} ${s(t, "objet")} ${s(t, "légendaire")}.`,
     mythic: (t) => `Trouve ${t} ${s(t, "objet")} ${s(t, "mythique")}.`,
-    hit: (t) => `Inflige un coup de ${exp(t)} dégâts.`,
+    hit: (t, big) => `Inflige un coup de ${big(t)} dégâts.`,
     time: (t) => `Marche ${Math.round(t / 3600)} h dans la nuit, en tout.`,
     fails: (t) => `Laisse une élite ou un gardien te repousser ${t} fois.`,
     ...SYSTEMS_TEXT.fr.achievementDescriptions

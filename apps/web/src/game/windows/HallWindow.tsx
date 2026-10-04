@@ -9,6 +9,7 @@ import {
   CHRONICLE_SOURCES,
   SECRET_SERIES,
   achievementBonus,
+  achievementProgress,
   achievementText,
   ageName,
   bestiaryKills,
@@ -121,7 +122,7 @@ const Deed = memo(function Deed({ achievement, done, value, locale, text, fmt }:
   text: Messages["windows"]["hall"];
   fmt: (value: number) => string;
 }) {
-  const copy = achievementText(achievement.id, locale);
+  const copy = achievementText(achievement.id, locale, fmt);
   // A secret deed hides its name until earned; its riddle is the only clue.
   const secret = achievement.series === SECRET_SERIES;
   if (secret && !done) copy.name = text.hiddenDeed;
@@ -133,7 +134,7 @@ const Deed = memo(function Deed({ achievement, done, value, locale, text, fmt }:
         <p>{copy.description}</p>
         {!done && !secret ? (
           <div className="progress-line small" title={`${fmt(value)} / ${fmt(achievement.threshold)}`}>
-            <span style={{ width: `${Math.min(1, value / achievement.threshold) * 100}%` }} />
+            <span style={{ width: `${achievementProgress(achievement, value) * 100}%` }} />
           </div>
         ) : null}
       </div>

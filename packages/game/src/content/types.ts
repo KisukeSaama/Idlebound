@@ -98,13 +98,18 @@ export interface GameText {
   /** Talent names, by upgrade id (`<heroId>-<level>`). */
   talents: Record<string, string>;
   skills: Record<SkillId, NameText>;
+  /** How long a power takes to come back, after the walker's cooldown reductions. */
+  skillRecharge: (seconds: number) => string;
   altars: Record<AltarId, NameText>;
   market: Record<MarketOfferId, NameText>;
   /** Achievement names per series (id prefix), one per tier, in tier order. */
   achievementNames: Record<string, readonly string[]>;
   achievementCategories: Record<AchievementCategory, string>;
-  /** Description of an achievement series, by id prefix (`stage`, `clicks`…). */
-  achievementDescriptions: Record<string, (threshold: number) => string>;
+  /**
+   * Description of an achievement series, by id prefix (`stage`, `clicks`…). `big` writes a
+   * huge threshold in the walker's chosen notation.
+   */
+  achievementDescriptions: Record<string, (threshold: number, big: (value: number) => string) => string>;
   slots: Record<ItemSlot, string>;
   rarities: Record<Rarity, string>;
   affixes: Record<AffixStat, string>;

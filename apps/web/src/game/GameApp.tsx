@@ -29,6 +29,7 @@ import {
   rarityColor,
   recognitionTier,
   regaliaWord,
+  skillText,
   wearsRegalia,
   witnessedCutscenes,
   type AbsenceAccount,
@@ -458,7 +459,7 @@ export default function GameApp() {
           break;
         case "achievement": {
           const achievement = ACHIEVEMENT_BY_ID[event.id];
-          const text = achievementText(event.id, locale);
+          const text = achievementText(event.id, locale, fmt);
           audio.play("achievement");
           const bonus = Math.round((achievement?.bonus ?? 0) * 100);
           toast({ tone: "gold", icon: "trophy", title: m.achievement(text.name), text: bonus > 0 ? m.achievementText(text.description, bonus) : text.description });
@@ -484,7 +485,7 @@ export default function GameApp() {
         }
         case "skillUnlocked": {
           const skill = SKILL_BY_ID[event.skillId];
-          const text = g.skills[event.skillId];
+          const text = skillText(event.skillId, locale, store.state);
           toast({ tone: "violet", icon: SKILL_PICTO[skill.id], title: m.skillUnlocked(text.name), text: m.skillUnlockedText(skill.hotkey, text.description) });
           break;
         }

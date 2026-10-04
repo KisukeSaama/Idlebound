@@ -2,9 +2,11 @@ import { ACHIEVEMENT_BY_ID, SECRET_SERIES } from "../data/achievements";
 import { AGE_ECHOES, BIOME_ECHOES, DREAMS, ECLIPSE_WORDS, KING_WORDS, REGALIA_WORDS, SAYINGS, SECRETS, SONGS } from "../data/lore";
 import { biomeForStage, eraForStage } from "../data/biomes";
 import { ECLIPSE_EVERY } from "../data/events";
+import { SKILL_BY_ID } from "../data/skills";
+import { skillCooldownMultiplier } from "../formulas";
 import { ageForEra } from "../data/strata";
 import type { Locale } from "../i18n";
-import type { ChronicleEntry, Item, MonsterState } from "../types";
+import type { ChronicleEntry, GameState, Item, MonsterState, SkillId } from "../types";
 import { en } from "./en";
 import { fr } from "./fr";
 import { grammarLine } from "./grammar";
@@ -57,7 +59,11 @@ export function talentName(upgradeId: string, locale: Locale): string {
   return own(TEXT[locale].talents, upgradeId) ?? upgradeId;
 }
 
-export function achievementText(id: string, locale: Locale): { name: string; description: string } {
+/** A huge number as the ledger writes it when the walker's notation is unknown (`1e205`). */
+const exponent = (value: number) => value.toExponential(0).replace("e+", "e");
+
+/** A deed's name and description; `big` writes its huge thresholds in the walker's notation. */
+export function achievementText(id: string, locale: Locale, big: (value: number) => string = exponent): { name: string; description: string } {
   const def = ACHIEVEMENT_BY_ID[id];
   const text = TEXT[locale];
   const separator = id.lastIndexOf("-");
@@ -72,8 +78,16 @@ export function achievementText(id: string, locale: Locale): { name: string; des
   const describe = own(text.achievementDescriptions, series);
   return {
     name: own(text.achievementNames, series)?.[tier] ?? id,
-    description: def && describe ? describe(def.threshold) : ""
+    description: def && describe ? describe(def.threshold, big) : ""
   };
+}
+
+/** A power's name and description, ending on its recharge after this walker's reductions. */
+export function skillText(id: SkillId, locale: Locale, state: GameState): { name: string; description: string } {
+  const text = TEXT[locale];
+  const { name, description } = text.skills[id];
+  const recharge = text.skillRecharge(SKILL_BY_ID[id].cooldown * skillCooldownMultiplier(state));
+  return { name, description: `${description} ${recharge}` };
 }
 
 /**

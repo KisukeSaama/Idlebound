@@ -13,7 +13,12 @@ import { roman } from "./roman";
 import type { GameText } from "./types";
 
 const n = (value: number) => value.toLocaleString("en-US");
-const exp = (value: number) => value.toExponential(0).replace("e+", "e");
+/** A duration in hours, minutes and seconds, the empty parts left out (`1 h 12 min`). */
+const clock = (seconds: number) => {
+  const total = Math.round(seconds);
+  const parts = [[Math.floor(total / 3600), "h"], [Math.floor(total / 60) % 60, "min"], [total % 60, "s"]] as const;
+  return parts.filter(([value]) => value > 0).map(([value, unit]) => `${value} ${unit}`).join(" ") || "0 s";
+};
 const s = (count: number, word: string, plural = `${word}s`) => (count > 1 ? plural : word);
 
 const RARITY_ADJECTIVE = { common: "", rare: "Fine", epic: "Enchanted", legendary: "Legendary", mythic: "Mythic" } as const;
@@ -106,14 +111,15 @@ export const en: GameText = {
     "awakened-10": "First Step", "awakened-25": "Destiny", "awakened-50": "Awakening", "awakened-100": "Transcendence", "awakened-150": "Infinity"
   },
   skills: {
-    frenzy: { name: "Frenzy", description: "Your blade strikes on its own 10 times per second for 30 s. Recharge: 10 min." },
-    rally: { name: "Rallying Cry", description: "Maëlle sounds her horn: every companion deals double damage for 30 s. Recharge: 10 min." },
-    hawkeye: { name: "Hawkeye", description: "Ysolde lends you the trees' eyes: +50% chance for your strikes to be critical (ten times the damage or more) for 30 s. Recharge: 20 min." },
-    goldrain: { name: "Golden Rain", description: "Brother Cinder prays to Pip: all gold you earn is tripled for 30 s. Recharge: 30 min." },
-    ritual: { name: "Resonance Ritual", description: "Nyx ties you to the night's rhythm: companions deal +5% damage until your next ascension. Each use adds another 5%. Recharge: 1 h." },
-    echo: { name: "Time Echo", description: "Garrick strikes an echo vein: the last power you used, if it is still recharging, is ready again at once. Recharge: 1 h." },
+    frenzy: { name: "Frenzy", description: "Your blade strikes on its own 10 times per second for 30 s." },
+    rally: { name: "Rallying Cry", description: "Maëlle sounds her horn: every companion deals double damage for 30 s." },
+    hawkeye: { name: "Hawkeye", description: "Ysolde lends you the trees' eyes: +50% chance for your strikes to be critical (ten times the damage or more) for 30 s." },
+    goldrain: { name: "Golden Rain", description: "Brother Cinder prays to Pip: all gold you earn is tripled for 30 s." },
+    ritual: { name: "Resonance Ritual", description: "Nyx ties you to the night's rhythm: companions deal +5% damage until your next ascension. Each use adds another 5%." },
+    echo: { name: "Time Echo", description: "Garrick strikes an echo vein: the last power you used, if it is still recharging, is ready again at once." },
     unweave: SYSTEMS_TEXT.en.unweave
   },
+  skillRecharge: (seconds) => `Recharge: ${clock(seconds)}.`,
   altars: {
     might: { name: "Altar of Might", description: "Your companions deal more damage: each level multiplies it by 1.10." },
     blade: { name: "Altar of the Blade", description: "Your strikes hit harder: each level multiplies their damage by 1.10, the part that comes from your companions included." },
@@ -169,7 +175,7 @@ export const en: GameText = {
     crits: (t) => `Land ${n(t)} critical hits.`,
     kills: (t) => `Defeat ${n(t)} monsters.`,
     bosses: (t) => `Defeat ${n(t)} ${s(t, "elite or guardian", "elites and guardians")}.`,
-    gold: (t) => `Earn ${exp(t)} gold in total.`,
+    gold: (t, big) => `Earn ${big(t)} gold in total.`,
     treasure: (t) => `Defeat ${n(t)} golden ${s(t, "rat")}.`,
     crystal: (t) => `Catch ${n(t)} wandering ${s(t, "crystal")}.`,
     levels: (t) => `Reach ${n(t)} levels in total, Aldric and companions together, in a single night.`,
@@ -180,7 +186,7 @@ export const en: GameText = {
     essences: (t) => `Collect ${n(t)} essences in total.`,
     legend: (t) => `Find ${t} legendary ${s(t, "item")}.`,
     mythic: (t) => `Find ${t} mythic ${s(t, "item")}.`,
-    hit: (t) => `Deal a single hit of ${exp(t)} damage.`,
+    hit: (t, big) => `Deal a single hit of ${big(t)} damage.`,
     time: (t) => `Walk the night for ${Math.round(t / 3600)} h in total.`,
     fails: (t) => `Be pushed back by an elite or a guardian ${t} ${s(t, "time")}.`,
     ...SYSTEMS_TEXT.en.achievementDescriptions

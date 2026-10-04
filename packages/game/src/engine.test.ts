@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
-import { achievementText, gameText, itemName, monsterName } from "./content";
-import { ACHIEVEMENTS } from "./data/achievements";
+import { achievementText, gameText, itemName, monsterName, skillText } from "./content";
+import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID, achievementProgress } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarCost, altarTotalCost } from "./data/altars";
 import { BIOMES, TREASURE_MONSTER, isKingStage } from "./data/biomes";
 import { HEROES, HERO_BY_ID } from "./data/heroes";
@@ -1022,6 +1022,31 @@ describe("i18n", () => {
       }
       for (const slot of SLOTS) expect(text.itemBases[slot]).toHaveLength(SLOT_BASE_COUNT[slot]);
     }
+  });
+
+  it("writes huge deed thresholds in the walker's notation", () => {
+    expect(achievementText("gold-17", "en").description).toBe("Earn 1e205 gold in total.");
+    expect(achievementText("gold-17", "fr", (value) => formatNumber(value, "scientific")).description).toBe(`Gagne ${formatNumber(1e205, "scientific")} pièces d'or au total.`);
+  });
+
+  it("measures deed progress from the tier below, in orders of magnitude for gold", () => {
+    const gold = ACHIEVEMENT_BY_ID["gold-17"];
+    expect(gold.threshold).toBe(1e205);
+    expect(achievementProgress(gold, 2.28e201)).toBeCloseTo(11.36 / 15, 2);
+    expect(achievementProgress(gold, 1e180)).toBe(0);
+    expect(achievementProgress(gold, 1e206)).toBe(1);
+    const clicks = ACHIEVEMENT_BY_ID["clicks-3"];
+    expect(achievementProgress(clicks, 5_500)).toBeCloseTo(0.5);
+  });
+
+  it("tells a power's recharge after the walker's reductions", () => {
+    const state = createInitialState();
+    expect(skillText("frenzy", "en", state).description).toMatch(/Recharge: 10 min\.$/);
+    expect(skillText("unweave", "fr", state).description).toMatch(/Recharge : 1 h\.$/);
+    // Three levels of the Altar of Echoes take 15% off: ten minutes become eight and a half.
+    state.altars.echoes = 3;
+    expect(skillText("frenzy", "en", state).description).toMatch(/Recharge: 8 min 30 s\.$/);
+    expect(skillText("frenzy", "fr", state).description).toMatch(/Recharge : 8 min 30 s\.$/);
   });
 
   it("names monsters with their era and keeps legacy item names", () => {
