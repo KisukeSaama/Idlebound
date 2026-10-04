@@ -69,6 +69,14 @@ export function migrateState(raw: unknown): unknown {
     const tutorial = merged.tutorial as { done?: unknown };
     if (Array.isArray(tutorial.done) && !tutorial.done.includes(HARVEST_NOTICE)) merged.tutorial = { ...tutorial, done: [...tutorial.done, HARVEST_NOTICE] };
   }
+  // Version 13 counts the Descents that wove a thread. An older save never counted them: each
+  // of its Descents counts, as long as it has a thread woven for each (one wove one at least).
+  if (version < 13) {
+    const lifetime = merged.lifetime as Record<string, unknown>;
+    const descents = typeof merged.descents === "number" && Number.isFinite(merged.descents) ? merged.descents : 0;
+    const woven = typeof lifetime.threads === "number" && Number.isFinite(lifetime.threads) ? lifetime.threads : 0;
+    lifetime.weavings = Math.max(0, Math.floor(Math.min(descents, woven)));
+  }
   if (typeof input.rngState !== "number") merged.rngState = seedFrom(typeof merged.createdAt === "number" ? merged.createdAt : 0);
   merged.version = SAVE_VERSION;
   return merged;

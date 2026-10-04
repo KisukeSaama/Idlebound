@@ -180,6 +180,8 @@ export interface LifetimeStats extends StatBlock {
   threads: number;
   /** Stages that fell in a Rout (see `routs`). */
   routs: number;
+  /** Descents that wove at least one thread: the nights rewoven deeper (the Rewoven board). */
+  weavings: number;
 }
 
 export interface AscensionRecord {

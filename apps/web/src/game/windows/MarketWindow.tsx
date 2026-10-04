@@ -9,6 +9,7 @@ import { useFormat, useGame, useUi } from "../context";
 import { CARAVAN_PICTO, GoldIcon, OFFER_PICTO, Picto, ShardIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PromiseNotice } from "./PromiseTab";
+import { gameNow } from "@/lib/clock";
 
 /** The Stallkeeper has twelve sayings, one per visit, in turn. */
 const SAYINGS = 12;
@@ -34,7 +35,7 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
   const text = t.windows.market;
   const ui = useUi();
   const fmt = useFormat();
-  const now = Date.now();
+  const now = gameNow();
   const hourglass = offlineGains(state, 3600, now).gold;
   const discount = namedEffect(state, "marketDiscount");
 

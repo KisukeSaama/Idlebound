@@ -275,7 +275,10 @@ export const hud = defineMessages({
       hourglasses: "Plus de sabliers achetés que tes éclats ne pouvaient en payer.",
       "shards-earned": "Plus d'éclats gagnés que tes combats et ton recyclage n'en rapportent.",
       version: "Cette progression vient d'une version du jeu plus ancienne que celle déjà gardée. Recharge la page.",
-      "lineage-time": "Cette partie compte plus de temps de jeu qu'il ne s'en est écoulé depuis la dernière partie du compte."
+      "lineage-time": "Cette partie compte plus de temps de jeu qu'il ne s'en est écoulé depuis la dernière partie du compte.",
+      record: "Ton record dépasse de loin la plus profonde nuit que le Grand Livre t'a vu marcher. Recharge la page pour reprendre la partie gardée.",
+      powers: "Plus de pouvoirs utilisés que leur temps de recharge ne le permet.",
+      caravan: "La Caravane est venue une semaine qui n'est pas celle-ci."
     } as Record<string, string>
   },
   en: {
@@ -544,7 +547,10 @@ export const hud = defineMessages({
       hourglasses: "More hourglasses bought than your shards could pay for.",
       "shards-earned": "More shards earned than your fights and salvaging could yield.",
       version: "This progress comes from an older version of the game than the one already kept. Reload the page.",
-      "lineage-time": "This game counts more play time than has passed since the account's last game."
+      "lineage-time": "This game counts more play time than has passed since the account's last game.",
+      record: "Your record lies far past the deepest night the Ledger saw you walk. Reload the page to pick up the kept game.",
+      powers: "More powers used than their cooldowns allow.",
+      caravan: "The Caravan came in a week that is not this one."
     } as Record<string, string>
   }
 });

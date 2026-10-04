@@ -418,9 +418,9 @@ one).
   | Board (code) | Name on the Roll | What the Ledger reads in it |
   |---|---|---|
   | `stage` | **Depth** (FR: *Profondeur*), official | How far into the night the walker has gone. Every dusk and every Descent serve it. |
-  | `kings` | **Kingslayer** (FR: *Régicide*) | How many times the King has fallen to them. He rises each night; so do they. |
   | `promises` | **Word Kept** (FR: *Parole tenue*) | How often the company could trust them. The companions remember. |
   | `crystals` | **The Watch** (FR: *La Veille*) | How long they kept watch. Crystals only fall for the walker who is there. |
+  | `weavings` | **Rewoven Nights** (FR: *Nuits retissées*) | How many times Eldra wove the night again for them, one thread deeper. Shipped. |
 
   The road ends, so Depth stops telling walkers apart near its end: on the same stage, the
   Ledger honours whoever got there first. The tallies never end, and the walker sees the

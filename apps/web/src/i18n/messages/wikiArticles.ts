@@ -592,6 +592,7 @@ export const wikiArticles = defineMessages<Articles>({
           title: "Quand descendre",
           blocks: [
             "La première Descente te ramène en arrière pendant un jour ou deux, puis te fait passer devant celui qui ne descend jamais. Les simulations : descendre une fois par Âge (8 fils au moins) va plus loin que descendre trop souvent, qui paie la remontée trop de fois.",
+            "Le classement **Nuits retissées** compte les Descentes qui ont tissé au moins un fil : une Descente qui ne tisse rien n'y compte pas. Il récompense ton rythme au Métier, pas ta profondeur.",
             { slot: "crown" }
           ]
         }
@@ -1153,7 +1154,7 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "strategy",
           title: "When to descend",
-          blocks: ["The first Descent sets you back for a day or two, then pulls you ahead of the walker who never descends. The simulations: descending once an Age (8 threads at least) goes further than descending too often, which pays the climb back too many times.", { slot: "crown" }]
+          blocks: ["The first Descent sets you back for a day or two, then pulls you ahead of the walker who never descends. The simulations: descending once an Age (8 threads at least) goes further than descending too often, which pays the climb back too many times.", "The **Rewoven Nights** board counts the Descents that wove at least one thread: a Descent that weaves nothing does not count. It rewards your pace at the Loom, not your depth.", { slot: "crown" }]
         }
       ]
     }),

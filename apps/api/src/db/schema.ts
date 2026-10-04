@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { Pace } from "@idlebound/game/server";
 import { bigint, boolean, index, integer, jsonb, pgTable, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -56,7 +57,13 @@ export const saves = pgTable("saves", {
    * said so. Another page opens it only by taking it over; null once the page let it go.
    */
   holder: text("holder"),
-  heldAt: timestamp("held_at", { withTimezone: true })
+  heldAt: timestamp("held_at", { withTimezone: true }),
+  /**
+   * What the server measured itself across this game's saves (see `Pace` in the game's
+   * validation): the deepest night it saw, time claimed ahead of its clock, powers left, the
+   * night's start. Null for a game last saved before it was kept.
+   */
+  pace: jsonb("pace").$type<Pace>()
 });
 
 /**
@@ -76,14 +83,16 @@ export const guestSaves = pgTable("guest_saves", {
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
   /** The page playing this game right now, and when it last said so (see `saves`). */
   holder: text("holder"),
-  heldAt: timestamp("held_at", { withTimezone: true })
+  heldAt: timestamp("held_at", { withTimezone: true }),
+  /** What the server measured itself across this game's saves (see `saves`). */
+  pace: jsonb("pace").$type<Pace>()
 }, (table) => [index("guest_saves_last_seen_idx").on(table.lastSeenAt)]);
 
 export const leaderboard = pgTable("leaderboard", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
   maxStage: integer("max_stage").notNull().default(1),
-  /** The three other boards: Kings felled, promises kept, crystals caught (all time). */
-  kings: integer("kings").notNull().default(0),
+  /** The three other boards: nights rewoven, promises kept, crystals caught (all time). */
+  weavings: integer("weavings").notNull().default(0),
   promises: integer("promises").notNull().default(0),
   crystals: integer("crystals").notNull().default(0),
   hidden: boolean("hidden").notNull().default(false),
@@ -95,7 +104,7 @@ export const leaderboard = pgTable("leaderboard", {
   stageReachedAt: timestamp("stage_reached_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [
   index("leaderboard_stage_idx").on(sql`${table.maxStage} desc`, table.stageReachedAt),
-  index("leaderboard_kings_idx").on(sql`${table.kings} desc`),
+  index("leaderboard_weavings_idx").on(sql`${table.weavings} desc`),
   index("leaderboard_promises_idx").on(sql`${table.promises} desc`),
   index("leaderboard_crystals_idx").on(sql`${table.crystals} desc`)
 ]);

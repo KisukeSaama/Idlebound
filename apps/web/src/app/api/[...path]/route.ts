@@ -5,6 +5,7 @@
  */
 import type { ApiError } from "@idlebound/game";
 import type { NextRequest } from "next/server";
+import { SERVER_TIME_HEADER } from "@/lib/clock";
 import { ownRelease, RELEASE_HEADER } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +16,14 @@ const FORWARDED_RESPONSE_HEADERS = ["content-type", "set-cookie", "retry-after",
 const MAX_BODY_BYTES = 600 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15_000;
 
-/** Every answer tells the page which release serves it: an older page moves to it (see game/newRelease.ts). */
+/**
+ * Every answer tells the page which release serves it (an older page moves to it, see
+ * game/newRelease.ts) and the server's time, the clock the game keeps (see lib/clock.ts).
+ */
 function stamped(response: Response): Response {
   const release = ownRelease();
   if (release) response.headers.set(RELEASE_HEADER, release);
+  response.headers.set(SERVER_TIME_HEADER, String(Date.now()));
   return response;
 }
 

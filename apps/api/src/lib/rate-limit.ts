@@ -3,8 +3,13 @@ import type { Context, MiddlewareHandler } from "hono";
 import { env } from "../env";
 import { fail } from "./errors";
 
-/** Past this size, expired keys are purged before adding one (bounded memory). */
+/**
+ * Past this size, expired keys are purged before adding one; if the map is still full, new
+ * keys are refused (bounded memory) while keys already tracked keep working.
+ */
 const MAX_KEYS = 50_000;
+/** A full map is swept at most this often: a flood of new keys must not cost a full scan each. */
+const FULL_SWEEP_MS = 1_000;
 
 /**
  * In-memory sliding-window limiter. A single API instance runs per environment, so no
@@ -12,12 +17,20 @@ const MAX_KEYS = 50_000;
  */
 export class RateLimiter {
   private hits = new Map<string, number[]>();
+  private lastFullSweep = Number.NEGATIVE_INFINITY;
 
-  constructor(private readonly limit: number, private readonly windowMs: number) {}
+  constructor(private readonly limit: number, private readonly windowMs: number, private readonly maxKeys = MAX_KEYS) {}
 
   /** Returns the number of seconds to wait, or 0 when the request is allowed. */
   consume(key: string, now = Date.now()): number {
-    if (this.hits.size >= MAX_KEYS && !this.hits.has(key)) this.sweep(now);
+    if (this.hits.size >= this.maxKeys && !this.hits.has(key)) {
+      if (now - this.lastFullSweep >= FULL_SWEEP_MS) {
+        this.lastFullSweep = now;
+        this.sweep(now);
+      }
+      // Still full: a new key waits for room rather than growing the map without bound.
+      if (this.hits.size >= this.maxKeys) return Math.ceil(this.windowMs / 1000);
+    }
     const since = now - this.windowMs;
     const recent = (this.hits.get(key) ?? []).filter((time) => time > since);
     if (recent.length >= this.limit) {
@@ -27,6 +40,12 @@ export class RateLimiter {
     recent.push(now);
     this.hits.set(key, recent);
     return 0;
+  }
+
+  /** Hits still counted for this key, without recording one. */
+  count(key: string, now = Date.now()): number {
+    const since = now - this.windowMs;
+    return (this.hits.get(key) ?? []).filter((time) => time > since).length;
   }
 
   reset(key: string) {

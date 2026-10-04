@@ -36,4 +36,27 @@ describe("RateLimiter", () => {
     expect(limiter.consume("k", 20)).toBeGreaterThan(0);
     expect(limiter.consume("k", 1500)).toBe(0);
   });
+
+  it("refuses new keys once full, keeps the tracked ones working, and makes room as keys expire", () => {
+    const limiter = new RateLimiter(5, 1000, 3);
+    for (const key of ["a", "b", "c"]) expect(limiter.consume(key, 0)).toBe(0);
+    // Full and nothing expired: a new key waits, without being stored.
+    expect(limiter.consume("d", 100)).toBeGreaterThan(0);
+    expect(limiter.consume("e", 200)).toBeGreaterThan(0);
+    expect(limiter.count("d", 200)).toBe(0);
+    // The keys already tracked still count normally.
+    expect(limiter.consume("a", 300)).toBe(0);
+    expect(limiter.count("a", 300)).toBe(2);
+    // Once the window has passed, the sweep frees room for a new key.
+    expect(limiter.consume("d", 1500)).toBe(0);
+  });
+
+  it("counts a key's hits without recording one", () => {
+    const limiter = new RateLimiter(2, 1000);
+    expect(limiter.count("k", 0)).toBe(0);
+    limiter.consume("k", 0);
+    expect(limiter.count("k", 10)).toBe(1);
+    expect(limiter.count("k", 10)).toBe(1);
+    expect(limiter.count("k", 1500)).toBe(0);
+  });
 });

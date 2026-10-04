@@ -18,7 +18,7 @@ import { DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, LEGACY_LOOM_HERO, WEAVE_BY_ID, l
 import { EVENTS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WALKER_DPS } from "./data/events";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
-import { CARAVAN_WARES } from "./data/caravan";
+import { CARAVAN_WARES, isoWeek } from "./data/caravan";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFFS, MARKET_BY_ID } from "./data/market";
 import { CRYSTAL_SHARDS_MAX } from "./engine";
 import { LANTERN_CRYSTAL_WAIT, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, equipmentBonus, equipmentBonusUncapped, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
@@ -48,7 +48,8 @@ import {
   type SecretId
 } from "./data/lore";
 import { PROMISE_BY_HERO, companionMet, promiseAsker, promiseDepth, promiseKings, promisesKept, promisesKeptInAll } from "./data/promises";
-import { NAMED_BY_ID, NAMED_RELICS, namedSourceReached, type NamedEffect } from "./data/relics";
+import { COOLDOWN_FLOOR, NAMED_BY_ID, NAMED_RELICS, namedSourceReached, type NamedEffect } from "./data/relics";
+import { SKILLS } from "./data/skills";
 import { AGE_COUNT, keystonesFound } from "./data/strata";
 import { SAVE_VERSION } from "./state";
 import type { AltarId, GameState, Item } from "./types";
@@ -78,6 +79,12 @@ const CLOCK_SLACK_SECONDS = 120;
 const FUTURE_TICK_SLACK_MS = 10 * 60_000;
 /** Seconds a single ascension or Descent takes at the very least (a whole night walked). */
 const MIN_RUN_SECONDS = 30;
+/**
+ * Stages a record may stand past the deepest stage the server saw a night reach: the road
+ * walked between the last save and a dusk (a few seconds online, a night caught up offline).
+ */
+export const RECORD_GAP = 50;
+const WEEK_SECONDS = 7 * 86_400;
 /** Launch date: no save can be older. */
 export const GAME_EPOCH = Date.UTC(2026, 0, 1);
 
@@ -122,6 +129,13 @@ const MAX_SALVAGE_SHARDS = Math.max(...Object.values(RARITY_INFO).map((info) => 
  * twice its shards (less the Unfinished Hammer): the share of forge spending that returns.
  */
 const FORGE_REFUND_SHARE = 0.5 / (2 * (1 - namedMax("forgeDiscount")));
+/** Kills that first clear every stage from `from` to just before `to`: a whole stage of monsters each, a guardian alone. */
+function stageKills(from: number, to: number): number {
+  if (to <= from) return 0;
+  const bosses = Math.floor((to - 1) / 5) - Math.floor((from - 1) / 5);
+  return (to - from - bosses) * MONSTERS_PER_STAGE + bosses;
+}
+
 /** Shards a guardian of this depth drops at most. */
 function guardianShards(maxStageEver: number): number {
   return 1 + Math.floor(maxStageEver / 25) + namedMax("guardianShards");
@@ -212,6 +226,7 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   if (state.maxStageEver - 1 > state.lifetime.kills + state.lifetime.skillsUsed) fail("stage", "Stages cleared without fighting.");
   // Boons are measured from the last tick: it cannot lie far in the server's future.
   if (state.lastTickAt > serverNow + FUTURE_TICK_SLACK_MS) fail("time", "Last tick in the future.");
+  if (state.caravanWeek > isoWeek(serverNow + FUTURE_TICK_SLACK_MS)) fail("caravan", "A Caravan from a week to come.");
   // Crystals fall at a bounded pace, while the game has existed on the server's clock.
   if (state.lifetime.crystals > maxCrystals(Math.max(0, age), state.lore.dreams)) fail("crystals", "More crystals than time allows.");
   const bestGold = bestGoldPerKill(state);
@@ -543,6 +558,8 @@ function verifyDescent(state: GameState, fail: (code: string, message: string) =
   }
   if (spent + state.threads > lifetime.threads) fail("descent", "More threads spent than woven.");
   if (state.descents === 0 && lifetime.threads > 0) fail("descent", "Threads woven without a Descent.");
+  // A night rewoven is a Descent that wove one thread at least.
+  if (lifetime.weavings > state.descents || lifetime.weavings > lifetime.threads) fail("descent", "More nights rewoven than threads woven.");
   // Before version 11 each Descent wove at most what every essence ever gathered could weave:
   // those threads stay. Since, the thread is as long as the deepest stage, and no longer.
   const legacy = state.legacyThreads ?? 0;
@@ -578,7 +595,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
 
   if (next.createdAt !== previous.createdAt) fail("identity", "This save does not continue the previous one.");
 
-  const monotonic = ["clicks", "kills", "bosses", "goldEarned", "essencesEarned", "ascensionEssences", "shardsEarned", "ascensions", "playTime", "offlineSeconds", "crystals", "hourglasses", "itemsFound", "kings", "seams", "threads", "routs"] as const;
+  const monotonic = ["clicks", "kills", "bosses", "goldEarned", "essencesEarned", "ascensionEssences", "shardsEarned", "ascensions", "playTime", "offlineSeconds", "crystals", "hourglasses", "itemsFound", "kings", "seams", "threads", "routs", "weavings"] as const;
   for (const key of monotonic) {
     if (b[key] + EPSILON < a[key]) fail("rollback", `Statistic "${key}" went down.`);
   }
@@ -616,6 +633,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   if (previous.named.some((id) => !next.named.includes(id))) fail("rollback", "A named relic was forgotten.");
   if (next.descents < previous.descents) fail("rollback", "Descents went down.");
   if (b.threads > a.threads && next.descents === previous.descents) fail("descent", "Threads woven without a Descent.");
+  if (b.weavings - a.weavings > Math.min(next.descents - previous.descents, b.threads - a.threads)) fail("descent", "A night rewoven without a Descent that wove.");
   if ((next.legacyThreads ?? 0) !== (previous.legacyThreads ?? 0)) fail("descent", "The threads of an older save cannot change.");
   if (previous.secrets.some((id) => !next.secrets.includes(id))) fail("rollback", "A secret was forgotten.");
   const lore = (state: GameState) => state.lore.songs + state.lore.dreams + Object.values(state.lore.ages).reduce((total, count) => total + count, 0) + Object.values(state.lore.echoes).reduce((total, count) => total + count, 0);
@@ -637,7 +655,9 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   if (routed > (activeSeconds + Math.max(0, offline)) / ROUT_STEP_SECONDS + 1) fail("routs", "Routs faster than the road allows.");
   if (routed > (ascensions + Math.max(0, next.descents - previous.descents) + 1) * next.maxStageEver) fail("routs", "More Routs than the nights walked allow.");
   if (kills > (activeSeconds + Math.max(0, offline) + hourglasses * 3600) * MAX_KILLS_PER_SECOND + 10 + skipKills + routed * MONSTERS_PER_STAGE) fail("kills", "Too many kills for the elapsed time.");
-  if (next.maxStageEver - previous.maxStageEver > kills + 1) fail("stage", "Stages cleared without fighting.");
+  // Each new stage is a whole stage of monsters (a guardian alone), or one Unweave.
+  const skills = Math.max(0, b.skillsUsed - a.skillsUsed);
+  if (stageKills(previous.maxStageEver, next.maxStageEver) > kills + previous.kills + skills * MONSTERS_PER_STAGE) fail("stage", "Stages cleared without fighting.");
   if (b.ascensions - a.ascensions > elapsed / 30 + 1) fail("ascension", "Too many ascensions.");
   if (next.descents - previous.descents > elapsed / 30 + 1) fail("descent", "Too many Descents.");
 
@@ -672,6 +692,85 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   return violations;
 }
 
+/**
+ * A game the server never saw (a first save, or another game replacing the account's): every
+ * stage of its record was walked, by kills or an Unweave (see `verifyPace` for its time).
+ */
+export function verifyFirstSight(state: GameState): Violation[] {
+  const violations: Violation[] = [];
+  const lifetime = state.lifetime;
+  if (stageKills(1, state.maxStageEver) > lifetime.kills + lifetime.skillsUsed * MONSTERS_PER_STAGE) violations.push({ code: "stage", message: "Stages cleared without fighting." });
+  return violations;
+}
+
+/**
+ * What the server measures itself across a game's saves, kept beside the save where the
+ * walker cannot write it. Every save is checked against it and hands the next one its own.
+ */
+export interface Pace {
+  /** The deepest stage the server saw a night reach: the head of a night, held to its build by the power check. */
+  proven: number;
+  /** Seconds of play and absence claimed ahead of the time the server saw pass. */
+  lead: number;
+  /** Powers the walker may still use before they come back. */
+  powers: number;
+  /** When the present night began at the latest, on the server's clock (ms). */
+  nightSince: number;
+}
+
+/** Powers ready at once: every one of them, and as many again for the Echo and Eldra's Thread. */
+const POWER_RESERVE = 2 * (SKILLS.length + 1);
+/** Powers that come back each second at most: every cooldown at its floor, twice over for the Echo. */
+const POWER_RATE = SKILLS.reduce((total, skill) => total + 2 / (skill.cooldown * COOLDOWN_FLOOR), 0);
+const RITUAL_COOLDOWN = SKILLS.find((skill) => skill.id === "ritual")!.cooldown * COOLDOWN_FLOOR;
+/**
+ * Share of the server's time a claim may lag behind before its lead counts: two devices'
+ * clocks never drift this far, and the jitter of the network washes out of the ledger.
+ */
+const LEAD_LEAK = 0.01;
+
+/**
+ * Checks against the server's own clock and the ledger of the game's past saves (`pace`, absent
+ * for a game the server never saw or saved before it was kept). `previous` is the last save
+ * of this game the server kept, if any; `elapsedMs` the time the server saw pass since.
+ */
+export function verifyPace(previous: GameState | undefined, next: GameState, pace: Pace | null | undefined, serverNow: number, elapsedMs: number): { violations: Violation[]; pace: Pace } {
+  const violations: Violation[] = [];
+  const fail = (code: string, message: string) => violations.push({ code, message });
+  // A game never seen is measured from its own first second.
+  const since = previous ? serverNow - Math.max(0, elapsedMs) : Math.min(serverNow, next.createdAt);
+  const seconds = Math.max(0, serverNow - since) / 1000;
+  const base: Pace = pace ?? { proven: previous ? previous.maxStageEver : 0, lead: 0, powers: POWER_RESERVE, nightSince: previous ? previous.createdAt : since };
+  const before = previous?.lifetime;
+  const rebirths = next.lifetime.ascensions - (before?.ascensions ?? 0) + next.descents - (previous?.descents ?? 0);
+
+  // Time: what the save claims beyond the server's clock piles up, and may not pass the slack.
+  const claimed = next.lifetime.playTime + next.lifetime.offlineSeconds - (before ? before.playTime + before.offlineSeconds : 0);
+  const lead = Math.max(0, base.lead + claimed - seconds * (1 + LEAD_LEAK));
+  if (lead > CLOCK_SLACK_SECONDS) fail("time", "More play time than the server saw pass.");
+
+  // The Caravan comes once a week of the server's calendar: never a week before the last save, nor one to come.
+  const caravanMoved = next.caravanWeek !== (previous?.caravanWeek ?? "") && next.caravanWeek !== "";
+  if (caravanMoved && (next.caravanWeek < isoWeek(since - CLOCK_SLACK_SECONDS * 1000) || next.caravanWeek > isoWeek(serverNow + CLOCK_SLACK_SECONDS * 1000))) fail("caravan", "A Caravan from another week.");
+
+  // Powers come back at their pace, all at once at each dusk and with Eldra's Thread.
+  const fresh = (Math.max(0, rebirths) + (caravanMoved ? 1 : 0)) * POWER_RESERVE;
+  const powers = Math.min(POWER_RESERVE, base.powers + seconds * POWER_RATE) + fresh - (next.lifetime.skillsUsed - (before?.skillsUsed ?? 0));
+  if (powers < 0) fail("powers", "Powers used faster than they come back.");
+  // Each Ritual of the night stays: twice per cooldown since the night began (the Echo), and once more per Thread.
+  const nightSince = rebirths > 0 && previous ? since : base.nightSince;
+  const night = Math.max(0, serverNow - nightSince) / 1000;
+  if (next.ritualStacks > 2 * (night / RITUAL_COOLDOWN + night / WEEK_SECONDS + 2)) fail("powers", "More Rituals than the night allows.");
+
+  // The record stands no further than a night the server saw, plus the road walked unseen
+  // before a dusk: a record set outside any night (no build to check it against) would carry
+  // relics, essences and the Roll of the Deep with it.
+  const proven = Math.max(base.proven, next.maxStage);
+  if (next.maxStageEver > proven + RECORD_GAP) fail("record", "A record deeper than any night the server saw.");
+
+  return { violations, pace: { proven, lead, powers: Math.min(POWER_RESERVE, Math.max(0, powers)), nightSince } };
+}
+
 /** The version a raw save declares (0 when it has none): read before any migration. */
 export function saveVersionOf(raw: unknown): number {
   const version = raw && typeof raw === "object" ? (raw as { version?: unknown }).version : undefined;
@@ -704,7 +803,7 @@ export function verifyNewLineage(previous: GameState, next: GameState, elapsedMs
 export function leaderboardSummary(state: GameState) {
   return {
     maxStage: state.maxStageEver,
-    kings: state.lifetime.kings,
+    weavings: state.lifetime.weavings,
     promises: promisesKeptInAll(state),
     crystals: state.lifetime.crystals
   };

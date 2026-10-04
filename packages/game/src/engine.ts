@@ -1933,6 +1933,7 @@ export class GameEngine {
     s.descents += 1;
     s.threads += threads;
     s.lifetime.threads += threads;
+    if (threads > 0) s.lifetime.weavings += 1;
     s.essences = 0;
     const altars: GameState["altars"] = {};
     for (const altar of ALTARS) {

@@ -1,7 +1,7 @@
 import { seedFrom } from "./rng";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 /**
@@ -33,7 +33,8 @@ export function emptyLifetime(): LifetimeStats {
     kings: 0,
     seams: 0,
     threads: 0,
-    routs: 0
+    routs: 0,
+    weavings: 0
   };
 }
 

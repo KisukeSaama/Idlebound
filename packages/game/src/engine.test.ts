@@ -39,7 +39,7 @@ import { formatDuration, formatNumber, formatPercent } from "./numbers";
 import { seededRng } from "./rng";
 import { migrateState, parseState } from "./save";
 import { ALTAR_REWORK_NOTICE, SAVE_VERSION, createInitialState } from "./state";
-import { verifyState, verifyTransition } from "./validation";
+import { verifyFirstSight, verifyPace, verifyState, verifyTransition, type Pace } from "./validation";
 import type { GameState } from "./types";
 
 const T0 = Date.UTC(2026, 2, 1);
@@ -558,11 +558,17 @@ describe("anti-cheat", () => {
     let now = T0;
     let previous = structuredClone(engine.state);
     let previousAt = now;
+    // The server's own ledger, from the first save it sees.
+    let pace: Pace | undefined;
     for (let save = 0; save < 24; save += 1) {
       now = playBot(engine, now, 15 * 60, { clicksPerSecond: 6, stagnationMs: 10 * 60_000 });
       const snapshot = structuredClone(engine.state);
       expect(verifyState(snapshot, now)).toEqual([]);
-      expect(verifyTransition(previous, snapshot, now - previousAt)).toEqual([]);
+      if (save === 0) expect(verifyFirstSight(snapshot)).toEqual([]);
+      else expect(verifyTransition(previous, snapshot, now - previousAt)).toEqual([]);
+      const paced = verifyPace(save === 0 ? undefined : previous, snapshot, pace, now, now - previousAt);
+      expect(paced.violations).toEqual([]);
+      pace = paced.pace;
       previous = snapshot;
       previousAt = now;
     }

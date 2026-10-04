@@ -4,6 +4,7 @@
  *   TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test
  */
 import { GameEngine, SAVE_VERSION, createInitialState, migrateState, seededRng, validateUsername, type GameState } from "@idlebound/game";
+import type { Pace } from "@idlebound/game/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
 
@@ -186,9 +187,9 @@ suite("API (real Postgres)", () => {
     expect(board.json.me.rank).toBeGreaterThanOrEqual(1);
     expect(board.json.around).toContainEqual(board.json.me);
     // A tally the walker has none of yet: no place on it.
-    const kings = await client.call("GET", "/leaderboard?board=kings");
-    expect(kings.status).toBe(200);
-    expect(kings.json.me).toBeNull();
+    const weavings = await client.call("GET", "/leaderboard?board=weavings");
+    expect(weavings.status).toBe(200);
+    expect(weavings.json.me).toBeNull();
 
     // Log out, then log in.
     await client.call("POST", "/auth/logout");
@@ -346,8 +347,8 @@ suite("API (real Postgres)", () => {
     /** The row of the guest game a client carries. */
     async function guestRow(client: Client) {
       const { hashToken } = await import("./lib/session");
-      const [row] = await sql`select id, revision, last_seen_at from guest_saves where id = ${hashToken(client.value("ib_guest") ?? "")}`;
-      return row as { id: string; revision: number; last_seen_at: string } | undefined;
+      const [row] = await sql`select id, revision, last_seen_at, pace from guest_saves where id = ${hashToken(client.value("ib_guest") ?? "")}`;
+      return row as { id: string; revision: number; last_seen_at: string; pace: Pace | null } | undefined;
     }
 
     it("keeps a guest's game under an httpOnly cookie and gives it back on reload, off the leaderboard", async () => {
@@ -502,6 +503,32 @@ suite("API (real Postgres)", () => {
       expect((await other.call("GET", "/save")).json.save.state.createdAt).toBe(guestGame.createdAt);
     }, 60_000);
 
+    it("never makes a second copy of a guest's game that another page brought to an account", async () => {
+      const guest = new Client("10.0.1.41");
+      const state = playedState(2);
+      expect((await guest.call("PUT", "/save/guest", { state, baseRevision: null })).status).toBe(200);
+      // Another page signed in and took the game: its row is gone, this page still builds on it.
+      await sql`delete from guest_saves where id = ${(await guestRow(guest))!.id}`;
+      const copy = await guest.call("PUT", "/save/guest", { state, baseRevision: 1 });
+      expect(copy.status).toBe(409);
+      expect(copy.json.error).toBe("guest_save_conflict");
+    }, 60_000);
+
+    it("keeps its own ledger of a game: a record set outside any night it saw is refused", async () => {
+      const guest = new Client("10.0.1.42");
+      const state = playedState(3);
+      expect((await guest.call("PUT", "/save/guest", { state, baseRevision: null })).status).toBe(200);
+      expect((await guestRow(guest))!.pace).toMatchObject({ proven: state.maxStage });
+      // A dusk claimed with a record five hundred stages past anything the server saw.
+      const forged = structuredClone(state);
+      forged.lifetime.ascensions += 1;
+      forged.maxStage = forged.stage = forged.runStartStage = 1;
+      forged.maxStageEver = state.maxStageEver + 500;
+      const refused = await guest.call("PUT", "/save/guest", { state: forged, baseRevision: 1 });
+      expect(refused.status).toBe(422);
+      expect(codes(refused)).toContain("record");
+    }, 60_000);
+
     it("purges a guest's game nobody came back to for 30 days, and a visit keeps it", async () => {
       const { purgeExpired } = await import("./lib/session");
       const gone = new Client("10.0.1.8");
@@ -584,6 +611,28 @@ suite("API (real Postgres)", () => {
     // The player, from their own address, still gets in.
     expect((await owner.call("POST", "/auth/login", { email, password })).status).toBe(200);
   }, 60_000);
+
+  it("never lets a botnet spending the account's ceiling lock the player out, nor guess on", async () => {
+    const email = `botnet-${unique}@idlebound.test`;
+    const password = "Un-Mot-De-Passe-Solide";
+    expect((await new Client("10.0.2.1").call("POST", "/auth/register", { email, username: freshName("Bot"), password })).status).toBe(201);
+
+    // 8 addresses, 8 guesses each: past the 60 guesses an account allows in 15 minutes.
+    const bots = Array.from({ length: 8 }, (_, index) => new Client(`10.0.2.${10 + index}`));
+    for (const bot of bots) {
+      for (let attempt = 0; attempt < 8; attempt += 1) await bot.call("POST", "/auth/login", { email, password: `essai-${attempt}` });
+    }
+    // An address that already guessed wrong is refused, even with the right password.
+    const refused = await bots[0].call("POST", "/auth/login", { email, password });
+    expect(refused.status).toBe(429);
+    expect(Number(refused.retryAfter)).toBeGreaterThan(0);
+    // The player, from an address that never failed, still gets in.
+    expect((await new Client("10.0.2.2").call("POST", "/auth/login", { email, password })).status).toBe(200);
+    // A fresh address gets one guess, then waits like the others.
+    const fresh = new Client("10.0.2.3");
+    expect((await fresh.call("POST", "/auth/login", { email, password: "encore-un-essai" })).status).toBe(401);
+    expect((await fresh.call("POST", "/auth/login", { email, password })).status).toBe(429);
+  }, 120_000);
 
   describe("the Roll's ties and the walkers around", () => {
     const password = "Un-Mot-De-Passe-Solide";
@@ -673,10 +722,10 @@ suite("API (real Postgres)", () => {
       // A unique count, far above any honest test game; the same for both walkers.
       const tally = height;
       for (const [account, stage] of [[deep, 20], [shallow, 10]] as const) {
-        await sql`update leaderboard set kings = ${tally}, promises = ${tally}, crystals = ${tally}, max_stage = ${stage} where user_id = ${account.id}`;
+        await sql`update leaderboard set weavings = ${tally}, promises = ${tally}, crystals = ${tally}, max_stage = ${stage} where user_id = ${account.id}`;
       }
-      await sql`update leaderboard set kings = 0, promises = 0, crystals = 0 where user_id = ${none.id}`;
-      for (const board of ["kings", "promises", "crystals"]) {
+      await sql`update leaderboard set weavings = 0, promises = 0, crystals = 0 where user_id = ${none.id}`;
+      for (const board of ["weavings", "promises", "crystals"]) {
         const seen = await read(deep.client, board);
         const names = seen.rows.map((row: { username: string }) => row.username);
         expect(names.indexOf(shallow.username)).toBe(names.indexOf(deep.username) + 1);
@@ -686,12 +735,18 @@ suite("API (real Postgres)", () => {
         expect((await read(none.client, board)).me).toBeNull();
       }
       // A save writes the tallies it carries, and never lowers a better one already kept.
-      await sql`update leaderboard set kings = ${tally} where user_id = ${none.id}`;
+      await sql`update leaderboard set weavings = ${tally} where user_id = ${none.id}`;
       const saved = await none.client.call("PUT", "/save", { state: none.state, baseRevision: none.revision });
       expect(saved.status, JSON.stringify(saved.json)).toBe(200);
-      const [kept] = await sql`select kings, crystals from leaderboard where user_id = ${none.id}`;
-      expect(kept).toEqual({ kings: tally, crystals: none.state.lifetime.crystals });
+      const [kept] = await sql`select weavings, crystals from leaderboard where user_id = ${none.id}`;
+      expect(kept).toEqual({ weavings: tally, crystals: none.state.lifetime.crystals });
     }, 60_000);
+  });
+
+  it("reads a fractional leaderboard size as a whole number of rows", async () => {
+    const response = await new Client("10.0.2.30").call("GET", "/leaderboard?limit=1.5");
+    expect(response.status).toBe(200);
+    expect(response.json.rows.length).toBeLessThanOrEqual(1);
   });
 
   it("refuses leaderboards inherited from the prototype", async () => {
@@ -787,6 +842,64 @@ suite("API (real Postgres)", () => {
       await purgeExpired();
       expect(await sql`select 1 from users where email = ${ghost}`).toHaveLength(0);
       expect(await sql`select 1 from users where email = ${fixed}`).toHaveLength(1);
+    } finally {
+      env.SMTP_URL = previousSmtp;
+    }
+  }, 60_000);
+
+  it("voids a reset link sent before the address changed: it never confirms the new one", async () => {
+    const { sql } = await import("./db/client");
+    const { env } = await import("./env");
+    const { hashToken } = await import("./lib/session");
+    const previousSmtp = env.SMTP_URL;
+    env.SMTP_URL = "smtp://127.0.0.1:9";
+    try {
+      const password = "unBonMotDePasse!";
+      const client = new Client("10.0.2.40");
+      const email = `reset-move-${unique}@test.fr`;
+      expect((await client.call("POST", "/auth/register", { email, username: freshName("Mov"), password })).status).toBe(201);
+      // A reset link mailed to the first address.
+      const [row] = await sql`select id from users where email = ${email}`;
+      const token = `reset-before-move-${unique}-padding`;
+      await sql`insert into password_resets (id, user_id, expires_at) values (${hashToken(token)}, ${row.id}, now() + interval '1 hour')`;
+
+      const moved = `reset-moved-${unique}@test.fr`;
+      expect((await client.call("POST", "/auth/email", { email: moved, password })).status).toBe(200);
+      expect(await sql`select 1 from password_resets where user_id = ${row.id}`).toHaveLength(0);
+
+      const reset = await new Client("10.0.2.41").call("POST", "/auth/reset", { token, password: "unAutreMotDePasse!" });
+      expect(reset.status).toBe(400);
+      expect(reset.json.error).toBe("reset_link_invalid");
+      const [after] = await sql`select email, email_verified_at from users where id = ${row.id}`;
+      expect(after.email).toBe(moved);
+      expect(after.email_verified_at).toBeNull();
+      // The password did not change either.
+      expect((await new Client("10.0.2.42").call("POST", "/auth/login", { email: moved, password })).status).toBe(200);
+    } finally {
+      env.SMTP_URL = previousSmtp;
+    }
+  }, 60_000);
+
+  it("counts every confirmation mail of an address fix against the resend budget", async () => {
+    const { env } = await import("./env");
+    const previousSmtp = env.SMTP_URL;
+    env.SMTP_URL = "smtp://127.0.0.1:9";
+    try {
+      const password = "unBonMotDePasse!";
+      const client = new Client("10.0.2.50");
+      const email = `resend-budget-${unique}@test.fr`;
+      expect((await client.call("POST", "/auth/register", { email, username: freshName("Bud"), password })).status).toBe(201);
+      // Same address each time: a mail per call, 3 per hour.
+      for (let call = 0; call < 3; call += 1) expect((await client.call("POST", "/auth/email", { email, password })).status).toBe(200);
+      const spent = await client.call("POST", "/auth/email", { email, password });
+      expect(spent.status).toBe(429);
+      expect(spent.json.error).toBe("too_many_attempts");
+      expect(spent.json.retryAfter).toBeGreaterThan(0);
+      // The resend button shares the same budget.
+      expect((await client.call("POST", "/auth/verify/resend")).status).toBe(429);
+      // A new address is refused too, and left untouched.
+      expect((await client.call("POST", "/auth/email", { email: `resend-other-${unique}@test.fr`, password })).status).toBe(429);
+      expect((await client.call("GET", "/auth/me")).json.user.email).toBe(email);
     } finally {
       env.SMTP_URL = previousSmtp;
     }

@@ -2,6 +2,7 @@ import { isApiError, type ApiError, type GameState, type PasswordIssue, type Use
 import { currentMessages } from "@/i18n/client";
 import type { BoardId, RollRow } from "./boards";
 import { noteServerRelease, RELEASE_HEADER } from "./release";
+import { noteServerTime, SERVER_TIME_HEADER } from "./clock";
 
 export { BOARD_IDS, type BoardId, type RollRow } from "./boards";
 
@@ -52,6 +53,7 @@ async function request<T>(method: string, path: string, body?: unknown, options:
   let response: Response;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const sentAt = performance.now();
   try {
     response = await fetch(`/api${path}`, {
       method,
@@ -71,6 +73,7 @@ async function request<T>(method: string, path: string, body?: unknown, options:
     return { ok: false, status: 0, code: null, error: currentMessages().hud.errors.network };
   }
   noteServerRelease(response.headers.get(RELEASE_HEADER));
+  noteServerTime(response.headers.get(SERVER_TIME_HEADER), sentAt);
   let json: Record<string, unknown> = {};
   let readable = true;
   try {
