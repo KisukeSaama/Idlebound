@@ -741,10 +741,13 @@ rejects real play.
   input is held until the reload. A hidden tab goes at once. A watched one goes as soon as
   nothing a reload would take away is on screen (a scene, a chest, a dialog, a Reunion, a
   toast; an open window does not hold it and comes back closed): input is held under an
-  update screen naming both versions (v0.5.3 to v0.6.0) for 1.6 s, its bar filling to 80%,
+  update screen naming both versions (v0.6.0 to v0.7.0; the new one alone when the release
+  did not raise the version) for 1.6 s, its bar filling to 80%,
   unless a scene opens meanwhile. The reloaded page finishes that screen over its loading
   screen (to 100%, "v0.6.0 is ready"), then fades it once the game is ready and watched
-  (1.4 s, then 0.4 s); a hidden tab that moved shows it when the walker comes back. It
+  (1.4 s, then 0.4 s); a hidden tab that moved shows it when the walker comes back. The new
+  page knows it arrived by the release (commit), never the version, which several releases
+  can share. It
   keeps its page id, so it does not find its own game open elsewhere. A failed save leaves it playing (checked
   again every 5 s, and at once when the screen clears). A tab reloads at most once per release (session
   storage), so a stale cache cannot loop it. The reloaded page catches up the seconds the

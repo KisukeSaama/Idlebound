@@ -1019,7 +1019,7 @@ of the course.
   fades in over everything (0.3 s) on the loading screen's ground while every sound fades
   out: the logo, then an old patcher's window (`--panel-solid`, black line, `--border-strong`
   thread, bevel) with a Cinzel gold title, the two versions in Cinzel (the old one small in
-  `--faint`, a gold-deep arrow, the new one large), a bar of 20 cells in a sunk well lit in
+  `--faint`, a gold-deep arrow, the new one large, or that one alone when the release kept its version), a bar of 20 cells in a sunk well lit in
   `--gold` one by one (with two short stalls, never random), and a status line with its
   percentage. The old page fills it to 80% ("Putting your progress somewhere safe"); the new
   page shows it at once over its loading screen, fills the rest ("Installing", then "v0.6.0

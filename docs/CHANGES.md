@@ -14,7 +14,14 @@ next release writes itself. Rules in [AGENTS.md](../AGENTS.md#versions-and-patch
   has no article: its lines stay here and go out with the next minor or major.
 - Up to v0.5.3, releases were git tags; they are no longer used.
 
-## Next version: v0.6.0 (`patch-notes-0-6-0`, covers v0.5.1 to v0.6.0)
+## Next version: v0.6.1
+
+### Fixes
+
+- Updates: a new version that keeps the same number (a small fix) shows that number once on
+  the update screen, instead of "v0.6.0 to v0.6.0".
+
+## v0.6.0 (`patch-notes-0-6-0`, covers v0.5.1 to v0.6.0)
 
 ### New
 
