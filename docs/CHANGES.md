@@ -11,7 +11,16 @@ next release writes itself. Rules in [AGENTS.md](../AGENTS.md#news-and-patch-not
 
 Tags up to v0.4.2 came before the news pages and have no article.
 
-## Next version (after v0.5.1)
+## Next version (after v0.5.2)
+
+### Site
+
+- Phones: the site menu is back. A square button beside "Play" opens leaderboard, wiki and
+  news; before, they could only be reached from the bottom of the page.
+- Leaderboard: the message shown when the board is empty or unavailable no longer sits
+  against the left edge of its frame.
+
+## v0.5.2 (`patch-notes-0-5-2`)
 
 ### New
 
