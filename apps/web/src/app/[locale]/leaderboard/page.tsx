@@ -35,7 +35,7 @@ export default async function LeaderboardPage({ params, searchParams }: Props) {
   return (
     <div className="page-shell">
       <SiteNav locale={locale} />
-      <main className="page-content board-page">
+      <main id="main" className="page-content board-page">
         <h1>{l.title}</h1>
         <p className="board-subtitle">{l.subtitle}</p>
         <p className="board-intro">

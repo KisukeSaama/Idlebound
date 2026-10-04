@@ -40,7 +40,6 @@ export const landing = defineMessages({
       ]
     },
     features: {
-      anchor: "fonctionnalites",
       title: "Ce que la route te réserve",
       items: (c: Counts) => [
         { title: "Une route qui recommence", text: `${c.stages} étapes, ${c.eras} strates en ${c.ages} Âges, un boss toutes les 5 étapes, chronomètre en main. Quand le roi tombe, renais plus fort : tes essences nourrissent ${c.altars} autels permanents.` },
@@ -132,7 +131,6 @@ export const landing = defineMessages({
       ]
     },
     features: {
-      anchor: "features",
       title: "What the road holds",
       items: (c: Counts) => [
         { title: "A road that begins again", text: `${c.stages} stages, ${c.eras} strata in ${c.ages} Ages, a boss every 5 stages, against the clock. When the king falls, be reborn stronger: your essences feed ${c.altars} permanent altars.` },

@@ -95,6 +95,15 @@ html {
   scrollbar-color: var(--border-strong) var(--bg);
 }
 
+/* Site pages keep the scrollbar's room even when short, so the nav never shifts between them.
+   They glide to their anchors, which stop clear of the fixed nav. */
+html:has(.page-shell) {
+  --site-nav-h: 56px;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--site-nav-h) + env(safe-area-inset-top) + 0.5rem);
+}
+
 body {
   margin: 0;
   min-height: calc(100 * var(--dvh));
@@ -161,6 +170,25 @@ button {
 
 ::selection {
   background: rgba(232, 185, 73, 0.35);
+}
+
+/* Hidden until a keyboard reaches it: the first stop of every public page jumps past the menus. */
+.skip-link {
+  position: absolute;
+  top: calc(0.5rem + env(safe-area-inset-top));
+  left: 0.5rem;
+  z-index: 100;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--gold-deep);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--gold-2);
+  font-weight: 700;
+  translate: 0 -300%;
+}
+
+.skip-link:focus-visible {
+  translate: 0 0;
 }
 
 .visually-hidden {
@@ -343,7 +371,7 @@ button {
   display: flex;
   flex-direction: column;
   min-height: calc(100 * var(--dvh));
-  padding-top: env(safe-area-inset-top);
+  padding-top: calc(var(--site-nav-h) + env(safe-area-inset-top));
   background: var(--bg);
 }
 
@@ -351,18 +379,63 @@ button {
   flex: 1 0 auto;
 }
 
+/* Fixed at the top of the window, compact, the nav darkens once the page leaves its top. */
 .page-nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  transition: background-color 160ms ease-out, border-color 160ms ease-out;
+}
+
+.page-nav-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   max-width: 1180px;
+  height: var(--site-nav-h);
   margin: 0 auto;
-  padding: 1rem 16px;
+  padding: 0 16px;
+}
+
+/* Back to the top: a small square in the corner, once the reader is well down the page. */
+.scroll-top {
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right));
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #000;
+  border-radius: var(--radius-sm);
+  background: var(--panel-solid);
+  color: var(--gold-2);
+  box-shadow: 0 0 0 1px var(--border-strong), var(--bevel), var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 8px;
+  transition: opacity 160ms ease-out, translate 160ms ease-out, visibility 0s linear 160ms;
+}
+
+.scroll-top[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  translate: 0 0;
+  transition: opacity 160ms ease-out, translate 160ms ease-out;
+}
+
+.scroll-top:hover,
+.scroll-top:focus-visible {
+  box-shadow: 0 0 0 1px var(--gold-deep), var(--bevel), var(--shadow);
 }
 
 .page-nav-logo img {
-  height: 44px;
+  height: 32px;
   width: auto;
 }
 
@@ -445,16 +518,135 @@ button {
   color: var(--muted);
 }
 
+/* ------------------------------------------------------------------ language window */
+
+.lang-open {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.lang-open:hover,
+.lang-open:focus-visible {
+  border-color: var(--gold-deep);
+  color: var(--gold-2);
+}
+
+.lang-dialog {
+  width: min(100% - 32px, 320px);
+  padding: 0;
+  border: 1px solid #000;
+  border-radius: var(--radius);
+  background: var(--panel-solid);
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--border-strong), var(--bevel), var(--shadow);
+}
+
+.lang-dialog::backdrop {
+  background: rgba(5, 4, 10, 0.74);
+}
+
+.lang-dialog[open] {
+  animation: lang-in 140ms ease-out;
+}
+
+@keyframes lang-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+.lang-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lang-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--gold-2);
+}
+
+.lang-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.lang-close:hover,
+.lang-close:focus-visible {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.lang-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px;
+  list-style: none;
+}
+
+.lang-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.lang-list a:hover {
+  border-color: var(--gold-deep);
+}
+
+.lang-list a[aria-current] {
+  border-color: var(--gold-deep);
+  background: #1a1408;
+  color: var(--gold-2);
+}
+
 @media (max-width: 640px) {
-  .page-nav-links a.nav-optional {
-    display: none;
+  html:has(.page-shell) {
+    --site-nav-h: 52px;
   }
   .page-nav-logo img {
-    height: 36px;
+    height: 28px;
+  }
+  .page-nav-links a.nav-optional {
+    display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html:has(.page-shell) {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {

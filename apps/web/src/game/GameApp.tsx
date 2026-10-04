@@ -65,6 +65,7 @@ import { NavRail } from "./components/NavRail";
 import { Scene } from "./components/Scene";
 import { PHONE_QUERY, Toasts, type Toast } from "./components/Toasts";
 import { WindowHost } from "./windows/WindowHost";
+import "./damage.css";
 import "./game.css";
 
 /** Never more than one fragment toast a minute (BIBLE 17.4): the others wait in the Chronicle. */

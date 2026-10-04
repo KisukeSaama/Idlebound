@@ -4,6 +4,7 @@ Durable rules for every session that touches this repository. Read before writin
 
 - [PRODUCT.md](PRODUCT.md): what the game does today. [DESIGN.md](DESIGN.md): how it looks today.
 - [docs/BIBLE.md](docs/BIBLE.md): the world, story and art direction to build toward.
+- [docs/CHANGES.md](docs/CHANGES.md): what the version in progress changes, for its patch note.
 - The code is the source of truth. Change a documented behaviour, update its doc in the same change.
 
 ## Foundations
@@ -88,6 +89,32 @@ swings single seeds by ±50 stages):
   buttons (a walker coming back logged out must reach their game at once). Everything else
   is earned.
 
+## News and patch notes
+
+The news pages keep the community close: every release gets a patch note, written for the
+public. Any agent working here keeps them up to date without being asked.
+
+- Every change a walker can see or feel (feature, content, balance, fix, public page) adds a
+  line to [docs/CHANGES.md](docs/CHANGES.md) under "Next version", in the same change.
+  Refactors, tests and tooling do not.
+- Releases are the `vX.Y.Z` tags on GitLab (`origin`). At the start of a session, run
+  `git fetch --tags origin` and compare the tags with the `version` of the patch notes in
+  `apps/web/src/i18n/messages/posts.ts`. Every tag after v0.4.2 without a patch note gets
+  one, from its lines in CHANGES.md (check `git log <previous tag>..<tag>` for what they
+  miss). Then rename that section of CHANGES.md to the tag, with the article's slug.
+- A patch note reads like the patch notes of a live game (League of Legends, Valorant): a
+  short warm intro, then New, Balance, Fixes as needed, the numbers the walker sees (before
+  and after), signed by the team. Kind `patch`, `version` set to the tag, dated the day of
+  the tag. Newest first in `NEWS_POSTS`.
+- Written for players, never for developers: no file, function, variable, line, commit,
+  branch, library, server or database names, no implementation detail. Say what changes on
+  the road and why it is better for the walker.
+- Every writing rule applies (FR and EN adapted, _tutoiement_, no em dash, no emoji, the
+  forbidden words). No spoilers: nothing the landing page does not already show, no secret,
+  never the Truth; deeper content is named without being revealed.
+- Something worth telling outside a release (a new page, an event) is an `announcement`,
+  without `version`.
+
 ## Done means
 
 1. `npm run lint` and `npm test` pass.
@@ -98,6 +125,7 @@ swings single seeds by ±50 stages):
    motion, and no console errors.
 6. PRODUCT.md, DESIGN.md updated; the matching BIBLE section marked shipped.
 7. Nothing left half-built: no TODO, no dead code, no disabled test.
+8. Visible change: its line is in docs/CHANGES.md; any untreated release tag has its patch note.
 
 ## Pixel art rules (non-negotiable)
 

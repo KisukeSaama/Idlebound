@@ -21,7 +21,7 @@ export default async function PrivacyPage({ params }: Props) {
   return (
     <div className="page-shell">
       <SiteNav locale={locale} />
-      <main className="page-content">
+      <main id="main" className="page-content">
         <h1>{p.title}</h1>
         <p>{p.intro}</p>
 

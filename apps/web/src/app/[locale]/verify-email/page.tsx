@@ -21,7 +21,7 @@ export default async function VerifyEmailPage({ params, searchParams }: Props) {
   return (
     <div className="page-shell">
       <SiteNav locale={locale} />
-      <main className="page-content" style={{ maxWidth: 460 }}>
+      <main id="main" className="page-content" style={{ maxWidth: 460 }}>
         <h1>{t.verify.title}</h1>
         <VerifyEmail token={token ?? ""} />
       </main>

@@ -27,7 +27,7 @@ export default async function WorkshopPage({ params }: Props) {
   return (
     <div className="page-shell">
       <SiteNav locale={locale} />
-      <main className="workshop-page">
+      <main id="main" className="workshop-page">
         <Workshop />
       </main>
       <SiteFooter locale={locale} />

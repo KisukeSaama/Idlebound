@@ -21,7 +21,7 @@ export default async function ResetPage({ params, searchParams }: Props) {
   return (
     <div className="page-shell">
       <SiteNav locale={locale} />
-      <main className="page-content" style={{ maxWidth: 460 }}>
+      <main id="main" className="page-content" style={{ maxWidth: 460 }}>
         <h1>{t.reset.title}</h1>
         <ResetForm token={token ?? ""} />
       </main>

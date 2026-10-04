@@ -1,14 +1,15 @@
-/* The hero runs under the nav: the Keep fills the top of the page. */
+/* The hero runs under the nav: the Keep fills the top of the page, and the nav stays clear
+   over it until the page scrolls. */
 .page-shell.landing {
-  --nav-h: 72px;
+  --nav-h: calc(var(--site-nav-h) + env(safe-area-inset-top));
   position: relative;
+  padding-top: 0;
   background: var(--bg);
 }
 
-.landing > .page-nav {
-  position: absolute;
-  inset: 0 0 auto;
-  z-index: 3;
+html:not([data-scrolled]) .landing > .page-nav {
+  border-bottom-color: transparent;
+  background: transparent;
 }
 
 .landing main {
@@ -219,37 +220,11 @@
   pointer-events: none;
 }
 
-.hero-dmg {
-  position: absolute;
-  translate: -50% -100%;
-  font-weight: 800;
-  font-size: 1.7rem;
-  color: #fff;
-  text-shadow: 0 2px 0 #000, 2px 0 0 #000, -2px 0 0 #000, 0 -2px 0 #000;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  animation: dmg-rise 1s steps(10, end) forwards;
-}
-
-.hero-dmg.crit {
-  font-size: 2.5rem;
-  color: var(--gold-2);
-}
-
-/* Reduced motion: the number holds still, then goes. */
+/* Reduced motion: the views hold still. */
 @media (prefers-reduced-motion: reduce) {
-  .hero-dmg {
-    animation: none;
-  }
   .hero-plane {
     transition: none;
   }
-}
-
-@keyframes dmg-rise {
-  0% { opacity: 1; transform: translateY(0); }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-80px); }
 }
 
 /* ------------------------------------------------------------------ the loop */
@@ -370,7 +345,7 @@
 /* The night in numbers: an old stat sheet, dotted leaders to each figure. */
 .numbers {
   position: sticky;
-  top: 1.5rem;
+  top: calc(var(--site-nav-h) + env(safe-area-inset-top) + 1.5rem);
   padding-left: 1.6rem;
   border-left: 1px solid var(--border);
 }
@@ -708,9 +683,6 @@
 
 /* Phones: the Keep on top, the words under it, the call to action under the thumb. */
 @media (max-width: 760px) {
-  .page-shell.landing {
-    --nav-h: 64px;
-  }
   /* The Keep starts under the nav, so the King's crown is never behind a button. */
   .hero {
     height: auto;
