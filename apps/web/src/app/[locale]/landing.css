@@ -1,5 +1,5 @@
 /* The hero runs under the nav: the Keep fills the top of the page, and the nav stays clear
-   over it until the page scrolls. */
+   over it until the page scrolls or its menu opens. */
 .page-shell.landing {
   --nav-h: calc(var(--site-nav-h) + env(safe-area-inset-top));
   position: relative;
@@ -7,7 +7,7 @@
   background: var(--bg);
 }
 
-html:not([data-scrolled]) .landing > .page-nav {
+html:not([data-scrolled]) .landing > .page-nav:not(:has(.site-menu[data-open])) {
   border-bottom-color: transparent;
   background: transparent;
 }

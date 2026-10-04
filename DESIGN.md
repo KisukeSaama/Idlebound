@@ -360,7 +360,10 @@ link to the same page in the other language), both on the same 1180 px measure s
 and the copyright share one edge; on a short page the footer stays at the bottom of the screen.
 The nav is fixed at the top of the window and compact (56 px, logo 32 px; 52 px and 28 px on
 phones), solid with a hairline below; on the landing it stays clear over the Keep until the
-page scrolls. Public pages scroll smoothly to their anchors, which stop clear of the nav
+page scrolls or its menu opens. On phones (640 px and under) leaderboard, wiki and news fold
+behind a 40 px square menu button beside "Play" (three bars, a cross once open, gold rim
+when open); `SiteMenu` drops them under the nav as full-width 48 px panel rows. Escape, a tap
+outside or following a link folds the panel away. Public pages scroll smoothly to their anchors, which stop clear of the nav
 (instant under reduced motion), and past 600 px a 44 px square "Back to top" button (gold
 chevron, panel bevel) fades into the bottom right corner.
 The first Tab stop of every public page is "Skip to content", a gold-ruled panel label in the

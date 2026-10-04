@@ -3,6 +3,7 @@ import Link from "next/link";
 import { messages } from "@/i18n/messages";
 import { href, type RouteId } from "@/i18n/routing";
 import { LanguageDialog } from "./LanguageDialog";
+import { SiteMenu } from "./SiteMenu";
 import { SiteScroll } from "./SiteScroll";
 
 /**
@@ -11,6 +12,11 @@ import { SiteScroll } from "./SiteScroll";
  */
 export function SiteNav({ locale }: { locale: Locale }) {
   const t = messages(locale);
+  const links = [
+    { href: href(locale, "leaderboard"), label: t.site.nav.leaderboard },
+    { href: href(locale, "wiki"), label: t.site.nav.wiki },
+    { href: href(locale, "news"), label: t.site.nav.news }
+  ];
   return (
     <header className="page-nav">
       <a href="#main" className="skip-link">{t.site.nav.skip}</a>
@@ -19,10 +25,11 @@ export function SiteNav({ locale }: { locale: Locale }) {
           <img src="/assets/brand/idlebound-logo.webp" alt="Idlebound" width={900} height={341} />
         </Link>
         <nav className="page-nav-links" aria-label={t.site.nav.main}>
-          <Link href={href(locale, "leaderboard")} className="nav-optional">{t.site.nav.leaderboard}</Link>
-          <Link href={href(locale, "wiki")} className="nav-optional">{t.site.nav.wiki}</Link>
-          <Link href={href(locale, "news")} className="nav-optional">{t.site.nav.news}</Link>
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} className="nav-optional">{link.label}</Link>
+          ))}
           <Link href={href(locale, "play")} className="btn btn-gold">{t.site.nav.play}</Link>
+          <SiteMenu links={links} labels={{ open: t.site.nav.menuOpen, close: t.site.nav.menuClose }} />
         </nav>
       </div>
       <SiteScroll label={t.site.nav.top} />

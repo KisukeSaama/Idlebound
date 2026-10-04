@@ -122,3 +122,9 @@
 .board-table tbody tr.me td {
   background: color-mix(in srgb, var(--gold) 12%, transparent);
 }
+
+/* Here the message is a card of its own, not a line inside the landing's board: it keeps the
+   table's side margin. */
+.board-empty.card {
+  padding: 1.2rem 0.8rem;
+}

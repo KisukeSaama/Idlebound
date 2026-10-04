@@ -18,7 +18,9 @@ export const site = defineMessages({
       wiki: "Wiki",
       leaderboard: "Classement",
       play: "Jouer",
-      top: "Revenir en haut"
+      top: "Revenir en haut",
+      menuOpen: "Ouvrir le menu",
+      menuClose: "Fermer le menu"
     },
     footer: {
       copyright: (year: number) => `© ${year} Idlebound · Clicker fantasy`,
@@ -60,7 +62,9 @@ export const site = defineMessages({
       wiki: "Wiki",
       leaderboard: "Leaderboard",
       play: "Play",
-      top: "Back to top"
+      top: "Back to top",
+      menuOpen: "Open the menu",
+      menuClose: "Close the menu"
     },
     footer: {
       copyright: (year: number) => `© ${year} Idlebound · Fantasy clicker`,
