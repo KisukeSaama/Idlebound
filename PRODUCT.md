@@ -626,6 +626,8 @@ rejects real play.
 - Settings: language, number notation (letters, scientific, engineering), sound and its volume,
   damage numbers, reduced motion, colorblind colors (rarities, gains and losses in hues that
   red-green blindness keeps apart), ascension confirmation.
+  Its foot names the version the walker plays (`v0.6.0`): the `version` of the root
+  `package.json`, read at build time, the same on the develop server.
 - One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a
   time, each gone for good once the walker did what it says, opened the place it points to,
   read it for 30 s, or pressed "OK" (a closed seam is explained once, not at every failed
@@ -730,16 +732,20 @@ rejects real play.
   game keeps playing, the header shows "Server unreachable", syncs retry every 30 s and at
   once when the network returns, and leaving the page asks for confirmation.
 - **A newer release moves open games onto it.** The CI builds the web image with the commit
-  as its release; the `/api` proxy stamps every answer with it
-  (`X-Idlebound-Release`). A page that sees another release than its own reloads onto it,
+  as its release and the root `package.json` version as its version; the `/api` proxy stamps every answer with both
+  (`X-Idlebound-Release`, `X-Idlebound-Version`). A page that sees another release than its own reloads onto it,
   but only a game the server keeps, an account's or a guest's (never a guest's before its
   first save, never a game refused or waiting on its address, never while the stored game
   loads or a choice is open), and
   only once a last save is confirmed: the game loop stops, the save goes as keepalive, and
   input is held until the reload. A hidden tab goes at once. A watched one goes as soon as
   nothing a reload would take away is on screen (a scene, a chest, a dialog, a Reunion, a
-  toast; an open window does not hold it and comes back closed): input is held and it fades
-  out in 0.7 s, unless a scene opens meanwhile. A failed save leaves it playing (checked
+  toast; an open window does not hold it and comes back closed): input is held under an
+  update screen naming both versions (v0.5.3 to v0.6.0) for 1.6 s, its bar filling to 80%,
+  unless a scene opens meanwhile. The reloaded page finishes that screen over its loading
+  screen (to 100%, "v0.6.0 is ready"), then fades it once the game is ready and watched
+  (1.4 s, then 0.4 s); a hidden tab that moved shows it when the walker comes back. It
+  keeps its page id, so it does not find its own game open elsewhere. A failed save leaves it playing (checked
   again every 5 s, and at once when the screen clears). A tab reloads at most once per release (session
   storage), so a stale cache cannot loop it. The reloaded page catches up the seconds the
   hand-over took, like any reload, and a page opened out of sight starts out of sight.

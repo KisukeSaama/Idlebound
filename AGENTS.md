@@ -89,25 +89,51 @@ swings single seeds by ±50 stages):
   buttons (a walker coming back logged out must reach their game at once). Everything else
   is earned.
 
-## News and patch notes
+## Versions and patch notes
 
-The news pages keep the community close: every release gets a patch note, written for the
-public. Any agent working here keeps them up to date without being asked.
+Every merge into `main` goes to production; there are no git tags. The version is the
+`version` of the root `package.json`, and the agent raises it, without being asked, in the
+change that deserves it. The news pages keep the community close: every minor or major
+version gets a patch note, written for the players.
 
-- Every change a walker can see or feel (feature, content, balance, fix, public page) adds a
-  line to [docs/CHANGES.md](docs/CHANGES.md) under "Next version", in the same change.
-  Refactors, tests and tooling do not.
-- Releases are the `vX.Y.Z` tags on GitLab (`origin`). At the start of a session, run
-  `git fetch --tags origin` and compare the tags with the `version` of the patch notes in
-  `apps/web/src/i18n/messages/posts.ts`. Only major and minor releases (`vX.0.0`, `v0.X.0`)
-  get a patch note: a patch tag (`v0.0.X`) gets none, its lines stay under "Next version" and
-  go out with the next minor or major. Every such tag after v0.5.1 without a patch note gets
-  one, from its lines in CHANGES.md (check `git log <previous noted tag>..<tag>` for what
-  they miss). Then rename that section of CHANGES.md to the tag, with the article's slug.
-- A patch note reads like the patch notes of a live game (League of Legends, Valorant): a
-  short warm intro, then New, Balance, Fixes as needed, the numbers the walker sees (before
-  and after), signed by the team. Kind `patch`, `version` set to the tag, dated the day of
-  the tag. Newest first in `NEWS_POSTS`.
+- Raise the version against production, not against the last commit: run `git fetch origin`
+  and read `git show origin/main:package.json`. What develop carries ships at the next merge,
+  so develop's version is the one that change will ship as. Take the highest level the
+  unshipped work calls for, once:
+  - patch (`0.6.0` to `0.6.1`): fixes, small tunings, wording, a walker feels it but meets
+    nothing new;
+  - minor (`0.6.1` to `0.7.0`): something new on the road (content, a mechanic, a window, a
+    power, a ranking), or a balance pass a walker will notice;
+  - major: only when the user decides it (1.0 is the launch).
+  Main at 0.6.0: a fix makes develop 0.6.1, a new mechanic after it makes it 0.7.0, more
+  fixes keep it 0.7.0. Refactors, tests, tooling and site-only changes raise nothing.
+- Raise it with `npm version <x.y.z> --no-git-tag-version` (it keeps `package-lock.json` in
+  step). The game's Settings show it, read at build time: no version number is written by
+  hand anywhere else.
+- Patch notes are about the game only: what a walker meets on the road (content, mechanics,
+  balance, interface of the game, saving, account and fair play as they feel them, the
+  leaderboard as it ranks their play). The site around it (landing page, wiki, news, menus,
+  legal pages, sharing, RSS) never goes in a patch note; when it is worth telling, it gets an
+  `announcement`.
+- Every game change a walker can see or feel adds a line to [docs/CHANGES.md](docs/CHANGES.md)
+  under "Next version", in the same change. Refactors, tests, tooling and site-only changes
+  do not.
+- Only minor and major versions get a patch note. A patch version gets none: its lines stay
+  under "Next version" and go out with the next minor or major. When develop's version
+  becomes a minor or major, write its patch note in `apps/web/src/i18n/messages/posts.ts`
+  from the lines under "Next version", checked against the code itself
+  (`git diff <last noted version's commit on main> develop`) for what they miss, and keep it
+  in step with every later line until it ships. Name the heading after it ("Next version:
+  v0.7.0, `patch-notes-0-7-0`").
+- At the start of a session, after `git fetch origin`: if main now carries the version named
+  under "Next version", it shipped. Rename that section to the version and open a fresh
+  "Next version" on top.
+- A patch note reads like the patch notes of League of Legends or Valorant: a short warm
+  intro saying what this version is about, then New, Balance, Fixes as needed. Each line
+  starts with the thing it touches (a power, an altar, a companion, a window) and says what
+  the walker will notice, with the numbers they see before and after. Signed by the team.
+  Kind `patch`, `version` set to `vX.Y.Z`, dated the day it was last written (the release
+  follows it closely). Newest first in `NEWS_POSTS`.
 - Written for players, never for developers: no file, function, variable, line, commit,
   branch, library, server or database names, no implementation detail. Say what changes on
   the road and why it is better for the walker.
@@ -127,7 +153,8 @@ public. Any agent working here keeps them up to date without being asked.
    motion, and no console errors.
 6. PRODUCT.md, DESIGN.md updated; the matching BIBLE section marked shipped.
 7. Nothing left half-built: no TODO, no dead code, no disabled test.
-8. Visible change: its line is in docs/CHANGES.md; any untreated major or minor tag has its patch note.
+8. Visible game change: its line is in docs/CHANGES.md, the version is raised if it calls for
+   it, and a minor or major version has its patch note.
 
 ## Pixel art rules (non-negotiable)
 

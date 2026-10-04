@@ -2,8 +2,11 @@
 
 exports[`news share cover > draws every article's cover, the same pixels every time 1`] = `
 {
+  "patch-notes-0-1-0": "ec050fbb",
+  "patch-notes-0-2-1": "21872c9b",
+  "patch-notes-0-3-0": "44d6b13b",
+  "patch-notes-0-4-0": "dd99b08b",
   "patch-notes-0-5-0": "39e6a88b",
-  "patch-notes-0-5-1": "b3db75bb",
   "the-wiki-opens": "84525d9b",
 }
 `;

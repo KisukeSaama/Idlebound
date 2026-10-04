@@ -10,6 +10,13 @@ export const hud = defineMessages({
   fr: {
     loadingSave: "Chargement de ta partie…",
     loadingWake: "Réveil des compagnons…",
+    releaseUpdate: {
+      title: "Mise à jour d'Idlebound",
+      keeping: "Ta progression est mise à l'abri…",
+      installing: "Installation de la nouvelle version…",
+      ready: (version: string) => (version ? `La ${version} est prête. Bonne route.` : "La nouvelle version est prête. Bonne route."),
+      percent: (value: number) => `${value} %`
+    },
     windowTitles: {
       map: { label: "Carte du monde", shortLabel: "Carte" },
       gear: { label: "Équipement", shortLabel: "Équipement" },
@@ -284,6 +291,13 @@ export const hud = defineMessages({
   en: {
     loadingSave: "Loading your game…",
     loadingWake: "Waking up your companions…",
+    releaseUpdate: {
+      title: "Idlebound update",
+      keeping: "Putting your progress somewhere safe…",
+      installing: "Installing the new version…",
+      ready: (version: string) => (version ? `${version} is ready. Walk on.` : "The new version is ready. Walk on."),
+      percent: (value: number) => `${value}%`
+    },
     windowTitles: {
       map: { label: "World map", shortLabel: "Map" },
       gear: { label: "Equipment", shortLabel: "Gear" },

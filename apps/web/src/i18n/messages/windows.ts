@@ -177,7 +177,7 @@ export const windows = defineMessages({
       enterAction: "Attaquer (zone de combat sélectionnée)",
       escapeKey: "Échap",
       escapeAction: "Fermer une fenêtre",
-      footer: "Idlebound v1.0"
+      footer: (version: string) => `Idlebound ${version}`
     }
   },
   en: {
@@ -355,7 +355,7 @@ export const windows = defineMessages({
       enterAction: "Attack (combat area focused)",
       escapeKey: "Esc",
       escapeAction: "Close a window",
-      footer: "Idlebound v1.0"
+      footer: (version: string) => `Idlebound ${version}`
     }
   }
 });
