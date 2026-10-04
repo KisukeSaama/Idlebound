@@ -228,7 +228,8 @@ Content colors live with the game data, not in CSS:
   A buy key held down repeats: the first repeat after 380 ms, then each sooner than the last
   (160 ms down to 55 ms) until the gold runs out or the finger lifts; a tap still buys once.
 - **Powers**: an action bar of square keys, the hotkey in the top corner, the cooldown
-  sweeping over, a gold rim while active, an item card as tooltip. A power that comes back
+  sweeping over, a gold rim while active, an item card as tooltip whose recharge is the
+  walker's own, after the Altar of Echoes and Eldra's Locket. A power that comes back
   during play says so once: a gold ring closes on its key in 900 ms, the icon lit (a still
   gold outline with reduced motion), and the phone buzzes; a key already ready at load
   stays quiet.

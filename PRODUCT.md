@@ -522,7 +522,9 @@ they begin and a fragment the first time.
   ascensions and essences, +5% for the mythic one; the two highest tiers of a series ×2.5;
   click damage gets half of it), and 20 secret deeds with no bonus. Stages have a deed at
   the end of every Age from the third (750 to 2750, added later with ids 13 to 19, shown in
-  order), gold one about every Age up to 1e225. Ids never change.
+  order), gold one about every Age up to 1e225. Ids never change. A deed's bar counts from
+  the tier below it, in orders of magnitude when the tiers are a hundredfold apart or more
+  (gold, the mightiest hit); its huge thresholds are written in the chosen notation.
 - Detailed run and lifetime statistics, ascension history.
 
 ### Playing in the background (AFK)

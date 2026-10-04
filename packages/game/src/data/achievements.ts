@@ -95,3 +95,22 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 ];
 
 export const ACHIEVEMENT_BY_ID: Record<string, AchievementDef> = lookup(ACHIEVEMENTS.map((a) => [a.id, a]));
+
+/** Past this ratio between two tiers, the way between them is measured in orders of magnitude. */
+const LOG_PROGRESS_RATIO = 100;
+
+/**
+ * How far a deed is, from 0 to 1, counted from the tier below it in its series. Between tiers
+ * a hundredfold apart or more (gold, the mightiest hit), it counts orders of magnitude: a
+ * walker at 2e201 gold on the way from 1e190 to 1e205 is three quarters there, not at zero.
+ */
+export function achievementProgress(def: AchievementDef, value: number): number {
+  const below = ACHIEVEMENTS.filter((other) => other.series === def.series && other.threshold < def.threshold);
+  const floor = below.reduce((highest, other) => Math.max(highest, other.threshold), 0);
+  if (value >= def.threshold) return 1;
+  if (floor > 0 && def.threshold / floor >= LOG_PROGRESS_RATIO) {
+    if (value <= floor) return 0;
+    return Math.log(value / floor) / Math.log(def.threshold / floor);
+  }
+  return Math.max(0, (value - floor) / (def.threshold - floor));
+}

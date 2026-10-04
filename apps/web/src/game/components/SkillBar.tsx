@@ -1,6 +1,6 @@
 "use client";
 
-import { SKILLS, isSkillUnlocked } from "@idlebound/game";
+import { SKILLS, isSkillUnlocked, skillText } from "@idlebound/game";
 import { useRef } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
@@ -14,7 +14,7 @@ const READY_FLASH_MS = 900;
 
 export function SkillBar() {
   const { state, store } = useGame();
-  const { t, g } = useI18n();
+  const { t, locale } = useI18n();
   const m = t.hud.skills;
   const now = Date.now();
   // A power that comes back during play says so once: its key shines and the phone buzzes.
@@ -41,7 +41,7 @@ export function SkillBar() {
         const remaining = skillState ? Math.max(0, skillState.readyAt - now) : 0;
         const cooldownRatio = cooling ? remaining / total : 0;
         const activeLeft = active && skillState ? Math.ceil((skillState.activeUntil - now) / 1000) : 0;
-        const text = g.skills[skill.id];
+        const text = skillText(skill.id, locale, state);
         const label = m.ready(text.name, skill.hotkey, text.description) + (cooling ? m.cooldown(formatCooldown(remaining, m)) : "");
         return (
           <button
