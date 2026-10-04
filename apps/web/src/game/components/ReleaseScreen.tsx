@@ -49,7 +49,8 @@ function useProgress(from: number, to: number, ms: number) {
 /**
  * The game moves to a newer version: an update screen names it and fills its bar. The old
  * page shows it while everything played is put on the server, up to 80%; the new page picks
- * it up over its loading screen (same logo, same ground), fills it and fades it away.
+ * it up over its loading screen (same logo, same ground), fills it and fades it away. A
+ * release that kept its version (too small to raise it) shows that version alone.
  */
 export function ReleaseScreen({ update, arrived = false, leaving = false }: { update: ReleaseUpdate; arrived?: boolean; leaving?: boolean }) {
   const { t } = useI18n();
@@ -67,7 +68,7 @@ export function ReleaseScreen({ update, arrived = false, leaving = false }: { up
         <p className="release-title">{m.title}</p>
         {update.to ? (
           <p className="release-versions">
-            {update.from ? (
+            {update.from && update.from !== update.to ? (
               <>
                 <span className="release-from">{update.from}</span>
                 <svg className="release-arrow" viewBox="0 0 16 16" aria-hidden="true">

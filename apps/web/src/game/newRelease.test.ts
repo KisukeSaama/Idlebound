@@ -233,14 +233,32 @@ describe("NewRelease", () => {
     await cloud.sync();
     await vi.advanceTimersByTimeAsync(0);
     expect(reloads).toBe(1);
-    // The reloaded page runs the new version.
+    // The reloaded page runs the new release.
+    vi.stubEnv("IDLEBOUND_RELEASE", "new");
     vi.stubEnv("IDLEBOUND_VERSION", "v-new");
     expect(takeArrival()).toEqual(UPDATE);
     expect(takeArrival()).toBeNull();
   });
 
-  it("does not claim an update a page still older did not reach", async () => {
-    stored.set("idlebound:release:arrival", JSON.stringify(UPDATE));
+  it("names the same version on both sides when the release did not raise it", async () => {
+    const { cloud } = await playing();
+    fetchMock.mockImplementation(async () => {
+      const answer = kept("new");
+      answer.headers.set("x-idlebound-version", "v-old");
+      return answer;
+    });
+    await cloud.sync();
+    await vi.advanceTimersByTimeAsync(UPDATE_MS);
+    expect(shown).toEqual([{ from: "v-old", to: "v-old" }]);
+    expect(reloads).toBe(1);
+    vi.stubEnv("IDLEBOUND_RELEASE", "new");
+    expect(takeArrival()).toEqual({ from: "v-old", to: "v-old" });
+  });
+
+  it("does not claim an update a page still older did not reach, even with the same version", async () => {
+    stored.set("idlebound:release:arrival", JSON.stringify({ ...UPDATE, release: "new" }));
+    vi.stubEnv("IDLEBOUND_VERSION", "v-new");
+    // Still the old release: a cache served the old page again.
     expect(takeArrival()).toBeNull();
     expect(stored.has("idlebound:release:arrival")).toBe(false);
   });

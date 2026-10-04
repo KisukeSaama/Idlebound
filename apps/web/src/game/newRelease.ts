@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { onNewerRelease, ownVersion, type ServerRelease } from "@/lib/release";
+import { onNewerRelease, ownRelease, ownVersion, type ServerRelease } from "@/lib/release";
 import { audio } from "./audio";
 import type { CloudSync } from "./cloud";
 
@@ -18,7 +18,10 @@ const RELOADED_KEY = "idlebound:release:reloaded-for";
 /** The versions of the update under way, for the new page to finish its screen. */
 const ARRIVAL_KEY = "idlebound:release:arrival";
 
-/** The version a page leaves and the one it moves to; either is empty when unknown. */
+/**
+ * The version a page leaves and the one it moves to; either is empty when unknown. Both are
+ * the same when the release changed but the version was not raised (a fix too small for it).
+ */
 export interface ReleaseUpdate {
   from: string;
   to: string;
@@ -35,25 +38,26 @@ function reloadedFor(): string | null {
 function rememberReload(release: string, update: ReleaseUpdate) {
   try {
     window.sessionStorage.setItem(RELOADED_KEY, release);
-    window.sessionStorage.setItem(ARRIVAL_KEY, JSON.stringify(update));
+    window.sessionStorage.setItem(ARRIVAL_KEY, JSON.stringify({ ...update, release }));
   } catch {
     // Without storage, a page that stays older may reload once per newer answer: still safe.
   }
 }
 
 /**
- * The update this page arrives from, read once: only when the page runs the version the
- * update named (a page still older, a cache in the way, does not claim it).
+ * The update this page arrives from, read once: only when the page runs the release the
+ * update moved to (a page still older, a cache in the way, does not claim it). The release,
+ * not the version: several releases can carry the same version.
  */
 export function takeArrival(): ReleaseUpdate | null {
   try {
     const stored = window.sessionStorage.getItem(ARRIVAL_KEY);
     window.sessionStorage.removeItem(ARRIVAL_KEY);
     if (!stored) return null;
-    const update = JSON.parse(stored) as Partial<ReleaseUpdate>;
-    const own = ownVersion();
-    if (!own || update.to !== own) return null;
-    return { from: typeof update.from === "string" ? update.from : "", to: own };
+    const update = JSON.parse(stored) as Partial<ReleaseUpdate> & { release?: string };
+    const own = ownRelease();
+    if (!own || update.release !== own) return null;
+    return { from: typeof update.from === "string" ? update.from : "", to: ownVersion() };
   } catch {
     return null;
   }
