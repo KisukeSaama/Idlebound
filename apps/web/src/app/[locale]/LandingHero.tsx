@@ -11,8 +11,10 @@ import { bossHp, formatNumber } from "@idlebound/game";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Art } from "@/game/pixel/Art";
+import { hash2 } from "@/game/pixel/pixels";
 import { renderCreature } from "@/game/pixel/creature";
 import { pageRect, pixelRatio, prefersReducedMotion, uiZoom } from "@/game/pixel/surface";
+import "@/game/damage.css";
 
 const KING = "ruined-king";
 const BIOME = "fallen-king-ruins";
@@ -27,6 +29,14 @@ const PHONE = 760;
 /** Where the King stands, in art pixels right of the scene's middle (closer on a phone's narrow view). */
 const KING_X = 72;
 const KING_X_PHONE = 36;
+/** How long a number of the arena lives (damage.css). */
+const NUMBER_MS = 900;
+/** Blows closer than this in space and time are one burst, fanned out as the arena does. */
+const BURST_PX = 40;
+const BURST_MS = 400;
+const BURST_STEPS = 5;
+const BURST_RISE = 24;
+const BURST_ZIG = 26;
 
 type Text = {
   titleLead: string;
@@ -37,10 +47,12 @@ type Text = {
   back: string;
   backLink: string;
   kingName: string;
+  /** The mark over a critical number, the arena's own. */
+  critMark: string;
   boss: { rank: string; strike: string; hint: string; again: string; crit: string; fallen: string };
 };
 
-type Hit = { id: number; x: number; y: number; value: string; crit: boolean };
+type Hit = { id: number; x: number; y: number; drift: number; value: string; crit: boolean };
 
 function reduced(): boolean {
   return prefersReducedMotion() || document.documentElement.classList.contains("reduced-motion");
@@ -56,6 +68,7 @@ export function LandingHero({ text, playHref, leaderboardHref }: { text: Text; p
   const [struck, setStruck] = useState(false);
   const blows = useRef(0);
   const nextId = useRef(0);
+  const burst = useRef({ x: 0, y: 0, at: -Infinity, count: 0 });
   const feet = useMemo(() => {
     const sprite = renderCreature(KING);
     return { below: sprite.pixels.h - 1 - sprite.feet, width: sprite.pixels.w };
@@ -113,8 +126,23 @@ export function LandingHero({ text, playHref, leaderboardHref }: { text: Text; p
     setStruck(true);
     window.setTimeout(() => setStruck(false), 90);
     const id = nextId.current++;
-    setHits((current) => [...current.slice(-5), { id, x, y, value: formatNumber(damage), crit }]);
-    window.setTimeout(() => setHits((current) => current.filter((hit) => hit.id !== id)), reduced() ? 600 : 1000);
+    // A thumb taps the same spot again and again: each number steps aside and a line higher.
+    const now = performance.now();
+    const last = burst.current;
+    const same = now - last.at < BURST_MS && Math.abs(x - last.x) < BURST_PX && Math.abs(y - last.y) < BURST_PX;
+    burst.current = same ? { ...last, at: now, count: last.count + 1 } : { x, y, at: now, count: 0 };
+    const step = burst.current.count % BURST_STEPS;
+    const roll = (salt: number) => hash2(id, salt, 0x5f1a) - 0.5;
+    const hit = {
+      id,
+      x: x + (step === 0 ? 0 : step % 2 === 1 ? -BURST_ZIG : BURST_ZIG) + roll(1) * 10,
+      y: Math.max(24, y - 10 - step * BURST_RISE),
+      drift: roll(2) * 60,
+      value: formatNumber(damage),
+      crit
+    };
+    setHits((current) => [...current.slice(-11), hit]);
+    window.setTimeout(() => setHits((current) => current.filter((entry) => entry.id !== id)), NUMBER_MS);
     if (left === 0) {
       window.setTimeout(() => {
         blows.current = 0;
@@ -194,7 +222,14 @@ export function LandingHero({ text, playHref, leaderboardHref }: { text: Text; p
 
       <div className="hero-fx" aria-hidden="true">
         {hits.map((hit) => (
-          <span key={hit.id} className={hit.crit ? "hero-dmg crit" : "hero-dmg"} style={{ left: hit.x, top: hit.y }}>{hit.value}</span>
+          <span
+            key={hit.id}
+            className={hit.crit ? "fx-damage crit" : "fx-damage"}
+            data-label={hit.crit ? text.critMark : undefined}
+            style={{ left: hit.x, top: hit.y, ["--drift" as string]: `${hit.drift}px` }}
+          >
+            {hit.value}
+          </span>
         ))}
       </div>
     </section>

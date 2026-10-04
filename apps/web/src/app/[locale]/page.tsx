@@ -2,13 +2,16 @@ import { AGE_COUNT, ALTARS, BESTIARY, BIOMES, CLICK_HERO_ID, ERA_COUNT, HEROES, 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
+import { NEWS_POSTS } from "@/i18n/messages/posts";
 import { href } from "@/i18n/routing";
 import { getI18n } from "@/i18n/server";
 import { fetchLeaderboard, fetchStats } from "@/lib/server-api";
 import { SITE_NAME, pageAlternates, siteUrl } from "@/lib/site";
 import { Art, type ArtSpec } from "@/game/pixel/Art";
 import { LandingHero } from "./LandingHero";
+import { NewsCard } from "./news/NewsCard";
 import "./landing.css";
+import "./news/news.css";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -89,7 +92,7 @@ export default async function LandingPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteNav locale={locale} />
 
-      <main>
+      <main id="main">
         <LandingHero
           text={{
             titleLead: l.hero.titleLead,
@@ -100,6 +103,7 @@ export default async function LandingPage({ params }: Props) {
             back: l.hero.back,
             backLink: l.hero.backLink,
             kingName: g.monsters["ruined-king"],
+            critMark: t.hud.fx.crit,
             boss: l.hero.boss
           }}
           playHref={href(locale, "play")}
@@ -115,7 +119,7 @@ export default async function LandingPage({ params }: Props) {
           ))}
         </section>
 
-        <section id={l.features.anchor} className="section" aria-labelledby="features-title">
+        <section className="section" aria-labelledby="features-title">
           <h2 id="features-title" className="section-title">{l.features.title}</h2>
           <div className="features">
             <div className="feature-list">
@@ -178,6 +182,14 @@ export default async function LandingPage({ params }: Props) {
               );
             })}
           </div>
+        </section>
+
+        <section className="section" aria-labelledby="news-title">
+          <h2 id="news-title" className="section-title">{t.news.landingTitle}</h2>
+          <div className="news-latest">
+            {NEWS_POSTS.slice(0, 3).map((post) => <NewsCard key={post.slug} locale={locale} post={post} heading="h3" />)}
+          </div>
+          <Link href={href(locale, "news")} className="news-more">{t.news.all}</Link>
         </section>
 
         <div className="section duo">

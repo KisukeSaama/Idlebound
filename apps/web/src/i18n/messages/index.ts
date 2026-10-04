@@ -6,16 +6,19 @@ import { common } from "./common";
 import { hud } from "./hud";
 import { landing } from "./landing";
 import { leaderboard } from "./leaderboard";
+import { news } from "./news";
 import { night } from "./night";
 import { privacy } from "./privacy";
 import { reset } from "./reset";
 import { sanctum } from "./sanctum";
 import { site } from "./site";
 import { verify } from "./verify";
+import { wiki } from "./wiki";
+import { wikiArticles } from "./wikiArticles";
 import { windows } from "./windows";
 import { workshop } from "./workshop";
 
-const NAMESPACES = { common, site, landing, leaderboard, privacy, reset, verify, hud, api, windows, account, workshop, sanctum, chronicle, night };
+const NAMESPACES = { common, site, landing, leaderboard, news, privacy, reset, verify, hud, api, windows, account, workshop, sanctum, chronicle, night, wiki, wikiArticles };
 
 type Namespaces = typeof NAMESPACES;
 export type Messages = { [K in keyof Namespaces]: Namespaces[K]["fr"] };

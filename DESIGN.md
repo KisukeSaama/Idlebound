@@ -354,10 +354,17 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
 
 ## Public pages
 
-Landing (`/[locale]`), leaderboard, privacy, password reset, e-mail confirmation, 404. Shared chrome:
-`SiteNav` (logo, leaderboard, the game, gold "Play" button) and `SiteFooter` (links and a
+Landing (`/[locale]`), news, wiki, leaderboard, privacy, password reset, e-mail confirmation, 404. Shared chrome:
+`SiteNav` (logo back to the landing, leaderboard, wiki, news, gold "Play" button) and `SiteFooter` (links and a
 link to the same page in the other language), both on the same 1180 px measure so the logo
-and the copyright share one edge; on a short page the footer stays at the bottom of the screen. The landing page (`LandingHero` then the
+and the copyright share one edge; on a short page the footer stays at the bottom of the screen.
+The nav is fixed at the top of the window and compact (56 px, logo 32 px; 52 px and 28 px on
+phones), solid with a hairline below; on the landing it stays clear over the Keep until the
+page scrolls. Public pages scroll smoothly to their anchors, which stop clear of the nav
+(instant under reduced motion), and past 600 px a 44 px square "Back to top" button (gold
+chevron, panel bevel) fades into the bottom right corner.
+The first Tab stop of every public page is "Skip to content", a gold-ruled panel label in the
+top left corner, off screen until focused. The landing page (`LandingHero` then the
 server page):
 
 - **Hero**: the Keep at night fills the width, drawn in its three planes (`depth` art:
@@ -365,8 +372,8 @@ server page):
   the height the screen gives it (the hero is exactly as tall as the scene; the view widens
   around the scene as the arena does). With a mouse, the planes shift with the pointer by
   whole art pixels (2, 6 and 12 at the edges). The Fallen King stands on the road at the
-  scene's scale and takes the visitor's blows: each strike (pointer or Enter) throws a
-  damage number, every fifth is a critical hit (ten times), his health bar drops on his
+  scene's scale and takes the visitor's blows: each strike (pointer or Enter) throws the
+  arena's own damage number (`damage.css`, fanned out the same way on a burst), every fifth is a critical hit (ten times), his health bar drops on his
   plate (`gardien`, the stage-50 guardian's real health) and a line answers ("Encore.",
   the critical, then "Il tombe. La nuit prochaine, il se relève." before he rises again).
   The copy sits on the left over a shade that only covers its side: title, lead (the
@@ -383,6 +390,8 @@ server page):
 - **Leaderboard and FAQ** side by side: the top 10 as a table (alternating rows, rank
   labels gold, silver, bronze), how to carve your name there, then the questions as
   `<details>` opened by a turning chevron.
+- **Latest news**: the three latest articles as cards side by side (one column on phones),
+  each with its pixel cover, then an underlined link to every article.
 - **Last call**: a ruled line, the King has risen, the gold button.
 
 Every count on it comes from the game data. World art on server pages goes through the
@@ -392,8 +401,51 @@ rule in one plain sentence (the tie rule beneath it, smaller, on the tallies), "
 a logged-in walker past the rows shown (their line in gold), and a table with alternating rows
 whose last column is the date reached on Depth and the highest stage on the tallies.
 
+Every article has a pixel cover: a biome of the road cropped from the ground up, one of the
+creatures the landing already shows standing on it, at whole scales in a pixel frame. The news
+page (1040 px wide) opens on its Cinzel title, a rule, the italic subtitle and a muted "RSS feed"
+link with its icon, then the newest
+article as a wide card, the cover beside the words (stacked on phones), then "Earlier on the
+road" as a grid of cards, cover on top. A card opens as a whole (its title is the link a
+keyboard reaches; the border turns gold-deep, the chevron of "Read the article" steps right):
+a square label for the kind (gold for patch notes, violet for announcements), the version, the
+date, the title in pale gold and the muted summary. An article reads on the 820 px measure:
+the way back with a chevron, the cover as a wide banner, the labels, the title, the summary
+as a muted lead, a rule, the body on a 68ch measure (gold headings, square gold bullets), and
+a ruled foot with the team's signature in Cinzel gold and, when the article points to a page,
+a gold button.
+
+The wiki (`/[locale]/wiki`, styles in `src/wiki/wiki.css`) reads like an old fan encyclopedia
+built with the site's tokens. On wide screens a sticky contents column (the search, then the
+topics in four groups under small uppercase labels, not headings, the open one ruled in gold) sits beside the article: the search stays at
+its top and only the topics scroll, without a visible bar, so the column never changes width.
+The search's results float over the topics (never pushing them): eight at most, best first
+(a title beginning with the query, pages before sections), the highlighted one ruled in gold,
+driven by the arrows, Enter and Escape; under 960 px the
+column folds into a "Wiki contents" `<details>` above it. An article opens on its breadcrumb,
+its world art in a pixel frame, a Cinzel title in pale gold and a muted lead, then the
+reading-mode bar (three square buttons, the chosen one gold, what each does in its tooltip,
+and a faint line saying how far the walker's game goes), then "On this page" in two columns. Sections carry the
+ruled heading of the landing (plain text, not a link: "On this page" holds the anchors); tables have alternating rows and gold tabular figures;
+companions, altars and powers show their emblem or icon in a 36 px frame; on the index every
+topic card shows its picture in a 64 px frame, an icon when its header art (a large creature,
+a biome) is wider than the frame at its own size, since sprites are never shrunk; creatures and
+relics are tiles (art in a pixel frame, name, rank) in a responsive grid. A tip is a gold
+rule on the left, a trap a red one. Lines of the story are italic quotes on a gold-deep rule,
+the speaker in gold under them.
+
+A revelation waits behind a veil: a dashed frame on a diagonal hatch of the night, a crossed
+eye in pale violet, "Spoiler" (or "Not on your road yet" in the "as far as my game" mode) and
+what would reveal it in play, with a small "Reveal" button. In a table the veil spans the row;
+in a sentence it is a short bar of dots; in a grid a dashed tile with a question mark.
+Revealing one piece reveals every piece behind the same gate on the page. The server renders
+every veil closed, so nothing shows before the browser knows the walker's choice.
+
 There is **no language switcher in the header**. The language is chosen automatically, or
-in the game's Settings window; the footer link is the only switch on public pages.
+in the game's Settings window; on public pages the only switch is a globe at the end of the
+footer links. It opens a small window ("Language"): one row per language, written in itself,
+the current one in gold with a check, each a plain link to the same page in that language
+that also records the choice. Escape, the cross or a click beside it closes it.
 
 ## E-mails
 
@@ -869,7 +921,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
 - **Reduced motion**: honoured from `prefers-reduced-motion` and from the in-game
   "Reduced animations" setting (`.reduced-motion` on `<html>`), which stops the looping
   animations. The pixel world then holds a single frame: no drift, no breathing;
-  monsters fade in and out instead of gathering and scattering. Damage numbers can be turned off separately.
+  monsters fade in and out instead of gathering and scattering. Damage numbers hold still,
+  then go. They can be turned off separately.
 
 - **Events of the Long Night**: a violet toast when one begins and a toast for its
   outcome. Timed event creatures (the Seam Warden, the Quiet, the Stray Armor) use the boss

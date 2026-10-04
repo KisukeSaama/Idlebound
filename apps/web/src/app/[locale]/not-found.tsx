@@ -15,7 +15,7 @@ export default async function NotFound() {
   return (
     <div className="page-shell">
       <SiteNav locale={locale} />
-      <main className="page-content" style={{ textAlign: "center" }}>
+      <main id="main" className="page-content" style={{ textAlign: "center" }}>
         <div className="not-found-art">
           <Art spec={{ kind: "creature", id: "field-rat" }} size={200} />
         </div>

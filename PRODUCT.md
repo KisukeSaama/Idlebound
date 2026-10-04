@@ -850,6 +850,41 @@ account's accepted saves feed the leaderboard, which keeps each player's best ve
 values: a guest is never ranked. Checks that need no stored save run before the
 save's row is locked.
 
+## The wiki
+
+A public guide to the whole game (`/[locale]/wiki`), linked from the site's nav and footer:
+an index with a search, then 18 topics in four groups (getting started: the beginner's guide,
+questions and tips, a calculator; the rules: combat, companions, powers, ascension and altars,
+the Promise, relics and market, playing in the background; the world: bestiary, biomes,
+strata, events; further on: the Chronicle and Recognition, deeds and secrets, the Descent,
+account and leaderboard), and one page per companion (21), creature (63) and named relic (24).
+
+- **From the game data.** Tables, figures and names come from `@idlebound/game` (heroes,
+  altars, relics, events, formulas, `gameText`); the articles (`i18n/messages/wikiArticles.ts`)
+  quote their figures through `wiki/facts.ts`. A new creature, relic or companion gets its
+  page at once; a test checks every entry has one and both languages share the same sections.
+- **The calculator** gives, for any stage, its biome, stratum, Age and boss, a Remnant's and the
+  boss's health, the gold per Remnant, the essences of an ascension once it is cleared, the
+  threads woven at that depth and the Density of a relic found there.
+- **Everything is told, nothing is spoiled unasked.** Every revelation (a rare or deep
+  creature, a stratum, an Age, a King's form, a line of the story, a secret's answer, a named
+  relic, a late companion) is gated (`wiki/gates.ts`) by what reveals it in play: a stage, an
+  ascension count, a Descent, kills of a creature, a companion hired, a Recognition tier, a
+  promise kept, a relic, a secret, an event, an echo, a milestone, a Lesson, an altar legend,
+  a scene. Three reading modes: **No spoilers** (FR: *Sans spoil*; every revelation behind a warning, revealed one by
+  one), **As far as my game** (the walker's kept game, account or guest, read with `GET
+  /save`: what it has lived is open, the rest hidden with what reveals it and how far the game
+  stands) and **Everything** (FR: *Tout voir*). A walker with a kept game reads in the second mode until they
+  choose; the choice stays in this browser (a reading convenience, never game state). The
+  Truth (BIBLE 4) is never written.
+- **SEO**: every page is rendered on the server with its own title, description, canonical,
+  `hreflang` alternates and social card, an `Article` and a `BreadcrumbList` JSON-LD, and is in
+  the sitemap. The veiled words stay in the page, out of sight. A page that is itself a
+  revelation (a gated companion, creature or relic) keeps its name out of the browser's tab:
+  the server titles it "Spoiler · <topic>", and the tab takes its name once the reading mode
+  opens it. Its description, social card and structured data still name it, for search
+  engines.
+
 ## Leaderboard
 
 The **Roll of the Bound** (FR: *le Registre des Liés*): a public page with four boards, each
@@ -888,6 +923,22 @@ its walker still sees their own rank, but nobody around.
   migration 0008: their columns and the `stage_history` table are gone; the three tallies were
   filled from each account's stored save.
 
+## News
+
+The public news pages (`/[locale]/news`, one page per article at `/[locale]/news/<slug>`)
+tell walkers what each release changes: **patch notes**, one per release tag, and
+**announcements** for news outside a release. Every article exists in French and English,
+is written for the public (what changes on the road, never how it is built), and carries a
+date and, for a patch note, its version. The landing page shows the three latest; the nav
+and the footer link to the list. The articles are site data
+(`apps/web/src/i18n/messages/posts.ts`), gathered between releases in `docs/CHANGES.md`
+(process in AGENTS.md). Each article is in the sitemap with the day it went out, carries a
+`NewsArticle` JSON-LD and an `article` Open Graph card dated that day, and shares its own
+picture: its cover drawn on the server (`/[locale]/news/<slug>/cover.png`, 1200 by 630, the
+biome and its creature on one grid at a whole scale). An RSS feed per language
+(`/[locale]/news/feed.xml`) lists every article; the news pages announce it in their head and
+link it beside the title.
+
 ## Languages
 
 French and English everywhere (site, game, error messages, e-mails). The language follows an
@@ -907,6 +958,9 @@ language.
   so a shared link previews that page. The game page (`/play`) renders in the browser only:
   it answers `noindex, follow` and stays out of the sitemap, the landing carries searches.
   The sitemap states no `lastmod`.
+- Accessibility: every public page opens on a "Skip to content" link, hidden until a
+  keyboard reaches it, that jumps to its `main`.
+- Every page renders per request (the CSP nonce requires it), so none is prerendered.
 - Public, indexable leaderboard. Only production is indexable; the dev environment answers
   `noindex`.
 - Hosted on the owner's platform (Traefik, GitLab CI). Production:

@@ -1,12 +1,12 @@
 "use client";
 
-import { LOCALE_COOKIE, gameText, negotiateLocale, type GameText, type Locale } from "@idlebound/game";
+import { gameText, negotiateLocale, type GameText, type Locale } from "@idlebound/game";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { messages, type Messages } from "./messages";
+import { writePreferenceCookie, type LocalePreference } from "./preference";
 import { swapLocale } from "./routing";
 
-/** "auto" = no cookie: the browser languages decide. */
-export type LocalePreference = Locale | "auto";
+export type { LocalePreference };
 
 interface I18nValue {
   locale: Locale;
@@ -32,15 +32,6 @@ export function currentLocale(): Locale {
 
 export function currentMessages(): Messages {
   return messages(activeLocale);
-}
-
-const ONE_YEAR = 365 * 24 * 3600;
-
-function writePreferenceCookie(preference: LocalePreference) {
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = preference === "auto"
-    ? `${LOCALE_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax${secure}`
-    : `${LOCALE_COOKIE}=${preference}; Path=/; Max-Age=${ONE_YEAR}; SameSite=Lax${secure}`;
 }
 
 export function I18nProvider({ locale: initialLocale, preference: initialPreference, children }: { locale: Locale; preference: LocalePreference; children: ReactNode }) {

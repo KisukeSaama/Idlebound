@@ -608,63 +608,6 @@ button.resource:hover .resource-label {
   z-index: 4;
 }
 
-.fx-damage {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.7rem;
-  color: #fff;
-  -webkit-text-stroke: 1.5px #140f22;
-  paint-order: stroke fill;
-  text-shadow: 0 3px 0 #000, 0 0 10px rgba(0, 0, 0, 0.9);
-  white-space: nowrap;
-  animation: dmg-float 900ms ease-out forwards;
-  will-change: transform, opacity;
-}
-
-.fx-damage.auto {
-  font-size: 1.25rem;
-  color: #d8ccff;
-}
-
-/* Companion damage over the last second: as readable as a click, calmer, labelled. */
-.fx-damage.companions {
-  font-size: 1.5rem;
-  color: var(--companion);
-  text-shadow: 0 3px 0 #000, 0 0 12px color-mix(in srgb, var(--companion) 45%, transparent);
-  animation: dmg-companion 1000ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.fx-damage.companions::before {
-  content: attr(data-label);
-  display: block;
-  font-family: var(--font-body);
-  font-size: 0.55rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-align: center;
-  -webkit-text-stroke: 0;
-  color: var(--companion);
-  opacity: 0.85;
-}
-
-.fx-damage.crit {
-  font-size: 2.5rem;
-  color: var(--gold-2);
-  text-shadow: 0 2px 0 #5a3a00, 0 0 14px rgba(255, 180, 40, 0.8);
-  animation: dmg-crit 900ms ease-out forwards;
-}
-
-.fx-damage.crit::before {
-  content: attr(data-label);
-  display: block;
-  font-size: 0.55rem;
-  letter-spacing: 0.2em;
-  text-align: center;
-  color: #ffb347;
-}
-
 .fx-gold {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -706,25 +649,6 @@ button.resource:hover .resource-label {
   color: var(--shard);
   text-shadow: 0 2px 0 #062a3a;
   animation: gold-rise 1300ms ease-out forwards;
-}
-
-@keyframes dmg-float {
-  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
-  15% { opacity: 1; transform: translate(-50%, -60%) scale(1.15); }
-  100% { opacity: 0; transform: translate(calc(-50% + var(--drift)), -260%) scale(0.95); }
-}
-
-@keyframes dmg-companion {
-  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.85); }
-  18% { opacity: 1; transform: translate(-50%, -55%) scale(1.05); }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -200%) scale(1); }
-}
-
-@keyframes dmg-crit {
-  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.4) rotate(-6deg); }
-  18% { opacity: 1; transform: translate(-50%, -70%) scale(1.35) rotate(3deg); }
-  100% { opacity: 0; transform: translate(calc(-50% + var(--drift)), -230%) scale(1) rotate(0); }
 }
 
 @keyframes gold-rise {

@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`news share cover > draws every article's cover, the same pixels every time 1`] = `
+{
+  "the-wiki-opens": "84525d9b",
+}
+`;

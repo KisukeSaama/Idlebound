@@ -13,17 +13,23 @@ export const site = defineMessages({
     nav: {
       home: "Idlebound, accueil",
       main: "Navigation principale",
+      skip: "Aller au contenu",
+      news: "Actualités",
+      wiki: "Wiki",
       leaderboard: "Classement",
-      game: "Le jeu",
-      play: "Jouer"
+      play: "Jouer",
+      top: "Revenir en haut"
     },
     footer: {
       copyright: (year: number) => `© ${year} Idlebound · Clicker fantasy`,
       links: "Liens de pied de page",
       play: "Jouer",
+      news: "Actualités",
+      wiki: "Wiki",
       leaderboard: "Classement",
       privacy: "Confidentialité",
-      otherLanguage: "Version anglaise"
+      language: "Changer de langue",
+      languageTitle: "Langue"
     },
     notFound: {
       title: "Page introuvable",
@@ -49,17 +55,23 @@ export const site = defineMessages({
     nav: {
       home: "Idlebound, home",
       main: "Main navigation",
+      skip: "Skip to content",
+      news: "News",
+      wiki: "Wiki",
       leaderboard: "Leaderboard",
-      game: "The game",
-      play: "Play"
+      play: "Play",
+      top: "Back to top"
     },
     footer: {
       copyright: (year: number) => `© ${year} Idlebound · Fantasy clicker`,
       links: "Footer links",
       play: "Play",
+      news: "News",
+      wiki: "Wiki",
       leaderboard: "Leaderboard",
       privacy: "Privacy",
-      otherLanguage: "French version"
+      language: "Change language",
+      languageTitle: "Language"
     },
     notFound: {
       title: "Page not found",
