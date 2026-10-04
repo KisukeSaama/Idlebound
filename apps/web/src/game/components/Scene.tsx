@@ -15,6 +15,7 @@ import { SceneCanvas, monsterKeyOf } from "./SceneCanvas";
 import { SkillBar } from "./SkillBar";
 import { StageBar } from "./StageBar";
 import { TutorialHint, useHintDismissal } from "./TutorialHint";
+import { gameNow } from "@/lib/clock";
 
 /** Seconds the opening line stays at the start of a run. */
 const OPENING_SECONDS = 7;
@@ -61,7 +62,7 @@ export function Scene() {
   if (timerSpan.current.key !== monsterKey) timerSpan.current = { key: monsterKey, total: timedEvent ? state.bossTimeLeft : derived.bossTimer };
   timerSpan.current.total = Math.max(timerSpan.current.total, timedEvent ? state.bossTimeLeft : derived.bossTimer, 0.001);
   const timerRatio = timed ? Math.max(0, Math.min(1, state.bossTimeLeft / timerSpan.current.total)) : 0;
-  const wagerLeft = wager ? Math.max(0, wager.until - Date.now()) / 1000 : 0;
+  const wagerLeft = wager ? Math.max(0, wager.until - gameNow()) / 1000 : 0;
   const era = eraForStage(state.stage);
   // Every run opens at dusk on the first stretch of road, with the same two words.
   const opening = state.stage === 1 && state.maxStage === 1 && state.run.playTime < OPENING_SECONDS;

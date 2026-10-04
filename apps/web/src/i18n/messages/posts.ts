@@ -22,6 +22,116 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    slug: "patch-notes-0-5-1",
+    date: "2026-10-04",
+    kind: "patch",
+    version: "v0.5.1",
+    cover: { biome: "green-plains", creature: "hollow-scarecrow" },
+    fr: {
+      title: "Notes de mise à jour 0.5.1",
+      summary: "Une petite retouche le jour même : les créatures du wiki retrouvent tous leurs pixels, nettes sur chaque appareil.",
+      body: [
+        { kind: "p", text: "Le wiki vient à peine d'ouvrir, et tu nous as déjà montré une chose à reprendre. La voici réglée, le jour même. Merci de lire de si près." },
+        { kind: "h2", text: "Corrections" },
+        {
+          kind: "list",
+          items: [
+            "Les créatures du wiki s'affichaient trop petites : réduites dans un cadre de taille fixe, elles perdaient des pixels et devenaient floues. Elles gardent maintenant chaque pixel entier, à leur vraie taille, et restent nettes sur un téléphone comme sur un grand moniteur.",
+            "Ça vaut partout où elles apparaissent : le bestiaire, la page de chaque biome, et le visage de chaque créature à travers les Âges. Leur grille s'adapte à la place disponible au lieu de les tasser."
+          ]
+        },
+        { kind: "p", text: "Bonne lecture, et bonne route." }
+      ],
+      link: { route: "wiki", label: "Ouvrir le bestiaire du wiki" }
+    },
+    en: {
+      title: "Patch notes 0.5.1",
+      summary: "A small same-day touch-up: the creatures of the wiki get every pixel back, crisp on every device.",
+      body: [
+        { kind: "p", text: "The wiki had barely opened when you showed us something to fix. Here it is, sorted the same day. Thank you for reading so closely." },
+        { kind: "h2", text: "Fixes" },
+        {
+          kind: "list",
+          items: [
+            "Creatures in the wiki were drawn too small: squeezed into a fixed frame, they lost pixels and turned blurry. They now keep every pixel whole, at their true size, and stay sharp on a phone as on a large monitor.",
+            "This holds everywhere they appear: the bestiary, each biome's page, and every creature's look through the Ages. Their grid now makes room for them instead of cramming them in."
+          ]
+        },
+        { kind: "p", text: "Happy reading, and safe travels." }
+      ],
+      link: { route: "wiki", label: "Open the wiki's bestiary" }
+    }
+  },
+  {
+    slug: "patch-notes-0-5-0",
+    date: "2026-10-04",
+    kind: "patch",
+    version: "v0.5.0",
+    cover: { biome: "fallen-king-ruins", creature: "ruined-king" },
+    fr: {
+      title: "Notes de mise à jour 0.5.0",
+      summary: "Le wiki ouvre, les Actualités arrivent, et tout le site se lit mieux : nouveau menu, choix de la langue, flux RSS, coups qui pleuvent sur le Roi.",
+      body: [
+        { kind: "p", text: "Bonsoir, marcheuse, marcheur. Cette version ne touche pas à la route elle-même : elle s'occupe de tout ce qui l'entoure. Un wiki pour tout savoir, des Actualités pour suivre ce qui change, et un site plus simple à parcourir, au clavier comme à la souris." },
+        { kind: "h2", text: "Nouveautés" },
+        {
+          kind: "list",
+          items: [
+            "Le wiki : un guide pour tes premières nuits, une foire aux questions, un calculateur, une fiche pour chaque compagnon, chaque créature et chaque relique nommée, et tous les systèmes du jeu. Il ne gâche rien : il suit ta partie et n'ouvre que ce que tu as déjà vécu, ou bien tu choisis toi-même ce que tu dévoiles. Et il continue de grandir.",
+            "Les Actualités : les notes de mise à jour et les annonces de l'équipe, comme celle que tu lis. Les trois dernières s'affichent sur la page d'accueil, et la plus récente ouvre la page en grand.",
+            "Chaque article a sa propre image en pixel art, qui l'accompagne aussi quand tu le partages.",
+            "Tu peux suivre les Actualités par flux RSS, en français ou en anglais.",
+            "Sur la page d'accueil, frapper le Roi déchu affiche maintenant les mêmes dégâts que dans le jeu : la même écriture, la marque « Critique » au-dessus d'un coup critique, et les coups rapides qui s'écartent en éventail pour rester lisibles."
+          ]
+        },
+        { kind: "h2", text: "Le site" },
+        {
+          kind: "list",
+          items: [
+            "Le menu est le même sur toutes les pages : le logo à gauche, qui te ramène à l'accueil, les liens à droite. Avant, chaque page avait le sien, avec un lien « Le jeu » en plus. Il est aussi plus fin, et il reste en haut pendant que tu lis.",
+            "Les pages glissent jusqu'à la partie que tu choisis, et un bouton dans le coin te ramène en haut des pages longues.",
+            "La langue se choisit depuis un globe en bas de chaque page, qui ouvre une petite fenêtre avec les langues. Ton choix est retenu, comme dans les Réglages du jeu.",
+            "Le wiki et les Actualités se lisent mieux avec la synthèse vocale ou au clavier : un lien « Aller au contenu » ouvre chaque page, le calculateur donne son résultat en une phrase courte, et les modes de lecture disent ce qu'ils font.",
+            "Une page sur quelque chose que tu n'as pas encore croisé ne trahit plus son nom dans le titre affiché par ton navigateur."
+          ]
+        },
+        { kind: "p", text: "Merci de marcher avec nous. On se retrouve à la prochaine version, et d'ici là, bonne route." }
+      ],
+      link: { route: "wiki", label: "Ouvrir le wiki" }
+    },
+    en: {
+      title: "Patch notes 0.5.0",
+      summary: "The wiki opens, the News arrive, and the whole site reads better: a new menu, a language picker, an RSS feed, blows raining on the King.",
+      body: [
+        { kind: "p", text: "Good evening, walker. This version leaves the road itself alone and takes care of everything around it. A wiki to learn it all, News to follow what changes, and a site that is easier to get around, by keyboard or by mouse." },
+        { kind: "h2", text: "New" },
+        {
+          kind: "list",
+          items: [
+            "The wiki: a guide for your first nights, a FAQ, a calculator, a page for every companion, creature and named relic, and every system of the game. It spoils nothing: it follows your game and only opens what you have already lived, or you pick what to reveal yourself. And it keeps growing.",
+            "The News: patch notes and announcements from the team, like the one you are reading. The three latest show on the landing page, and the newest one opens the page in large.",
+            "Every article has its own pixel art picture, which also comes along when you share it.",
+            "You can follow the News by RSS, in French or in English.",
+            "On the landing page, striking the Fallen King now shows the same damage numbers as the game: the same lettering, the \"Critical\" mark over a critical hit, and quick blows fanning out so each one stays readable."
+          ]
+        },
+        { kind: "h2", text: "The site" },
+        {
+          kind: "list",
+          items: [
+            "The menu sits the same on every page: the logo on the left, which takes you back to the landing page, the links on the right. Each page used to have its own, with an extra \"The game\" link. It is also slimmer, and it stays at the top while you read.",
+            "Pages glide to the part you pick, and a button in the corner brings you back to the top of long pages.",
+            "The language is chosen from a globe at the bottom of every page, which opens a small window listing the languages. Your choice is remembered, as in the game's Settings.",
+            "The wiki and the News read better with text to speech or a keyboard: a \"Skip to content\" link opens every page, the calculator gives its result in one short sentence, and the reading modes say what they do.",
+            "A page about something you have not met yet no longer gives its name away in the title your browser shows."
+          ]
+        },
+        { kind: "p", text: "Thank you for walking with us. See you at the next version, and until then, safe travels." }
+      ],
+      link: { route: "wiki", label: "Open the wiki" }
+    }
+  },
+  {
     slug: "the-wiki-opens",
     date: "2026-10-04",
     kind: "announcement",

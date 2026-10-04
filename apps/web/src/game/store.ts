@@ -1,6 +1,7 @@
 "use client";
 
 import { GameEngine, createInitialState, type GameEvent, type GameState, type Locale } from "@idlebound/game";
+import { gameNow } from "@/lib/clock";
 
 type Listener = () => void;
 export type FxListener = (event: GameEvent) => void;
@@ -35,7 +36,7 @@ export class GameStore {
   /** The language the walker reads in, carried over to every new engine (Two Tongues). */
   private locale: Locale = "fr";
 
-  constructor(state: GameState = createInitialState()) {
+  constructor(state: GameState = createInitialState(gameNow())) {
     this.engine = this.createEngine(state);
   }
 
@@ -106,7 +107,7 @@ export class GameStore {
     this.timer = null;
   }
 
-  private step(now = Date.now()) {
+  private step(now = gameNow()) {
     const summary = this.engine.tick(now);
     this.flushEvents();
     this.notify(summary !== null);
@@ -123,7 +124,7 @@ export class GameStore {
 
   /** Runs a player action on the engine. */
   act<T>(action: (engine: GameEngine, now: number) => T, options: ActOptions = {}): T {
-    const now = Date.now();
+    const now = gameNow();
     this.engine.markInput(now);
     const result = action(this.engine, now);
     this.flushEvents();
@@ -140,7 +141,7 @@ export class GameStore {
    * no input is marked (the autopilot keeps its own clock) and no early save is asked.
    */
   apply<T>(action: (engine: GameEngine, now: number) => T): T {
-    const result = action(this.engine, Date.now());
+    const result = action(this.engine, gameNow());
     this.flushEvents();
     this.notify(true);
     return result;
@@ -153,7 +154,7 @@ export class GameStore {
    */
   replaceState(state: GameState, { awayMs = 0 }: { awayMs?: number } = {}) {
     // One clock read: a millisecond between two reads would be caught up past `awayMs`.
-    const now = Date.now();
+    const now = gameNow();
     state.lastTickAt = Math.max(state.lastTickAt, now - Math.max(0, awayMs));
     const visible = this.engine.visible;
     this.engine = this.createEngine(state);
@@ -164,20 +165,20 @@ export class GameStore {
 
   /** Any input on the page (a click, a key, opening a window) means the player is here. */
   markInput() {
-    this.engine.markInput(Date.now());
+    this.engine.markInput(gameNow());
   }
 
   private createEngine(state: GameState) {
-    const engine = new GameEngine(state);
+    const engine = new GameEngine(state, undefined, gameNow());
     engine.afkAfterMs = AFK_AFTER_MS;
     engine.locale = this.locale;
-    engine.markInput(Date.now());
+    engine.markInput(gameNow());
     return engine;
   }
 
   /** The tab is watched again (or not): coming back after a long absence leaves one line. */
   setVisible(visible: boolean) {
-    this.engine.setVisible(visible, Date.now());
+    this.engine.setVisible(visible, gameNow());
     this.flushEvents();
     this.notify(true);
   }

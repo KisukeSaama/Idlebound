@@ -79,6 +79,20 @@ function veteran(): GameState {
   return state;
 }
 
+/** A walker Eldra fully remembers, deep enough, with essences to weave. */
+function atTheLoom(): GameState {
+  const state = veteran();
+  state.recognition = { eldra: RECOGNITION_TIERS[4] };
+  state.promises = { eldra: 2 };
+  state.maxStage = 1_200;
+  state.stage = 1_200;
+  state.lifetime.essencesEarned = 1e9;
+  state.lifetime.ascensionEssences = 1e9;
+  state.essences = 5e8;
+  state.altars = { might: 20, wanderer: 4 };
+  return state;
+}
+
 describe("the strata and the King's forms", () => {
   it("names all sixty strata, and the King changes form with each Age", () => {
     for (const locale of LOCALES) {
@@ -505,20 +519,6 @@ describe("secrets", () => {
 });
 
 describe("the Descent", () => {
-  /** A walker Eldra fully remembers, deep enough, with essences to weave. */
-  function atTheLoom(): GameState {
-    const state = veteran();
-    state.recognition = { eldra: RECOGNITION_TIERS[4] };
-    state.promises = { eldra: 2 };
-    state.maxStage = 1_200;
-    state.stage = 1_200;
-    state.lifetime.essencesEarned = 1e9;
-    state.lifetime.ascensionEssences = 1e9;
-    state.essences = 5e8;
-    state.altars = { might: 20, wanderer: 4 };
-    return state;
-  }
-
   it("opens only at stage 1000 with Eldra remembering, and weaves a thread as long as the night went deep", () => {
     expect(threadsFor(999)).toBe(0);
     expect(threadsFor(1_000)).toBe(2);
@@ -583,11 +583,14 @@ describe("the Descent", () => {
     expect(engine.descend(T0)).toBe(0);
     expect(s.descents).toBe(2);
     expect(s.lifetime.threads).toBe(3);
+    // Only the Descent that wove counts as a night rewoven (the Rewoven Nights board).
+    expect(s.lifetime.weavings).toBe(1);
     // An Age deeper, the thread is twice as long: the Descent weaves the other half.
     s.maxStageEver = 1_450;
     expect(descentPreview(s)).toBe(threadsFor(1_450) - 3);
     expect(engine.descend(T0)).toBe(3);
     expect(s.lifetime.threads).toBe(6);
+    expect(s.lifetime.weavings).toBe(2);
     expect(verifyState(s, LATER)).toEqual([]);
   });
 
@@ -891,7 +894,6 @@ describe("save version 12: the Rout, the Loom at stage 2000", () => {
   }
 
   it("loads a version 11 save, keeps the Loom Eldra showed it, verifies it and plays on with the Rout", () => {
-    expect(SAVE_VERSION).toBe(12);
     const legacy = shown();
     const migrated = parseState(legacy);
     expect(migrated.version).toBe(SAVE_VERSION);
@@ -930,5 +932,56 @@ describe("save version 12: the Rout, the Loom at stage 2000", () => {
     forged.descents = 1;
     forged.lore.readings = [0];
     expect(codes(forged)).toContain("descent");
+  });
+});
+
+describe("save version 13: the nights rewoven", () => {
+  /** A version 12 walker who descended three times and wove two threads. */
+  function legacy(): Record<string, unknown> {
+    const engine = engineWith(atTheLoom());
+    engine.descend(T0);
+    const state = structuredClone(engine.state);
+    state.descents = 3;
+    state.lore.readings = [0, 0, 0];
+    state.lastTickAt = LATER;
+    const old = JSON.parse(JSON.stringify(state)) as Record<string, unknown>;
+    old.version = 12;
+    delete (old.lifetime as Record<string, unknown>).weavings;
+    return old;
+  }
+
+  it("loads a version 12 save with a night rewoven per Descent, never more than its threads, verifies it and plays on", () => {
+    const old = legacy();
+    const migrated = parseState(old);
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(migrated.descents).toBe(3);
+    expect(migrated.lifetime.weavings).toBe(Math.min(3, migrated.lifetime.threads));
+    expect(verifyState(migrated, LATER)).toEqual([]);
+    const fresh = parseState({ ...old, descents: 0, lifetime: { ...(old.lifetime as object), threads: 0 }, threads: 0, weaves: {}, lore: { ...(old.lore as object), readings: [] } });
+    expect(fresh.lifetime.weavings).toBe(0);
+    const engine = engineWith(migrated, seededRng(15), LATER);
+    const later = playBot(engine, LATER, 60, { clicksPerSecond: 5 });
+    expect(verifyState(engine.state, later)).toEqual([]);
+    expect(verifyTransition(parseState(legacy()), engine.state, later - LATER)).toEqual([]);
+  }, 60_000);
+
+  it("refuses more nights rewoven than Descents or threads, and one without a Descent that wove", () => {
+    const engine = engineWith(atTheLoom());
+    engine.descend(T0);
+    const honest = structuredClone(engine.state);
+    expect(honest.lifetime.weavings).toBe(1);
+    expect(codes(honest)).toEqual([]);
+    const forged = structuredClone(honest);
+    forged.lifetime.weavings = 2;
+    expect(codes(forged)).toContain("descent");
+    // A Descent that wove nothing does not count: claiming it is refused, between two saves too.
+    const replay = engineWith(structuredClone(honest));
+    expect(replay.descend(T0)).toBe(0);
+    expect(replay.state.lifetime.weavings).toBe(1);
+    const transition = (next: GameState) => verifyTransition(honest, next, 3_600_000).filter((violation) => violation.message.includes("rewoven"));
+    expect(transition(replay.state)).toEqual([]);
+    const claimed = structuredClone(replay.state);
+    claimed.lifetime.weavings += 1;
+    expect(transition(claimed)).not.toEqual([]);
   });
 });

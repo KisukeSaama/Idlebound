@@ -16,14 +16,17 @@ import { VERIFY_LINK_DAYS, verificationRequired, verifyDeadline } from "../lib/v
 
 const registerIp = limiter(5, 60 * 60_000);
 const loginIp = limiter(20, 15 * 60_000);
-/**
- * Guesses at one account from one address. Keyed on both, so a stranger hammering someone's
- * e-mail locks out only their own address, never the player's.
- */
+/** Guesses at one account from one address. A success clears it, so what it holds are failures. */
 const loginAttempt = limiter(8, 15 * 60_000);
-/** Looser ceiling per account, whatever the address: a botnet still gets few guesses. */
+/**
+ * Looser ceiling per account, whatever the address. Once it is spent, only an address that
+ * has not failed on this account yet may try: a botnet hammering someone's e-mail cannot
+ * lock the player out (their own address is clean), and each of its addresses that already
+ * guessed wrong stays refused.
+ */
 const loginAccount = limiter(60, 15 * 60_000);
 const forgotIp = limiter(5, 60 * 60_000);
+const resetIp = limiter(10, 60 * 60_000);
 const forgotAccount = limiter(3, 60 * 60_000);
 const sensitiveUser = limiter(10, 15 * 60_000);
 const verifyIp = limiter(20, 60 * 60_000);
@@ -65,6 +68,12 @@ function publicUser(user: { id: string; username: string; email: string; emailVe
     /** Until when saves are accepted without a confirmed address. */
     verifyBy: deadline?.toISOString() ?? null
   };
+}
+
+/** A unique constraint refused the write; the ORM may wrap the driver's error in its own. */
+function uniqueViolation(error: unknown): boolean {
+  const failure = error as { code?: string; cause?: { code?: string } };
+  return failure.code === "23505" || failure.cause?.code === "23505";
 }
 
 /** New confirmation link for the account's current address; earlier links stop working. */
@@ -117,7 +126,7 @@ export const authRoutes = new Hono()
       return c.json({ user: publicUser(user) }, 201);
     } catch (error) {
       // Race between two identical sign-ups: the unique constraint decides.
-      if ((error as { code?: string }).code === "23505") return c.json(fail("username_or_email_taken"), 409);
+      if (uniqueViolation(error)) return c.json(fail("username_or_email_taken"), 409);
       throw error;
     }
   })
@@ -129,10 +138,11 @@ export const authRoutes = new Hono()
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
     const { email: address, password: secret } = parsed.data;
     const attempt = `${clientIp(c)}|${address}`;
+    const failedHere = loginAttempt.count(attempt);
     const attemptWait = loginAttempt.consume(attempt);
     if (attemptWait > 0) return tooMany(c, attemptWait);
     const accountWait = loginAccount.consume(address);
-    if (accountWait > 0) return tooMany(c, accountWait);
+    if (accountWait > 0 && failedHere > 0) return tooMany(c, accountWait);
 
     const [user] = await db.select().from(users).where(eq(users.email, address)).limit(1);
     const valid = user ? await verifyPassword(secret, user.passwordHash) : await dummyVerify(secret);
@@ -171,7 +181,7 @@ export const authRoutes = new Hono()
   })
 
   .post("/reset", async (c) => {
-    const wait = forgotIp.consume(clientIp(c));
+    const wait = resetIp.consume(clientIp(c));
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, resetBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
@@ -186,20 +196,25 @@ export const authRoutes = new Hono()
     if (weak) return c.json(fail("weak_password", { reason: weak, field: "password" }), 400);
 
     const passwordHash = await hashPassword(parsed.data.password);
-    // The link reached the account's mailbox: that confirms the address too.
-    const emailVerifiedAt = user.emailVerifiedAt ?? new Date();
     // The token is consumed atomically: two concurrent requests cannot both use it. Any
-    // other link still in circulation for this account becomes void.
+    // other link still in circulation for this account becomes void. Changing the address
+    // deletes the links, so a link that still exists was sent to the current address.
     const applied = await db.transaction(async (tx) => {
       const [claimed] = await tx.update(passwordResets).set({ usedAt: new Date() })
         .where(and(eq(passwordResets.id, id), isNull(passwordResets.usedAt), gt(passwordResets.expiresAt, new Date())))
         .returning({ userId: passwordResets.userId });
-      if (!claimed) return false;
-      await tx.update(users).set({ passwordHash, emailVerifiedAt }).where(eq(users.id, claimed.userId));
+      if (!claimed) return null;
+      await tx.update(users).set({ passwordHash }).where(eq(users.id, claimed.userId));
+      // The link reached the account's mailbox: that confirms the address too, if it is
+      // still the one read above.
+      const [confirmed] = await tx.update(users).set({ emailVerifiedAt: user.emailVerifiedAt ?? new Date() })
+        .where(and(eq(users.id, claimed.userId), eq(users.email, user.email)))
+        .returning({ emailVerifiedAt: users.emailVerifiedAt });
       await tx.delete(passwordResets).where(and(eq(passwordResets.userId, claimed.userId), ne(passwordResets.id, id)));
-      return true;
+      return { emailVerifiedAt: confirmed?.emailVerifiedAt ?? user.emailVerifiedAt };
     });
     if (!applied) return c.json(fail("reset_link_invalid"), 400);
+    const { emailVerifiedAt } = applied;
     await destroyAllSessions(user.id);
     await createSession(c, user.id);
     return c.json({ user: publicUser({ ...user, emailVerifiedAt }) });
@@ -248,19 +263,30 @@ export const authRoutes = new Hono()
       return c.json(fail("wrong_password", { field: "password" }), 401);
     }
     const address = parsed.data.email;
-    if (address !== row.email) {
+    const changed = address !== row.email;
+    if (changed) {
       const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, address)).limit(1);
       if (taken) return c.json(fail("email_taken", { field: "email" }), 409);
+    }
+    // Every call sends a mail: it shares the resend budget, whether the address changed or not.
+    const mailWait = resendUser.consume(user.id);
+    if (mailWait > 0) return tooMany(c, mailWait);
+    if (changed) {
       try {
-        await db.update(users).set({ email: address }).where(eq(users.id, user.id));
+        // A reset link went to the previous address: it must neither work nor confirm the new one.
+        await db.transaction(async (tx) => {
+          await tx.update(users).set({ email: address, emailVerifiedAt: null }).where(eq(users.id, user.id));
+          await tx.delete(passwordResets).where(eq(passwordResets.userId, user.id));
+        });
       } catch (error) {
-        if ((error as { code?: string }).code === "23505") return c.json(fail("email_taken", { field: "email" }), 409);
+        if (uniqueViolation(error)) return c.json(fail("email_taken", { field: "email" }), 409);
         throw error;
       }
     }
     // Same deadline as before: fixing the address does not extend the grace period.
-    await sendVerification({ ...row, email: address }, localeOf(c));
-    return c.json({ user: publicUser({ ...row, email: address }) });
+    const updated = { ...row, email: address, emailVerifiedAt: changed ? null : row.emailVerifiedAt };
+    await sendVerification(updated, localeOf(c));
+    return c.json({ user: publicUser(updated) });
   })
 
   .post("/password", async (c) => {

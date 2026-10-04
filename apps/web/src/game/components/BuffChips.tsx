@@ -6,13 +6,14 @@ import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
 import { percentValue } from "../text";
 import { BUFF_PICTO, Picto, SKILL_PICTO, type PictoName } from "../icons";
+import { gameNow } from "@/lib/clock";
 
 export function BuffChips() {
   const { state, derived, store } = useGame();
   const { t, g } = useI18n();
   const m = t.hud.buffs;
   const labels: Record<BuffId, string> = { rage: m.rage, fortune: m.fortune, autoclick: m.autoclick, overcharge: m.overcharge, sharpness: m.sharpness, ...t.night.buffs };
-  const now = Date.now();
+  const now = gameNow();
   // `short` stands in for the label on a crowded phone screen: a chip without a timer keeps its value.
   const chips: { key: string; icon: PictoName; label: string; short?: string; seconds: number }[] = [];
   for (const buff of state.buffs) {

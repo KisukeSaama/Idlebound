@@ -9,7 +9,8 @@ import { seededRng } from "./rng";
 import { parseState } from "./save";
 import { HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 import type { GameState } from "./types";
-import { verifyNewLineage, verifySaveVersion, verifyState, verifyTransition } from "./validation";
+import { isoWeek } from "./data/caravan";
+import { RECORD_GAP, verifyFirstSight, verifyNewLineage, verifyPace, verifySaveVersion, verifyState, verifyTransition, type Pace } from "./validation";
 
 const T0 = Date.UTC(2026, 2, 1);
 const LATER = T0 + 900 * 3600_000;
@@ -417,4 +418,151 @@ describe("the Sanctum wakes in three times", () => {
     later.essences -= 5;
     expect(codes(verifyTransition(previous, later, 3_600_000))).not.toContain("altar");
   });
+});
+
+/**
+ * An honest game played for `seconds`, saved as the page saves it: at each new stage and each
+ * dusk, at most once every `every` seconds. Checked as the server checks it, with the
+ * network's jitter on the time the server measures between two saves.
+ */
+function savedEvery(seed: number, seconds: number, every: number) {
+  const engine = new GameEngine(createInitialState(T0), seededRng(seed), T0);
+  const jitter = seededRng(seed + 1);
+  let previous: GameState | undefined;
+  let previousAt = T0;
+  let pace: Pace | undefined;
+  const violations: string[] = [];
+  const save = (_: GameEngine, now: number) => {
+    if (previous && now - previousAt < every * 1000) return;
+    const state = structuredClone(engine.state);
+    // The request leaves a little late or early: the server's clock sees it so.
+    const arrived = now + Math.round((jitter() - 0.5) * 4_000);
+    violations.push(...codes(verifyState(state, arrived)), ...codes(previous ? verifyTransition(previous, state, arrived - previousAt) : verifyFirstSight(state)));
+    const paced = verifyPace(previous, state, pace, arrived, arrived - previousAt);
+    violations.push(...codes(paced.violations));
+    pace = paced.pace;
+    previous = state;
+    previousAt = arrived;
+  };
+  const now = playBot(engine, T0, seconds, { clicksPerSecond: 5, stagnationMs: 10 * 60_000, onMilestone: save, onAscend: save });
+  save(engine, now + every * 1000);
+  return { engine, now, previous: previous!, previousAt, pace: pace!, violations };
+}
+
+describe("the server's own ledger of a game", () => {
+  it("accepts six hours of honest play saved every thirty seconds, through the network's jitter", () => {
+    const { engine, violations, pace } = savedEvery(7, 6 * 3600, 30);
+    expect(violations).toEqual([]);
+    expect(engine.state.lifetime.ascensions).toBeGreaterThan(0);
+    expect(engine.state.lifetime.skillsUsed).toBeGreaterThan(0);
+    expect(pace.proven).toBe(engine.state.maxStageEver);
+  }, 120_000);
+
+  it("refuses a record set outside any night the server saw, and lets the road walked unseen before a dusk", () => {
+    const { previous, previousAt, pace } = savedEvery(8, 30 * 60, 30);
+    const now = previousAt + 60_000;
+    const dusk = (record: number) => {
+      const next = structuredClone(previous);
+      next.lastTickAt = now;
+      next.lifetime.playTime += 60;
+      next.lifetime.ascensions += 1;
+      next.maxStage = next.stage = next.runStartStage = 1;
+      next.maxStageEver = record;
+      return codes(verifyPace(previous, next, pace, now, 60_000).violations);
+    };
+    expect(dusk(pace.proven + RECORD_GAP)).not.toContain("record");
+    expect(dusk(pace.proven + RECORD_GAP + 1)).toContain("record");
+    // A game never seen claims no record beyond its own night.
+    const forged = structuredClone(previous);
+    forged.maxStageEver = forged.maxStage + 2_000;
+    expect(codes(verifyPace(undefined, forged, undefined, now, 0).violations)).toContain("record");
+  }, 60_000);
+
+  it("refuses powers made ready again by reopening the game", () => {
+    let { previous, previousAt, pace } = savedEvery(9, 20 * 60, 30);
+    const found: string[] = [];
+    // Each reopening brings every power back: used again every fifteen seconds.
+    for (let save = 0; save < 6; save += 1) {
+      const next = structuredClone(previous);
+      next.lifetime.playTime += 15;
+      next.run.playTime += 15;
+      next.lifetime.skillsUsed += 8;
+      next.run.skillsUsed += 8;
+      const at = previousAt + 15_000;
+      const paced = verifyPace(previous, next, pace, at, 15_000);
+      found.push(...codes(paced.violations));
+      ({ pace } = paced);
+      previous = next;
+      previousAt = at;
+    }
+    expect(found).toContain("powers");
+  }, 60_000);
+
+  it("refuses Rituals piled up beyond what the night allows", () => {
+    const { previous, previousAt, pace } = savedEvery(10, 10 * 60, 30);
+    const next = structuredClone(previous);
+    next.ritualStacks = 40;
+    next.run.skillsUsed += 40;
+    next.lifetime.skillsUsed += 40;
+    expect(codes(verifyPace(previous, next, { ...pace, powers: 1_000 }, previousAt + 15_000, 15_000).violations)).toContain("powers");
+  }, 60_000);
+
+  it("refuses play time claimed ahead of the server's clock, save after save", () => {
+    let { previous, previousAt, pace } = savedEvery(11, 5 * 60, 30);
+    const found: string[] = [];
+    for (let save = 0; save < 3; save += 1) {
+      // Fifteen seconds pass on the server; the game claims a hundred and fifteen.
+      const next = structuredClone(previous);
+      next.lifetime.playTime += 115;
+      next.run.playTime += 115;
+      const at = previousAt + 15_000;
+      found.push(...codes(verifyTransition(previous, next, 15_000)));
+      const paced = verifyPace(previous, next, pace, at, 15_000);
+      found.push(...codes(paced.violations));
+      ({ pace } = paced);
+      previous = next;
+      previousAt = at;
+    }
+    expect(found).toContain("time");
+  }, 60_000);
+
+  it("refuses the Caravan of a past or coming week, and accepts this week's", () => {
+    const { previous, previousAt, pace } = savedEvery(12, 5 * 60, 30);
+    const now = previousAt + 30_000;
+    const caravan = (week: string) => {
+      const next = structuredClone(previous);
+      next.caravanWeek = week;
+      return codes(verifyPace(previous, next, pace, now, 30_000).violations);
+    };
+    expect(caravan(isoWeek(now))).toEqual([]);
+    expect(caravan(isoWeek(now - 14 * 86_400_000))).toContain("caravan");
+    expect(caravan(isoWeek(now + 14 * 86_400_000))).toContain("caravan");
+    const ahead = structuredClone(previous);
+    ahead.caravanWeek = isoWeek(now + 14 * 86_400_000);
+    expect(codes(verifyState(ahead, now))).toContain("caravan");
+  }, 60_000);
+
+  it("counts an Unweave as a stage walked, and nothing else", () => {
+    const { previous } = savedEvery(13, 5 * 60, 30);
+    const unwoven = structuredClone(previous);
+    unwoven.maxStage += 1;
+    unwoven.stage = unwoven.maxStage;
+    unwoven.maxStageEver = Math.max(unwoven.maxStageEver, unwoven.maxStage);
+    unwoven.kills = 0;
+    unwoven.lifetime.skillsUsed += 1;
+    unwoven.run.skillsUsed += 1;
+    expect(codes(verifyTransition(previous, unwoven, 15_000))).not.toContain("stage");
+
+    // Thirty stages crossed with thirty kills: three hundred were needed.
+    const rushed = structuredClone(previous);
+    rushed.maxStageEver = previous.maxStageEver + 30;
+    rushed.lifetime.kills += 30;
+    rushed.run.kills += 30;
+    expect(codes(verifyTransition(previous, rushed, 600_000))).toContain("stage");
+
+    const unseen = structuredClone(previous);
+    unseen.maxStageEver = 300;
+    unseen.lifetime.kills = 400;
+    expect(codes(verifyFirstSight(unseen))).toContain("stage");
+  }, 60_000);
 });

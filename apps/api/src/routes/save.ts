@@ -1,5 +1,5 @@
 import { migrateState, type ApiError, type GameState } from "@idlebound/game";
-import { leaderboardSummary, safeParseState, verifyNewLineage, verifySaveVersion, verifyState, verifyTransition, type Violation } from "@idlebound/game/server";
+import { leaderboardSummary, safeParseState, verifyFirstSight, verifyNewLineage, verifyPace, verifySaveVersion, verifyState, verifyTransition, type Pace, type Violation } from "@idlebound/game/server";
 import { eq, sql as raw } from "drizzle-orm";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
@@ -21,6 +21,8 @@ const rejectionLog = limiter(30, 60 * 60_000);
 const openLimiter = limiter(10, 60_000);
 /** Guest saves from one address, all games together: ten guests at full pace behind one router. */
 const guestSaveIp = limiter(60, 60_000);
+/** Guest games opened from one address, all games together: the cookie is the caller's to invent. */
+const guestOpenIp = limiter(60, 60_000);
 /** New guest games from one address: each one is a row the server keeps for weeks. */
 const guestCreateIp = limiter(20, 60 * 60_000);
 
@@ -68,6 +70,7 @@ interface Stored {
   updatedAt: Date;
   holder: string | null;
   heldAt: Date | null;
+  pace: Pace | null;
 }
 
 interface Written {
@@ -75,6 +78,7 @@ interface Written {
   revision: number;
   gameCreatedAt: number;
   updatedAt: Date;
+  pace: Pace;
   /** Left out by a page that sent no id: the hold stays as it was. */
   holder?: string | null;
   heldAt?: Date | null;
@@ -159,6 +163,9 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     if (existing && !replace && (baseRevision !== existing.revision || otherLineage)) {
       return { status: 409, body: { error: ledger.conflict, conflict: { revision: existing.revision, updatedAt: existing.updatedAt.toISOString(), cloud: summary(previous!) } } };
     }
+    // The page builds on a game the server no longer keeps here (another page brought it to
+    // an account): it is not a new game, and never becomes a second copy of that one.
+    if (!existing && baseRevision !== null && !replace) return { status: 409, body: fail(ledger.conflict) };
     if (existing && replace && ledger.key && replaceLimiter.consume(ledger.key) > 0) {
       return { status: 429, body: fail("too_many_replacements") };
     }
@@ -168,22 +175,32 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     if (existing) violations.push(...verifySaveVersion(existing.state, parsedBody.data.state));
     const sameLineage = existing && previous && previous.createdAt === next.createdAt;
     const witness = sameLineage ? undefined : await ledger.witness(tx, next);
+    // The save this one carries on, as the server kept it, and what the server measured since.
+    let kept: { state: GameState; pace: Pace | null; elapsedMs: number } | undefined;
     if (existing && previous && sameLineage) {
-      violations.push(...verifyTransition(previous, next, now - existing.updatedAt.getTime()));
+      kept = { state: previous, pace: existing.pace, elapsedMs: now - existing.updatedAt.getTime() };
+      violations.push(...verifyTransition(previous, next, kept.elapsedMs));
     } else if (witness) {
       // A guest's game brought to the account: the server kept it, so it is held to its own
       // last save, like any game that carries on.
+      kept = { state: migrateState(witness.state) as GameState, pace: witness.pace, elapsedMs: now - witness.updatedAt.getTime() };
       violations.push(...verifySaveVersion(witness.state, parsedBody.data.state));
-      violations.push(...verifyTransition(migrateState(witness.state) as GameState, next, now - witness.updatedAt.getTime()));
-    } else if (existing && previous) {
-      // Another game replaces the stored one: it gets no more time than the stored game had
-      // been credited, plus the time the server saw pass since, whatever its creation date.
-      violations.push(...verifyNewLineage(previous, next, now - existing.updatedAt.getTime()));
-    } else if (next.createdAt < ledger.oldest) {
-      // A game the server never saw: its age is bounded, otherwise an invented creation
-      // date would grant months of "plausible" play time.
-      violations.push({ code: "lineage-age", message: "This game is too old to be seen for the first time." });
+      violations.push(...verifyTransition(kept.state, next, kept.elapsedMs));
+    } else {
+      // A game the server never saw: every stage of its record was walked.
+      violations.push(...verifyFirstSight(next));
+      if (existing && previous) {
+        // Another game replaces the stored one: it gets no more time than the stored game had
+        // been credited, plus the time the server saw pass since, whatever its creation date.
+        violations.push(...verifyNewLineage(previous, next, now - existing.updatedAt.getTime()));
+      } else if (next.createdAt < ledger.oldest) {
+        // Its age is bounded, otherwise an invented creation date would grant months of
+        // "plausible" play time.
+        violations.push({ code: "lineage-age", message: "This game is too old to be seen for the first time." });
+      }
     }
+    const paced = verifyPace(kept?.state, next, kept?.pace, now, kept?.elapsedMs ?? 0);
+    violations.push(...paced.violations);
     if (violations.length > 0) {
       await ledger.reject(tx, [...new Set(violations.map((violation) => violation.code))]);
       return { status: 422, body: fail("save_rejected", { violations: violations.slice(0, MAX_REPORTED_VIOLATIONS) }) };
@@ -192,7 +209,7 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     const revision = (existing?.revision ?? 0) + 1;
     const updatedAt = new Date(now);
     const hold = holder === undefined ? {} : release ? { holder: null, heldAt: null } : { holder, heldAt: updatedAt };
-    const refused = await ledger.write(tx, existing, { state: next, revision, gameCreatedAt: next.createdAt, updatedAt, ...hold }, witness);
+    const refused = await ledger.write(tx, existing, { state: next, revision, gameCreatedAt: next.createdAt, updatedAt, pace: paced.pace, ...hold }, witness);
     return refused ?? { status: 200, body: { revision, updatedAt: updatedAt.toISOString() } };
   });
 }
@@ -301,7 +318,7 @@ export const saveRoutes = new Hono()
             set: {
               // A replacement may lower a record: keep the best verified one.
               maxStage: raw`greatest(${leaderboard.maxStage}, ${board.maxStage})`,
-              kings: raw`greatest(${leaderboard.kings}, ${board.kings})`,
+              weavings: raw`greatest(${leaderboard.weavings}, ${board.weavings})`,
               promises: raw`greatest(${leaderboard.promises}, ${board.promises})`,
               crystals: raw`greatest(${leaderboard.crystals}, ${board.crystals})`,
               // Depth ties go to whoever got there first: the date moves only with the record.
@@ -334,6 +351,8 @@ export const saveRoutes = new Hono()
   })
 
   .post("/guest/open", async (c) => {
+    const ipWait = guestOpenIp.consume(clientIp(c));
+    if (ipWait > 0) return tooMany(c, ipWait);
     const id = guestId(c);
     const wait = openLimiter.consume(id ?? `ip:${clientIp(c)}`);
     if (wait > 0) return tooMany(c, wait);

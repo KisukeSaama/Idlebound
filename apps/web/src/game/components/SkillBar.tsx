@@ -8,6 +8,7 @@ import { audio } from "../audio";
 import { useGame } from "../context";
 import { haptics } from "../haptics";
 import { Picto, SKILL_PICTO } from "../icons";
+import { gameNow } from "@/lib/clock";
 
 /** How long a key shines when its power comes back. */
 const READY_FLASH_MS = 900;
@@ -16,7 +17,7 @@ export function SkillBar() {
   const { state, store } = useGame();
   const { t, locale } = useI18n();
   const m = t.hud.skills;
-  const now = Date.now();
+  const now = gameNow();
   // A power that comes back during play says so once: its key shines and the phone buzzes.
   // Only a cooldown seen running ends in a shine, never a key found ready at load.
   const cooled = useRef(new Map<string, boolean>());

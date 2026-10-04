@@ -11,7 +11,40 @@ next release writes itself. Rules in [AGENTS.md](../AGENTS.md#news-and-patch-not
 
 Tags up to v0.4.2 came before the news pages and have no article.
 
-## Next version (after v0.4.2)
+## Next version (after v0.5.1)
+
+### New
+
+- Leaderboard: the Kingslayer board gives way to **Rewoven Nights**, the Descents that wove
+  at least one thread. Kingslayer ranked walkers almost exactly like Depth; this one rewards
+  your pace at Eldra's Loom. Your past Descents already count.
+
+### Fixes
+
+- Accounts: someone guessing your password from many places at once can no longer keep you
+  out of your own account; their guesses stop, yours still go through.
+- Accounts: fixing a mistyped address cancels every password reset link sent to the old one,
+  and each fix counts toward the 3 confirmation e-mails allowed per hour.
+- Names: reserved names and banned words are also caught when written with look-alike
+  letters (a lowercase l for an i, "rn" for an m, ø, æ, ß and their kin).
+- Saving: a device whose clock runs a few minutes fast no longer has its new game refused
+  forever. The game now keeps the server's time, not the device's.
+- Fair play: the Roll of the Deep is better protected. A record claimed outside any night
+  the server saw, powers made ready again by reopening the game, a Caravan bought twice by
+  turning the clock back, extra play time claimed at every save, or a copy of a guest's game
+  taken into a second account are now refused. Honest play is not affected.
+- Unweave: crossing a stage with Unweave right after another no longer risks a refused
+  progress.
+
+## v0.5.1 (`patch-notes-0-5-1`)
+
+### Fixes
+
+- Wiki: creatures are drawn at their true size, every pixel whole, sharp at any display
+  density, in the bestiary, the biome pages and the "through the Ages" section of each
+  creature; their grid makes room for them instead of squeezing them into a fixed frame.
+
+## v0.5.0 (`patch-notes-0-5-0`)
 
 ### Site
 

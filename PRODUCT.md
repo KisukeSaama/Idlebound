@@ -548,7 +548,10 @@ opens again, within the same cap as a hidden tab.
 - **Closed game** (signed in or guest): when the stored game loads, the time since its save is
   caught up by the same catch-up as a hidden tab (8 h at most, +1 h per level of the Long
   Thread), never more than the server saw pass since that save (`GET /save` and
-  `GET /save/guest` return `elapsedMs`: a device clock can be wrong). From 30 min away, the first input brings the
+  `GET /save/guest` return `elapsedMs`: a device clock can be wrong). The game keeps the
+  server's time, not the device's: every answer of the API carries it (`x-server-time`), and
+  the page's steady clock (`performance.now()`) counts on between two answers, so setting the
+  device's clock back or ahead changes nothing, and a new game is born on the server's time. From 30 min away, the first input brings the
   Reunion and the company's account (road, gold earned and spent, walls, who joined,
   levels). An 8 h catch-up takes 0.1 to 0.2 s on a desktop (measured at stages 32, 97 and
   379). A live tab saves every 30 s, so reloading it loses nothing, a guest's game included
@@ -642,11 +645,14 @@ rejects real play.
   After **3 days** without confirmation, saves are refused until the link is clicked (the
   game stays playable, the account icon shows `!`). Links are valid 7 days, a new one
   voids the previous one. A password reset through the e-mail link also confirms the
-  address. Fixing the address does not extend the deadline. An account never confirmed is deleted 30 days after sign-up. Accounts created
+  address, unless the address changed since the link was sent: fixing the address voids
+  every pending reset link. Fixing the address does not extend the deadline, and each fix
+  sends a link that counts against the resend limit (3 per hour). An account never confirmed is deleted 30 days after sign-up. Accounts created
   before this rule are considered confirmed.
 - Usernames: 3 to 16 characters (letters, digits, `-`, `_`), at least one letter, unique
   regardless of case and accents, reserved names blocked, strict FR/EN profanity filter that
-  sees through leet-speak, accents, repeated letters and separators (usernames are public).
+  sees through leet-speak, accents, repeated letters, separators and look-alike letters (a
+  lowercase l for an i, rn for an m, ø, æ, œ, ð, þ, ß) (usernames are public).
 - Passwords: 8 to 128 characters, not a common password, not a single repeated character,
   not containing the username nor equal to the e-mail; scrypt, constant-time checks, no
   account enumeration.
@@ -656,8 +662,13 @@ rejects real play.
   confirmation and sensitive account changes (`apps/api/src/routes/auth.ts`). Login counts
   guesses per address and account (8 per 15 min), so a stranger hammering someone's e-mail
   locks out only their own address; a looser ceiling (60 per 15 min) holds per account
-  whatever the address.
+  whatever the address. Once that ceiling is spent, an address that already failed on the
+  account waits, while one that never failed still gets a try: the player is never locked
+  out by guesses from elsewhere. Each limiter tracks at most 50,000 keys; when full, a new
+  key waits until old ones expire.
 - Forgotten password: single-use link valid 1 h, same answer whether the account exists.
+  Requesting a link is limited to 5 per hour per IP (3 per account), using one to 10 per
+  hour per IP.
 - Self-service account deletion (GDPR) and a privacy page.
 - E-mails (confirmation, password reset, inactivity warning) share one template in
   `apps/api/src/lib/mail.ts`: see DESIGN.md.
@@ -735,6 +746,11 @@ rejects real play.
 - In the choice between two games, keeping the current one when the account's game is
   further along (best stage, then play time) asks for confirmation, naming what will be
   erased (stage, ascensions, play time).
+- **Save version 13** counts the Descents that wove a thread (`lifetime.weavings`, the
+  Rewoven Nights board). An older save counts each of its Descents, never more than its
+  threads woven (each wove one at least). The checks bound it by the Descents and the threads
+  woven, in a save and between two saves. Tested: a version 12 save that descended parses,
+  verifies, plays on and saves again.
 - **Save version 12** brings the Rout (`lifetime.routs`, 0 for an older save: the checks
   bound it by play time, one stage every 0.25 s, and by the nights walked, never more than
   the best stage a night, and every kill of a Rout counts against it) and opens the Loom at
@@ -802,9 +818,25 @@ real elapsed time, click and kill rates, gold per kill, boss beatable with the d
 power, item and achievement generation rules (each deed once), no statistic going backwards,
 no backdated run. Even a first save or a replacement, with no previous save to compare to, has
 its ascensions and Descents bounded by the time the game ran (30 s each at least), its guardians by
-its kills, its deepest stage by its kills and powers, its Ritual stacks by the powers used
-this run, and its last tick by the server clock (10 min of slack for a device running ahead,
-which also bounds the boons measured from it).
+its kills, its deepest stage by its kills (a whole stage of monsters for each stage of its
+record, a guardian alone, or one Unweave), its Ritual stacks by the powers used this run, its
+last tick by the server clock (10 min of slack for a device running ahead, which also bounds
+the boons measured from it) and its Caravan by the server's week. Between two saves, the
+new stages of the record are bounded the same way by the kills and powers between them.
+The server also keeps its own ledger of each game, beside the save where the walker cannot
+write it (`pace`, see `verifyPace`), updated with every accepted save:
+- the deepest stage it saw a night reach (the head of a night, held to the build by the
+  power check): the record may stand at most 50 stages past it (`RECORD_GAP`, the road walked
+  between the last save and a dusk), so a record claimed outside any night, which would carry
+  deep relics, essences and the Roll of the Deep with it, is refused (`record`);
+- the play and absence claimed ahead of the time it saw pass: the 2 min of clock slack is
+  granted once, not again at every save (a 1% leak washes the network's jitter out) (`time`);
+- the powers left: they come back at their shortest cooldown, twice over for the Echo, all
+  at once at each dusk and when the Caravan comes, from a reserve of 16; reopening the game
+  to make them ready again is refused (`powers`), and so are Ritual stacks beyond twice per
+  Ritual cooldown since the night began;
+- the Caravan's week: never one before the last save nor one to come (`caravan`).
+A game saved before the ledger existed starts it from its own record.
 Every essence comes from an ascension or a crystal: the ledger of all ascensions holds at
 least the history's sum and at most what the deepest stage pays per ascension (the Altar of
 the Harvest taken at its cap, or, for a save older than version 11, at the level its essences
@@ -843,7 +875,10 @@ before version 10 are bounded by the runs the old rule asked, and never change a
 A guest's game goes through the same checks, run by the same code path: nothing stored is
 trusted more or less for lacking a name. Its first save is bounded like an account's first
 (and by the 30 days a game the server never saw may be old); brought to an account, it is
-held to its own last accepted save. A guest's cookie only ever opens its own row.
+held to its own last accepted save and ledger. A guest's cookie only ever opens its own row,
+and a page building on a guest's game the server no longer keeps there (another page
+brought it to an account) gets a conflict, never a second copy of that game. Opening a
+guest's game is limited per address too (60 a minute), whatever cookie the page sends.
 Rejections are logged (kept 90 days, 30 per game and hour at most, one entry per code, under
 the account or the guest's game); a refused save returns its first 20 violations. Only an
 account's accepted saves feed the leaderboard, which keeps each player's best verified
@@ -897,9 +932,12 @@ something else about a walker:
 | Board | Code | Ranks | What it says |
 |---|---|---|---|
 | **Depth** (official) | `stage` | Highest stage ever reached | How far the walker went. |
-| **Kingslayer** (FR: *Régicide*) | `kings` | Kings felled, all time | Power and persistence: a King guards every 50th stage and rises each night. |
 | **Word Kept** (FR: *Parole tenue*) | `promises` | Promises kept to companions, all time | Nights well led: one word a night at most, kept only if the King falls. |
 | **The Watch** (FR: *La Veille*) | `crystals` | Crystals caught, all time | Presence: crystals fall only while the walker watches, and fade in seconds. |
+| **Rewoven Nights** (FR: *Nuits retissées*) | `weavings` | Descents that wove at least one thread, all time | The walker's pace at the Loom: a Descent weaves only what the best stage gained since the last, so descending often weaves little each time, rarely weaves a lot. A Descent that weaves nothing does not count. |
+
+Kingslayer (Kings felled) was dropped in save version 13: the King rises every night, so the
+count followed play time and depth and ranked walkers almost exactly like Depth.
 
 Every value comes from saves the anti-cheat accepted, and the leaderboard keeps each
 player's best verified values (a replacement never lowers them). The landing page shows the

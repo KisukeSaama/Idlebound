@@ -4,6 +4,7 @@ import { createInitialState, migrateState, type GameState } from "@idlebound/gam
 import { currentMessages } from "@/i18n/client";
 import { api, isUnreachable, type AccountUser, type CloudSave } from "@/lib/api";
 import type { GameStore } from "./store";
+import { gameNow } from "@/lib/clock";
 
 export type CloudStatus = "offline" | "idle" | "syncing" | "synced" | "error" | "rejected" | "unverified";
 
@@ -217,6 +218,7 @@ export class CloudSync {
     this.guestKept = kept !== null;
     if (!kept) {
       // Nothing kept yet: the first save follows the first blows.
+      this.restamp();
       this.set({ status: "idle" });
       return true;
     }
@@ -319,6 +321,7 @@ export class CloudSync {
     const local = this.store.state;
     if (!cloud) {
       // First save of the account: the game played as a guest becomes the account's game.
+      this.restamp();
       await this.upload(null, false);
       return true;
     }
@@ -406,13 +409,22 @@ export class CloudSync {
     if (this.user) this.releaseGuest();
   }
 
+  /**
+   * A game nobody has touched yet is born again on the game's clock, now that the server told
+   * its time: born on a device's clock running ahead, it would claim more time than it lived.
+   */
+  private restamp() {
+    const state = this.store.state;
+    if (isUntouched(state) && state.maxStageEver === 1) this.store.replaceState(createInitialState(gameNow()));
+  }
+
   /** Runs a stored game in this page. Returns how long the walker was gone (Welcome Back). */
   private place(cloud: CloudSave): number {
     // A save written by an older version gets the same migration as on the server
     // (new fields, refunded altar levels) before it runs.
     const state = migrateState(cloud.state) as GameState;
     // Read before the load moves the clock.
-    const awayMs = Date.now() - state.lastTickAt;
+    const awayMs = gameNow() - state.lastTickAt;
     // The company walked on while the game was closed: the first tick catches that time up,
     // never more than the server saw pass since the save (a device clock can be wrong).
     this.store.replaceState(state, { awayMs: Math.min(awayMs, cloud.elapsedMs) });
@@ -599,7 +611,7 @@ export class CloudSync {
    */
   newGame() {
     if (this.user) return;
-    this.store.replaceState(createInitialState());
+    this.store.replaceState(createInitialState(gameNow()));
     if (this.adrift) {
       // The account's game stays on the account; from here on, a guest walks.
       this.adrift = false;
@@ -630,7 +642,7 @@ export class CloudSync {
     this.startOver = false;
     const stood = this.elsewhere !== null;
     this.set({ user: null, status: "idle", revision: null, lastSyncAt: null, message: null, pendingChoice: null, elsewhere: null });
-    this.store.replaceState(createInitialState());
+    this.store.replaceState(createInitialState(gameNow()));
     if (stood) this.store.start();
     if (this.guestKept) await this.enter();
   }

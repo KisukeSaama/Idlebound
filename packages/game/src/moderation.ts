@@ -16,20 +16,35 @@ const LEET: Record<string, string> = {
   "@": "a", "$": "s", "!": "i", "|": "i", "€": "e", "£": "l"
 };
 
+/** Letters that are not accented Latin letters, spelled out (NFD leaves them whole). */
+const LIGATURES: Record<string, string> = { "æ": "ae", "œ": "oe", "ð": "d", "þ": "th", "ß": "ss" };
+
+/**
+ * Look-alikes a word of the lists may hide behind, by letter: a lowercase l passes for an i
+ * ("ADMlN"), "rn" for an m, an ø for an o or an e. They only widen the lists' patterns, the
+ * username itself is never rewritten ("Tilt" must not turn into "tit").
+ */
+const CONFUSABLES: Record<string, string> = { i: "[il]", o: "[oø]", e: "[eø]", m: "(?:m|rn)" };
+
 /** Lowercase, accents stripped, leet-speak decoded, repeated letters merged, separators removed. */
 export function normalizeForModeration(value: string): string {
   return decodeForModeration(value).replace(/(.)\1+/g, "$1");
 }
 
-/** Lowercase, accents stripped, leet-speak decoded, separators removed. */
+/** Lowercase, accents stripped, ligatures spelled out, leet-speak decoded, separators removed (ø kept, see CONFUSABLES). */
 function decodeForModeration(value: string): string {
   const lowered = value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "");
   let decoded = "";
-  for (const char of lowered) decoded += LEET[char] ?? char;
-  return decoded.replace(/[^a-z]/g, "");
+  for (const char of lowered) decoded += LEET[char] ?? LIGATURES[char] ?? char;
+  return decoded.replace(/[^a-zø]/g, "");
+}
+
+/** Regex source of a list word, each letter also matching its look-alikes; `run` sets the quantifier of a run of one letter. */
+function confusablePattern(word: string, run: (length: number) => string): string {
+  return word.replace(/(.)\1*/g, (letters, letter: string) => `${CONFUSABLES[letter] ?? letter}${run(letters.length)}`);
 }
 
 /**
@@ -70,7 +85,11 @@ const RESERVED = [
   "idlebound", "system", "systeme", "root", "null", "undefined", "anonymous", "anonyme", "official", "officiel"
 ];
 /** Reserved words keep their double letters ("root" is not "rot", or Brother would be refused); a stretched letter still matches. */
-const RESERVED_PATTERNS = RESERVED.map((word) => new RegExp(word.replace(/(.)\1*/g, (run, letter: string) => `${letter}{${run.length},}`)));
+const RESERVED_PATTERNS = RESERVED.map((word) => new RegExp(confusablePattern(word, (length) => `{${length},}`)));
+/** Banned terms, merged like the username they are matched against ("SSaalllooppee"). */
+const SUBSTRING_PATTERNS = BANNED_SUBSTRINGS.map((word) => new RegExp(confusablePattern(normalizeForModeration(word), () => "")));
+const WORD_PATTERNS = [...new Set([...BANNED_WORDS.map(normalizeForModeration), ...BANNED_WORDS])]
+  .map((word) => new RegExp(`^${confusablePattern(word, (length) => (length > 1 ? `{${length}}` : ""))}$`));
 
 /** Why a username was refused; the UI and the API turn it into a sentence. */
 export type UsernameIssue = "too-short" | "too-long" | "charset" | "no-letter" | "reserved" | "forbidden";
@@ -85,20 +104,18 @@ export function validateUsername(input: string): UsernameCheck {
   if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value)) return { ok: false, reason: "no-letter" };
 
   const normalized = normalizeForModeration(value);
-  const collapsed = (text: string) => normalizeForModeration(text);
   const decoded = decodeForModeration(value);
   if (RESERVED_PATTERNS.some((pattern) => pattern.test(decoded))) {
     return { ok: false, reason: "reserved" };
   }
-  if (BANNED_SUBSTRINGS.some((word) => normalized.includes(collapsed(word)))) {
+  if (SUBSTRING_PATTERNS.some((pattern) => pattern.test(normalized))) {
     return { ok: false, reason: "forbidden" };
   }
   const segments = value
     .split(/[_\-\s]+|(?<=[a-z])(?=[A-Z])/)
-    .map(collapsed)
+    .map(normalizeForModeration)
     .filter(Boolean);
-  const banned = new Set([...BANNED_WORDS.map(collapsed), ...BANNED_WORDS]);
-  if (banned.has(normalized) || segments.some((segment) => banned.has(segment))) {
+  if ([normalized, ...segments].some((text) => WORD_PATTERNS.some((pattern) => pattern.test(text)))) {
     return { ok: false, reason: "forbidden" };
   }
   return { ok: true, value };

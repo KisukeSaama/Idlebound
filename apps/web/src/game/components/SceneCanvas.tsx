@@ -5,6 +5,7 @@ import { useEffect, useRef, type RefObject } from "react";
 import { useGame } from "../context";
 import { ArenaRenderer, type Stretch } from "../pixel/arena";
 import { pageRect, prefersReducedMotion } from "../pixel/surface";
+import { gameNow } from "@/lib/clock";
 
 let active: { renderer: ArenaRenderer; canvas: HTMLCanvasElement } | null = null;
 /** Windows and dialogs open over the scene right now. */
@@ -145,7 +146,7 @@ export function SceneCanvas({
   }, [renderer, store, monster, era, hp, wager]);
 
   // Echo of a Walker: another walker's shadow fights beside the company while its buff lasts.
-  const walker = state.buffs.some((buff) => buff.id === "walker" && buff.until > Date.now());
+  const walker = state.buffs.some((buff) => buff.id === "walker" && buff.until > gameNow());
   useEffect(() => {
     renderer.current?.setWalker(walker, era);
   }, [renderer, walker, era]);

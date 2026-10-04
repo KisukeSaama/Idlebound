@@ -9,13 +9,13 @@ import { currentUser } from "../lib/session";
 
 /**
  * The four boards of the Roll; the web app words them. `stage` is the official one: the highest
- * stage reached. The others are all-time tallies with no end (Kings felled, promises kept,
+ * stage reached. The others are all-time tallies with no end (Descents that wove, promises kept,
  * crystals caught): a walker enters them with the first one. Every board breaks its ties by
  * the highest stage, then by who reached it first (`stage_reached_at`, the server's time).
  */
 export const BOARDS = {
   stage: leaderboard.maxStage,
-  kings: leaderboard.kings,
+  weavings: leaderboard.weavings,
   promises: leaderboard.promises,
   crystals: leaderboard.crystals
 } satisfies Record<string, AnyPgColumn>;
@@ -114,7 +114,8 @@ export const leaderboardRoutes = new Hono()
   .get("/", async (c) => {
     const board = c.req.query("board") ?? "stage";
     if (!isBoard(board)) return c.json(fail("unknown_board"), 400);
-    const limit = Math.min(100, Math.max(1, Number(c.req.query("limit") ?? 50) || 50));
+    // Whole rows only: "1.5" would reach the query as a fractional LIMIT.
+    const limit = Math.min(100, Math.max(1, Math.trunc(Number(c.req.query("limit") ?? 50)) || 50));
     const rows = await topRows(board, limit);
 
     const user = await currentUser(c);

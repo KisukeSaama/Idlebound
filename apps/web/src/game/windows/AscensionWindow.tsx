@@ -29,6 +29,7 @@ import { Modal } from "../components/Modal";
 import { formatAltarValue } from "../text";
 import { PlaceHeading } from "./PlaceBanner";
 import { PromiseNotice, PromiseTab } from "./PromiseTab";
+import { gameNow } from "@/lib/clock";
 
 /** An altar's legend shows once it reaches this level (the engine writes it to the Chronicle then). */
 const LEGEND_LEVEL = 5;
@@ -70,7 +71,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
   const text = t.windows.ascension;
   const ui = useUi();
   const fmt = useFormat();
-  const now = Date.now();
+  const now = gameNow();
   const preview = ascensionPreview(state, now);
   const canAscend = store.engine.canAscend();
   // Where the next night starts: past the stages the Altar of the Wanderer clears.

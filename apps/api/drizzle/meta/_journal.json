@@ -64,6 +64,20 @@
       "when": 1791026378321,
       "tag": "0008_leaderboard_four_boards",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791100000000,
+      "tag": "0009_save_pace",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791100060000,
+      "tag": "0010_leaderboard_weavings",
+      "breakpoints": true
     }
   ]
 }

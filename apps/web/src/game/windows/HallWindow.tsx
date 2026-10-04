@@ -459,7 +459,7 @@ function Leaderboard() {
   const text = t.windows.hall;
   const roll = t.leaderboard;
   const fmt = useFormat();
-  const tallies: Record<BoardId, number> = { stage: 1, kings: state.lifetime.kings, promises: promisesKeptInAll(state), crystals: state.lifetime.crystals };
+  const tallies: Record<BoardId, number> = { stage: 1, promises: promisesKeptInAll(state), crystals: state.lifetime.crystals, weavings: state.lifetime.weavings };
   const boards = BOARD_IDS.filter((id) => tallies[id] > 0);
   const [board, setBoard] = useRemembered<BoardId>("roll-board", boards, "stage");
   const [data, setData] = useState<LeaderboardData | null>(null);
