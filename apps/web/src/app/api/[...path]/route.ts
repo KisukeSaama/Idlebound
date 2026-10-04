@@ -6,7 +6,7 @@
 import type { ApiError } from "@idlebound/game";
 import type { NextRequest } from "next/server";
 import { SERVER_TIME_HEADER } from "@/lib/clock";
-import { ownRelease, RELEASE_HEADER } from "@/lib/release";
+import { ownRelease, ownVersion, RELEASE_HEADER, VERSION_HEADER } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
@@ -17,12 +17,15 @@ const MAX_BODY_BYTES = 600 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15_000;
 
 /**
- * Every answer tells the page which release serves it (an older page moves to it, see
- * game/newRelease.ts) and the server's time, the clock the game keeps (see lib/clock.ts).
+ * Every answer tells the page which release serves it and its version (an older page moves
+ * to it and names it, see game/newRelease.ts), and the server's time, the clock the game
+ * keeps (see lib/clock.ts).
  */
 function stamped(response: Response): Response {
   const release = ownRelease();
   if (release) response.headers.set(RELEASE_HEADER, release);
+  const version = ownVersion();
+  if (release && version) response.headers.set(VERSION_HEADER, version);
   response.headers.set(SERVER_TIME_HEADER, String(Date.now()));
   return response;
 }

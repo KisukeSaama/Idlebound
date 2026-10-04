@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { NextConfig } from "next";
 
@@ -7,10 +8,17 @@ import type { NextConfig } from "next";
  */
 const release = process.env.IDLEBOUND_RELEASE ?? "";
 
+/**
+ * The version shown to the walker in Settings (v0.6.0): the "version" of the root
+ * package.json, raised by the change that deserves it. No tag, no hand-written copy.
+ */
+const rootPackage = JSON.parse(readFileSync(path.resolve(process.cwd(), "../../package.json"), "utf8")) as { version: string };
+const version = `v${rootPackage.version}`;
+
 const config: NextConfig = {
   output: "standalone",
   // Not deploymentId: with Turbopack it loads every chunk twice and the game never starts.
-  env: { IDLEBOUND_RELEASE: release },
+  env: { IDLEBOUND_RELEASE: release, IDLEBOUND_VERSION: version },
   // Monorepo: file tracing starts at the repo root so @idlebound/game is bundled.
   outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
   transpilePackages: ["@idlebound/game"],

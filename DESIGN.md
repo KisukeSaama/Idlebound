@@ -1015,9 +1015,15 @@ of the course.
   not answer"), the Ledger's voice in gold, the plain line with the next attempt's
   countdown (or "offline" while the device has no network), and a gold "Try now" button.
   The countdown is not read aloud; the state is.
-- **Newer release**: before a watched page reloads onto a newer release, a `--bg` veil
-  fades over everything in 0.7 s (ease-in) while every sound fades out, so the page lands
-  on the loading screen's own ground. No text. Input is held under the veil; only a scene
-  the game opens meanwhile cancels it (the veil and the sound come back). A plain fade, kept under the reduced motion setting
-  (the system preference cuts it, like every animation).
+- **Newer release**: before a watched page reloads onto a newer release, an update screen
+  fades in over everything (0.3 s) on the loading screen's ground while every sound fades
+  out: the logo, then an old patcher's window (`--panel-solid`, black line, `--border-strong`
+  thread, bevel) with a Cinzel gold title, the two versions in Cinzel (the old one small in
+  `--faint`, a gold-deep arrow, the new one large), a bar of 20 cells in a sunk well lit in
+  `--gold` one by one (with two short stalls, never random), and a status line with its
+  percentage. The old page fills it to 80% ("Putting your progress somewhere safe"); the new
+  page shows it at once over its loading screen, fills the rest ("Installing", then "v0.6.0
+  is ready"), and fades it out in 0.4 s. Input is held under it; only a scene the game opens
+  meanwhile cancels it. Under reduced motion (the setting or the system) the bar jumps to
+  its value and only the fades remain.
 - `<html lang>` follows the current locale.

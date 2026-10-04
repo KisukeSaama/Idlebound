@@ -2,7 +2,7 @@ import { createInitialState } from "@idlebound/game";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/lib/api";
 import { CloudSync } from "./cloud";
-import { FADE_MS, NewRelease } from "./newRelease";
+import { NewRelease, takeArrival, UPDATE_MS, type ReleaseUpdate } from "./newRelease";
 import { GameStore } from "./store";
 
 const USER = { id: "u1", username: "walker", email: "w@example.com", createdAt: "2026-01-01T00:00:00Z", emailVerified: true, verifyBy: null };
@@ -10,11 +10,16 @@ const USER = { id: "u1", username: "walker", email: "w@example.com", createdAt: 
 /** An answer from the server; `release` is the one it runs. */
 function json(body: unknown, { status = 200, release }: { status?: number; release?: string } = {}) {
   const headers: Record<string, string> = { "content-type": "application/json" };
-  if (release) headers["x-idlebound-release"] = release;
+  if (release) {
+    headers["x-idlebound-release"] = release;
+    headers["x-idlebound-version"] = `v-${release}`;
+  }
   return new Response(JSON.stringify(body), { status, headers });
 }
 
 const saved = () => json({ save: { state: createInitialState(), revision: 4, updatedAt: "2026-01-01T00:00:00Z", elapsedMs: 0 } });
+/** The update screen of this page: from its own version to the server's. */
+const UPDATE = { from: "v-old", to: "v-new" };
 const kept = (release: string) => json({ revision: 5, updatedAt: "2026-01-01T00:00:00Z" }, { release });
 
 describe("NewRelease", () => {
@@ -23,7 +28,7 @@ describe("NewRelease", () => {
   let stored: Map<string, string>;
   let fetchMock: ReturnType<typeof vi.fn>;
   let reloads: number;
-  let fades: boolean[];
+  let shown: (ReleaseUpdate | null)[];
   let calm: boolean;
   let running: { store: GameStore; cloud: CloudSync; watch: NewRelease } | null;
 
@@ -39,12 +44,16 @@ describe("NewRelease", () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "setInterval", "Date"] });
     // This page was built from release "old".
     vi.stubEnv("IDLEBOUND_RELEASE", "old");
+    vi.stubEnv("IDLEBOUND_VERSION", "v-old");
     win = new EventTarget();
     stored = new Map();
-    vi.stubGlobal("window", {
-      ...events(win),
-      sessionStorage: { getItem: (key: string) => stored.get(key) ?? null, setItem: (key: string, value: string) => stored.set(key, value) }
-    });
+    const sessionStorage = {
+      getItem: (key: string) => stored.get(key) ?? null,
+      setItem: (key: string, value: string) => stored.set(key, value),
+      removeItem: (key: string) => stored.delete(key)
+    };
+    vi.stubGlobal("window", { ...events(win), sessionStorage });
+    vi.stubGlobal("sessionStorage", sessionStorage);
     visibility = "visible";
     vi.stubGlobal("document", {
       ...events(new EventTarget()),
@@ -56,7 +65,7 @@ describe("NewRelease", () => {
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     reloads = 0;
-    fades = [];
+    shown = [];
     calm = true;
     running = null;
   });
@@ -80,7 +89,7 @@ describe("NewRelease", () => {
     const cloud = new CloudSync(store);
     await cloud.init();
     store.start();
-    const watch = new NewRelease(cloud, { calm: () => calm, fade: (fading) => fades.push(fading), reload: () => (reloads += 1) });
+    const watch = new NewRelease(cloud, { calm: () => calm, show: (update) => shown.push(update), reload: () => (reloads += 1) });
     watch.start();
     running = { store, cloud, watch };
     return running;
@@ -97,22 +106,33 @@ describe("NewRelease", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(reloads).toBe(1);
     expect(puts()).toBe(2);
-    expect(fades).toEqual([]);
+    expect(shown).toEqual([]);
     expect(stored.get("idlebound:release:reloaded-for")).toBe("new");
   });
 
-  it("fades a watched page out at once, then moves it once its game is saved", async () => {
+  it("shows a watched page the update at once, then moves it once its game is saved", async () => {
     const { cloud } = await playing();
     fetchMock.mockImplementation(async () => kept("new"));
     await cloud.sync();
     await vi.advanceTimersByTimeAsync(0);
-    expect(fades).toEqual([true]);
+    expect(shown).toEqual([UPDATE]);
     expect(reloads).toBe(0);
-    await vi.advanceTimersByTimeAsync(FADE_MS);
+    await vi.advanceTimersByTimeAsync(UPDATE_MS);
     expect(reloads).toBe(1);
   });
 
-  it("holds input during the fade: touching the game does not keep the old page", async () => {
+  it("reloads as the same page: the game it holds is not found open elsewhere", async () => {
+    const { cloud } = await playing();
+    fetchMock.mockImplementation(async () => kept("new"));
+    await cloud.sync();
+    await vi.advanceTimersByTimeAsync(UPDATE_MS);
+    expect(reloads).toBe(1);
+    // A watched page keeps its hold on the game; the reload carries the same id.
+    expect(fetchMock.mock.calls.map(([, init]) => JSON.parse(((init as RequestInit).body as string) ?? "{}")).at(-1)).toMatchObject({ holder: cloud.holder, release: false });
+    expect(stored.get("idlebound.page")).toBe(cloud.holder);
+  });
+
+  it("holds input under the update screen: touching the game does not keep the old page", async () => {
     const { cloud } = await playing();
     fetchMock.mockImplementation(async () => kept("new"));
     await cloud.sync();
@@ -120,8 +140,8 @@ describe("NewRelease", () => {
     const touch = new Event("pointerdown", { cancelable: true });
     win.dispatchEvent(touch);
     expect(touch.defaultPrevented).toBe(true);
-    await vi.advanceTimersByTimeAsync(FADE_MS);
-    expect(fades).toEqual([true]);
+    await vi.advanceTimersByTimeAsync(UPDATE_MS);
+    expect(shown).toEqual([UPDATE]);
     expect(reloads).toBe(1);
   });
 
@@ -131,22 +151,22 @@ describe("NewRelease", () => {
     fetchMock.mockImplementation(async () => kept("new"));
     await cloud.sync();
     await vi.advanceTimersByTimeAsync(30_000);
-    expect(fades).toEqual([]);
+    expect(shown).toEqual([]);
     calm = true;
     void watch.attempt();
-    await vi.advanceTimersByTimeAsync(FADE_MS);
+    await vi.advanceTimersByTimeAsync(UPDATE_MS);
     expect(reloads).toBe(1);
   });
 
-  it("stays when a scene opens during the fade", async () => {
+  it("stays when a scene opens under the update screen", async () => {
     const { cloud } = await playing();
     fetchMock.mockImplementation(async () => kept("new"));
     await cloud.sync();
     await vi.advanceTimersByTimeAsync(0);
     const sent = puts();
     calm = false;
-    await vi.advanceTimersByTimeAsync(FADE_MS);
-    expect(fades).toEqual([true, false]);
+    await vi.advanceTimersByTimeAsync(UPDATE_MS);
+    expect(shown).toEqual([UPDATE, null]);
     expect(reloads).toBe(0);
     expect(puts()).toBe(sent);
   });
@@ -180,7 +200,7 @@ describe("NewRelease", () => {
     await api.leaderboard("stage");
     // Watched and calm: not even a fade.
     await vi.advanceTimersByTimeAsync(60_000);
-    expect(fades).toEqual([]);
+    expect(shown).toEqual([]);
     visibility = "hidden";
     await vi.advanceTimersByTimeAsync(60_000);
     expect(reloads).toBe(0);
@@ -204,5 +224,24 @@ describe("NewRelease", () => {
     await cloud.sync();
     await vi.advanceTimersByTimeAsync(60_000);
     expect(reloads).toBe(0);
+  });
+
+  it("hands the new page the update it arrives from, once", async () => {
+    const { cloud } = await playing();
+    visibility = "hidden";
+    fetchMock.mockImplementation(async () => kept("new"));
+    await cloud.sync();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(reloads).toBe(1);
+    // The reloaded page runs the new version.
+    vi.stubEnv("IDLEBOUND_VERSION", "v-new");
+    expect(takeArrival()).toEqual(UPDATE);
+    expect(takeArrival()).toBeNull();
+  });
+
+  it("does not claim an update a page still older did not reach", async () => {
+    stored.set("idlebound:release:arrival", JSON.stringify(UPDATE));
+    expect(takeArrival()).toBeNull();
+    expect(stored.has("idlebound:release:arrival")).toBe(false);
   });
 });

@@ -49,7 +49,7 @@ import { hintsAnsweredBy } from "./hints";
 import { SKILL_PICTO, type PictoName } from "./icons";
 import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, revealMark, stratumLabel, type RevealId } from "./shell";
 import { describePromise } from "./text";
-import { useNewRelease } from "./newRelease";
+import { useArrival, useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ElsewhereModal } from "./components/ElsewhereModal";
@@ -61,6 +61,7 @@ import { GameHeader } from "./components/GameHeader";
 import { HeroPanel } from "./components/HeroPanel";
 import { InstallInvite } from "./components/InstallInvite";
 import { LedgerAway } from "./components/LedgerAway";
+import { ReleaseScreen } from "./components/ReleaseScreen";
 import { NavRail } from "./components/NavRail";
 import { Scene } from "./components/Scene";
 import { PHONE_QUERY, Toasts, type Toast } from "./components/Toasts";
@@ -202,11 +203,15 @@ export default function GameApp() {
   const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null || chest !== null;
   // A newer release waits only while a reload would take something from the screen: a
   // scene, a chest, a question, a toast still to be read. An open window comes back closed.
-  const fading = useNewRelease(cloud, confirmRequest === null && reunion === null && cutscene === null && chest === null && toasts.length === 0);
+  const leaving = useNewRelease(cloud, confirmRequest === null && reunion === null && cutscene === null && chest === null && toasts.length === 0);
   useEffect(() => {
     holding.current = covered;
     if (!covered) pump.next();
   }, [covered, pump]);
+
+  // Arrived from an update: its screen finishes over the loading screen.
+  const arrival = useArrival(ready);
+  const arrivalScreen = arrival ? <ReleaseScreen update={arrival.update} arrived leaving={arrival.leaving} /> : null;
 
   // The loading screen follows the server's answer (or its silence).
   useSyncExternalStore(cloud.subscribe, cloud.getVersion, () => 0);
@@ -677,36 +682,42 @@ export default function GameApp() {
   if (!ready) {
     if (cloud.reaching) return <LedgerAway reaching={cloud.reaching} onRetry={cloud.retryNow} />;
     return (
-      <div className="game-loading" role="status">
-        <img src="/assets/brand/idlebound-logo.webp" alt="Idlebound" width={900} height={341} />
-        <div className="game-loading-bar" aria-hidden="true"><span /></div>
-        <p>{t.hud.loadingSave}</p>
-      </div>
+      <>
+        <div className="game-loading" role="status">
+          <img src="/assets/brand/idlebound-logo.webp" alt="Idlebound" width={900} height={341} />
+          <div className="game-loading-bar" aria-hidden="true"><span /></div>
+          <p>{t.hud.loadingSave}</p>
+        </div>
+        {arrivalScreen}
+      </>
     );
   }
 
+  // Same place as under the loading screen: the arrival's bar carries on when the game is ready.
   return (
-    <GameContext.Provider value={context}>
-      <div className="game-root">
-        <GameHeader />
-        <div className="game-body" data-mobile-tab={mobileTab}>
-          <NavRail active={openWindow?.id ?? null} />
-          <main className="game-main">
-            <Scene />
-          </main>
-          <HeroPanel folded={mobileTab === "scene"} onFold={(folded) => setMobileTab(folded ? "scene" : "heroes")} />
+    <>
+      <GameContext.Provider value={context}>
+        <div className="game-root">
+          <GameHeader />
+          <div className="game-body" data-mobile-tab={mobileTab}>
+            <NavRail active={openWindow?.id ?? null} />
+            <main className="game-main">
+              <Scene />
+            </main>
+            <HeroPanel folded={mobileTab === "scene"} onFold={(folded) => setMobileTab(folded ? "scene" : "heroes")} />
+          </div>
+          {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
+          <CloudChoiceModal />
+          <ElsewhereModal />
+          {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
+          {chest ? <ChestOpening request={chest} onDone={() => setChest(null)} /> : null}
+          {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
+          {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
+          <Toasts toasts={toasts} held={covered} />
+          <InstallInvite covered={covered} />
         </div>
-        {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
-        <CloudChoiceModal />
-        <ElsewhereModal />
-        {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
-        {chest ? <ChestOpening request={chest} onDone={() => setChest(null)} /> : null}
-        {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
-        {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
-        <Toasts toasts={toasts} held={covered} />
-        <InstallInvite covered={covered} />
-        {fading ? <div className="release-fade" aria-hidden="true" /> : null}
-      </div>
-    </GameContext.Provider>
+      </GameContext.Provider>
+      {leaving ? <ReleaseScreen update={leaving} /> : arrivalScreen}
+    </>
   );
 }

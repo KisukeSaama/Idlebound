@@ -11,6 +11,8 @@ import { Modal } from "../components/Modal";
 
 const NOTATIONS: Notation[] = ["letters", "scientific", "engineering"];
 const PREFERENCES: LocalePreference[] = ["auto", ...LOCALES];
+/** The release tag this build comes from (v0.5.3), inlined at build time; empty in tests. */
+const VERSION = process.env.IDLEBOUND_VERSION ?? "";
 /** The effects slider moves in hundredths of its course. */
 const VOLUME_STEPS = 100;
 
@@ -117,7 +119,7 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
         <li><kbd>{text.spaceKey}</kbd> {text.enterAction}</li>
         <li><kbd>{text.escapeKey}</kbd> {text.escapeAction}</li>
       </ul>
-      <p className="modal-hint">{text.footer}</p>
+      {VERSION ? <p className="modal-hint">{text.footer(VERSION)}</p> : null}
     </Modal>
   );
 }

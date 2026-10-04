@@ -1,7 +1,7 @@
 import { isApiError, type ApiError, type GameState, type PasswordIssue, type UsernameIssue } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
 import type { BoardId, RollRow } from "./boards";
-import { noteServerRelease, RELEASE_HEADER } from "./release";
+import { noteServerRelease, RELEASE_HEADER, VERSION_HEADER } from "./release";
 import { noteServerTime, SERVER_TIME_HEADER } from "./clock";
 
 export { BOARD_IDS, type BoardId, type RollRow } from "./boards";
@@ -72,7 +72,7 @@ async function request<T>(method: string, path: string, body?: unknown, options:
     clearTimeout(timeout);
     return { ok: false, status: 0, code: null, error: currentMessages().hud.errors.network };
   }
-  noteServerRelease(response.headers.get(RELEASE_HEADER));
+  noteServerRelease(response.headers.get(RELEASE_HEADER), response.headers.get(VERSION_HEADER));
   noteServerTime(response.headers.get(SERVER_TIME_HEADER), sentAt);
   let json: Record<string, unknown> = {};
   let readable = true;

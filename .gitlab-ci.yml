@@ -1,10 +1,14 @@
 # Idlebound pipeline, derived from devops/docs templates/webapp/.gitlab-ci.yml.
 #
 # Model:
-#   test  -> on develop, on tags v*, and on merge requests
-#   build -> on develop and on tags v*, pushes to the GitLab registry
-#   deploy_dev  -> manual, from develop  -> https://idlebound-d.kisukesaama.com
-#   deploy_prod -> automatic, on tag v*  -> https://idlebound.kisukesaama.com
+#   test  -> on develop, on main, and on merge requests
+#   build -> on develop and on main, pushes to the GitLab registry
+#   deploy_dev  -> manual, from develop     -> https://idlebound-d.kisukesaama.com
+#   deploy_prod -> automatic, on every push to main (merge requests only)
+#                                           -> https://idlebound.kisukesaama.com
+#
+# No git tags: the version is the "version" of the root package.json, raised by the change
+# that deserves it (AGENTS.md, "Versions and patch notes").
 #
 # Required GitLab CI/CD variables (scope per environment, protect the production ones):
 #   IDLEBOUND_POSTGRES_PASSWORD   required
@@ -44,7 +48,7 @@ variables:
         exit 1
       fi
     - export CI_REGISTRY_IMAGE="${CI_REGISTRY_IMAGE:-${CI_REGISTRY}/${CI_PROJECT_PATH}}"
-    - export IMAGE_TAG="${CI_COMMIT_TAG:-${CI_COMMIT_REF_SLUG}}"
+    - export IMAGE_TAG="${CI_COMMIT_REF_SLUG}"
     - echo "${CI_REGISTRY_PASSWORD:-${CI_JOB_TOKEN}}" | docker login --username "${CI_REGISTRY_USER:-gitlab-ci-token}" --password-stdin "${CI_REGISTRY}"
 
 .deploy_defaults: &deploy_defaults
@@ -60,11 +64,11 @@ variables:
         exit 1
       fi
     - export CI_REGISTRY_IMAGE="${CI_REGISTRY_IMAGE:-${CI_REGISTRY}/${CI_PROJECT_PATH}}"
-    - export IMAGE_TAG="${CI_COMMIT_TAG:-${CI_COMMIT_REF_SLUG}}"
+    - export IMAGE_TAG="${CI_COMMIT_REF_SLUG}"
     - set -a; source deploy/paths.env; set +a
-    # A tag means production; anything else that reaches a deploy job is develop.
+    # main means production; anything else that reaches a deploy job is develop.
     - |
-      if [[ -n "${CI_COMMIT_TAG:-}" ]]; then
+      if [[ "${CI_COMMIT_BRANCH:-}" == "main" ]]; then
         export DEPLOY_ENV=prod
         export APP_HOST="${APP_SUBDOMAIN}.kisukesaama.com"
       else
@@ -203,7 +207,7 @@ test:
     - npm test
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
-    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 # ---- build ----------------------------------------------------------------
@@ -218,12 +222,13 @@ build:
     # Monorepo: the build context is the repository root (npm workspaces + shared engine).
     - docker build --pull -t "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}" -f apps/api/Dockerfile .
     # The commit names the release: open pages move to it once their game is saved.
+    # The version shown in Settings comes from the root package.json, read by the build.
     - docker build --pull --build-arg IDLEBOUND_RELEASE="${CI_COMMIT_SHA}" -t "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}" -f apps/web/Dockerfile .
     - docker push "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}"
     - docker push "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}"
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
-    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 # ---- deploy DEV (manual, from develop) ------------------------------------
 
@@ -257,7 +262,7 @@ stop_dev:
     - cd "${TARGET_DIR}"
     - compose down
 
-# ---- deploy PROD (automatic, on v* tags) ----------------------------------
+# ---- deploy PROD (automatic, on main) -------------------------------------
 
 deploy_prod:
   stage: deploy
@@ -269,7 +274,7 @@ deploy_prod:
     url: https://idlebound.kisukesaama.com
     on_stop: stop_prod
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - cd "${TARGET_DIR}"
     - deploy
@@ -282,7 +287,7 @@ stop_prod:
     name: production
     action: stop
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
   script:
     - cd "${TARGET_DIR}"

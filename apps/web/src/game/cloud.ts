@@ -64,6 +64,15 @@ function pageId(): string {
   return crypto.randomUUID();
 }
 
+/** The page goes: its id waits for the reload of the same tab (see `pageId`). */
+function keepPageId(holder: string) {
+  try {
+    sessionStorage.setItem(PAGE_KEY, holder);
+  } catch {
+    // Storage blocked: the reload gets a new id.
+  }
+}
+
 /**
  * Another page plays this game: "open" when this page found it so at load, "taken" when the
  * walker took it over from another page while this one played.
@@ -275,13 +284,7 @@ export class CloudSync {
 
   /** The page goes (a reload, a closed tab): its id waits for a reload of the same tab. */
   private watchPage() {
-    const onHide = () => {
-      try {
-        sessionStorage.setItem(PAGE_KEY, this.holder);
-      } catch {
-        // Storage blocked: the reload gets a new id.
-      }
-    };
+    const onHide = () => keepPageId(this.holder);
     // Back from the browser's page cache: the page runs on, its id is in hand again.
     const onShow = () => {
       try {
@@ -588,6 +591,9 @@ export class CloudSync {
     // check above), then send the last one. Keepalive: it lands even if the page closes.
     if (this.flight) await this.flight;
     if (this.keepsGame() && (await this.upload(this.revision, false, true))) {
+      // The reload is the same page: it keeps the game it holds. Kept now, as disposing
+      // stops watching the page go.
+      keepPageId(this.holder);
       this.dispose();
       return true;
     }
