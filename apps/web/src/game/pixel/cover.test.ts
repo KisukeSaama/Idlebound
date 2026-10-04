@@ -7,7 +7,10 @@ describe("news share cover", () => {
   it("fills the Open Graph frame, opaque, on a whole-factor grid", () => {
     const bitmap = coverBitmap("dark-forest", "mourning-owl");
     expect([bitmap.w, bitmap.h]).toEqual([COVER_WIDTH, COVER_HEIGHT]);
-    for (let at = 3; at < bitmap.data.length; at += 4) expect(bitmap.data[at]).toBe(255);
+    // One assertion for the whole frame: an expect per pixel takes seconds on a busy runner.
+    let translucent = 0;
+    for (let at = 3; at < bitmap.data.length; at += 4) if (bitmap.data[at] !== 255) translucent += 1;
+    expect(translucent).toBe(0);
     // Every art pixel is a 4 by 4 block: the first two rows of the frame repeat the same colors.
     expect(bitmap.data.subarray(0, COVER_WIDTH * 4)).toEqual(bitmap.data.subarray(COVER_WIDTH * 4, COVER_WIDTH * 8));
   });
