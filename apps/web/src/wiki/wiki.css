@@ -620,6 +620,40 @@ kbd {
   height: 72px;
 }
 
+/*
+ * Creature sprites are up to 128 art pixels and never drop below one device pixel per art
+ * pixel, so their frame follows the screen density and the interface zoom: native size on
+ * a 1x screen, half on 2x.
+ */
+.wiki-grid-creatures {
+  --creature-art: 128px;
+  --creature-box: max(72px, calc(var(--creature-art) / var(--ui-zoom) + 8px));
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--creature-box) + 1.4rem), 1fr));
+}
+
+.wiki-grid-creatures .wiki-tile-art {
+  width: var(--creature-box);
+  height: var(--creature-box);
+}
+
+@media (min-resolution: 1.25dppx) {
+  .wiki-grid-creatures {
+    --creature-art: 103px;
+  }
+}
+
+@media (min-resolution: 1.5dppx) {
+  .wiki-grid-creatures {
+    --creature-art: 86px;
+  }
+}
+
+@media (min-resolution: 2dppx) {
+  .wiki-grid-creatures {
+    --creature-art: 64px;
+  }
+}
+
 a.wiki-tile:hover {
   border-color: var(--gold-deep);
   text-decoration: none;

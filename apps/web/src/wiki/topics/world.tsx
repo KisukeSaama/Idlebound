@@ -64,7 +64,7 @@ export function bestiarySlots(ctx: WikiContext): Slots {
               {g.bestiaryPages[page]}
               {BESTIARY_GOLD_PAGES.includes(page) ? <small>{t.wiki.slots.bestiary.goldPage}</small> : null}
             </h3>
-            <div className="wiki-grid">
+            <div className="wiki-grid wiki-grid-creatures">
               {BESTIARY.filter((entry) => entry.page === page).map((entry) => <CreatureTile key={entry.id} ctx={ctx} id={entry.id} />)}
             </div>
           </div>
@@ -91,7 +91,7 @@ export function biomeSlots(ctx: WikiContext): Slots {
                 <p className="wiki-biome-stages">{s.stages(biome.index * STAGES_PER_BIOME + 1, (biome.index + 1) * STAGES_PER_BIOME)}</p>
                 <h3>{g.biomes[biome.id].name}</h3>
                 <p>{g.biomes[biome.id].description}</p>
-                <div className="wiki-grid wiki-grid-small">
+                <div className="wiki-grid wiki-grid-creatures">
                   {[...biome.monsters.map((monster) => monster.id), biome.miniBoss.id, biome.boss.id, ...(wanderer ? [wanderer.id] : [])].map((id) => <CreatureTile key={id} ctx={ctx} id={id} />)}
                 </div>
                 <h4>{s.echoes}</h4>
@@ -142,7 +142,7 @@ export function strataSlots(ctx: WikiContext): Slots {
       </div>
     ),
     kings: (
-      <div className="wiki-grid">
+      <div className="wiki-grid wiki-grid-creatures">
         {KING_FORMS.map((id) => <CreatureTile key={id} ctx={ctx} id={id} />)}
       </div>
     ),

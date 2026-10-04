@@ -245,7 +245,7 @@ export function creatureEntry(ctx: WikiContext, id: string): EntryView {
       {throughAges ? (
         <Section id="ages" title={c.ages}>
           <p>{c.agesLead}</p>
-          <div className="wiki-grid wiki-grid-small">
+          <div className="wiki-grid wiki-grid-creatures">
             {AGE_SAMPLES.map((era, age) => {
               const tile = (
                 <figure className="wiki-tile">
