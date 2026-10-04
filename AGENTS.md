@@ -99,9 +99,11 @@ public. Any agent working here keeps them up to date without being asked.
   Refactors, tests and tooling do not.
 - Releases are the `vX.Y.Z` tags on GitLab (`origin`). At the start of a session, run
   `git fetch --tags origin` and compare the tags with the `version` of the patch notes in
-  `apps/web/src/i18n/messages/posts.ts`. Every tag after v0.4.2 without a patch note gets
-  one, from its lines in CHANGES.md (check `git log <previous tag>..<tag>` for what they
-  miss). Then rename that section of CHANGES.md to the tag, with the article's slug.
+  `apps/web/src/i18n/messages/posts.ts`. Only major and minor releases (`vX.0.0`, `v0.X.0`)
+  get a patch note: a patch tag (`v0.0.X`) gets none, its lines stay under "Next version" and
+  go out with the next minor or major. Every such tag after v0.5.1 without a patch note gets
+  one, from its lines in CHANGES.md (check `git log <previous noted tag>..<tag>` for what
+  they miss). Then rename that section of CHANGES.md to the tag, with the article's slug.
 - A patch note reads like the patch notes of a live game (League of Legends, Valorant): a
   short warm intro, then New, Balance, Fixes as needed, the numbers the walker sees (before
   and after), signed by the team. Kind `patch`, `version` set to the tag, dated the day of
@@ -125,7 +127,7 @@ public. Any agent working here keeps them up to date without being asked.
    motion, and no console errors.
 6. PRODUCT.md, DESIGN.md updated; the matching BIBLE section marked shipped.
 7. Nothing left half-built: no TODO, no dead code, no disabled test.
-8. Visible change: its line is in docs/CHANGES.md; any untreated release tag has its patch note.
+8. Visible change: its line is in docs/CHANGES.md; any untreated major or minor tag has its patch note.
 
 ## Pixel art rules (non-negotiable)
 

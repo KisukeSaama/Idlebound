@@ -22,69 +22,6 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  */
 export const NEWS_POSTS: NewsPost[] = [
   {
-    slug: "patch-notes-0-5-2",
-    date: "2026-10-05",
-    kind: "patch",
-    version: "v0.5.2",
-    cover: { biome: "dark-forest", creature: "shade-wolf" },
-    fr: {
-      title: "Notes de mise à jour 0.5.2",
-      summary: "Un nouveau classement pour les Descentes, des comptes mieux gardés, et une partie qui ne se perd plus à cause d'une horloge pressée.",
-      body: [
-        { kind: "p", text: "Cette version regarde surtout vers ceux qui marchent loin : un classement qui récompense enfin ton rythme au Métier d'Eldra. Et derrière, beaucoup de petites serrures resserrées, pour que la route reste à toi et que chaque record reste honnête." },
-        { kind: "h2", text: "Nouveautés" },
-        {
-          kind: "list",
-          items: [
-            "Classement : « Régicide » laisse sa place à « Nuits retissées », qui range les Descentes ayant tissé au moins un fil. L'ancien tableau classait presque exactement comme la Profondeur ; celui-ci récompense ta cadence au Métier d'Eldra. Tes Descentes passées comptent déjà."
-          ]
-        },
-        { kind: "h2", text: "Corrections" },
-        {
-          kind: "list",
-          items: [
-            "Comptes : quelqu'un qui tente de deviner ton mot de passe depuis plusieurs endroits à la fois ne peut plus t'empêcher d'entrer chez toi. Ses essais sont stoppés, les tiens passent toujours.",
-            "Comptes : corriger une adresse mal tapée annule tous les liens de réinitialisation envoyés à l'ancienne, et chaque correction compte dans les 3 e-mails de confirmation permis par heure.",
-            "Noms : les noms réservés et les mots interdits sont aussi repérés quand ils sont écrits avec des lettres qui leur ressemblent (un l minuscule pour un i, « rn » pour un m, ø, æ, ß et leurs cousins).",
-            "Progression : un appareil dont l'horloge avance de quelques minutes ne voit plus sa nouvelle partie refusée pour toujours. Le jeu se règle maintenant sur sa propre heure, plus sur celle de ton appareil.",
-            "Jeu loyal : les records du classement sont mieux protégés. Plusieurs façons de gonfler un score ou de toucher deux fois la même récompense sont désormais refusées. Si tu joues honnêtement, rien ne change pour toi.",
-            "Détisser : franchir une étape avec Détisser juste après une autre ne risque plus de faire refuser ta progression."
-          ]
-        },
-        { kind: "p", text: "Merci de nous signaler ce qui accroche, c'est comme ça que la route s'améliore. Bonne route, et bonne Descente." }
-      ],
-      link: { route: "leaderboard", label: "Voir le classement" }
-    },
-    en: {
-      title: "Patch notes 0.5.2",
-      summary: "A new leaderboard for Descents, better guarded accounts, and a game that no longer gets lost to a hasty clock.",
-      body: [
-        { kind: "p", text: "This version looks mostly toward those who walk far: a leaderboard that finally rewards your pace at Eldra's Loom. Behind it, many small locks tightened, so the road stays yours and every record stays honest." },
-        { kind: "h2", text: "New" },
-        {
-          kind: "list",
-          items: [
-            "Leaderboard: \"Kingslayer\" gives way to \"Rewoven Nights\", which ranks the Descents that wove at least one thread. The old board ranked walkers almost exactly like Depth; this one rewards your pace at Eldra's Loom. Your past Descents already count."
-          ]
-        },
-        { kind: "h2", text: "Fixes" },
-        {
-          kind: "list",
-          items: [
-            "Accounts: someone guessing your password from many places at once can no longer lock you out of your own account. Their guesses are stopped, yours still go through.",
-            "Accounts: fixing a mistyped address cancels every password reset link sent to the old one, and each fix counts toward the 3 confirmation e-mails allowed per hour.",
-            "Names: reserved names and banned words are also caught when written with look-alike letters (a lowercase l for an i, \"rn\" for an m, ø, æ, ß and their kin).",
-            "Progress: a device whose clock runs a few minutes fast no longer has its new game refused for good. The game now keeps its own time, not your device's.",
-            "Fair play: leaderboard records are better protected. Several ways to inflate a score or collect the same reward twice are now refused. If you play honestly, nothing changes for you.",
-            "Unweave: crossing a stage with Unweave right after another no longer risks having your progress refused."
-          ]
-        },
-        { kind: "p", text: "Thank you for telling us what snags, that is how the road gets better. Safe travels, and a good Descent." }
-      ],
-      link: { route: "leaderboard", label: "See the leaderboard" }
-    }
-  },
-  {
     slug: "patch-notes-0-5-1",
     date: "2026-10-04",
     kind: "patch",

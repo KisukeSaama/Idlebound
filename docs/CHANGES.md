@@ -6,21 +6,13 @@ next release writes itself. Rules in [AGENTS.md](../AGENTS.md#news-and-patch-not
 - One line per change a walker can see or feel, in plain words: what changes for them, with
   the numbers they will notice (before and after). No file, function or commit names.
 - Sorted under **New**, **Balance**, **Fixes**, **Site**. Empty headings are left out.
-- When the release is tagged, its section is renamed to the tag and points to its article;
-  a fresh "Next version" opens on top.
+- When a major or minor release is tagged (`vX.0.0`, `v0.X.0`), its section is renamed to
+  the tag and points to its article; a fresh "Next version" opens on top. A patch tag
+  (`v0.0.X`) has no article: its lines stay here and go out with the next one.
 
 Tags up to v0.4.2 came before the news pages and have no article.
 
-## Next version (after v0.5.2)
-
-### Site
-
-- Phones: the site menu is back. A square button beside "Play" opens leaderboard, wiki and
-  news; before, they could only be reached from the bottom of the page.
-- Leaderboard: the message shown when the board is empty or unavailable no longer sits
-  against the left edge of its frame.
-
-## v0.5.2 (`patch-notes-0-5-2`)
+## Next version (after v0.5.1)
 
 ### New
 
@@ -44,6 +36,13 @@ Tags up to v0.4.2 came before the news pages and have no article.
   taken into a second account are now refused. Honest play is not affected.
 - Unweave: crossing a stage with Unweave right after another no longer risks a refused
   progress.
+
+### Site
+
+- Phones: the site menu is back. A square button beside "Play" opens leaderboard, wiki and
+  news; before, they could only be reached from the bottom of the page.
+- Leaderboard: the message shown when the board is empty or unavailable no longer sits
+  against the left edge of its frame.
 
 ## v0.5.1 (`patch-notes-0-5-1`)
 
