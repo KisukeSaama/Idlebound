@@ -1,5 +1,5 @@
-import { usernameKey, validateUsername, type ApiError, type Locale } from "@idlebound/game";
-import { and, eq, gt, isNull, ne } from "drizzle-orm";
+import { USERNAME_RENAME_DAYS, usernameKey, validateUsername, type ApiError, type Locale } from "@idlebound/game";
+import { and, eq, gt, isNull, lte, ne, or } from "drizzle-orm";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
 import { db } from "../db/client";
@@ -43,6 +43,14 @@ const changeBody = z.object({ currentPassword: password, newPassword: password }
 const deleteBody = z.object({ password });
 const verifyBody = z.object({ token: z.string().min(20).max(100) });
 const emailBody = z.object({ email, password });
+const usernameBody = z.object({ username: z.string().max(64), password });
+
+/** When the account may take a new username again; null when it may right now. */
+function renameAt(user: { usernameChangedAt: Date | null }): Date | null {
+  if (!user.usernameChangedAt) return null;
+  const next = new Date(user.usernameChangedAt.getTime() + USERNAME_RENAME_DAYS * 86_400_000);
+  return next.getTime() > Date.now() ? next : null;
+}
 
 /** Parses the JSON body, or says which error code to answer. */
 async function body<T>(c: Context, schema: z.ZodType<T>): Promise<{ data: T } | { error: ApiError }> {
@@ -57,7 +65,7 @@ async function body<T>(c: Context, schema: z.ZodType<T>): Promise<{ data: T } | 
   return { data: parsed.data };
 }
 
-function publicUser(user: { id: string; username: string; email: string; emailVerifiedAt: Date | null; createdAt: Date }) {
+function publicUser(user: { id: string; username: string; email: string; emailVerifiedAt: Date | null; createdAt: Date; usernameChangedAt: Date | null }) {
   const deadline = verifyDeadline(user);
   return {
     id: user.id,
@@ -66,7 +74,9 @@ function publicUser(user: { id: string; username: string; email: string; emailVe
     createdAt: user.createdAt.toISOString(),
     emailVerified: deadline === null,
     /** Until when saves are accepted without a confirmed address. */
-    verifyBy: deadline?.toISOString() ?? null
+    verifyBy: deadline?.toISOString() ?? null,
+    /** When a new username may be taken again (null: right now). */
+    renameAt: renameAt(user)?.toISOString() ?? null
   };
 }
 
@@ -287,6 +297,44 @@ export const authRoutes = new Hono()
     const updated = { ...row, email: address, emailVerifiedAt: changed ? null : row.emailVerifiedAt };
     await sendVerification(updated, localeOf(c));
     return c.json({ user: publicUser(updated) });
+  })
+
+  // A new username, once every USERNAME_RENAME_DAYS days. The old one is free for anyone.
+  .post("/username", async (c) => {
+    const user = await currentUser(c);
+    if (!user) return c.json(fail("login_required"), 401);
+    const wait = sensitiveUser.consume(user.id);
+    if (wait > 0) return tooMany(c, wait);
+    const parsed = await body(c, usernameBody);
+    if ("error" in parsed) return c.json({ error: parsed.error }, 400);
+    const [row] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
+    if (!row || !(await verifyPassword(parsed.data.password, row.passwordHash))) {
+      return c.json(fail("wrong_password", { field: "password" }), 401);
+    }
+    const locked = renameAt(row);
+    if (locked) return c.json(fail("rename_too_soon", { renameAt: locked.toISOString() }), 403);
+    const name = validateUsername(parsed.data.username);
+    if (!name.ok) return c.json(fail("invalid_username", { reason: name.reason, field: "username" }), 400);
+    if (name.value === row.username) return c.json(fail("username_unchanged", { field: "username" }), 400);
+    // Only the case or the accents of one's own name may change: that key is already theirs.
+    const key = usernameKey(name.value);
+    if (key !== row.usernameKey) {
+      const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.usernameKey, key)).limit(1);
+      if (taken) return c.json(fail("username_taken", { field: "username" }), 409);
+    }
+    const now = new Date();
+    const since = new Date(now.getTime() - USERNAME_RENAME_DAYS * 86_400_000);
+    try {
+      // The cooldown is checked again in the write: two renames sent at once cannot both pass.
+      const [updated] = await db.update(users).set({ username: name.value, usernameKey: key, usernameChangedAt: now })
+        .where(and(eq(users.id, user.id), or(isNull(users.usernameChangedAt), lte(users.usernameChangedAt, since))))
+        .returning();
+      if (!updated) return c.json(fail("rename_too_soon", { renameAt: new Date(now.getTime() + USERNAME_RENAME_DAYS * 86_400_000).toISOString() }), 403);
+      return c.json({ user: publicUser(updated) });
+    } catch (error) {
+      if (uniqueViolation(error)) return c.json(fail("username_taken", { field: "username" }), 409);
+      throw error;
+    }
   })
 
   .post("/password", async (c) => {

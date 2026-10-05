@@ -8,6 +8,8 @@ export const users = pgTable("users", {
   username: text("username").notNull(),
   /** Normalized username (case, accents): guarantees visual uniqueness. */
   usernameKey: text("username_key").notNull().unique(),
+  /** Last time the player took a new username; null until the first change. */
+  usernameChangedAt: timestamp("username_changed_at", { withTimezone: true }),
   passwordHash: text("password_hash").notNull(),
   /** When the player proved they own the address; null until then (see lib/verification.ts). */
   emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),

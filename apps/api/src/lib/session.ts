@@ -49,6 +49,7 @@ export interface SessionUser {
   username: string;
   emailVerifiedAt: Date | null;
   createdAt: Date;
+  usernameChangedAt: Date | null;
 }
 
 /** User of the current session (and sliding renewal of the session). */
@@ -57,7 +58,7 @@ export async function currentUser(c: Context): Promise<SessionUser | null> {
   if (!token || token.length > 100) return null;
   const id = hashToken(token);
   const [row] = await db
-    .select({ id: users.id, email: users.email, username: users.username, emailVerifiedAt: users.emailVerifiedAt, createdAt: users.createdAt, lastSeenAt: users.lastSeenAt, expiresAt: sessions.expiresAt })
+    .select({ id: users.id, email: users.email, username: users.username, emailVerifiedAt: users.emailVerifiedAt, createdAt: users.createdAt, usernameChangedAt: users.usernameChangedAt, lastSeenAt: users.lastSeenAt, expiresAt: sessions.expiresAt })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(and(eq(sessions.id, id), gt(sessions.expiresAt, new Date())))
@@ -73,7 +74,7 @@ export async function currentUser(c: Context): Promise<SessionUser | null> {
     await db.update(sessions).set({ expiresAt }).where(eq(sessions.id, id));
     writeCookie(c, token, expiresAt);
   }
-  return { id: row.id, email: row.email, username: row.username, emailVerifiedAt: row.emailVerifiedAt, createdAt: row.createdAt };
+  return { id: row.id, email: row.email, username: row.username, emailVerifiedAt: row.emailVerifiedAt, createdAt: row.createdAt, usernameChangedAt: row.usernameChangedAt };
 }
 
 export async function destroySession(c: Context) {

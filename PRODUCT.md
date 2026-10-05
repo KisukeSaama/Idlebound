@@ -655,6 +655,12 @@ rejects real play.
   regardless of case and accents, reserved names blocked, strict FR/EN profanity filter that
   sees through leet-speak, accents, repeated letters, separators and look-alike letters (a
   lowercase l for an i, rn for an m, ø, æ, œ, ð, þ, ß) (usernames are public).
+- **Username change**: from the account window, once every **90 days** (the first change
+  waits for nothing), password required, same rules as at sign-up. A change of case or
+  accents of one's own name counts as a change. The leaderboard shows the new name at once
+  and the old one is free for anyone. Until the window reopens, the account window gives
+  the date of the next change; the server checks the delay again in the write itself, so
+  two changes sent at once cannot both pass.
 - Passwords: 8 to 128 characters, not a common password, not a single repeated character,
   not containing the username nor equal to the e-mail; scrypt, constant-time checks, no
   account enumeration.
@@ -841,9 +847,10 @@ write it (`pace`, see `verifyPace`), updated with every accepted save:
 - the play and absence claimed ahead of the time it saw pass: the 2 min of clock slack is
   granted once, not again at every save (a 1% leak washes the network's jitter out) (`time`);
 - the powers left: they come back at their shortest cooldown, twice over for the Echo, all
-  at once at each dusk and when the Caravan comes, from a reserve of 16; reopening the game
-  to make them ready again is refused (`powers`), and so are Ritual stacks beyond twice per
-  Ritual cooldown since the night began;
+  at once at each dusk and when the Caravan comes, from a reserve of 16 (only the stock kept
+  between two saves is capped, so powers used as they come back over a long gap between
+  saves all count); reopening the game to make them ready again is refused (`powers`), and so
+  are Ritual stacks beyond twice per Ritual cooldown since the night began;
 - the Caravan's week: never one before the last save nor one to come (`caravan`).
 A game saved before the ledger existed starts it from its own record.
 Every essence comes from an ascension or a crystal: the ledger of all ascensions holds at
@@ -853,9 +860,27 @@ could have bought before the cap, kept once in `legacyHarvest` and never changed
 since the last save are always paid under the cap), and between two saves the
 essences gathered fit the ascensions and crystals between them. Crystals fall no faster
 than the Lantern, the Lodestone and a full Humming Loom allow, five per call for a Storm.
-Shards earned fit the guardians, Seams, crystals and salvaged items (forge refunds give back
-at most 0.5 / 1.7 of what the forge took). Hourglasses are bought with shards (45 a bottled
-hour at the cheapest), and each counts an hour of kills in the kill bound.
+Relics drop only from the guardian blocking the road (once a night per boss stage; between
+two saves, and for a game never seen, bosses replayed from the stage selector pay nothing),
+a Seam closed, a named relic, or a chest paid in shards (22.5 shards a relic at the
+cheapest): relics found never pass those sources (`item`). Legendaries and mythics stay
+within the relics found and within a generous share of their sources (a tenth of guardians
+and Seams plus one per 250 shards spent for legendaries, a fiftieth plus one per 2000 for
+mythics, plus the named ones and a lucky few). A relic the server saw never changes except
+its forge going up, and a relic held that was never found is refused. Shards earned fit the
+guardians, Seams, crystals and the salvage of the relics found (each legendary and mythic at
+its worth, a guardian's or Seam's other relic as an epic, a chest's as a rare), plus at most
+0.5 / 1.7 of the shards spent (forge levels salvaged; a chest's epic is far cheaper than
+that). The forge levels the relics carry, the hourglasses (45 a bottled hour at the
+cheapest) and the shards owned never pass the shards earned (`forge`); each hourglass counts
+an hour of kills in the kill bound. Golden rats stay under 30% of kills (plus 50) and Seams
+under one kill in a hundred (plus 25), Kings between two saves under the guardians beaten.
+Gold between two saves is bounded per kill by a boss of the best stage under every boon, for
+the richer of the two companies wearing the best gold relic of each slot either save holds,
+plus a won wager per golden rat. Gains between two saves allow for the rounding of totals past
+2^53 (essences gathered move in steps of 32 at 2.5e17). A night may begin as far as the Altar
+of the Wanderer and the Ring of the Second Morning skip, the ring counted once found, worn or
+not (it may have been taken off since the dusk).
 The schema bounds what the checks walk: stages up to 3000, weave levels up to 200, and every
 record keyed by game ids to a size well above the game's data, so no save can make the
 server spin. The schema and the checks live in `@idlebound/game/server` and never ship to

@@ -1,4 +1,4 @@
-import { GUEST_SAVE_DAYS, USERNAME_MAX, USERNAME_MIN } from "@idlebound/game";
+import { GUEST_SAVE_DAYS, USERNAME_MAX, USERNAME_MIN, USERNAME_RENAME_DAYS } from "@idlebound/game";
 import { defineMessages } from "../define";
 
 /** Account window: sign-up, sign-in, profile, cloud save status, new game. */
@@ -41,6 +41,13 @@ export const account = defineMessages({
     showEmail: "Afficher",
     hideEmail: "Masquer",
     changePassword: "Changer de mot de passe",
+    changeUsername: "Changer de pseudo",
+    newUsername: "Nouveau pseudo",
+    renameHint: `Un changement tous les ${USERNAME_RENAME_DAYS} jours. Ton ancien pseudo redevient libre pour les autres marcheurs.`,
+    renameLocked: (date: string) => `Tu as déjà changé de pseudo récemment. Prochain changement possible le ${date}.`,
+    renameSave: "Prendre ce pseudo",
+    renamedTitle: "Pseudo modifié",
+    renamedText: (username: string) => `Le Registre et le classement t'appellent désormais ${username}.`,
     logout: "Se déconnecter",
     loggedOutTitle: "Déconnecté",
     loggedOutText: "Ta partie t'attend sur ton compte.",
@@ -134,6 +141,13 @@ export const account = defineMessages({
     showEmail: "Show",
     hideEmail: "Hide",
     changePassword: "Change password",
+    changeUsername: "Change username",
+    newUsername: "New username",
+    renameHint: `One change every ${USERNAME_RENAME_DAYS} days. Your old username becomes free for other walkers.`,
+    renameLocked: (date: string) => `You changed your username recently. Your next change opens on ${date}.`,
+    renameSave: "Take this username",
+    renamedTitle: "Username changed",
+    renamedText: (username: string) => `The Roll and the leaderboard now call you ${username}.`,
     logout: "Log out",
     loggedOutTitle: "Logged out",
     loggedOutText: "Your game waits for you on your account.",

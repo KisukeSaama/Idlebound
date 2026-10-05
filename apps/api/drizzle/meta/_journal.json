@@ -78,6 +78,13 @@
       "when": 1791100060000,
       "tag": "0010_leaderboard_weavings",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791157887939,
+      "tag": "0011_username_rename",
+      "breakpoints": true
     }
   ]
 }

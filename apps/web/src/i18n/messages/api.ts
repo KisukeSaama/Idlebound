@@ -1,4 +1,4 @@
-import type { ApiError, PasswordIssue } from "@idlebound/game";
+import { USERNAME_RENAME_DAYS, type ApiError, type PasswordIssue } from "@idlebound/game";
 import { defineMessages } from "../define";
 
 /** Errors whose words need the answer's details; every other code is a plain string. */
@@ -30,6 +30,8 @@ export const api = defineMessages<ApiTexts>({
     "username_taken": "Ce pseudo est déjà pris.",
     "email_taken": "Un compte existe déjà avec cet e-mail.",
     "username_or_email_taken": "Ce pseudo ou cet e-mail est déjà utilisé.",
+    "username_unchanged": "C'est déjà ton pseudo.",
+    "rename_too_soon": `Tu as déjà changé de pseudo il y a moins de ${USERNAME_RENAME_DAYS} jours.`,
     "wrong_credentials": "E-mail ou mot de passe incorrect.",
     "wrong_password": "Mot de passe incorrect.",
     "wrong_current_password": "Mot de passe actuel incorrect.",
@@ -70,6 +72,8 @@ export const api = defineMessages<ApiTexts>({
     "username_taken": "This username is already taken.",
     "email_taken": "An account already exists with this e-mail.",
     "username_or_email_taken": "This username or e-mail is already in use.",
+    "username_unchanged": "That is already your username.",
+    "rename_too_soon": `You already changed your username less than ${USERNAME_RENAME_DAYS} days ago.`,
     "wrong_credentials": "Wrong e-mail or password.",
     "wrong_password": "Incorrect password.",
     "wrong_current_password": "Current password is incorrect.",

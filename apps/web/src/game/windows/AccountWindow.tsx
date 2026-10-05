@@ -1,6 +1,6 @@
 "use client";
 
-import { intlLocale, validateUsername } from "@idlebound/game";
+import { intlLocale, USERNAME_MAX, USERNAME_MIN, validateUsername } from "@idlebound/game";
 import Link from "next/link";
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
@@ -29,7 +29,7 @@ function Profile() {
   const cloud = useCloud();
   const ui = useUi();
   const text = useI18n().t.account;
-  const [panel, setPanel] = useState<"none" | "password" | "delete">("none");
+  const [panel, setPanel] = useState<"none" | "username" | "password" | "delete">("none");
   const [showEmail, setShowEmail] = useState(false);
   const user = cloud.user!;
   const email = showEmail ? user.email : maskEmail(user.email);
@@ -51,10 +51,12 @@ function Profile() {
       <LedgerStatus />
       <p className="modal-hint">{text.saveInfo}</p>
       <div className="account-actions">
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPanel(panel === "username" ? "none" : "username")}>{text.changeUsername}</button>
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPanel(panel === "password" ? "none" : "password")}>{text.changePassword}</button>
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => void cloud.logout().then(() => ui.toast({ tone: "info", title: text.loggedOutTitle, text: text.loggedOutText }))}>{text.logout}</button>
         <button type="button" className="btn btn-danger btn-sm" onClick={() => setPanel(panel === "delete" ? "none" : "delete")}>{text.deleteAccount}</button>
       </div>
+      {panel === "username" ? <ChangeUsername onDone={() => setPanel("none")} /> : null}
       {panel === "password" ? <ChangePassword onDone={() => setPanel("none")} /> : null}
       {panel === "delete" ? <DeleteAccount /> : null}
     </section>
@@ -171,6 +173,58 @@ function ChangeEmail({ onDone }: { onDone: () => void }) {
       </div>
       {error ? <p className="form-error" role="alert">{error.text}</p> : null}
       <button className="btn btn-sm" disabled={pending}>{text.saveEmail}</button>
+    </form>
+  );
+}
+
+/** A new username, once every few months: past the change, the window says when the next one opens. */
+function ChangeUsername({ onDone }: { onDone: () => void }) {
+  const cloud = useCloud();
+  const ui = useUi();
+  const { t, locale } = useI18n();
+  const text = t.account;
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<{ text: string; field?: string } | null>(null);
+  const [pending, setPending] = useState(false);
+  const renameAt = cloud.user?.renameAt ? new Date(cloud.user.renameAt) : null;
+  if (renameAt && renameAt.getTime() > Date.now()) {
+    return <p className="modal-hint account-form" role="status">{text.renameLocked(renameAt.toLocaleDateString(intlLocale(locale), { dateStyle: "long" }))}</p>;
+  }
+  const nameCheck = username ? validateUsername(username) : null;
+  return (
+    <form
+      className="account-form"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (nameCheck && !nameCheck.ok) return setError({ text: text.usernameIssues[nameCheck.reason], field: "username" });
+        setPending(true);
+        setError(null);
+        const result = await api.changeUsername(username, password);
+        setPending(false);
+        if (!result.ok) {
+          // Renamed from another device in the meantime: the account now says when.
+          if (result.code === "rename_too_soon") await cloud.refreshUser();
+          return setError({ text: result.error, field: result.field });
+        }
+        cloud.setUser(result.data.user);
+        ui.toast({ tone: "success", title: text.renamedTitle, text: text.renamedText(result.data.user.username) });
+        onDone();
+      }}
+    >
+      <div className="field">
+        <label htmlFor="rename-username">{text.newUsername}</label>
+        <input id="rename-username" className="input" autoComplete="username" required minLength={USERNAME_MIN} maxLength={USERNAME_MAX} value={username} onChange={(event) => setUsername(event.target.value)} aria-invalid={Boolean(nameCheck && !nameCheck.ok) || error?.field === "username"} aria-describedby="rename-username-hint" />
+        <span id="rename-username-hint" className={nameCheck && !nameCheck.ok ? "field-error" : "field-hint"}>
+          {nameCheck && !nameCheck.ok ? text.usernameIssues[nameCheck.reason] : text.renameHint}
+        </span>
+      </div>
+      <div className="field">
+        <label htmlFor="rename-password">{text.password}</label>
+        <input id="rename-password" className="input" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} aria-invalid={error?.field === "password"} />
+      </div>
+      {error ? <p className="form-error" role="alert">{error.text}</p> : null}
+      <button className="btn btn-gold" disabled={pending}>{text.renameSave}</button>
     </form>
   );
 }

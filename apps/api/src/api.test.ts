@@ -905,6 +905,45 @@ suite("API (real Postgres)", () => {
     }
   }, 60_000);
 
+  it("lets a walker take a new username once every 90 days, the old one freed", async () => {
+    const client = new Client("10.0.0.30");
+    const password = "Un-Mot-De-Passe-Solide";
+    const first = freshName("Ren");
+    const second = freshName("Nam");
+    const register = await client.call("POST", "/auth/register", { email: `rename-${unique}@idlebound.test`, username: first, password });
+    expect(register.status).toBe(201);
+    expect(register.json.user.renameAt).toBeNull();
+    const rival = freshName("Riv");
+    expect((await new Client("10.0.0.31").call("POST", "/auth/register", { email: `rival-${unique}@idlebound.test`, username: rival, password })).status).toBe(201);
+
+    expect((await client.call("POST", "/auth/username", { username: second, password: "pas-le-bon" })).json).toEqual({ error: "wrong_password", field: "password" });
+    expect((await client.call("POST", "/auth/username", { username: rival.toLowerCase(), password })).json).toEqual({ error: "username_taken", field: "username" });
+    expect((await client.call("POST", "/auth/username", { username: "C0nn4rd", password })).json.error).toBe("invalid_username");
+    expect((await client.call("POST", "/auth/username", { username: first, password })).json.error).toBe("username_unchanged");
+
+    const renamed = await client.call("POST", "/auth/username", { username: second, password });
+    expect(renamed.status).toBe(200);
+    expect(renamed.json.user.username).toBe(second);
+    const renameAt = Date.parse(renamed.json.user.renameAt);
+    expect(renameAt - Date.now()).toBeGreaterThan(89 * 86_400_000);
+    expect((await client.call("GET", "/auth/me")).json.user.username).toBe(second);
+
+    // Even a change of case waits for the next window.
+    const again = await client.call("POST", "/auth/username", { username: second.toUpperCase(), password });
+    expect(again.status).toBe(403);
+    expect(again.json).toEqual({ error: "rename_too_soon", renameAt: renamed.json.user.renameAt });
+
+    // The old name is free for anyone.
+    expect((await new Client("10.0.0.32").call("POST", "/auth/register", { email: `taker-${unique}@idlebound.test`, username: first, password })).status).toBe(201);
+
+    // 90 days later, the window opens again.
+    await sql`update users set username_changed_at = now() - interval '90 days 1 minute' where username = ${second}`;
+    expect((await client.call("GET", "/auth/me")).json.user.renameAt).toBeNull();
+    const third = await client.call("POST", "/auth/username", { username: second.toUpperCase(), password });
+    expect(third.status).toBe(200);
+    expect(third.json.user.username).toBe(second.toUpperCase());
+  });
+
   it("does not reveal whether an e-mail exists when resetting", async () => {
     const client = new Client("10.0.0.10");
     const response = await client.call("POST", "/auth/forgot", { email: `unknown-${unique}@test.fr` });
