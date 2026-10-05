@@ -131,9 +131,9 @@ describe("crystals, hourglasses and shards", () => {
   it("bounds Pip's Wagers by the golden rats caught", () => {
     const previous = veteran();
     const kill = stageGold(previous.maxStageEver) * derive(previous, previous.lastTickAt, { ignoreTimed: true }).goldMultiplier;
-    // Beyond what two kills can pay at best (a boss at a wager's floor, every boon), a won
-    // wager at its best: accepted when one of the kills was a golden rat, refused otherwise.
-    const kills = 2 * 10 * 30 * 6 * kill;
+    // Beyond what two kills can pay at best (a boss, every boon), a won wager at its best:
+    // accepted when one of the kills was a golden rat, refused otherwise.
+    const kills = 2 * 10 * 6 * kill;
     const honest = structuredClone(previous);
     honest.lifetime.kills += 1;
     honest.lifetime.treasures += 1;
@@ -498,6 +498,15 @@ describe("the server's own ledger of a game", () => {
     expect(found).toContain("powers");
   }, 60_000);
 
+  it("accepts two hours of powers used as they come back, with no save in between", () => {
+    const { engine, now, previous, previousAt, pace } = savedEvery(14, 10 * 60, 30);
+    // The network drops for two hours; the open game plays on, then saves.
+    const later = playBot(engine, now, 2 * 3600, { clicksPerSecond: 5, stagnationMs: 24 * 3600_000 });
+    const next = structuredClone(engine.state);
+    expect(next.lifetime.skillsUsed - previous.lifetime.skillsUsed).toBeGreaterThan(30);
+    expect(codes(verifyPace(previous, next, pace, later, later - previousAt).violations)).not.toContain("powers");
+  }, 60_000);
+
   it("refuses Rituals piled up beyond what the night allows", () => {
     const { previous, previousAt, pace } = savedEvery(10, 10 * 60, 30);
     const next = structuredClone(previous);
@@ -565,4 +574,131 @@ describe("the server's own ledger of a game", () => {
     unseen.lifetime.kills = 400;
     expect(codes(verifyFirstSight(unseen))).toContain("stage");
   }, 60_000);
+});
+
+/** Half an hour of honest play, then half a minute more: two saves the server would keep. */
+function twoSaves(seed: number) {
+  const { engine, now } = honestGame(seed);
+  const previous = structuredClone(engine.state);
+  const later = playBot(engine, now, 30, { clicksPerSecond: 5 });
+  return { previous, next: structuredClone(engine.state), now: later, elapsed: later - now };
+}
+
+describe("relics, shards and luck", () => {
+  it("accepts half a minute of chests, forge and salvage", () => {
+    const { engine, now } = honestGame(21);
+    const previous = structuredClone(engine.state);
+    engine.buyOffer("chest", now);
+    for (const slot of ["weapon", "armor", "amulet", "ring"] as const) engine.forge(slot, now);
+    for (const item of [...engine.state.inventory]) engine.salvage(item.uid);
+    const later = playBot(engine, now, 30, { clicksPerSecond: 5 });
+    expect(verifyState(engine.state, later)).toEqual([]);
+    expect(verifyTransition(previous, engine.state, later - now)).toEqual([]);
+  });
+
+  it("refuses relics no guardian, Seam or chest gave, and the shards they would salvage for", () => {
+    const { previous, next, now, elapsed } = twoSaves(22);
+    next.lifetime.itemsFound += 1_000_000;
+    next.lifetime.shardsEarned += 100_000;
+    next.shards += 100_000;
+    expect(codes(verifyState(next, now))).toContain("item");
+    expect(codes(verifyTransition(previous, next, elapsed))).toContain("item");
+  });
+
+  it("refuses forge levels the shards earned never paid", () => {
+    const { next, now } = twoSaves(23);
+    const items = [...Object.values(next.equipment), ...next.inventory].filter((item) => item !== undefined);
+    expect(items.length).toBeGreaterThan(0);
+    for (const item of items) item.forge = 20;
+    expect(codes(verifyState(next, now))).toContain("forge");
+  });
+
+  it("refuses a relic remade after it dropped, and a relic held that was never found", () => {
+    const { previous, next, elapsed } = twoSaves(24);
+    const remade = structuredClone(next);
+    const item = Object.values(remade.equipment).find((entry) => entry && !entry.named)!;
+    item.rarity = "mythic";
+    remade.lifetime.mythics += 1;
+    expect(codes(verifyTransition(previous, remade, elapsed))).toContain("item");
+
+    const conjured = structuredClone(next);
+    conjured.inventory.push({ ...structuredClone(item), uid: "never-found" });
+    expect(codes(verifyTransition(previous, conjured, elapsed))).toContain("item");
+    expect(verifyTransition(previous, next, elapsed)).toEqual([]);
+  });
+
+  it("refuses more legendaries and mythics than relics found or luck allows", () => {
+    const { next, now } = twoSaves(25);
+    const counted = structuredClone(next);
+    counted.lifetime.legendaries = counted.lifetime.itemsFound + 1;
+    expect(codes(verifyState(counted, now))).toContain("item");
+    // A thousand relics from a thousand guardians: a fifth of them mythic is no luck.
+    const lucky = veteran();
+    lucky.lifetime.bosses = 1_000;
+    lucky.lifetime.kings = 100;
+    lucky.lifetime.itemsFound = 1_000;
+    expect(codes(verifyState(lucky, LATER))).not.toContain("item");
+    lucky.lifetime.mythics = 200;
+    expect(codes(verifyState(lucky, LATER))).toContain("item");
+  });
+
+  it("pays shards for the guardian blocking the road only, not for one replayed", () => {
+    const { previous, next, elapsed } = twoSaves(26);
+    // Fifty guardians replayed from the stage selector, each claiming its shards.
+    next.lifetime.bosses += 50;
+    next.run.bosses += 50;
+    next.lifetime.kills += 50;
+    next.run.kills += 50;
+    next.lifetime.shardsEarned += 50 * 3;
+    next.shards += 50 * 3;
+    expect(codes(verifyTransition(previous, next, elapsed))).toContain("shards-earned");
+  });
+
+  it("bounds golden rats, Seams and Kings by their odds and their guardians", () => {
+    const { previous, next, now, elapsed } = twoSaves(27);
+    const rats = structuredClone(next);
+    rats.lifetime.treasures = Math.ceil(rats.lifetime.kills / 2) + 60;
+    expect(codes(verifyState(rats, now))).toContain("kills");
+    const seams = structuredClone(next);
+    seams.lifetime.seams = Math.ceil(seams.lifetime.kills / 50) + 30;
+    expect(codes(verifyState(seams, now))).toContain("lore");
+    const kings = structuredClone(next);
+    kings.lifetime.kings += next.lifetime.bosses - previous.lifetime.bosses + 1;
+    expect(codes(verifyTransition(previous, kings, elapsed))).toContain("kills");
+  });
+
+  it("bounds the gold between two saves by the richer company, not a thousand times more", () => {
+    const { previous, next, elapsed } = twoSaves(28);
+    expect(codes(verifyTransition(previous, next, elapsed))).not.toContain("gold");
+    const extra = (next.lifetime.goldEarned - previous.lifetime.goldEarned) * 999;
+    next.lifetime.goldEarned += extra;
+    next.run.goldEarned += extra;
+    next.gold += extra;
+    expect(codes(verifyTransition(previous, next, elapsed))).toContain("gold");
+  });
+
+  it("lets a night begin past the stages the Ring of the Second Morning skipped, worn at dusk then taken off", () => {
+    const walker = veteran();
+    walker.runStartStage = 6;
+    walker.maxStage = 6;
+    walker.stage = 6;
+    expect(codes(verifyState(walker, LATER))).toContain("stage-order");
+    walker.named = ["second-morning"];
+    expect(codes(verifyState(walker, LATER))).not.toContain("stage-order");
+  });
+
+  it("accepts a crystal's essences added to a total so large it moves in steps", () => {
+    const previous = veteran();
+    previous.lifetime.ascensionEssences = 2.5e17;
+    previous.lifetime.essencesEarned = 2.5e17;
+    // Eighteen essences, past half a step of 32: the total moves by a whole step.
+    previous.maxStageEver = 1_700;
+    const next = structuredClone(previous);
+    next.lifetime.crystals += 1;
+    next.lifetime.essencesEarned += crystalEssenceReward(next.maxStageEver);
+    expect(next.lifetime.essencesEarned - previous.lifetime.essencesEarned).toBeGreaterThan(crystalEssenceReward(next.maxStageEver) + 1);
+    expect(codes(verifyTransition(previous, next, 60_000))).not.toContain("essence-source");
+    next.lifetime.essencesEarned += 1e6;
+    expect(codes(verifyTransition(previous, next, 60_000))).toContain("essence-source");
+  });
 });

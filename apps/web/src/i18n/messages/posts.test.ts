@@ -18,9 +18,9 @@ describe("the news articles", () => {
     expect(dates).toEqual([...dates].sort().reverse());
   });
 
-  it("name the release tag of a patch note, and only of a patch note, once each", () => {
+  it("name the version of a patch note, and only of a patch note, once each", () => {
     for (const post of NEWS_POSTS) {
-      if (post.kind === "patch") expect(post.version).toMatch(/^v\d+\.\d+\.\d+$/);
+      if (post.kind === "patch") expect(post.version).toMatch(/^v\d+\.\d+$/);
       else expect(post.version).toBeUndefined();
     }
     const versions = NEWS_POSTS.flatMap((post) => (post.version ? [post.version] : []));

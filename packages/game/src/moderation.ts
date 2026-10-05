@@ -9,6 +9,8 @@ export const GUEST_SAVE_DAYS = 30;
 
 export const USERNAME_MIN = 3;
 export const USERNAME_MAX = 16;
+/** An account may take a new username once in this many days (the first change waits for nothing). */
+export const USERNAME_RENAME_DAYS = 90;
 const USERNAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9_-]+$/;
 
 const LEET: Record<string, string> = {

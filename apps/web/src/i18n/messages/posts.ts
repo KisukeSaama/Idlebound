@@ -10,7 +10,7 @@ export type NewsText = { title: string; summary: string; body: NewsBlock[]; link
 export type NewsCover = { biome: string; creature?: string };
 
 /**
- * A news article. A patch note names the release tag it covers (`v0.4.3`); an announcement
+ * A news article. A patch note names the version it covers (`v1.0`); an announcement
  * has none. `date` is the day it goes out (YYYY-MM-DD). Its cover shows only what the landing
  * page already shows: the first creatures and the five biomes.
  */
@@ -21,61 +21,6 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  * walker, never how it is built. Read on the server only, so the game never carries them.
  */
 export const NEWS_POSTS: NewsPost[] = [
-  {
-    slug: "patch-notes-0-5-0",
-    date: "2026-10-04",
-    kind: "patch",
-    version: "v0.5.0",
-    cover: { biome: "fallen-king-ruins", creature: "ruined-king" },
-    fr: {
-      title: "Notes de mise à jour 0.5.0",
-      summary: "Des chiffres plus justes et plus lisibles : la vraie recharge de tes pouvoirs, des hauts faits qui avancent enfin, et tes bonus écrits comme tu l'as choisi.",
-      body: [
-        { kind: "p", text: "Bonsoir, marcheuse, marcheur. Plus la route est longue, plus les chiffres deviennent immenses, et certains finissaient par mentir ou par ne plus rien dire. Cette version remet de l'ordre dans ce que le jeu t'affiche, pour que tu saches toujours où tu en es." },
-        { kind: "h2", text: "Nouveautés" },
-        {
-          kind: "list",
-          items: [
-            "Pouvoirs : chaque pouvoir t'annonce maintenant sa vraie recharge, une fois comptés l'Autel des échos et les reliques qui la raccourcissent. Avant, il affichait toujours sa recharge de base. Exemple : Frénésie, avec 4 niveaux à l'Autel des échos, affiche « Recharge : 8 min » au lieu de « 10 min ».",
-            "Hall des héros : la jauge d'un haut fait part du palier d'avant, et non plus de zéro. Pour l'or gagné et le plus gros coup, elle avance d'ordre de grandeur en ordre de grandeur : avec 2e201 pièces d'or, le palier de 1e205 est rempli aux trois quarts, alors qu'il semblait encore vide.",
-            "Hall des héros : les seuils d'or et de dégâts s'écrivent dans la notation que tu as choisie dans les Réglages (lettres, scientifique ou ingénieur)."
-          ]
-        },
-        { kind: "h2", text: "Corrections" },
-        {
-          kind: "list",
-          items: [
-            "Ton bonus de Patience et les valeurs des autels du Sanctuaire suivent eux aussi ta notation. Passé 1 000 %, le bonus de Patience s'affichait en chiffres bruts (10300 %) et les autels en lettres quelle que soit ta notation ; tu lis maintenant 10.3K % ou 1.03e4 %, selon ton choix."
-          ]
-        },
-        { kind: "p", text: "Merci de marcher avec nous. On se retrouve à la prochaine version, et d'ici là, bonne route." }
-      ]
-    },
-    en: {
-      title: "Patch notes 0.5.0",
-      summary: "Fairer, clearer numbers: the true recharge of your powers, deeds that finally move, and your bonuses written the way you chose.",
-      body: [
-        { kind: "p", text: "Good evening, walker. The longer the road, the bigger the numbers, and some of them ended up lying or saying nothing at all. This version tidies up what the game shows you, so you always know where you stand." },
-        { kind: "h2", text: "New" },
-        {
-          kind: "list",
-          items: [
-            "Powers: every power now tells you its true recharge, once the Altar of Echoes and the relics that shorten it are counted. Before, it always showed its base recharge. For example, Frenzy with 4 levels in the Altar of Echoes reads \"Recharge: 8 min\" instead of \"10 min\".",
-            "Hall of heroes: a deed's bar starts from the tier before it, no longer from zero. For gold earned and the mightiest hit, it moves one order of magnitude at a time: with 2e201 gold, the 1e205 tier is three quarters full, where it used to look empty.",
-            "Hall of heroes: the gold and damage thresholds are written in the notation you picked in Settings (letters, scientific or engineering)."
-          ]
-        },
-        { kind: "h2", text: "Fixes" },
-        {
-          kind: "list",
-          items: [
-            "Your Patience bonus and the values of the Sanctum's altars follow your notation too. Past 1,000%, the Patience bonus showed raw digits (10300%) and the altars used letters whatever your notation; you now read 10.3K% or 1.03e4%, as you chose."
-          ]
-        },
-        { kind: "p", text: "Thank you for walking with us. See you at the next version, and until then, safe travels." }
-      ]
-    }
-  },
   {
     slug: "the-wiki-opens",
     date: "2026-10-04",
@@ -135,13 +80,13 @@ export const NEWS_POSTS: NewsPost[] = [
     }
   },
   {
-    slug: "patch-notes-0-4-0",
+    slug: "patch-notes-0-4",
     date: "2026-10-03",
     kind: "patch",
-    version: "v0.4.0",
+    version: "v0.4",
     cover: { biome: "corrupted-marsh", creature: "rot-baron" },
     fr: {
-      title: "Notes de mise à jour 0.4.0",
+      title: "Notes de mise à jour 0.4",
       summary: "La Débandade balaie les étapes déjà conquises, chaque parole tenue double les dégâts d'un compagnon, les coffres s'ouvrent sous tes yeux et le classement change de visage.",
       body: [
         { kind: "p", text: "Bonsoir, marcheuse, marcheur. Refaire une route déjà connue ne devrait pas te coûter des heures, et une promesse tenue devrait se sentir dans chaque coup. Cette version s'occupe des deux, et rend plus clair tout ce que le jeu te dit." },
@@ -191,7 +136,7 @@ export const NEWS_POSTS: NewsPost[] = [
       ]
     },
     en: {
-      title: "Patch notes 0.4.0",
+      title: "Patch notes 0.4",
       summary: "The Rout sweeps the stages you already conquered, every kept word doubles a companion's damage, chests open before your eyes and the leaderboard gets a new look.",
       body: [
         { kind: "p", text: "Good evening, walker. Walking a road you already know should not cost you hours, and a kept promise should be felt in every blow. This version takes care of both, and makes everything the game tells you clearer." },
@@ -242,13 +187,13 @@ export const NEWS_POSTS: NewsPost[] = [
     }
   },
   {
-    slug: "patch-notes-0-3-0",
+    slug: "patch-notes-0-3",
     date: "2026-09-30",
     kind: "patch",
-    version: "v0.3.0",
+    version: "v0.3",
     cover: { biome: "forgotten-caves", creature: "stone-devourer" },
     fr: {
-      title: "Notes de mise à jour 0.3.0",
+      title: "Notes de mise à jour 0.3",
       summary: "La Promesse arrive au Sanctuaire, le Grand Livre te montre ce qu'il a vu, le Sanctuaire s'éveille par étapes et le Pari de Pip paie à la hauteur de ta route.",
       body: [
         { kind: "p", text: "Bonsoir, marcheuse, marcheur. Tes compagnons commencent à se souvenir de toi. Cette version leur donne quelque chose à te demander : ta parole. Elle t'apprend aussi le Sanctuaire pas à pas, au lieu de tout t'ouvrir d'un coup." },
@@ -296,7 +241,7 @@ export const NEWS_POSTS: NewsPost[] = [
       ]
     },
     en: {
-      title: "Patch notes 0.3.0",
+      title: "Patch notes 0.3",
       summary: "The Promise arrives at the Sanctum, the Ledger shows you what it saw, the Sanctum wakes step by step and Pip's Wager pays up to the size of your road.",
       body: [
         { kind: "p", text: "Good evening, walker. Your companions are starting to remember you. This version gives them something to ask of you: your word. It also teaches you the Sanctum step by step, instead of opening it all at once." },
@@ -345,13 +290,13 @@ export const NEWS_POSTS: NewsPost[] = [
     }
   },
   {
-    slug: "patch-notes-0-2-1",
+    slug: "patch-notes-0-2",
     date: "2026-09-28",
     kind: "patch",
-    version: "v0.2.1",
+    version: "v0.2",
     cover: { biome: "dark-forest", creature: "old-grove" },
     fr: {
-      title: "Notes de mise à jour 0.2.1",
+      title: "Notes de mise à jour 0.2",
       summary: "Le monde redessiné en pixel art, deux fois plus de créatures, une compagnie qui combat sous tes yeux, les Retrouvailles, et des autels repensés.",
       body: [
         { kind: "p", text: "Bonsoir, marcheuse, marcheur. Deux jours après l'ouverture, la route change de visage. Le monde est redessiné, il se peuple, ta compagnie se bat enfin à tes côtés, et ton absence ne te coûte plus rien." },
@@ -404,7 +349,7 @@ export const NEWS_POSTS: NewsPost[] = [
       ]
     },
     en: {
-      title: "Patch notes 0.2.1",
+      title: "Patch notes 0.2",
       summary: "The world redrawn in pixel art, twice as many creatures, a company that fights before your eyes, the Reunion, and reworked altars.",
       body: [
         { kind: "p", text: "Good evening, walker. Two days after opening, the road changes its face. The world is redrawn, it fills up, your company finally fights at your side, and being away no longer costs you anything." },
@@ -458,13 +403,13 @@ export const NEWS_POSTS: NewsPost[] = [
     }
   },
   {
-    slug: "patch-notes-0-1-0",
+    slug: "patch-notes-0-1",
     date: "2026-09-26",
     kind: "patch",
-    version: "v0.1.0",
+    version: "v0.1",
     cover: { biome: "green-plains", creature: "moss-alpha" },
     fr: {
-      title: "Notes de mise à jour 0.1.0",
+      title: "Notes de mise à jour 0.1",
       summary: "La route s'ouvre : cinq biomes jusqu'au Roi déchu, 21 compagnons, six pouvoirs, l'ascension et ses 13 autels, les reliques et le Hall des héros.",
       body: [
         { kind: "p", text: "Bonsoir, marcheuse, marcheur. La route vers le trône est ouverte. Voici ce qui t'attend dans la toute première version d'Idlebound." },
@@ -510,7 +455,7 @@ export const NEWS_POSTS: NewsPost[] = [
       ]
     },
     en: {
-      title: "Patch notes 0.1.0",
+      title: "Patch notes 0.1",
       summary: "The road opens: five biomes up to the Fallen King, 21 companions, six powers, ascension and its 13 altars, relics and the Hall of heroes.",
       body: [
         { kind: "p", text: "Good evening, walker. The road to the throne is open. Here is what waits for you in the very first version of Idlebound." },

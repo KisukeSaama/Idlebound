@@ -14,6 +14,8 @@ export interface AccountUser {
   emailVerified: boolean;
   /** Until when saves are accepted without a confirmed address (null once confirmed). */
   verifyBy: string | null;
+  /** When a new username may be taken again (null: right now). */
+  renameAt: string | null;
 }
 
 export type ApiResult<T> =
@@ -127,6 +129,7 @@ export const api = {
   verifyEmail: (token: string) => request<{ ok: true; username: string }>("POST", "/auth/verify", { token }),
   resendVerification: () => request<{ ok: true }>("POST", "/auth/verify/resend"),
   changeEmail: (email: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/email", { email, password }),
+  changeUsername: (username: string, password: string) => request<{ user: AccountUser }>("POST", "/auth/username", { username, password }),
   changePassword: (currentPassword: string, newPassword: string) => request<{ ok: true }>("POST", "/auth/password", { currentPassword, newPassword }),
   deleteAccount: (password: string) => request<{ ok: true }>("DELETE", "/auth/account", { password }),
   /** The account's game, or with `guest` the one kept for this browser without an account. */

@@ -5,7 +5,7 @@ import { CloudSync } from "./cloud";
 import { NewRelease, takeArrival, UPDATE_MS, type ReleaseUpdate } from "./newRelease";
 import { GameStore } from "./store";
 
-const USER = { id: "u1", username: "walker", email: "w@example.com", createdAt: "2026-01-01T00:00:00Z", emailVerified: true, verifyBy: null };
+const USER = { id: "u1", username: "walker", email: "w@example.com", createdAt: "2026-01-01T00:00:00Z", emailVerified: true, verifyBy: null, renameAt: null };
 
 /** An answer from the server; `release` is the one it runs. */
 function json(body: unknown, { status = 200, release }: { status?: number; release?: string } = {}) {

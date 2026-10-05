@@ -23,6 +23,9 @@ export const API_ERRORS = [
   "username_taken",
   "email_taken",
   "username_or_email_taken",
+  "username_unchanged",
+  /** With `renameAt`: when the account may take a new username again. */
+  "rename_too_soon",
   "wrong_credentials",
   "wrong_password",
   "wrong_current_password",

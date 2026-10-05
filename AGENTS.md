@@ -4,7 +4,7 @@ Durable rules for every session that touches this repository. Read before writin
 
 - [PRODUCT.md](PRODUCT.md): what the game does today. [DESIGN.md](DESIGN.md): how it looks today.
 - [docs/BIBLE.md](docs/BIBLE.md): the world, story and art direction to build toward.
-- [docs/CHANGES.md](docs/CHANGES.md): what the version in progress changes, for its patch note.
+- [docs/CHANGES.md](docs/CHANGES.md): what each version changes, gathered for the next major's patch note.
 - The code is the source of truth. Change a documented behaviour, update its doc in the same change.
 
 ## Foundations
@@ -93,8 +93,8 @@ swings single seeds by ±50 stages):
 
 Every merge into `main` goes to production; there are no git tags. The version is the
 `version` of the root `package.json`, and the agent raises it, without being asked, in the
-change that deserves it. The news pages keep the community close: every minor or major
-version gets a patch note, written for the players.
+change that deserves it. The news pages keep the community close: every major version
+(1.0, 2.0) gets a patch note, written for the players. Minor and patch versions get none.
 
 - Raise the version against production, not against the last commit: run `git fetch origin`
   and read `git show origin/main:package.json`. What develop carries ships at the next merge,
@@ -118,13 +118,14 @@ version gets a patch note, written for the players.
 - Every game change a walker can see or feel adds a line to [docs/CHANGES.md](docs/CHANGES.md)
   under "Next version", in the same change. Refactors, tests, tooling and site-only changes
   do not.
-- Only minor and major versions get a patch note. A patch version gets none: its lines stay
-  under "Next version" and go out with the next minor or major. When develop's version
-  becomes a minor or major, write its patch note in `apps/web/src/i18n/messages/posts.ts`
-  from the lines under "Next version", checked against the code itself
-  (`git diff <last noted version's commit on main> develop`) for what they miss, and keep it
-  in step with every later line until it ships. Name the heading after it ("Next version:
-  v0.7.0, `patch-notes-0-7-0`").
+- Only major versions get a patch note (user decision, 2026-10-05: versions pass too fast
+  for one per minor). The notes of 0.1 to 0.4 stay as they are; nothing is written for 0.5
+  and after until 1.0. Minor and patch versions keep their lines in CHANGES.md, section by
+  section. When develop's version becomes a major (only on the user's word), write its patch
+  note in `apps/web/src/i18n/messages/posts.ts` from every CHANGES.md section since the
+  previous note, checked against the code itself (`git diff <last noted version's commit on
+  main> develop`) for what they miss, and keep it in step with every later line until it
+  ships.
 - At the start of a session, after `git fetch origin`: if main now carries the version named
   under "Next version", it shipped. Rename that section to the version and open a fresh
   "Next version" on top.
@@ -132,7 +133,7 @@ version gets a patch note, written for the players.
   intro saying what this version is about, then New, Balance, Fixes as needed. Each line
   starts with the thing it touches (a power, an altar, a companion, a window) and says what
   the walker will notice, with the numbers they see before and after. Signed by the team.
-  Kind `patch`, `version` set to `vX.Y.Z`, dated the day it was last written (the release
+  Kind `patch`, `version` set to `vX.Y` (`v1.0`), titled after it, dated the day it was last written (the release
   follows it closely). Newest first in `NEWS_POSTS`.
 - Written for players, never for developers: no file, function, variable, line, commit,
   branch, library, server or database names, no implementation detail. Say what changes on
@@ -154,7 +155,7 @@ version gets a patch note, written for the players.
 6. PRODUCT.md, DESIGN.md updated; the matching BIBLE section marked shipped.
 7. Nothing left half-built: no TODO, no dead code, no disabled test.
 8. Visible game change: its line is in docs/CHANGES.md, the version is raised if it calls for
-   it, and a minor or major version has its patch note.
+   it, and a major version has its patch note.
 
 ## Pixel art rules (non-negotiable)
 
