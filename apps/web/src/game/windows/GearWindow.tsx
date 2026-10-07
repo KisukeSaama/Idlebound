@@ -210,12 +210,12 @@ function Equipped() {
                 type="button"
                 className="btn btn-violet btn-sm"
                 disabled={item.forge >= FORGE_MAX || state.shards < cost || frugal || (anvil && slot === "weapon")}
-                onClick={() => store.act((engine, now) => engine.forge(slot, now))}
+                onClick={() => store.act({ type: "forge", slot })}
                 title={text.forgeTitle(percent(FORGE_STEP * 100, locale))}
               >
                 {item.forge >= FORGE_MAX ? text.forgeMaxed : <>{text.forge} <ShardIcon size={14} /> {fmt(cost)}</>}
               </button>
-              <button type="button" className="btn btn-ghost btn-sm" disabled={state.inventory.length >= INVENTORY_LIMIT || (anvil && slot === "weapon")} onClick={() => store.act((engine, now) => engine.unequip(slot, now))}>
+              <button type="button" className="btn btn-ghost btn-sm" disabled={state.inventory.length >= INVENTORY_LIMIT || (anvil && slot === "weapon")} onClick={() => store.act({ type: "unequip", slot })}>
                 {text.unequip}
               </button>
             </ItemCard>
@@ -273,7 +273,7 @@ function CrownSlot() {
   useEffect(() => {
     if (!holding) return;
     const start = Date.now();
-    const timer = window.setTimeout(() => store.act((engine) => engine.holdCrown(Date.now() - start)), CROWN_HOLD_MS + 50);
+    const timer = window.setTimeout(() => store.act({ type: "crown", ms: Date.now() - start }), CROWN_HOLD_MS + 50);
     return () => window.clearTimeout(timer);
   }, [holding, store]);
 
@@ -332,7 +332,7 @@ function Bag() {
     if (count === 0) return;
     const ok = await ui.confirm({ title: text.bulkTitle, text: text.bulkText(count, label(count)), confirmLabel: text.bulkConfirm, danger: true });
     if (!ok) return;
-    const shards = store.act((engine) => engine.salvageUpTo(rarity));
+    const shards = store.act<number>({ type: "salvageUpTo", rarity });
     ui.toast({ tone: "info", icon: "shard", title: text.bulkDoneTitle(fmt(shards)), text: text.bulkDoneText(count) });
   };
 
@@ -363,11 +363,11 @@ function Bag() {
       <div className="bag-grid">
         {items.map((item) => (
           <ItemCard key={item.uid} item={item} compareTo={state.equipment[item.slot]}>
-            <button type="button" className="btn btn-gold btn-sm" disabled={anvil && item.slot === "weapon"} onClick={() => store.act((engine, now) => engine.equip(item.uid, now))}>{text.equip}</button>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act((engine) => engine.toggleLock(item.uid))} aria-pressed={Boolean(item.locked)} title={item.locked ? text.unlockHint : text.lockHint}>
+            <button type="button" className="btn btn-gold btn-sm" disabled={anvil && item.slot === "weapon"} onClick={() => store.act({ type: "equip", uid: item.uid })}>{text.equip}</button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act({ type: "lock", uid: item.uid })} aria-pressed={Boolean(item.locked)} title={item.locked ? text.unlockHint : text.lockHint}>
               {item.locked ? text.unlock : text.lock}
             </button>
-            <button type="button" className="btn btn-danger btn-sm" disabled={item.locked} onClick={() => store.act((engine) => engine.salvage(item.uid))}>
+            <button type="button" className="btn btn-danger btn-sm" disabled={item.locked} onClick={() => store.act({ type: "salvage", uid: item.uid })}>
               {text.salvage} <ShardIcon size={13} /> {salvageValue(item)}
             </button>
           </ItemCard>

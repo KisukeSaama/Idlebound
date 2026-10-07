@@ -14,6 +14,7 @@ import {
   nextRecruit,
   recognitionTier,
   talentName,
+  runBits,
   upgradeCost,
   type BuyMode,
   type HeroDef
@@ -21,7 +22,7 @@ import {
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
-import { useFormat, useGame, useReveals } from "../context";
+import { useFormat, useGame, useMagnitude, useReveals } from "../context";
 import { GoldIcon, Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
 import { awakenedSeed, emblemSource, evenRatSource, portraitSource } from "../pixel/sources";
@@ -91,6 +92,9 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
   const { state, derived, store } = useGame();
   const { shown, freshClass } = useReveals();
   const fmt = useFormat();
+  // Gold and damage of the night, in its unit past stage 3500 (`scale.ts` in the game).
+  const magnitude = useMagnitude();
+  const bits = runBits(state);
   const { t, g, locale } = useI18n();
   const m = t.hud.heroes;
   const mode = state.settings.buyMode;
@@ -104,9 +108,9 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
   const ownedSet = useMemo(() => new Set(owned), [owned, ownedCount]);
   // Costs of the talents within reach and not owned, cheapest first.
   const reachable = useMemo(
-    () => TALENTS.filter(({ id, heroId, level }) => !ownedSet.has(id) && (store.state.heroLevels[heroId] ?? 0) >= level).map(({ id }) => upgradeCost(id)).sort((a, b) => a - b),
+    () => TALENTS.filter(({ id, heroId, level }) => !ownedSet.has(id) && (store.state.heroLevels[heroId] ?? 0) >= level).map(({ id }) => upgradeCost(id, bits)).sort((a, b) => a - b),
     // `levels` stands for the levels of the companions.
-    [store, ownedSet, levels]
+    [store, ownedSet, levels, bits]
   );
   let affordableTalents = 0;
   while (affordableTalents < reachable.length && reachable[affordableTalents] <= state.gold) affordableTalents += 1;
@@ -117,8 +121,8 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
   const talentsOf = (hero: HeroDef, level: number): Talent[] => {
     // Only the talents within reach or owned: the rest appear with the levels.
     const within = hero.upgrades.filter((upgrade) => level >= upgrade.level || ownedSet.has(upgrade.id));
-    const buyable = within.map((upgrade) => (!ownedSet.has(upgrade.id) && upgradeCost(upgrade.id) <= state.gold ? "1" : "0")).join("");
-    const key = `${level}|${locale}|${buyable}`;
+    const buyable = within.map((upgrade) => (!ownedSet.has(upgrade.id) && upgradeCost(upgrade.id, bits) <= state.gold ? "1" : "0")).join("");
+    const key = `${level}|${locale}|${buyable}|${bits}`;
     const cached = talentRows.current.get(hero.id);
     if (cached && cached.key === key && cached.owned === ownedSet) return cached.talents;
     const talents = within.map((upgrade, index) => ({
@@ -126,7 +130,7 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
       level: upgrade.level,
       name: talentName(upgrade.id, locale),
       text: describeEffect(upgrade.effect, g.heroes[hero.id].name, locale),
-      cost: upgradeCost(upgrade.id),
+      cost: upgradeCost(upgrade.id, bits),
       owned: ownedSet.has(upgrade.id),
       buyable: buyable[index] === "1"
     }));
@@ -138,9 +142,9 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
   const grip = useRef<{ y: number; swiped: boolean }>({ y: 0, swiped: false });
 
   // Stable handlers: each row binds its own companion, so the memoized rows bail out.
-  const onBuy = useCallback((heroId: string) => store.act((engine, now) => engine.buyHero(heroId, mode, now)), [store, mode]);
-  const onTalent = useCallback((id: string) => store.act((engine, now) => engine.buyUpgrade(id, now)), [store]);
-  const onPortrait = useCallback((heroId: string) => store.act((engine, now) => engine.touchPortrait(heroId, now), { save: false }), [store]);
+  const onBuy = useCallback((heroId: string) => store.act<boolean>({ type: "hero", id: heroId, mode }), [store, mode]);
+  const onTalent = useCallback((id: string) => store.act({ type: "talent", id }), [store]);
+  const onPortrait = useCallback((heroId: string) => store.act({ type: "portrait", hero: heroId }, { save: false }), [store]);
 
   // Aldric, the companions hired, and the next one once the walker can hire them this
   // night (or hired them on an earlier one). Once shown this night, it stays.
@@ -149,7 +153,7 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
   if (offered.current.night !== night) offered.current = { night, ids: new Set() };
   // The next to join, in the order of the road (a promise may leave one behind, or hold everyone back).
   const next = nextRecruit(state);
-  if (next && (next.index < state.lifetime.bestHired || heroCost(next, 0, 1, costMultiplier) <= state.gold)) offered.current.ids.add(next.id);
+  if (next && (next.index < state.lifetime.bestHired || heroCost(next, 0, 1, costMultiplier, bits) <= state.gold)) offered.current.ids.add(next.id);
   // The companion who has the walker's word stays in sight all night, hired or not.
   const promise = state.trail.promise;
   const status = promiseStatus(state);
@@ -160,7 +164,7 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
 
   // Folded, the panel still says what the gold can buy: a count on its heading.
   const ready = folded
-    ? visible.filter((hero) => hireable(hero) && heroCost(hero, state.heroLevels[hero.id] ?? 0, mode === "max" ? 1 : mode, costMultiplier) <= state.gold).length + affordableTalents
+    ? visible.filter((hero) => hireable(hero) && heroCost(hero, state.heroLevels[hero.id] ?? 0, mode === "max" ? 1 : mode, costMultiplier, bits) <= state.gold).length + affordableTalents
     : 0;
 
   // The Faceless: when Nyx's secret is found, her medallion shows the stars for a moment.
@@ -214,7 +218,7 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
                 role="radio"
                 aria-checked={mode === entry}
                 className={mode === entry ? "active" : ""}
-                onClick={() => store.act((engine) => { engine.state.settings.buyMode = entry; })}
+                onClick={() => store.act({ type: "settings", patch: { buyMode: entry } })}
               >
                 {entry === "max" ? m.max : `×${entry}`}
               </button>
@@ -234,7 +238,7 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
               aria-describedby="autospend-hint"
               onChange={(event) => {
                 const value = event.target.checked;
-                store.act((engine) => { engine.state.settings.offlineSpending = value; });
+                store.act({ type: "settings", patch: { offlineSpending: value } });
               }}
             />
           </label>
@@ -245,9 +249,9 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
         {visible.map((hero) => {
           const level = state.heroLevels[hero.id] ?? 0;
           const purchase = mode === "max"
-            ? { count: Math.max(1, maxAffordableLevels(hero, level, state.gold, costMultiplier)), cost: 0 }
+            ? { count: Math.max(1, maxAffordableLevels(hero, level, state.gold, costMultiplier, bits)), cost: 0 }
             : { count: mode, cost: 0 };
-          purchase.cost = heroCost(hero, level, purchase.count, costMultiplier);
+          purchase.cost = heroCost(hero, level, purchase.count, costMultiplier, bits);
           const share = derived.dps > 0 ? (derived.heroDps[hero.id] ?? 0) / derived.dps : 0;
           return (
             <HeroRow
@@ -268,6 +272,7 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
               text={g.heroes[hero.id]}
               m={m}
               fmt={fmt}
+              magnitude={magnitude}
               onBuy={onBuy}
               onTalent={onTalent}
               onPortrait={hero.id === "nyx" && level > 0 ? onPortrait : undefined}
@@ -287,7 +292,7 @@ export function HeroPanel({ folded, onFold }: { folded: boolean; onFold: (folded
           className={`btn btn-violet btn-sm talents-all${affordableTalents > 0 ? "" : " idle"}`}
           disabled={affordableTalents === 0}
           aria-hidden={affordableTalents === 0}
-          onClick={() => store.act((engine, now) => engine.buyAllUpgrades(now))}
+          onClick={() => store.act({ type: "talents" })}
         >
           {m.buyAllTalents(Math.max(1, affordableTalents))}
         </button>
@@ -331,6 +336,8 @@ interface HeroRowProps {
   text: { name: string; title: string; lore: string };
   m: Messages["hud"]["heroes"];
   fmt: (value: number) => string;
+  /** Gold and damage of the night (see `useMagnitude`). */
+  magnitude: (value: number) => string;
   /** Buys at the chosen mode; false when nothing could be bought. */
   onBuy: (heroId: string) => boolean;
   onTalent: (id: string) => void;
@@ -348,7 +355,7 @@ interface HeroRowProps {
   promiseRule?: string;
 }
 
-const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, value, share, nextMilestone, talents, text, m, fmt, onBuy, onTalent, onPortrait, starfield, fading, even, promise, promiseRule }: HeroRowProps) {
+const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, count, cost, affordable, value, share, nextMilestone, talents, text, m, fmt, magnitude, onBuy, onTalent, onPortrait, starfield, fading, even, promise, promiseRule }: HeroRowProps) {
   const isClick = hero.id === CLICK_HERO_ID;
   const hired = level > 0;
   const hold = useHoldRepeat(() => onBuy(hero.id));
@@ -386,9 +393,9 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
         </div>
         <div className="hero-sub">
           {isClick
-            ? <>{m.click}<strong>{fmt(value)}</strong></>
+            ? <>{m.click}<strong>{magnitude(value)}</strong></>
             : hired
-              ? <>{m.dps}<strong>{fmt(value)}</strong>{share >= 0.01 ? <span className="hero-share">{m.share(Math.round(share * 100))}</span> : null}</>
+              ? <>{m.dps}<strong>{magnitude(value)}</strong>{share >= 0.01 ? <span className="hero-share">{m.share(Math.round(share * 100))}</span> : null}</>
               : <>{m.dpsPerLevel(fmt(hero.baseDps))}</>}
           {nextMilestone ? <span className="hero-milestone" title={m.milestoneTitle(fmt(milestoneMultiplier(level)))}>{m.milestone(nextMilestone)}</span> : null}
         </div>
@@ -398,7 +405,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
             {talents.map((talent) => {
               const canBuy = talent.buyable;
               const state = talent.owned ? "owned" : canBuy ? "buyable" : "reachable";
-              const status = talent.owned ? m.talentOwned : m.talentCost(fmt(talent.cost));
+              const status = talent.owned ? m.talentOwned : m.talentCost(magnitude(talent.cost));
               return (
                 <button
                   key={talent.id}
@@ -421,9 +428,9 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
           </div>
         ) : null}
       </div>
-      <button type="button" className="hero-buy" disabled={!affordable} {...hold} aria-label={m.buyLabel(hired, text.name, count, fmt(cost))}>
+      <button type="button" className="hero-buy" disabled={!affordable} {...hold} aria-label={m.buyLabel(hired, text.name, count, magnitude(cost))}>
         <span className="hero-buy-label">{hired ? `+${count}` : isClick ? m.train : m.hire}</span>
-        <span className="hero-buy-cost"><GoldIcon size={14} /> {fmt(cost)}</span>
+        <span className="hero-buy-cost"><GoldIcon size={14} /> {magnitude(cost)}</span>
       </button>
     </li>
   );

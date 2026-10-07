@@ -209,6 +209,7 @@ button.resource:hover .resource-label {
 }
 
 .sync-badge-unverified { color: var(--gold); }
+.sync-badge-waiting { color: var(--gold); }
 
 @keyframes blink {
   50% { opacity: 0.3; }
@@ -1496,14 +1497,19 @@ button.resource:hover .resource-label {
 
 /* ====================================================================== the Ledger's scenes */
 
-/* A few shots of the world over everything, at a whole scale, one line under each. */
+/*
+ * A film over everything, on the night ink: the picture at a whole scale (its cinema frame is
+ * drawn in its own pixels), the scene's name over the first shot, the lines under it.
+ */
 .cutscene {
   position: fixed;
   inset: 0;
   z-index: 80;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto;
-  gap: 14px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  /* The picture never holds its box open: it shrinks back to fit when the window does. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
   background: var(--bg);
   animation: fade-in 240ms ease-out;
@@ -1514,7 +1520,12 @@ button.resource:hover .resource-label {
   /* The picture sits right over its line; what room is left goes above it. */
   place-items: end center;
   min-height: 0;
+  overflow: hidden;
   cursor: pointer;
+}
+
+.cutscene-frame {
+  position: relative;
 }
 
 .cutscene-canvas {
@@ -1522,23 +1533,53 @@ button.resource:hover .resource-label {
   image-rendering: pixelated;
 }
 
+/* The air over the picture (pixel/atmosphere.ts), at the screen's own resolution. */
+.cutscene-air {
+  position: absolute;
+  inset: 0 auto auto 0;
+  pointer-events: none;
+}
+
+/* The scene's name over the ink of its first shot: it comes, holds, and goes. */
+.cutscene-title {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, calc(4 * var(--vw)), 2.6rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-align: center;
+  color: var(--gold-2);
+  pointer-events: none;
+  animation: cutscene-title 2800ms ease-in-out both;
+}
+
+@keyframes cutscene-title {
+  0% { opacity: 0; letter-spacing: 0.14em; }
+  30%, 72% { opacity: 1; }
+  100% { opacity: 0; letter-spacing: 0.24em; }
+}
+
 .cutscene-words {
   display: grid;
   justify-items: center;
-  min-height: 4.6em;
+  min-height: 5.4em;
   text-align: center;
 }
 
 .cutscene-line {
-  max-width: 38ch;
+  max-width: 42ch;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.05rem, calc(2.4 * var(--vw)), 1.6rem);
+  font-size: clamp(1.05rem, calc(2.2 * var(--vw)), 1.5rem);
   font-weight: 600;
   letter-spacing: 0.04em;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--gold-2);
-  animation: cutscene-line 900ms ease-out 640ms both;
 }
 
 .cutscene-voice {
@@ -1548,30 +1589,51 @@ button.resource:hover .resource-label {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
+  animation: cutscene-word 360ms ease-out both;
 }
 
+/* A line comes up a word at a time, at the pace it would be said. */
+.cutscene-word {
+  animation: cutscene-word 360ms ease-out both;
+}
+
+.cutscene-line.is-whole .cutscene-word {
+  animation: none;
+}
+
+@keyframes cutscene-word {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The way on and the way out, small in the corner: the picture is the subject. */
 .cutscene-controls {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  opacity: 0.55;
+  transition: opacity 160ms ease-out;
 }
 
-.cutscene.is-closing .cutscene-controls {
+.cutscene-controls:hover,
+.cutscene-controls:focus-within {
+  opacity: 1;
+}
+
+.cutscene.is-closing .cutscene-controls,
+.cutscene.is-closing .cutscene-title {
   visibility: hidden;
 }
 
-@keyframes cutscene-line {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: none; }
+.cutscene.is-still .cutscene-title {
+  animation-name: cutscene-title-still;
 }
 
-.cutscene.is-still .cutscene-line {
-  animation: cutscene-line-still 400ms ease-out both;
-}
-
-@keyframes cutscene-line-still {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes cutscene-title-still {
+  0%, 100% { opacity: 0; }
+  20%, 80% { opacity: 1; }
 }
 
 /* ------------------------------------------------ a chest opened at the stall */

@@ -13,7 +13,7 @@
  */
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarTotalCost, legacyHarvestCost } from "./data/altars";
-import { BIOMES, KING_FORMS, GUARDIAN_IDS, isBossStage, isKingStage } from "./data/biomes";
+import { BIOMES, KING_FORMS, GUARDIAN_IDS, eraForStage, isBossStage, isKingStage } from "./data/biomes";
 import { DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, LEGACY_LOOM_HERO, WEAVE_BY_ID, legacyThreadsFor, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
 import { EVENTS, SEAM_ODDS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WALKER_DPS } from "./data/events";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
@@ -51,8 +51,11 @@ import { PROMISE_BY_HERO, companionMet, promiseAsker, promiseDepth, promiseKings
 import { COOLDOWN_FLOOR, NAMED_BY_ID, NAMED_RELICS, namedEffect, namedSourceReached, type NamedEffect } from "./data/relics";
 import { SKILLS } from "./data/skills";
 import { AGE_COUNT, keystonesFound } from "./data/strata";
+import { lifeBits, rescale, runBits } from "./scale";
 import { SAVE_VERSION } from "./state";
-import type { AltarId, GameState, Item, ItemSlot, Rarity } from "./types";
+import type { AltarId, GameState, Item, ItemSlot, LifetimeStats, Rarity } from "./types";
+import { pow as dPow } from "./dmath";
+import { STREAMS } from "./fates";
 
 export interface Violation {
   code: string;
@@ -219,7 +222,7 @@ const LEGACY_HARVEST_MAX = 1_000;
 function maxEssenceMultiplier(state: GameState, past = true): number {
   const bought = Math.max(state.altars.harvest ?? 0, harvestAffordable(state, ALTAR_BY_ID.harvest.maxLevel));
   const harvest = past ? Math.max(bought, state.legacyHarvest ?? 0) : bought;
-  return (1 + harvest * ALTAR_BY_ID.harvest.valuePerLevel) * (1 + AFFIX_CAP.essence! * 4) * Math.pow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty"));
+  return (1 + harvest * ALTAR_BY_ID.harvest.valuePerLevel) * (1 + AFFIX_CAP.essence! * 4) * dPow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty"));
 }
 /** Most essences one ascension of this walker can grant. */
 function maxAscensionEssences(state: GameState, past = true): number {
@@ -234,13 +237,23 @@ const le = (a: number, b: number) => a <= b * (1 + EPSILON) + EPSILON;
  */
 const rounding = (total: number) => Math.abs(total) * Number.EPSILON * 2;
 
+/** The least the night's companions and talents cost, in the night's unit (see `scale.ts`). */
+/** Statistics written in a unit of `from` bits, in one of `to` (gold and the hardest blow; see `scale.ts`). */
+function statsIn<T extends { goldEarned: number; maxHit?: number }>(stats: T, from: number, to: number): T {
+  if (from === to) return stats;
+  const moved = { ...stats, goldEarned: rescale(stats.goldEarned, from, to) };
+  if (stats.maxHit !== undefined) moved.maxHit = rescale(stats.maxHit, from, to);
+  return moved;
+}
+
 function heroSpend(state: GameState): number {
+  const bits = runBits(state);
   let total = 0;
   for (const [heroId, level] of Object.entries(state.heroLevels)) {
     const hero = HERO_BY_ID[heroId];
-    if (hero && level > 0) total += heroCost(hero, 0, level, 0.5);
+    if (hero && level > 0) total += heroCost(hero, 0, level, 0.5, bits);
   }
-  for (const upgradeId of state.heroUpgrades) total += upgradeCost(upgradeId);
+  for (const upgradeId of state.heroUpgrades) total += upgradeCost(upgradeId, bits);
   return total;
 }
 
@@ -289,9 +302,10 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   const goldBound = (state.lifetime.kills + state.lifetime.crystals * 15 + state.lifetime.hourglasses * 12_000 + 1) * bestGold + state.lifetime.treasures * bestWagerGold(state);
   if (!le(state.lifetime.goldEarned, goldBound)) fail("gold", "Too much gold earned.");
 
-  // Lifetime ledgers ≥ current-run ledgers.
+  // Lifetime ledgers ≥ current-run ledgers (gold and blows written in the night's unit).
   for (const key of ["clicks", "crits", "kills", "bosses", "treasures", "goldEarned", "crystals", "skillsUsed", "maxHit", "playTime"] as const) {
-    if (!le(state.run[key], state.lifetime[key])) fail("run-lifetime", `Inconsistent statistic "${key}".`);
+    const run = key === "goldEarned" || key === "maxHit" ? rescale(state.run[key], runBits(state), lifeBits(state)) : state.run[key];
+    if (!le(run, state.lifetime[key])) fail("run-lifetime", `Inconsistent statistic "${key}".`);
   }
   // Each Ritual is a power used this run.
   if (state.ritualStacks > state.run.skillsUsed) fail("skills", "More ritual stacks than powers used.");
@@ -316,7 +330,7 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   if (state.lifetime.bestHired > HERO_BY_ID_COUNT) fail("hero", "Too many companions hired.");
 
   // Gold: spent + owned ≤ earned + starting gold.
-  const startGold = memoryStartGold(state.altars.memory ?? 0);
+  const startGold = memoryStartGold(state.altars.memory ?? 0, runBits(state));
   if (!le(heroSpend(state) + state.gold, state.run.goldEarned + startGold)) fail("gold-ledger", "More gold spent than earned.");
 
   // Essences: altars + owned ≤ collected.
@@ -415,7 +429,7 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     // ×10 margin: items salvaged since, rounding, chained overcharge crystals…
     // A boss of the present night may have kept its wounds from earlier fights.
     const wounds = lastBoss <= WOUND_LAST_STAGE && !isKingStage(lastBoss) ? 1 - WOUND_CAP : 1;
-    if (maxDps * derived.bossTimer * 10 < bossHp(lastBoss) * wounds) fail("power", `Stage ${lastBoss} boss cannot be beaten with this power.`);
+    if (maxDps * derived.bossTimer * 10 < bossHp(lastBoss, runBits(state)) * wounds) fail("power", `Stage ${lastBoss} boss cannot be beaten with this power.`);
   }
 
   return violations;
@@ -475,11 +489,13 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   if (trail.wound && (trail.wound.share > WOUND_CAP + EPSILON || trail.wound.stage > WOUND_LAST_STAGE || trail.wound.stage !== state.maxStage || !isBossStage(trail.wound.stage) || lifetime.bossFails === 0)) fail("trail", "Impossible wounds.");
 
   const lore = state.lore;
-  // One guardian per biome and stratum: a biome's echoes never outnumber its first clears.
+  // One guardian per biome and stratum: a biome's echoes never outnumber its first clears,
+  // below the Dawn too (the strata go on, the keystones stop at sixty).
   const strata = keystonesFound(state.maxStageEver) + 1;
+  const crossed = eraForStage(state.maxStageEver) + 1;
   for (const [biome, count] of Object.entries(lore.echoes)) {
     if (!BIOMES.some((entry) => entry.id === biome)) fail("lore", `Unknown biome echoes: ${biome}.`);
-    else if (count > strata || count > lifetime.bosses) fail("lore", "More echoes than guardians.");
+    else if (count > crossed || count > lifetime.bosses) fail("lore", "More echoes than guardians.");
   }
   let ageEchoes = 0;
   for (const [age, count] of Object.entries(lore.ages)) {
@@ -603,7 +619,8 @@ function secretPossible(state: GameState, id: SecretId, serverNow: number): bool
 /** The Descent: a thread no longer than the deepest stage weaves, spent only on weaves that exist. */
 function verifyDescent(state: GameState, fail: (code: string, message: string) => void) {
   const lifetime = state.lifetime;
-  if (state.descents > 0 && (state.maxStageEver < DESCENT_MIN_STAGE || (state.maxStageEver < DESCENT_OPEN_STAGE && recognitionTier(state, LEGACY_LOOM_HERO) < 5))) fail("descent", "Descent without the Loom.");
+  const deepest = state.maxStageEver;
+  if (state.descents > 0 && (deepest < DESCENT_MIN_STAGE || (deepest < DESCENT_OPEN_STAGE && recognitionTier(state, LEGACY_LOOM_HERO) < 5))) fail("descent", "Descent without the Loom.");
   let spent = 0;
   for (const [id, level] of Object.entries(state.weaves)) {
     const weave = WEAVE_BY_ID[id as WeaveId];
@@ -622,13 +639,27 @@ function verifyDescent(state: GameState, fail: (code: string, message: string) =
   // those threads stay. Since, the thread is as long as the deepest stage, and no longer.
   const legacy = state.legacyThreads ?? 0;
   if (legacy > state.descents * legacyThreadsFor(lifetime.essencesEarned)) fail("descent", "More threads than essences allowed.");
-  if (lifetime.threads > Math.max(legacy, threadsFor(state.maxStageEver))) fail("descent", "More threads than the deepest stage weaves.");
+  if (lifetime.threads > Math.max(legacy, threadsFor(deepest))) fail("descent", "More threads than the deepest stage weaves.");
   if (!/^(\d{4}-W\d{2})?$/.test(state.caravanWeek)) fail("descent", "Unknown Caravan week.");
 }
 
-/** Best loot of a single kill: boss of the best stage, at a won wager's floor, every bonus active. */
+/**
+ * The company's gold multiplier at its richest. The Altar of Fortune falls with each Descent,
+ * the gold earned under it does not: it is taken at the highest level every essence ever
+ * gathered could have bought, as the Harvest is (a walker who has just descended earned
+ * their gold with it).
+ */
+function richestGoldMultiplier(state: GameState): number {
+  const fortune = Math.max(state.altars.fortune ?? 0, harvestAffordable(state, Number.POSITIVE_INFINITY, (level) => altarTotalCost("fortune", level)));
+  return derive({ ...state, altars: { ...state.altars, fortune } }, state.lastTickAt, { ignoreTimed: true }).goldMultiplier;
+}
+
+/**
+ * Best loot of a single kill: boss of the best stage, at a won wager's floor, every bonus
+ * active. Gold totals are written in the walk's unit (see `scale.ts`), and so is this.
+ */
 function bestGoldPerKill(state: GameState): number {
-  return stageGold(state.maxStageEver) * 10 * WAGER_MIN_GOLD * MAX_TIMED_GOLD * derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier;
+  return stageGold(state.maxStageEver, lifeBits(state)) * 10 * WAGER_MIN_GOLD * MAX_TIMED_GOLD * richestGoldMultiplier(state);
 }
 
 /**
@@ -647,12 +678,12 @@ function bestGoldPerKillBetween(previous: GameState, next: GameState): number {
   const relics = 1 + Object.values(best).reduce((total, value) => total + value, 0);
   const company = Math.max(...[previous, next].map((state) => derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier / ((1 + equipmentBonus(state, "gold")) * (1 + namedEffect(state, "mirelle")))));
   const found = (kind: NamedEffect["kind"]) => next.named.reduce((total, id) => total + (NAMED_BY_ID[id]?.effect.kind === kind ? NAMED_BY_ID[id].effect.pct : 0), 0);
-  return stageGold(next.maxStageEver) * 10 * MAX_TIMED_GOLD * company * relics * (1 + found("mirelle")) * (1 + found("guardianGold"));
+  return stageGold(Math.max(previous.maxStageEver, next.maxStageEver), lifeBits(next)) * 10 * MAX_TIMED_GOLD * company * relics * (1 + found("mirelle")) * (1 + found("guardianGold"));
 }
 
-/** Best won Pip's Wager, beyond a kill: one at most per golden rat caught. */
+/** Best won Pip's Wager, beyond a kill: one at most per golden rat caught (in the walk's unit). */
 function bestWagerGold(state: GameState): number {
-  return stageGold(state.maxStageEver) * WAGER_MAX_GOLD * MAX_TIMED_GOLD * derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier;
+  return stageGold(state.maxStageEver, lifeBits(state)) * WAGER_MAX_GOLD * MAX_TIMED_GOLD * richestGoldMultiplier(state);
 }
 
 function lastBossCleared(maxStage: number): number {
@@ -667,10 +698,15 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   const violations: Violation[] = [];
   const fail = (code: string, message: string) => violations.push({ code, message });
   const elapsed = Math.max(0, elapsedMs / 1000) + CLOCK_SLACK_SECONDS;
-  const a = previous.lifetime;
+  // The previous save's totals in the next one's unit: the deeper walk writes them larger (see `scale.ts`).
+  const a = statsIn(previous.lifetime, lifeBits(previous), lifeBits(next));
   const b = next.lifetime;
 
   if (next.createdAt !== previous.createdAt) fail("identity", "This save does not continue the previous one.");
+  // Fates are drawn in order: an occasion used is never drawn again (see `fates.ts`).
+  for (const stream of STREAMS) {
+    if (next.fates[stream] < previous.fates[stream]) fail("fates", `The fates of "${stream}" went back.`);
+  }
 
   const monotonic = ["clicks", "crits", "kills", "bosses", "treasures", "goldEarned", "essencesEarned", "ascensionEssences", "shardsEarned", "ascensions", "playTime", "offlineSeconds", "crystals", "hourglasses", "itemsFound", "legendaries", "mythics", "bossFails", "kings", "seams", "threads", "routs", "weavings"] as const;
   for (const key of monotonic) {
@@ -731,7 +767,8 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   // A Rout fells a stage in one step, each stage once a night at most.
   const routed = Math.max(0, b.routs - a.routs);
   if (routed > (activeSeconds + Math.max(0, offline)) / ROUT_STEP_SECONDS + 1) fail("routs", "Routs faster than the road allows.");
-  if (routed > (ascensions + Math.max(0, next.descents - previous.descents) + 1) * next.maxStageEver) fail("routs", "More Routs than the nights walked allow.");
+  const deepest = next.maxStageEver;
+  if (routed > (ascensions + Math.max(0, next.descents - previous.descents) + 1) * deepest) fail("routs", "More Routs than the nights walked allow.");
   if (kills > (activeSeconds + Math.max(0, offline) + hourglasses * 3600) * MAX_KILLS_PER_SECOND + 10 + skipKills + routed * MONSTERS_PER_STAGE) fail("kills", "Too many kills for the elapsed time.");
   // Each new stage is a whole stage of monsters (a guardian alone), or one Unweave.
   const skills = Math.max(0, b.skillsUsed - a.skillsUsed);
@@ -754,7 +791,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   if ((next.legacyHarvest ?? 0) !== (previous.legacyHarvest ?? 0)) fail("altar", "The Harvest of an older save cannot change.");
   const fromAscensions = b.ascensionEssences - a.ascensionEssences;
   if (!le(fromAscensions, ascensions * perAscension + rounding(b.ascensionEssences))) fail("essence-source", "Ascensions too generous.");
-  if (!le(b.essencesEarned - a.essencesEarned, Math.min(ascensions * perAscension, Math.max(0, fromAscensions)) + crystals * crystalEssenceReward(next.maxStageEver) + 1 + rounding(b.essencesEarned))) {
+  if (!le(b.essencesEarned - a.essencesEarned, Math.min(ascensions * perAscension, Math.max(0, fromAscensions)) + crystals * crystalEssenceReward(deepest) + 1 + rounding(b.essencesEarned))) {
     fail("essence-source", "Essences gathered too fast.");
   }
 
@@ -762,7 +799,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   // stage (the last stage of all stays the frontier for good), and a Seam closed.
   const nightsWalked = ascensions + Math.max(0, next.descents - previous.descents);
   const atEnd = previous.maxStage >= MAX_STAGE || next.maxStage >= MAX_STAGE;
-  const frontier = atEnd ? Infinity : bossStages(previous.maxStage, next.maxStageEver) + nightsWalked * bossStages(1, next.maxStageEver);
+  const frontier = atEnd ? Infinity : bossStages(previous.maxStage, deepest) + nightsWalked * bossStages(1, deepest);
   const guardians = Math.max(0, Math.min(b.bosses - a.bosses, frontier));
   const seams = Math.max(0, b.seams - a.seams);
   const drops = guardians + seams + Math.max(0, next.named.length - previous.named.length);
@@ -787,7 +824,7 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   // already held, and the share of shards spent since that salvage gives back.
   const salvage = salvageShards({ items: Math.max(0, items), legendaries: Math.max(0, legendaries), mythics: Math.max(0, mythics), drops });
   const held = [...Object.values(previous.equipment), ...previous.inventory].reduce((total, item) => total + (item ? salvageValue(item) : 0), 0);
-  const found = guardians * guardianShards(next.maxStageEver) + seams + crystals * CRYSTAL_SHARDS_MAX + salvage + held;
+  const found = guardians * guardianShards(deepest) + seams + crystals * CRYSTAL_SHARDS_MAX + salvage + held;
   const shardBound = (found + SPENT_RETURN_SHARE * previous.shards) / (1 - SPENT_RETURN_SHARE) + 1;
   if (!le(shardsEarned, shardBound)) fail("shards-earned", "Shards earned too fast.");
   // Bottled hours paid with shards owned or earned since.

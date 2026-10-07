@@ -167,10 +167,10 @@ export function wornItems(state: GameState): Item[] {
   return Object.values(state.equipment).filter((item) => item !== undefined && !(anvil && item.slot === "weapon"));
 }
 
-/** Sum of an effect over the equipped named relics. */
-export function namedEffect(state: GameState, kind: NamedEffect["kind"]): number {
+/** Sum of an effect over the equipped named relics (`worn`: `wornItems`, when the caller has it). */
+export function namedEffect(state: GameState, kind: NamedEffect["kind"], worn = wornItems(state)): number {
   let total = 0;
-  for (const item of wornItems(state)) {
+  for (const item of worn) {
     const def = item.named ? NAMED_BY_ID[item.named] : undefined;
     if (def && def.effect.kind === kind) total += def.effect.pct;
   }
@@ -178,11 +178,11 @@ export function namedEffect(state: GameState, kind: NamedEffect["kind"]): number
 }
 
 /** Whether a named relic is worn. */
-export function wearing(state: GameState, id: string): boolean {
-  return wornItems(state).some((item) => item.named === id);
+export function wearing(state: GameState, id: string, worn = wornItems(state)): boolean {
+  return worn.some((item) => item.named === id);
 }
 
 /** The Regalia, all three worn. */
-export function wearsRegalia(state: GameState): boolean {
-  return REGALIA.every((id) => wearing(state, id));
+export function wearsRegalia(state: GameState, worn = wornItems(state)): boolean {
+  return REGALIA.every((id) => wearing(state, id, worn));
 }

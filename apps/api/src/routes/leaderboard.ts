@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, lt, ne, not, or, sql as raw, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, lt, ne, not, or, type SQL } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { Hono } from "hono";
 import { db } from "../db/client";
@@ -107,8 +107,6 @@ async function standing(board: BoardId, userId: string): Promise<{ me: BoardRow;
   };
 }
 
-let statsCache: { at: number; value: { players: number; bestStage: number } } | null = null;
-
 export const leaderboardRoutes = new Hono()
   .use(rateLimitByIp(readLimiter))
   .get("/", async (c) => {
@@ -124,13 +122,4 @@ export const leaderboardRoutes = new Hono()
     c.header("Cache-Control", user ? "private, no-store" : "public, max-age=30");
     c.header("Vary", "Cookie");
     return c.json({ board, rows, me: place?.me ?? null, around: place?.around ?? [] });
-  })
-
-  .get("/stats", async (c) => {
-    if (!statsCache || Date.now() - statsCache.at > 60_000) {
-      const [row] = await db.select({ players: count(), bestStage: raw<number>`coalesce(max(${leaderboard.maxStage}), 0)` }).from(leaderboard);
-      statsCache = { at: Date.now(), value: { players: Number(row.players), bestStage: Number(row.bestStage) } };
-    }
-    c.header("Cache-Control", "public, max-age=60");
-    return c.json(statsCache.value);
   });

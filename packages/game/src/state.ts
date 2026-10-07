@@ -1,7 +1,7 @@
-import { seedFrom } from "./rng";
+import { emptyFates } from "./fates";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 16;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 /**
@@ -104,6 +104,6 @@ export function createInitialState(now = Date.now()): GameState {
     threads: 0,
     weaves: {},
     caravanWeek: "",
-    rngState: seedFrom(now)
+    fates: emptyFates()
   };
 }

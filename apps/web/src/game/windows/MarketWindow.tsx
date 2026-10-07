@@ -5,7 +5,7 @@ import type { ChestId } from "@idlebound/game/art";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { audio } from "../audio";
-import { useFormat, useGame, useUi } from "../context";
+import { useFormat, useGame, useMagnitude, useUi } from "../context";
 import { CARAVAN_PICTO, GoldIcon, OFFER_PICTO, Picto, ShardIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PromiseNotice } from "./PromiseTab";
@@ -35,6 +35,7 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
   const text = t.windows.market;
   const ui = useUi();
   const fmt = useFormat();
+  const magnitude = useMagnitude();
   const now = gameNow();
   const hourglass = offlineGains(state, 3600, now).gold;
   const discount = namedEffect(state, "marketDiscount");
@@ -45,7 +46,7 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (visited.current) return;
     visited.current = true;
-    store.act((engine) => engine.visitMarket());
+    store.act({ type: "market" });
     setSaying((store.state.lore.sayings - 1) % SAYINGS);
   }, [store]);
 
@@ -76,14 +77,14 @@ export function MarketWindow({ onClose }: { onClose: () => void }) {
               <Picto name={OFFER_PICTO[offer.id]} size={36} className="market-icon" />
               <h3>{copy.name}</h3>
               <p>{copy.description}</p>
-              {offer.id === "hourglass" ? <p className="market-preview"><GoldIcon size={14} /> {hourglass > 0 ? fmt(hourglass) : text.hireFirst}</p> : null}
+              {offer.id === "hourglass" ? <p className="market-preview"><GoldIcon size={14} /> {hourglass > 0 ? magnitude(hourglass) : text.hireFirst}</p> : null}
               {chest !== null && state.inventory.length >= INVENTORY_LIMIT ? <p className="market-preview warn"><Picto name="warning" size={14} /> {text.inventoryFull}</p> : null}
               <button
                 type="button"
                 className="btn btn-gold btn-sm"
                 disabled={state.shards < price || blocked}
                 onClick={() => {
-                  const buy = () => store.act((engine, time) => engine.buyOffer(offer.id, time));
+                  const buy = () => store.act<boolean>({ type: "offer", id: offer.id });
                   const ok = chest ? ui.openChest(chest, buy) : buy();
                   if (!ok) audio.play("error");
                   else if (!chest && offer.id !== "hourglass") ui.toast({ tone: "success", icon: OFFER_PICTO[offer.id], title: copy.name, text: text.effectActive, stack: `market:${offer.id}` });
@@ -136,7 +137,7 @@ function Caravan({ now, hourglass }: { now: number; hourglass: number }) {
           disabled={state.shards < price || blocked}
           aria-label={`${text.buy}: ${copy.name}`}
           onClick={() => {
-            const ok = store.act((engine, time) => engine.buyCaravan(time));
+            const ok = store.act<boolean>({ type: "caravan" });
             if (!ok) audio.play("error");
             else ui.toast({ tone: "success", icon: CARAVAN_PICTO[ware.id], title: copy.name, text: text.bought });
           }}

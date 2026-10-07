@@ -300,11 +300,12 @@ function DeleteAccount() {
 }
 
 function AuthForms() {
-  const [mode, setMode] = useState<"register" | "login" | "forgot">("register");
   const cloud = useCloud();
   const text = useI18n().t.account;
   // The session ended under an account's game: it is not a guest's, and nothing keeps it.
+  // Signing in again keeps it; another account starts its own game, so no pitch promises it.
   const adrift = cloud.status === "offline";
+  const [mode, setMode] = useState<"register" | "login" | "forgot">(adrift ? "login" : "register");
   return (
     <section className="account-section">
       <div className="profile-card is-guest">
@@ -316,10 +317,12 @@ function AuthForms() {
       </div>
       <LedgerStatus />
       {adrift ? null : <p className="modal-hint">{text.guestInfo}</p>}
-      <div className="auth-pitch">
-        <strong>{text.pitchTitle}</strong>
-        <span> {text.pitchText}</span>
-      </div>
+      {adrift ? null : (
+        <div className="auth-pitch">
+          <strong>{text.pitchTitle}</strong>
+          <span> {text.pitchText}</span>
+        </div>
+      )}
       <div className="auth-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={mode === "register"} className={mode === "register" ? "active" : ""} onClick={() => setMode("register")}>{text.registerTab}</button>
         <button type="button" role="tab" aria-selected={mode !== "register"} className={mode !== "register" ? "active" : ""} onClick={() => setMode("login")}>{text.loginTab}</button>

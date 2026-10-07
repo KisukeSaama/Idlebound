@@ -106,8 +106,8 @@ const en: StrataText = {
     { by: "Aurelion", text: "Every world begins as one point of light, and someone looking at it. I have seen it begin before, for other worlds." },
     { by: "Ashka", text: "The point is warm. It is the first fire, the one my order has prayed to all along. It was never the sun." },
     { by: "Eldra", text: "Something breathes in and holds it: the dreamer, at the edge of waking. I wove the night to make that breath last." },
-    { by: "Aldemar", text: "Aldemar, without his crown: \"You came all this way. Past here, the dreamer wakes and we end. Thank you. Go back.\"" },
-    { by: "The Dawn", text: "Not yet." }
+    { by: "Aldemar", text: "Aldemar, without his crown: \"You came all this way. The night does not end at the light. It goes on below. The road is yours.\"" },
+    { by: "The Dawn", text: "Not this way. Behind the light, the road goes down into the night again." }
   ],
   milestones: {
     "ascend-1": { by: "Oriane", text: "\"You've done this before.\" Oriane does not say it like a question. The night starts over at every dusk, and you walk it again." },
@@ -233,8 +233,8 @@ const fr: StrataText = {
     { by: "Aurelion", text: "Tout monde commence par un point de lumière, et quelqu'un qui le regarde. Je l'ai déjà vu commencer, pour d'autres mondes." },
     { by: "Ashka", text: "Le point est chaud. C'est le premier feu, celui que mon ordre priait depuis le début. Ce n'était jamais le soleil." },
     { by: "Eldra", text: "Quelque chose inspire et retient son souffle : le rêveur, au bord du réveil. J'ai tissé la nuit pour que ce souffle dure." },
-    { by: "Aldemar", text: "Aldemar, sans sa couronne : « Tu es venu jusqu'ici. Au-delà, le rêveur s'éveille, et nous finissons. Merci. Repars. »" },
-    { by: "L'Aube", text: "Pas encore." }
+    { by: "Aldemar", text: "Aldemar, sans sa couronne : « Tu es venu jusqu'ici. La nuit ne finit pas à la lumière. Elle continue dessous. La route est à toi. »" },
+    { by: "L'Aube", text: "Pas par ici. Derrière la lumière, la route redescend dans la nuit." }
   ],
   milestones: {
     "ascend-1": { by: "Oriane", text: "« Tu as déjà fait ça. » Oriane ne le dit pas comme une question. La nuit recommence à chaque crépuscule, et tu la marches encore." },

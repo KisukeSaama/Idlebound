@@ -2,8 +2,10 @@ import { eraForStage } from "./biomes";
 
 /**
  * The strata of the Long Night (BIBLE 9): sixty eras, one per loop of the five biomes,
- * grouped five by five into twelve Ages. Era 0 is the present night; the last one, Dawn,
- * ends at the stage cap. Numbers only; tags, Age names and keystones live in `content/`.
+ * grouped five by five into twelve Ages. Era 0 is the present night; the sixtieth, Dawn,
+ * ends at stage 3000. The night has no bottom (BIBLE 24): below the Dawn it draws itself
+ * again from the first stratum, one fold deeper (`drawnEra`, `eraFold`). Numbers only;
+ * tags, Age names and keystones live in `content/`.
  */
 export const ERA_COUNT = 60;
 export const ERAS_PER_AGE = 5;
@@ -17,6 +19,24 @@ export function ageForEra(era: number): number {
 
 export function ageForStage(stage: number): number {
   return ageForEra(eraForStage(stage));
+}
+
+/**
+ * The stratum an era looks like: itself down to the Dawn, then the night drawn again from the
+ * first stratum (era 60 is the present night once more, era 61 Echo, and so on). Its look,
+ * its tag, its Age's name and its King's form follow it; the numbers follow the true era.
+ */
+export function drawnEra(era: number): number {
+  return Math.max(0, era) % ERA_COUNT;
+}
+
+export function drawnEraForStage(stage: number): number {
+  return drawnEra(eraForStage(stage));
+}
+
+/** How many times the night has drawn itself again at this era: 0 down to the Dawn, 1 below it… */
+export function eraFold(era: number): number {
+  return Math.floor(Math.max(0, era) / ERA_COUNT);
 }
 
 /** Age VIII (the Edge of Sleep, index 7): from here on, the words of the Truth may be spoken. */

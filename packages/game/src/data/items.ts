@@ -1,5 +1,6 @@
 import type { AffixStat, Item, ItemSlot, Rarity } from "../types";
 import { eraForStage } from "./biomes";
+import { log2 as dLog2, pow as dPow } from "../dmath";
 
 export const SLOTS: ItemSlot[] = ["weapon", "armor", "amulet", "ring"];
 
@@ -78,12 +79,12 @@ export const FORGE_MAX = 20;
 export const FORGE_STEP = 0.1;
 
 export function forgeCost(rarity: Rarity, forge: number): number {
-  return Math.ceil(RARITY_INFO[rarity].shards * 2 * Math.pow(1.35, forge));
+  return Math.ceil(RARITY_INFO[rarity].shards * 2 * dPow(1.35, forge));
 }
 
 /** Power scaling by item level (= the stage it dropped at). */
 export function levelScale(level: number): number {
-  return 1 + Math.log2(1 + level / 10) * 0.9;
+  return 1 + dLog2(1 + level / 10) * 0.9;
 }
 
 /**
@@ -101,5 +102,5 @@ export function relicStratum(item: Item): number {
 
 /** A relic's density: its damage multiplier while worn. */
 export function relicDensity(item: Item): number {
-  return Math.pow(1 + DENSITY_PER_STRATUM, relicStratum(item));
+  return dPow(1 + DENSITY_PER_STRATUM, relicStratum(item));
 }

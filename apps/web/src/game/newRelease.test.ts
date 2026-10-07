@@ -1,4 +1,4 @@
-import { createInitialState } from "@idlebound/game";
+import { buildWindow, createInitialState, emptyFates, localFates } from "@idlebound/game";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/lib/api";
 import { CloudSync } from "./cloud";
@@ -17,7 +17,9 @@ function json(body: unknown, { status = 200, release }: { status?: number; relea
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-const saved = () => json({ save: { state: createInitialState(), revision: 4, updatedAt: "2026-01-01T00:00:00Z", elapsedMs: 0 } });
+/** The fates a server hands out with a game: every slice of one seed. */
+const FATES = buildWindow(emptyFates(), (stream, index) => localFates(1).slice(stream, index)!);
+const saved = () => json({ save: { state: createInitialState(), revision: 4, updatedAt: "2026-01-01T00:00:00Z", elapsedMs: 0, fates: FATES } });
 /** The update screen of this page: from its own version to the server's. */
 const UPDATE = { from: "v-old", to: "v-new" };
 const kept = (release: string) => json({ revision: 5, updatedAt: "2026-01-01T00:00:00Z" }, { release });
@@ -63,7 +65,11 @@ describe("NewRelease", () => {
     });
     vi.stubGlobal("requestAnimationFrame", (callback: () => void) => setTimeout(callback, 0));
     fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
+    // Journals leave as plain JSON here: compressing runs on real time, not on these timers.
+    vi.stubGlobal("CompressionStream", undefined);
+    // A new game's seed is answered at once; everything else goes to the mock the tests read.
+    const call = fetchMock as unknown as (url: string, init: RequestInit) => Promise<Response>;
+    vi.stubGlobal("fetch", (url: string, init: RequestInit) => (String(url).endsWith("/new") ? Promise.resolve(json({ createdAt: Date.now(), fates: FATES })) : call(url, init)));
     reloads = 0;
     shown = [];
     calm = true;

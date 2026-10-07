@@ -92,7 +92,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
       });
       if (!ok) return;
     }
-    store.act((engine, time) => engine.ascend(time));
+    store.act({ type: "ascend" });
     onClose();
   };
 
@@ -161,7 +161,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
                 type="button"
                 className="btn btn-violet btn-sm"
                 disabled={cost > state.essences || keeping}
-                onClick={() => store.act((engine, time) => engine.buyAltar(altar.id, time))}
+                onClick={() => store.act({ type: "altar", id: altar.id })}
               >
                 <EssenceIcon size={14} /> {fmt(cost)}
               </button>
@@ -226,7 +226,7 @@ function Loom({ onClose }: { onClose: () => void }) {
       danger: true
     });
     if (!ok) return;
-    store.act((engine, time) => engine.descend(time));
+    store.act({ type: "descend" });
     onClose();
   };
 
@@ -285,7 +285,7 @@ function Loom({ onClose }: { onClose: () => void }) {
                 disabled={woven || cost > state.threads}
                 title={woven ? undefined : text.weaveLabel(copy.name, fmt(cost))}
                 aria-label={woven ? undefined : text.weaveLabel(copy.name, fmt(cost))}
-                onClick={() => store.act((engine, time) => engine.buyWeave(weave.id, time))}
+                onClick={() => store.act({ type: "weave", id: weave.id })}
               >
                 {woven ? text.woven : text.threadsCount(fmt(cost))}
               </button>

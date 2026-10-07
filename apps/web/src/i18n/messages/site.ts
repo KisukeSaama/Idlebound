@@ -6,7 +6,7 @@ export const site = defineMessages({
     meta: {
       tagline: "Le clicker fantasy dans ton navigateur",
       description:
-        "Idlebound est un idle clicker fantasy : terrasse des monstres, recrute 20 compagnons, affronte des boss, fais ton ascension et grimpe au classement. Sans téléchargement.",
+        "Idlebound est un idle clicker fantasy : terrasse des monstres, recrute des compagnons, affronte le Roi déchu, nuit après nuit. Sans téléchargement.",
       keywords: ["idle game", "clicker", "jeu incrémental", "jeu navigateur", "idle clicker", "fantasy", "clicker heroes", "jeu idle français", "jeu sans téléchargement"],
       ogImageAlt: "Idlebound, clicker fantasy"
     },
@@ -50,7 +50,7 @@ export const site = defineMessages({
     meta: {
       tagline: "The fantasy clicker in your browser",
       description:
-        "Idlebound is a fantasy idle clicker: slay monsters, hire 20 companions, battle bosses, ascend and climb the leaderboard. No download needed.",
+        "Idlebound is a fantasy idle clicker: slay monsters, hire companions, face the Fallen King, night after night. No download needed.",
       keywords: ["idle game", "clicker", "incremental game", "browser game", "idle clicker", "fantasy", "clicker heroes", "fantasy idle game", "no download game"],
       ogImageAlt: "Idlebound, fantasy clicker"
     },

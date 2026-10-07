@@ -8,6 +8,7 @@ import { env } from "../env";
 import { purgeGuestSaves } from "./guest";
 import { localeOf } from "./i18n";
 import { purgeInactiveAccounts, purgeUnverifiedAccounts } from "./inactivity";
+import { purgeReplayRecords } from "./replays";
 
 export const SESSION_COOKIE = "ib_session";
 const SESSION_DAYS = 30;
@@ -98,4 +99,5 @@ export async function purgeExpired() {
   await db.delete(passwordResets).where(lt(passwordResets.expiresAt, now));
   await db.delete(emailVerifications).where(lt(emailVerifications.expiresAt, now));
   await db.delete(saveRejections).where(lt(saveRejections.createdAt, new Date(now.getTime() - REJECTION_RETENTION_DAYS * DAY)));
+  await purgeReplayRecords(now);
 }

@@ -77,10 +77,19 @@ export const REMEMBRANCE_DAYS: readonly { month: number; day: number; id: "launc
 ];
 export const REMEMBRANCE_FRAGMENTS = 2;
 
-export function remembranceNight(date: Date): "launch" | "solstice" | null {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+export function remembranceNight(now: number, zone = 0): "launch" | "solstice" | null {
+  const local = localTime(now, zone);
+  const month = local.getUTCMonth() + 1;
+  const day = local.getUTCDate();
   return REMEMBRANCE_DAYS.find((entry) => entry.month === month && entry.day === day)?.id ?? null;
+}
+
+/**
+ * The walker's wall clock: `now` moved by their time zone (minutes ahead of UTC), read with
+ * the UTC getters. The same on the device and on the server that replays it.
+ */
+export function localTime(now: number, zone = 0): Date {
+  return new Date(now + zone * 60_000);
 }
 
 /** The Migration: from era 1, one stage in this many is crossed by another biome's Remnants. */

@@ -7,7 +7,8 @@ import { RECOGNITION_HEROES } from "../src/data/lore";
 import { PROMISE_BY_HERO, promiseHolds, promiseOf, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
-import { ESSENCE_DPS_BONUS, altarPrice, derive, heroCost, heroCostMultiplier, promiseWhen } from "../src/formulas";
+import { ESSENCE_DPS_BONUS, altarPrice, damageAt, derive, deriveAt, deriveBase, heroCost, heroCostMultiplier, milestoneMultiplier, promiseWhen, type DeriveBase } from "../src/formulas";
+import { runBits } from "../src/scale";
 import type { AltarId, Derived, GameState, Item } from "../src/types";
 
 export interface BotOptions {
@@ -28,11 +29,19 @@ export interface BotOptions {
   /** Descend right after an ascension when this plan allows it (never without one). */
   descent?: DescentPlan;
   onDescend?: (engine: GameEngine, now: number, threads: number) => void;
+  /** After each of the bot's ticks (the tests save from here, as the page does every 30 s). */
+  onTick?: (engine: GameEngine, now: number) => void;
   /**
    * Who gets the walker's word at each dusk (default: `reasonablePromise`, among the promises
    * the play style can keep, see `promisesAvoided`); `false`: nobody, ever.
    */
   promises?: PromisePolicy | false;
+  /**
+   * Weighs the companions' next levels from one look at the company instead of one per
+   * companion: the same choice (a companion's damage grows with its level and milestones
+   * alone), several times faster. For the long runs of the deep road (`deep.ts`).
+   */
+  fastPurchases?: boolean;
 }
 
 /**
@@ -72,7 +81,7 @@ export const reasonablePromise: PromisePolicy = (state, avoid = []) => {
 /** At dusk, before anything else: the bot chooses who gets its word for the night. */
 export function pledgeAtDusk(engine: GameEngine, now: number, options: BotOptions) {
   if (options.promises === false) return;
-  engine.pledge((options.promises ?? reasonablePromise)(engine.state, promisesAvoided(options)), now);
+  engine.perform({ type: "pledge", hero: (options.promises ?? reasonablePromise)(engine.state, promisesAvoided(options)) }, now);
 }
 
 /**
@@ -116,7 +125,7 @@ export function strikesLead(d: Derived, clicksPerSecond: number): boolean {
  * Damage a second of the company with a walker striking `clicksPerSecond` times a second
  * (crits averaged): the company's damage, Patience bonus included, and every strike on top.
  */
-export function damageRate(d: Derived, clicksPerSecond: number): number {
+export function damageRate(d: Pick<Derived, "dps" | "click" | "critChance" | "critMultiplier">, clicksPerSecond: number): number {
   const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
   return d.dps + strikes;
 }
@@ -127,7 +136,13 @@ export function averageClicks(options: BotOptions): number {
   return options.burst ? (options.clicksPerSecond * options.burst.seconds) / options.burst.everySeconds : options.clicksPerSecond;
 }
 
-const DT = 0.1;
+/**
+ * Seconds between two ticks of the bot. The screen ticks every 50 ms; 100 ms plays the same
+ * game twice as fast (`BOT_DT=0.05` to check it against the screen's pace).
+ */
+const DT = Number(process.env.BOT_DT) || 0.1;
+/** The bot looks at the road and decides every half second, whatever the tick. */
+const DECIDE_STEPS = Math.round(0.5 / DT);
 /**
  * A walker whose strikes come in bursts wins a stage now and then that the company alone could
  * not: the road creeps, never stalls, and the dusk would never come. From the second night,
@@ -141,26 +156,41 @@ function relicWorth(item: Item): number {
   return (1 + item.affixes[0].value) * relicDensity(item);
 }
 
-function bestHeroPurchase(engine: GameEngine, now: number, clicksPerSecond: number) {
+function bestHeroPurchase(engine: GameEngine, company: DeriveBase, clicksPerSecond: number, fast = false) {
   const s = engine.state;
   const multiplier = heroCostMultiplier(s);
+  // Prices in the night's unit, as its gold (see `scale.ts`).
+  const bits = runBits(s);
   let best: { id: string; ratio: number } | null = null;
-  const base = damageRate(derive(s, now, { ignoreTimed: true }), clicksPerSecond);
+  const d = deriveAt(company, s.heroLevels);
+  const base = damageRate(d, clicksPerSecond);
   // Companions join in order (a promise may leave one behind, or keep the company small).
   const recruit = nextRecruit(s)?.id;
+  const weigh = (heroId: string, level: number, cost: number) => {
+    // Weighed on a copy: the game itself is only ever changed by commands (see `replay.ts`).
+    const after = damageRate(damageAt(company, { ...s.heroLevels, [heroId]: level + 1 }), clicksPerSecond);
+    const ratio = (after - base) / cost;
+    if (!best || ratio > best.ratio) best = { id: heroId, ratio };
+  };
+  // Fast: among companions already hired, a level adds to their own damage only, by its
+  // level and milestones, and so to the strikes in the same share: the best of them by that
+  // ratio is the best by the full one, which is then weighed like the walker's own and the recruit.
+  let lead: { id: string; level: number; cost: number; ratio: number } | null = null;
   for (const hero of HEROES) {
     const level = s.heroLevels[hero.id] ?? 0;
     if (level === 0 && hero.id !== CLICK_HERO_ID && hero.id !== recruit) continue;
-    const cost = heroCost(hero, level, 1, multiplier);
+    const cost = heroCost(hero, level, 1, multiplier, bits);
     if (cost > s.gold) continue;
-    s.heroLevels[hero.id] = level + 1;
-    const after = damageRate(derive(s, now, { ignoreTimed: true }), clicksPerSecond);
-    s.heroLevels[hero.id] = level;
-    const gain = after - base;
-    const ratio = gain / cost;
-    if (!best || ratio > best.ratio) best = { id: hero.id, ratio };
+    if (fast && level > 0 && hero.id !== CLICK_HERO_ID) {
+      const grows = ((level + 1) * milestoneMultiplier(level + 1)) / (level * milestoneMultiplier(level)) - 1;
+      const ratio = ((d.heroDps[hero.id] ?? 0) * grows) / cost;
+      if (!lead || ratio > lead.ratio) lead = { id: hero.id, level, cost, ratio };
+      continue;
+    }
+    weigh(hero.id, level, cost);
   }
-  return best;
+  if (lead) weigh(lead.id, lead.level, lead.cost);
+  return best as { id: string; ratio: number } | null;
 }
 
 /** Plays `seconds` seconds from `start`; returns the new time. */
@@ -182,33 +212,41 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
     const inBurst = !options.burst || ((now - start) / 1000) % options.burst.everySeconds < options.burst.seconds;
     const clicking = inBurst && (options.idleFromStage === undefined || s.maxStage < options.idleFromStage);
     const clicksPerSecond = clicking ? options.clicksPerSecond : 0;
-    clickDebt += clicksPerSecond * DT;
-    while (clickDebt >= 1) {
-      clickDebt -= 1;
-      engine.click(now);
-    }
+    // As on the page: the steps first, then what the walker does, at the last step's time.
     engine.tick(now);
-    if (s.crystal) engine.clickCrystal(now);
+    clickDebt += clicksPerSecond * DT;
+    const clicks = Math.floor(clickDebt);
+    if (clicks > 0) {
+      clickDebt -= clicks;
+      engine.perform({ type: "click", count: clicks }, now);
+    }
+    if (s.crystal) engine.perform({ type: "crystal" }, now);
+    options.onTick?.(engine, now);
 
-    if (step % 5 === 0) {
-      engine.buyAllUpgrades(now);
-      for (let guard = 0; guard < 50; guard += 1) {
-        const best = bestHeroPurchase(engine, now, clicksPerSecond);
-        if (!best) break;
-        engine.buyHero(best.id, 1, now);
-      }
-      for (const skill of SKILLS) if (isSkillUnlocked(s, skill.id) && skill.id !== "echo") engine.useSkill(skill.id, now);
+    if (step % DECIDE_STEPS === 0) {
+      engine.perform({ type: "talents" }, now);
+      // Only the levels and the gold change from one purchase to the next: the rest of the
+      // company's numbers is worked out once, and the engine's once they are all bought.
+      const company = deriveBase(s, now, { ignoreTimed: true });
+      engine.batch(() => {
+        for (let guard = 0; guard < 50; guard += 1) {
+          const best = bestHeroPurchase(engine, company, clicksPerSecond, options.fastPurchases);
+          if (!best) break;
+          engine.perform({ type: "hero", id: best.id, mode: 1 }, now);
+        }
+      });
+      for (const skill of SKILLS) if (isSkillUnlocked(s, skill.id) && skill.id !== "echo") engine.perform({ type: "skill", id: skill.id }, now);
       // Having promised never to be pushed back, the bot only leads the company into a seam it holds.
-      if (!s.autoAdvance && (now - lastProgressAt) % 120_000 < DT * 1000 * 5 && (!promiseOf(s, "unfailing") || engine.canBeatNextBoss(now))) engine.toggleAutoAdvance();
-      if (s.shards >= 30 && s.inventory.length < 40) engine.buyOffer("chest", now);
+      if (!s.autoAdvance && (now - lastProgressAt) % 120_000 < DT * 1000 * DECIDE_STEPS && (!promiseOf(s, "unfailing") || engine.canBeatNextBoss(now))) engine.perform({ type: "auto" }, now);
+      if (s.shards >= 30 && s.inventory.length < 40) engine.perform({ type: "offer", id: "chest" }, now);
       for (const item of [...s.inventory]) {
         const equipped = s.equipment[item.slot];
         // Morgrath's Phylactery halves the click: only a walker who lets go of the sword wears it.
         if (item.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) continue;
-        if (equipped?.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) { engine.equip(item.uid, now); continue; }
-        if (!equipped || relicWorth(item) > relicWorth(equipped)) engine.equip(item.uid, now);
+        if (equipped?.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) { engine.perform({ type: "equip", uid: item.uid }, now); continue; }
+        if (!equipped || relicWorth(item) > relicWorth(equipped)) engine.perform({ type: "equip", uid: item.uid }, now);
       }
-      engine.salvageUpTo("rare");
+      engine.perform({ type: "salvageUpTo", rarity: "rare" }, now);
     }
 
     if (s.maxStage > lastMaxStage) {
@@ -224,16 +262,16 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
     if (stalled && standingPromise(s) && !promiseHolds(s)) {
       // A word that would not be kept at this dusk holds the night back: the bot takes it
       // back and walks on a while, freed, before it calls the dusk.
-      engine.breakPromise(now);
+      engine.perform({ type: "break" }, now);
       lastProgressAt = now;
       recent = [];
     } else if (engine.canAscend() && stalled) {
       const from = s.maxStage;
       const leading = strikesLead(derive(s, now, { ignoreTimed: true }), averageClicks(options));
-      const gain = engine.ascend(now);
+      const gain = engine.perform({ type: "ascend" }, now) as number;
       options.onAscend?.(engine, now, gain, from);
       if (options.descent && wantsDescent(s, options.descent)) {
-        const threads = engine.descend(now);
+        const threads = engine.perform({ type: "descend" }, now) as number;
         buyWeaves(engine, now);
         options.onDescend?.(engine, now, threads);
       }
@@ -266,7 +304,7 @@ export function buyWeaves(engine: GameEngine, now: number) {
   const price = (id: WeaveId) => weaveCost(id, s.weaves[id] ?? 0);
   for (let guard = 0; guard < 500; guard += 1) {
     const cheap = WEAVES.find((weave) => weave.id !== OPEN_WEAVE && weave.id !== "long-thread" && price(weave.id) <= s.threads * WEAVE_SHARE);
-    if (!engine.buyWeave(cheap?.id ?? OPEN_WEAVE, now)) return;
+    if (!engine.perform({ type: "weave", id: cheap?.id ?? OPEN_WEAVE }, now)) return;
   }
 }
 
@@ -287,7 +325,7 @@ export function buyAltars(engine: GameEngine, now: number, { milestones }: Altar
     for (const id of milestones) {
       // The walker's own price: the Knot of Dusk lets the Wanderer's altar grow past its cap.
       const cost = altarPrice(s, id);
-      if (Number.isFinite(cost) && cost <= s.essences * MILESTONE_SHARE && engine.buyAltar(id, now)) bought = true;
+      if (Number.isFinite(cost) && cost <= s.essences * MILESTONE_SHARE && engine.perform({ type: "altar", id }, now)) bought = true;
     }
     const hold = ESSENCE_DPS_BONUS / (1 + ESSENCE_DPS_BONUS * s.essences);
     let best: { id: AltarId; ratio: number } | null = null;
@@ -306,7 +344,7 @@ export function buyAltars(engine: GameEngine, now: number, { milestones }: Altar
       const ratio = Math.log((1 + step * (harvest + 1)) / (1 + step * harvest)) / harvestCost;
       if (ratio > hold && (!best || ratio > best.ratio)) best = { id: "harvest", ratio };
     }
-    if (best && engine.buyAltar(best.id, now)) bought = true;
+    if (best && engine.perform({ type: "altar", id: best.id }, now)) bought = true;
     if (!bought) return;
   }
 }

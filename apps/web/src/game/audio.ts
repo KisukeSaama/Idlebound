@@ -1,6 +1,7 @@
 "use client";
 
-import { DAWN_STAGE, ageForStage } from "@idlebound/game";
+import { DAWN_STAGE, ageForEra, drawnEraForStage } from "@idlebound/game";
+import { PIECES, schedulePiece, type MusicCue } from "./music";
 
 /**
  * Sound synthesized with WebAudio, no file to load (BIBLE 19): a distinct effect per event,
@@ -31,7 +32,8 @@ type Sound =
   | "rattle"
   | "unseal"
   | "tick"
-  | "found";
+  | "found"
+  | "blow";
 
 const MASTER_GAIN = 0.5;
 /** Share of the volume left to every other sound while the Quiet passes. */
@@ -42,15 +44,18 @@ const MUFFLED_CUTOFF = 520;
 const MUFFLED_DELAY = 0.22;
 const OPEN_CUTOFF = 20000;
 
-/** How the stage walked colours every sound: Age X muffles them, the Dawn silences them. */
+/**
+ * How the stage walked colours every sound: Age X muffles them (each time the night draws it
+ * again), the Dawn at stage 3000 silences them.
+ */
 interface Place {
   dawn: boolean;
   muffled: boolean;
 }
 
 function placeFor(stage: number): Place {
-  const dawn = stage >= DAWN_STAGE;
-  return { dawn, muffled: !dawn && ageForStage(stage) === UNMAKING_AGE };
+  const dawn = stage === DAWN_STAGE;
+  return { dawn, muffled: !dawn && ageForEra(drawnEraForStage(stage)) === UNMAKING_AGE };
 }
 
 class AudioEngine {
@@ -66,6 +71,11 @@ class AudioEngine {
   private place: Place = placeFor(1);
   private noise: AudioBuffer | null = null;
   private lastPlayed = new Map<Sound, number>();
+  /** A scene of the Ledger is playing: its sounds pass over the duck. */
+  private scene = false;
+  /** The music of a scene, while it plays. */
+  private score: { nodes: OscillatorNode[]; gain: GainNode } | null = null;
+  private cueing = false;
   private enabled = true;
   /** The page is out of sight. */
   private hidden = false;
@@ -166,7 +176,8 @@ class AudioEngine {
   /** Everything else goes quiet for a while, then comes back. */
   duck(ms: number) {
     const ctx = this.context;
-    if (!ctx || !this.bus) return;
+    // A scene keeps the night quiet already, until it ends.
+    if (!ctx || !this.bus || this.scene) return;
     const start = ctx.currentTime;
     const gain = this.bus.gain;
     gain.cancelScheduledValues(start);
@@ -178,7 +189,7 @@ class AudioEngine {
 
   private tone(frequency: number, duration: number, options: { type?: OscillatorType; gain?: number; delay?: number; slideTo?: number; attack?: number; direct?: boolean } = {}) {
     const ctx = this.context;
-    const out = options.direct ? this.fx : this.bus;
+    const out = options.direct || this.cueing ? this.fx : this.bus;
     if (!ctx || !out) return;
     const start = ctx.currentTime + (options.delay ?? 0);
     const osc = ctx.createOscillator();
@@ -196,7 +207,8 @@ class AudioEngine {
 
   private burst(duration: number, filterFrequency: number, gainValue: number, delay = 0, slideTo?: number) {
     const ctx = this.context;
-    if (!ctx || !this.bus || !this.noise) return;
+    const out = this.cueing ? this.fx : this.bus;
+    if (!ctx || !out || !this.noise) return;
     const start = ctx.currentTime + delay;
     const source = ctx.createBufferSource();
     source.buffer = this.noise;
@@ -208,9 +220,63 @@ class AudioEngine {
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(gainValue, start);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    source.connect(filter).connect(gain).connect(this.bus);
+    source.connect(filter).connect(gain).connect(out);
     source.start(start);
     source.stop(start + duration);
+  }
+
+  /**
+   * A scene of the Ledger begins or ends: the night beneath goes quiet while it plays, and
+   * its music fades when it ends.
+   */
+  setScene(playing: boolean) {
+    const ctx = this.context;
+    if (!ctx || !this.bus || playing === this.scene) return;
+    this.scene = playing;
+    const now = ctx.currentTime;
+    this.bus.gain.cancelScheduledValues(now);
+    this.bus.gain.setTargetAtTime(playing ? DUCKED : 1, now, playing ? 0.2 : 0.5);
+    if (!playing) this.silence(1.2);
+  }
+
+  /** The music of a scene: the Dusk theme, its reprise, or a cut to silence (a blow). */
+  music(cue: MusicCue) {
+    const ctx = this.context;
+    if (!this.enabled || this.place.dawn || !ctx || ctx.state !== "running" || !this.fx) return;
+    this.silence(cue === "hush" ? 0.06 : 0.4);
+    if (cue === "hush") return;
+    const gain = ctx.createGain();
+    gain.connect(this.fx);
+    this.score = { nodes: schedulePiece(ctx, gain, PIECES[cue], ctx.currentTime + 0.05), gain };
+  }
+
+  /** The music playing goes quiet over `seconds`, then stops. */
+  private silence(seconds: number) {
+    const ctx = this.context;
+    const score = this.score;
+    if (!ctx || !score) return;
+    this.score = null;
+    const now = ctx.currentTime;
+    score.gain.gain.cancelScheduledValues(now);
+    score.gain.gain.setValueAtTime(score.gain.gain.value, now);
+    score.gain.gain.exponentialRampToValueAtTime(0.0001, now + seconds);
+    for (const node of score.nodes) {
+      try {
+        node.stop(now + seconds + 0.05);
+      } catch {
+        // A note already over.
+      }
+    }
+  }
+
+  /** A sound of a scene: it plays over the quiet the scene keeps. */
+  cue(sound: Sound) {
+    this.cueing = true;
+    try {
+      this.play(sound);
+    } finally {
+      this.cueing = false;
+    }
   }
 
   /** `step`: how far up a climbing sound has gone (a chest's knocks, the rarity it opens on). */
@@ -329,6 +395,14 @@ class AudioEngine {
       case "tick":
         // A relic of the reel passes the gold marks.
         this.tone(2200 * pitch, 0.025, { type: "square", gain: 0.035 });
+        break;
+      case "blow":
+        // A sword through the air, the impact, and the ring of the steel after it.
+        this.burst(0.16, 500, 0.3, 0, 3800);
+        this.tone(88, 0.7, { type: "sine", gain: 0.5, slideTo: 32, delay: 0.1 });
+        this.burst(0.3, 1200, 0.4, 0.1, 300);
+        this.tone(1244, 1.4, { type: "triangle", gain: 0.05, delay: 0.12 });
+        this.tone(1661, 1.1, { type: "sine", gain: 0.03, delay: 0.14 });
         break;
       case "found":
         // The reel stops: a chord rises, one note longer for each rarity up.

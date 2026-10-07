@@ -11,3 +11,4 @@ export * from "./objects";
 export * from "./scenes";
 export * from "./architecture";
 export * from "./structures";
+export * from "./actors";

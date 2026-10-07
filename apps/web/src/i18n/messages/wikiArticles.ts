@@ -113,7 +113,7 @@ export const wikiArticles = defineMessages<Articles>({
       ]
     }),
     calculator: (f) => ({
-      lead: `Entre une étape (de 1 à ${fr(f.maxStage)}) : le calculateur te dit ce qui t'y attend, avec les formules du jeu lui-même.`,
+      lead: "Entre une étape, aussi profonde que tu veux : le calculateur te dit ce qui t'y attend, avec les formules du jeu lui-même.",
       sections: [
         { id: "tool", title: "Le calculateur", blocks: [{ slot: "calculator" }] },
         {
@@ -506,8 +506,8 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "list", title: `Les ${f.eras} strates`, blocks: [{ slot: "strata" }] },
         {
           id: "dawn",
-          title: "La fin de la route",
-          blocks: [`À l'étape ${fr(f.maxStage)}, la dernière, l'Aube se tient à la place du Roi.`, { slot: "dawn" }]
+          title: "L'Aube",
+          blocks: [`À l'étape ${fr(f.dawnStage)}, l'Aube se tient à la place du Roi. La route ne s'arrête pas là : dessous, la nuit se dessine à nouveau depuis sa première strate, plus profonde à chaque tour.`, { slot: "dawn" }]
         }
       ]
     }),
@@ -732,7 +732,7 @@ export const wikiArticles = defineMessages<Articles>({
       ]
     }),
     calculator: (f) => ({
-      lead: `Enter a stage (from 1 to ${en(f.maxStage)}): the calculator tells you what awaits there, with the game's own formulas.`,
+      lead: "Enter a stage, as deep as you like: the calculator tells you what awaits there, with the game's own formulas.",
       sections: [
         { id: "tool", title: "The calculator", blocks: [{ slot: "calculator" }] },
         {
@@ -1084,7 +1084,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "ages", title: `The ${f.ages} Ages`, blocks: [{ slot: "ages" }] },
         { id: "kings", title: "The twelve forms of the King", blocks: ["The guardian of every 50th stage is the King, in the form of the stratum's Age. Same strength in every form: only his look, his name and his words change.", { slot: "kings" }] },
         { id: "list", title: `The ${f.eras} strata`, blocks: [{ slot: "strata" }] },
-        { id: "dawn", title: "The end of the road", blocks: [`At stage ${en(f.maxStage)}, the last one, the Dawn stands in the King's place.`, { slot: "dawn" }] }
+        { id: "dawn", title: "The Dawn", blocks: [`At stage ${en(f.dawnStage)}, the Dawn stands in the King's place. The road does not stop there: below it, the night draws itself again from its first stratum, deeper with every round.`, { slot: "dawn" }] }
       ]
     }),
     events: () => ({

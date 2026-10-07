@@ -289,15 +289,9 @@ html:not([data-scrolled]) .landing > .page-nav:not(:has(.site-menu[data-open])) 
 
 /* ------------------------------------------------------------------ features */
 
-.features {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: 3.5rem;
-  align-items: start;
-}
-
 .feature-list {
   display: grid;
+  max-width: 820px;
 }
 
 .feature {
@@ -340,85 +334,6 @@ html:not([data-scrolled]) .landing > .page-nav:not(:has(.site-menu[data-open])) 
   margin: 0;
   color: var(--muted);
   max-width: 62ch;
-}
-
-/* The night in numbers: an old stat sheet, dotted leaders to each figure. */
-.numbers {
-  position: sticky;
-  top: calc(var(--site-nav-h) + env(safe-area-inset-top) + 1.5rem);
-  padding-left: 1.6rem;
-  border-left: 1px solid var(--border);
-}
-
-.numbers h3 {
-  font-size: 1.1rem;
-  margin-bottom: 0.9rem;
-}
-
-.numbers dl {
-  display: grid;
-  gap: 0.55rem;
-  margin: 0;
-}
-
-.numbers dl div {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
-.numbers dt {
-  flex: 1;
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  color: var(--muted);
-}
-
-.numbers dt::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px dotted var(--border-strong);
-}
-
-.numbers dd {
-  margin: 0;
-  font-weight: 700;
-  color: var(--gold-2);
-  font-variant-numeric: tabular-nums;
-}
-
-/* The Descent: Eldra's Loom as a painting beside the copy. */
-.descent {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 2rem;
-  align-items: center;
-  margin-top: 2.5rem;
-}
-
-.descent-place {
-  position: relative;
-  min-height: 220px;
-  overflow: hidden;
-}
-
-.descent-place-art {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  translate: -50% 0;
-}
-
-.descent h3 {
-  font-size: 1.45rem;
-  color: var(--gold);
-  margin-bottom: 0.5rem;
-}
-
-.descent p {
-  margin: 0;
-  color: var(--muted);
 }
 
 /* ------------------------------------------------------------------ biomes */
@@ -657,27 +572,12 @@ html:not([data-scrolled]) .landing > .page-nav:not(:has(.site-menu[data-open])) 
   .biome-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
-  .features {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  .numbers {
-    position: static;
-    padding: 1.2rem 0 0;
-    border-left: 0;
-    border-top: 1px solid var(--border);
-    max-width: 420px;
-  }
 }
 
 @media (max-width: 860px) {
   .duo {
     grid-template-columns: 1fr;
     gap: 3rem;
-  }
-  .descent {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
   }
 }
 

@@ -79,9 +79,11 @@ Content colors live with the game data, not in CSS:
   place's name wraps between its words and its column never gets narrower than its longest
   word, and the companions' buy modes go under the panel's title when the panel is narrow.
 - Numbers that change use `font-variant-numeric: tabular-nums` so they do not jitter.
-- Big numbers are formatted by `formatNumber` (K, M, B, T, Qa… then aa, ab…), with an
-  in-game choice of letters, scientific or engineering notation. The same notation is used
-  in both languages.
+- Big numbers are formatted by `formatNumber` (K, M, B, T, Qa… then aa, ab… zz, then aaa),
+  with an in-game choice of letters, scientific or engineering notation. The same notation is
+  used in both languages. Past stage 3500 the engine writes HP, gold and damage in a larger
+  unit (`scale.ts`): `useMagnitude` (the night's numbers) and `useLifeMagnitude` (totals over
+  every night) read them back, so a walker sees the plain number at any depth.
 
 ## Shape, depth, spacing
 
@@ -383,12 +385,11 @@ server page):
   surface of the story), the gold call to action, an underlined link to the leaderboard,
   and "Déjà en route ? Reprends ta partie" for walkers coming back. On phones the Keep sits
   under the nav, the words under it, the button full width under the thumb.
-- **The loop**: Click, Hire, Ascend in three ruled columns (no numbers, no cards).
-- **What the road holds**: the six features as a list, each with its art in a pixel frame
-  (the Wanderer's altar, Maëlle, the crystal, the golden rat, the Oathcutter, the hourglass),
-  beside "The night in numbers" (dotted leaders to each figure: companions, creatures,
-  stages, strata, walkers on the leaderboard); then the Descent beside Eldra's Loom.
-- **Five biomes**: each scene in a pixel frame with its guardian and one Remnant; the frame
+- **The loop**: Strike, Hire, Again in three ruled columns (no numbers, no cards).
+- **What the road holds**: three features as a list, each with its art in a pixel frame
+  (Maëlle, the Oathcutter, the crystal). The page is silent on purpose (BIBLE 20): no count
+  of stages, strata, companions or altars, no Descent, nothing of what the walk tells.
+- **Five places**: each scene in a pixel frame with its guardian and one Remnant; the frame
   takes the biome's accent on hover.
 - **Leaderboard and FAQ** side by side: the top 10 as a table (alternating rows, rank
   labels gold, silver, bronze), how to carve your name there, then the questions as
@@ -397,7 +398,7 @@ server page):
   each with its pixel cover, then an underlined link to every article.
 - **Last call**: a ruled line, the King has risen, the gold button.
 
-Every count on it comes from the game data. World art on server pages goes through the
+The few figures it still shows (the stages of each biome) come from the game data. World art on server pages goes through the
 client `Art` component, which takes plain data. The 404 page shows the Field Rat. The
 leaderboard page uses square tabs (the open one in gold, Depth marked "Official"), the board's
 rule in one plain sentence (the tie rule beneath it, smaller, on the tallies), "Around you" for
@@ -416,7 +417,11 @@ date, the title in pale gold and the muted summary. An article reads on the 820 
 the way back with a chevron, the cover as a wide banner, the labels, the title, the summary
 as a muted lead, a rule, the body on a 68ch measure (gold headings, square gold bullets), and
 a ruled foot with the team's signature in Cinzel gold and, when the article points to a page,
-a gold button.
+a gold button. A patch note's body is made of cards, one per thing a change touches: a
+panel with a 3 px left border in the tag's color (violet new, green buffed, red nerfed, gold
+adjusted, grey fixed), the name in Cinzel beside a small outlined uppercase tag, an italic
+muted line saying why, then its changes as bullets, each a bold label and either plain words
+or the old value muted, an arrow in the tag's color and the new value in bold pale gold.
 
 The wiki (`/[locale]/wiki`, styles in `src/wiki/wiki.css`) reads like an old fan encyclopedia
 built with the site's tokens. On wide screens a sticky contents column (the search, then the
@@ -660,7 +665,9 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   brightens Age after Age toward a pale lilac, and each Age leaves its mark (giant bones,
   temples and shafts of light, the sky pouring, warp threads, line art on paper, walls of
   runes, mist and a low moon, a lamp and a window, grey, the world in outline, then a
-  single point of light and a line).
+  single point of light and a line). Below the Dawn the night is drawn again from the
+  present night's look (`drawnEra`: era mod 60), the sky dark once more: the scenes, the
+  creatures and the map show the stratum drawn, the numbers stay those of the true depth.
 - **Companions** (`grids/companions/`): 64 × 64 busts made like the creatures: painted at a
   higher resolution (volumes lit by the moon from the top left, strands of hair, folds of
   cloth, grain of leather), traced into pixel clusters, then the eyes, mouths and small
@@ -751,13 +758,14 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   glowing 3 × 5 runes, the Sleeping King, the King at the Window seen from behind, the
   Hollow Crown floating over a dotted outline, the Blank King drawn by his edges, Aldemar
   in plain clothes, his skin an ashen moonlit ramp rather than warm flesh); each reads under its own Age's treatment. The map shows each stratum's
-  form. At stage 3000 the Dawn, a line of light, stands in the King's place.
+  form. At stage 3000 the Dawn, a line of light, stands in the King's place; below it the
+  forms come round again with the Ages.
 - **Places** (`pixel/places.ts`, `structures/sanctum.ts`): the Sanctum of Dusk (a
   violet-to-gold dusk, a stone circle, thirteen altars with their sigils, essences rising),
   Eldra's Loom (a huge frame, the woven night on its beam, a hum running up the warp) and
-  the Dawn (a pale sky, one line of light, the road ending). Pass a place id wherever a biome
-  id goes (`renderScene`, the arena, `SceneCanvas`, which switches to the Dawn at the stage
-  cap); in a window, `<Art spec={{ kind: "place", id }} />` fills its parent at a whole scale.
+  the Dawn (a pale sky, one line of light across the road). Pass a place id wherever a biome
+  id goes (`renderScene`, the arena, `SceneCanvas`, which switches to the Dawn at stage 3000
+  only); in a window, `<Art spec={{ kind: "place", id }} />` fills its parent at a whole scale.
 - **Age marks** (`pixel/marks.ts`): solid pixels and regular dithering only (giant bones and
   a frozen sea; a colonnade and shafts of light; the sky pouring; warp threads; paper; walls
   of runes; a low moon and mist; a lamp, a hearth and a window; grey; outline; a point then a
@@ -795,6 +803,20 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   Nothing in motion is ever translucent: what comes, goes or wavers (the Lantern Queen,
   the Echo of a Walker, the Loom's flicker) drops or regains its pixels by eighths through
   an ordered 4 x 4 mask, each step cached. Only reduced motion fades, on a single frame.
+- **The air** (`pixel/atmosphere.ts`, `.scene-air`): one canvas at the screen's own
+  resolution laid exactly over the arena's, the only smooth and translucent drawing of the
+  world (AGENTS.md allows it there alone). It reads the scene canvas and what the scene says
+  of itself, and adds light: every cluster of three or more light-giving pixels of the scene
+  (windows, lanterns, braziers, crystals, the moon) blooms in a soft radial halo of its own
+  average color, added over the picture; fire (warm or violet) trembles quickly, cold light
+  breathes slowly. In still water in front of the ground line (the Mire's pools), the picture
+  standing on the ground is reflected upside down at 46 %, every row wavering sideways by whole
+  device pixels, and each light above stretches down into the water as a dashed streak. The
+  edges of the view sink into the night ink (a radial vignette to 62 %). It runs at 24 frames a
+  second, pauses while a window covers the arena, and holds a still picture with reduced
+  motion. The Ledger's scenes wear the same air (`.cutscene-air`): there the halos come from
+  the lights of the very picture drawn (they follow the camera, the actors, a King's flame)
+  and the water moves with the set's ground.
 - **The Lantern Queen** crosses the sky from left to right during a Crystal Storm, just
   under the scene's top bar, over 15 s, coming and going pixel by pixel; with reduced
   motion she holds still and only fades. Storm crystals glow gold instead of violet.
@@ -813,18 +835,41 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   lit lanterns in dotted gold halos, never over the middle. Pip holds still (no breath, no
   blink) while he dares the walker. With reduced motion each holds a single frame, and the
   Seam fades instead of shrinking.
-- **The Ledger's scenes** (`components/Cutscene.tsx`, `pixel/cutscene.ts`): a fixed layer
-  over everything on the night ink (`--bg`), the picture on the scene's own 320 x 180 grid
-  at the largest whole scale of device pixels that fits, one line under it in Cinzel
-  `--gold-2` (the King's lines under a small muted uppercase "The King"), then "Continue"
-  and "Skip" as small ghost buttons. Shots are the road's scenes (their guardian standing,
-  falling or gone) and the places of the story, in their own motion; one gives way to the
-  next through the ordered 4 x 4 mask, an eighth every 80 ms, from the night ink at the
-  start and back to it at the end. A falling guardian loses its pixels by eighths while
-  forty violet lights leave its body and climb, wavering, dimming, then blink out. The
-  line rises in 0.9 s once the shot is in. With reduced motion every shot holds its first
-  frame (the guardian already gone) and fades in over 0.4 s. Keys go to the scene first:
-  Enter or Space moves on, Escape ends, Tab moves between the two buttons.
+- **The Ledger's scenes** (`components/Cutscene.tsx`, `pixel/cutscene.ts`, shots in
+  `data/cutscenes.ts`): a fixed layer over everything on the night ink (`--bg`), the
+  picture on the scene's own 320 x 180 grid at the largest whole scale of device pixels that
+  fits, framed by 12 rows of ink at its top and bottom drawn in its own pixels (they come in
+  a row every 45 ms at the start and leave the same way). The scene's name shows over the
+  ink of a titled shot in Cinzel `--gold-2`, wide-spaced, fading in and out over 2.8 s.
+  Lines sit under the picture in Cinzel `--gold-2` (a speaker's under a small muted
+  uppercase name), coming up a word every 70 ms. "Continue" and "Skip" are small ghost
+  buttons in the top right corner at 55 % opacity, full on hover or focus. A shot is a set
+  (a road or a place drawn with its planes, a remembered face or a thing of the world (the
+  crown in the ice, 63 x 48, painted and traced, drawn up close) in its dithered halo, or the ink) seen through a camera that pans, eased, in pixels of the ground: each plane moves by
+  its depth over the ground's (0.7), so the sky stays and the near planes run, and the
+  frame at the edges parts while the camera moves and closes in where it rests. Actors
+  stand on the ground with their shadow and breathe at the arena's pace (a frame every
+  0.55 s): the biome's
+  guardian, and the walker: Aldric in their own drawing (`grids/walker.ts`), painted at four
+  times the size and traced like the creatures, seen three quarters toward the King, the
+  moon on their face; standing on guard (breathing), a stride of four drawings (0.22 s each)
+  when the road goes by, a lunge with the blade level while they strike. Every pose keeps
+  one 96 x 85 frame and one ground row. The walker's blow is a 28 px step in 0.12 s, then one frame of
+  0.1 s where the night is ink and whoever stands in it bone white, then a shake of up to
+  2 px settling over 0.35 s. A falling guardian loses its pixels by eighths while forty
+  violet lights leave its body and climb, wavering, dimming, then blink out. A waking set
+  comes up out of the ink in six palette steps, its own lights lit first. A walker on the
+  road stays put and strides while the road goes by. Shots give
+  way through the ordered 4 x 4 mask, an eighth every 80 ms, unless they cut. Sound: the
+  night's own sounds duck and the Dusk theme plays (`music.ts`): a melody in D minor at 84
+  bpm on a soft square lead through a 2200 Hz low-pass (a slow vibrato on long notes), a
+  triangle bass on every bar and the chord broken in sine eighths under it. Its hook climbs
+  A, D, E, F. Beats of a scene start it, cut it to silence in 0.06 s (the blow), or start
+  its reprise: the last four bars at 72 bpm on a music box an octave up, chords held. It
+  fades in 1.2 s when the scene ends. The blow is a swish, a low impact and the ring of steel. With reduced motion every shot is one still picture (where the pan
+  lands, the guardian already gone, no flash or shake), shots fade in over 0.4 s and lines
+  come up whole. Keys go to the scene first: Enter or Space moves on, Escape ends, Tab moves
+  between the two buttons.
 - **A chest opened at the stall** (`components/ChestOpening.tsx`, `pixel/chest.ts`, art in
   `CHESTS`): buying a relic chest or a great chest opens it over everything, on the night
   ink, on its own 80 x 100 grid at the largest whole scale its box holds (a fixed box, so the
@@ -945,7 +990,8 @@ absence (a slow chord without attack), the Quiet (every other sound ducks for 2 
 pointer or key press.
 
 No ambient layer: between two events, the game is silent. In Age X every sound arrives
-late (220 ms) and muffled (a 520 Hz low-pass). At the Dawn every sound falls silent. The
+late (220 ms) and muffled (a 520 Hz low-pass), and again in every Age X the night draws
+  below the Dawn. At the Dawn (stage 3000) every sound falls silent. The
 context sleeps while sound is off or the page hidden.
 
 Settings: a sound switch (everything) and an **Effects** slider (`settings.volume`,
@@ -995,7 +1041,10 @@ of the course.
 - The Ledger's state is never colour alone: when it fails (server away, refused, address
   to confirm) the account chip replaces its dot with a bordered badge, the `warning` picto
   and the status word (the word visually hidden under 900 px, still in the button's name),
-  and a polite live region reads it once.
+  and a polite live region reads it once. When the road waits for the Ledger (out of fates,
+  see PRODUCT.md, Anti-cheat), the badge says so before any other state, in gold
+  (`.sync-badge-waiting`, as for an address to confirm: nothing is lost, the game waits),
+  and the chip's title says why and what comes next.
 - **Colorblind colors** (setting, `.colorblind` on `<html>`): `--success` turns `#5aa9ff`,
   `--success-soft` `#cfe2ff`, `--danger-soft` `#ff8a4c`, and the rarities take their colorblind
   set. Chosen by simulating protanopia, deuteranopia and tritanopia (Machado 2009) and

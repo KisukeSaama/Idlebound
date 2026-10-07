@@ -15,7 +15,15 @@ export interface RollRow {
   reachedAt: string;
 }
 
-/** A board's value in words ("Stage 315", "12 promises"), numbers written by `format`. */
+/**
+ * A depth, whole: two walkers a few stages apart never read the same (the road has no
+ * bottom, and 10,432 must not read 10.4K).
+ */
+export function stageText(stage: number): string {
+  return String(Math.floor(stage));
+}
+
+/** A board's value in words ("Stage 315", "12 promises"), numbers written by `format` (a depth, whole). */
 export function boardValue(roll: Messages["leaderboard"], board: BoardId, value: number, format: (value: number) => string = formatNumber): string {
-  return board === "stage" ? roll.values.stage(format(value)) : roll.values[board](value, format(value));
+  return board === "stage" ? roll.values.stage(stageText(value)) : roll.values[board](value, format(value));
 }

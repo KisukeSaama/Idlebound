@@ -2,7 +2,7 @@
 
 import { createInitialState, migrateState, type GameState } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
-import { api, isUnreachable, type AccountUser, type CloudSave } from "@/lib/api";
+import { api, isUnreachable, packJournal, type AccountUser, type CloudSave } from "@/lib/api";
 import type { GameStore } from "./store";
 import { gameNow } from "@/lib/clock";
 
@@ -113,8 +113,11 @@ export class CloudSync {
   private unread = false;
   /** The stored game is being read: no upload leaves before the comparison is made. */
   private reading = false;
-  /** The session ended while an account's game was running: it is no guest's game to keep. */
-  private adrift = false;
+  /**
+   * The session ended while an account's game was running: the id of that account. The game
+   * is no guest's to keep, and no other account's to take.
+   */
+  private adrift: string | null = null;
   /** The server holds a guest's game for this browser. */
   private guestKept = false;
   /** The guest asked for a new game: the next save replaces the one the server keeps. */
@@ -222,17 +225,17 @@ export class CloudSync {
       return !isUnreachable(result);
     }
     this.unread = false;
-    this.adrift = false;
+    this.adrift = null;
     const kept = result.data.save;
     this.guestKept = kept !== null;
     if (!kept) {
       // Nothing kept yet: the first save follows the first blows.
-      this.restamp();
+      await this.restamp(true);
       this.set({ status: "idle" });
       return true;
     }
     const local = this.store.state;
-    if (isFresh(local) || local.createdAt === kept.state.createdAt) this.take(kept, result.data.elsewhere);
+    if (isFresh(local) || local.createdAt === kept.state.createdAt) this.take(kept, result.data.elsewhere, true);
     // Played on while the kept game could not be read: the walker chooses.
     else this.set({ pendingChoice: kept, status: "idle" });
     return true;
@@ -249,7 +252,7 @@ export class CloudSync {
     }
     const kept = result.data.save;
     this.guestKept = kept !== null;
-    if (kept) this.place(kept);
+    if (kept) this.place(kept, true);
     return true;
   }
 
@@ -308,7 +311,13 @@ export class CloudSync {
   async connect(user: AccountUser): Promise<boolean> {
     // A guest's save still on its way would be taken for the account's: let it land first.
     if (this.flight) await this.flight;
-    this.adrift = false;
+    // The game in hand is another account's, whose session ended here: it stays with that
+    // account, and this one starts from a new game (or finds its own).
+    if (this.adrift !== null && this.adrift !== user.id) await this.freshGame(false);
+    // The same account signs in again: what was played since its session ended carries on
+    // from the save it built on, if nothing else was saved meanwhile.
+    const resumed = this.adrift === user.id ? this.revision : null;
+    this.adrift = null;
     this.startOver = false;
     this.reading = true;
     this.set({ user, status: "syncing", message: null, revision: null });
@@ -324,12 +333,17 @@ export class CloudSync {
     const local = this.store.state;
     if (!cloud) {
       // First save of the account: the game played as a guest becomes the account's game.
-      this.restamp();
+      await this.restamp(false);
       await this.upload(null, false);
       return true;
     }
+    if (resumed === cloud.revision && local.createdAt === cloud.state.createdAt && !result.data.elsewhere) {
+      this.set({ revision: cloud.revision });
+      await this.upload(cloud.revision, false);
+      return true;
+    }
     if (isFresh(local) || local.createdAt === cloud.state.createdAt) {
-      this.take(cloud, result.data.elsewhere);
+      this.take(cloud, result.data.elsewhere, false);
       return true;
     }
     // The guest game differs from the account's game: the player chooses.
@@ -364,13 +378,13 @@ export class CloudSync {
   }
 
   /** The stored game is this page's game: it runs here, or waits while another page plays it. */
-  private take(cloud: CloudSave, elsewhere: boolean) {
+  private take(cloud: CloudSave, elsewhere: boolean, guest: boolean) {
     if (!elsewhere) {
-      this.adopt(cloud);
+      this.adopt(cloud, guest);
       return;
     }
     // Shown as the server keeps it, standing still, under the question.
-    this.place(cloud);
+    this.place(cloud, guest);
     this.standAside("open", cloud.revision);
   }
 
@@ -394,7 +408,7 @@ export class CloudSync {
       return;
     }
     const cloud = result.data.save;
-    if (cloud) this.adopt(cloud);
+    if (cloud) this.adopt(cloud, guest);
     // The game is gone from the server meanwhile: the one in hand is kept from scratch.
     else this.set({ pendingChoice: null, revision: null, status: "idle", message: null });
     const stood = this.elsewhere !== null;
@@ -403,9 +417,9 @@ export class CloudSync {
     if (!cloud) void this.sync();
   }
 
-  adopt(cloud: CloudSave) {
-    const awayMs = this.place(cloud);
-    this.store.apply((engine) => engine.welcomeBack(awayMs));
+  adopt(cloud: CloudSave, guest = this.user === null) {
+    const awayMs = this.place(cloud, guest);
+    this.store.apply({ type: "welcome", ms: Math.max(0, Math.round(awayMs)) });
     this.lastUploadAt = Date.now();
     this.set({ pendingChoice: null, status: this.saveBlocked() ? "unverified" : "synced", revision: cloud.revision, lastSyncAt: Date.now(), message: null });
     // The account's game was taken: the guest's game this browser carried is let go.
@@ -413,16 +427,28 @@ export class CloudSync {
   }
 
   /**
-   * A game nobody has touched yet is born again on the game's clock, now that the server told
-   * its time: born on a device's clock running ahead, it would claim more time than it lived.
+   * A game nobody has touched yet is born again as the server begins it: on the server's
+   * clock (born on a device's clock running ahead, it would claim more time than it lived),
+   * with the fates the server keeps for it.
    */
-  private restamp() {
+  private async restamp(guest: boolean) {
     const state = this.store.state;
-    if (isUntouched(state) && state.maxStageEver === 1) this.store.replaceState(createInitialState(gameNow()));
+    if (isUntouched(state) && state.maxStageEver === 1) await this.freshGame(guest);
   }
 
-  /** Runs a stored game in this page. Returns how long the walker was gone (Welcome Back). */
-  private place(cloud: CloudSave): number {
+  /**
+   * A new game, as the server begins it (the account's, or with `guest` this browser's). The
+   * server unreachable, the game waits for its fates; the next sync asks again. False then.
+   */
+  private async freshGame(guest: boolean): Promise<boolean> {
+    const result = await api.newGame(guest);
+    const createdAt = result.ok ? result.data.createdAt : gameNow();
+    this.store.replaceState(createInitialState(createdAt), { base: { revision: null, createdAt }, fates: result.ok ? result.data.fates : null });
+    return result.ok;
+  }
+
+  /** Runs a stored game in this page (`guest`: the one kept for this browser). Returns how long the walker was gone (Welcome Back). */
+  private place(cloud: CloudSave, guest: boolean): number {
     // A save written by an older version gets the same migration as on the server
     // (new fields, refunded altar levels) before it runs.
     const state = migrateState(cloud.state) as GameState;
@@ -430,7 +456,11 @@ export class CloudSync {
     const awayMs = gameNow() - state.lastTickAt;
     // The company walked on while the game was closed: the first tick catches that time up,
     // never more than the server saw pass since the save (a device clock can be wrong).
-    this.store.replaceState(state, { awayMs: Math.min(awayMs, cloud.elapsedMs) });
+    this.store.replaceState(state, {
+      awayMs: Math.min(awayMs, cloud.elapsedMs),
+      base: { revision: cloud.revision, createdAt: state.createdAt, ...(guest ? { guest: true } : {}) },
+      fates: cloud.fates
+    });
     return awayMs;
   }
 
@@ -465,7 +495,7 @@ export class CloudSync {
    */
   private upload(baseRevision: number | null, replace: boolean, keepalive = false): Promise<boolean> {
     if (this.flight) return this.flight;
-    if (this.adrift) return Promise.resolve(false);
+    if (this.adrift !== null) return Promise.resolve(false);
     this.flight = this.send(baseRevision, replace, keepalive).finally(() => {
       this.flight = null;
     });
@@ -479,14 +509,22 @@ export class CloudSync {
     if (!keepalive) this.set({ status: "syncing" });
     // The server counts the time of the next save from the moment this one arrives: a game
     // sent before it caught up (the page just woke) would have that catch-up refused later.
-    this.store.advance();
-    // The state is serialized as the request leaves, before any await: no copy is needed.
+    // The save leaves with the journal since the last one kept (see `GameStore.outgoing`).
+    const outgoing = this.store.outgoing();
+    const { state } = outgoing.checkpoint;
     // A keepalive request is capped at 64 KB by browsers: a larger save goes as a plain one.
-    const lasting = keepalive && new TextEncoder().encode(JSON.stringify(this.store.state)).length <= KEEPALIVE_MAX_BYTES;
+    // It leaves at once (the page is going), so its journal is not compressed.
+    const lasting = keepalive && new TextEncoder().encode(JSON.stringify({ state, journal: outgoing.journal })).length <= KEEPALIVE_MAX_BYTES;
+    const journal = lasting ? outgoing.journal : await packJournal(outgoing.journal);
     // Out of sight, the page lets the game go once it is kept: another page opens it at once.
     const release = document.visibilityState === "hidden";
-    const result = await api.putSave(this.store.state, baseRevision, { replace, keepalive: lasting, guest, holder: this.holder, release });
+    const result = await api.putSave(state, baseRevision, { replace, keepalive: lasting, guest, holder: this.holder, release, journal, more: outgoing.more });
     if (result.ok) {
+      this.store.kept(outgoing.checkpoint, result.data.revision, guest, result.data.fates);
+      // The server kept the game it replayed: the page plays on from it.
+      if (result.data.replay) this.store.correct(result.data.replay.state, result.data.replay.runtime);
+      // A long journal goes in several saves: the next part follows soon.
+      if (outgoing.more) this.requestSave();
       if (guest) {
         this.guestKept = true;
         if (replace) this.startOver = false;
@@ -499,7 +537,7 @@ export class CloudSync {
     switch (result.status) {
       case 401:
         // The account's game is not a guest's to keep: nothing is sent until the walker signs in.
-        this.adrift = true;
+        this.adrift = this.user?.id ?? null;
         this.set({ user: null, status: "offline", message: currentMessages().hud.errors.sessionExpired });
         break;
       case 409: {
@@ -549,7 +587,7 @@ export class CloudSync {
 
   /** Schedules an early save after a player action or a milestone. */
   requestSave() {
-    if (this.adrift || this.elsewhere || this.pendingChoice || this.status === "rejected" || this.status === "unverified" || this.saveTimer) return;
+    if (this.adrift !== null || this.elsewhere || this.pendingChoice || this.status === "rejected" || this.status === "unverified" || this.saveTimer) return;
     const delay = Math.max(SAVE_DEBOUNCE_MS, this.lastUploadAt + MIN_UPLOAD_GAP_MS - Date.now());
     this.saveTimer = setTimeout(() => {
       this.saveTimer = null;
@@ -560,7 +598,7 @@ export class CloudSync {
 
   /** Periodic sync, after a player action, on page hide, or on logout. */
   async sync(options: { force?: boolean; keepalive?: boolean } = {}) {
-    if (this.adrift || this.elsewhere || this.pendingChoice || this.reading) return;
+    if (this.adrift !== null || this.elsewhere || this.pendingChoice || this.reading) return;
     // The stored game was never read (server away at sign-in, or at load): read it first,
     // never write over it blind. A page-hide save has no time for that.
     if (this.unread) {
@@ -568,6 +606,11 @@ export class CloudSync {
       return;
     }
     const guest = this.user === null;
+    // A new game whose fates never came (the server was away when it began): asked again.
+    if (this.revision === null && isUntouched(this.store.state) && this.store.waiting) {
+      await this.freshGame(guest);
+      return;
+    }
     // A guest who has not struck a blow has nothing to keep: a page merely opened leaves no
     // game on the server.
     if (guest && this.revision === null && isUntouched(this.store.state)) return;
@@ -603,24 +646,24 @@ export class CloudSync {
 
   /** The stored game (an account's or a guest's) is loaded, and the server takes its saves: it can be handed over. */
   keepsGame() {
-    return !this.adrift && !this.elsewhere && this.revision !== null && !this.unread && !this.pendingChoice && this.status !== "rejected" && this.status !== "unverified";
+    return this.adrift === null && !this.elsewhere && this.revision !== null && !this.unread && !this.pendingChoice && this.status !== "rejected" && this.status !== "unverified";
   }
 
   /** Leaving the page now would lose what was played: the last saves failed, or the session ended. */
   wouldLose() {
-    return this.status === "error" || this.adrift;
+    return this.status === "error" || this.adrift !== null;
   }
 
   /**
    * Starts a new guest game; the one the server keeps for this browser is replaced by the
    * next save. An account's game is never erased: signed in, nothing happens.
    */
-  newGame() {
+  async newGame() {
     if (this.user) return;
-    this.store.replaceState(createInitialState(gameNow()));
-    if (this.adrift) {
+    await this.freshGame(true);
+    if (this.adrift !== null) {
       // The account's game stays on the account; from here on, a guest walks.
-      this.adrift = false;
+      this.adrift = null;
       this.set({ status: "idle", revision: null, lastSyncAt: null, message: null });
     }
     this.startOver = this.revision !== null;
@@ -644,11 +687,11 @@ export class CloudSync {
    */
   private async leave() {
     this.unread = false;
-    this.adrift = false;
+    this.adrift = null;
     this.startOver = false;
     const stood = this.elsewhere !== null;
     this.set({ user: null, status: "idle", revision: null, lastSyncAt: null, message: null, pendingChoice: null, elsewhere: null });
-    this.store.replaceState(createInitialState(gameNow()));
+    await this.freshGame(true);
     if (stood) this.store.start();
     if (this.guestKept) await this.enter();
   }

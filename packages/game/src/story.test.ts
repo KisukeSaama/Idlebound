@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
-import { chronicleCount, chronicleEntries, milestoneReached, sourceCount, sourceEntries, unreadChronicle } from "./chronicle";
+import { CHRONICLE_SOURCES, chronicleCount, chronicleEntries, milestoneReached, sourceCount, sourceEntries, unreadChronicle } from "./chronicle";
 import { chronicleText, eclipseWord, gameText, kingWord, monsterName, regaliaWord } from "./content";
 import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
 import { ALTAR_BY_ID } from "./data/altars";
@@ -21,7 +21,7 @@ import {
 } from "./data/lore";
 import { NAMED_RELICS } from "./data/relics";
 import { ERA_COUNT, MILESTONES, keystonesFound } from "./data/strata";
-import { GameEngine, canDescend, descentPreview } from "./engine";
+import { GameEngine, STEP_MS, canDescend, descentPreview } from "./engine";
 import { MAX_TREASURE_CHANCE, RESPAWN_SECONDS, WAGER_MAX_GOLD, bossHp, derive, essencesForStage, skillCooldownMultiplier, stageGold, stageHp, wagerGold, wandererSkip } from "./formulas";
 import { LOCALES } from "./i18n";
 import { generateItem } from "./loot";
@@ -52,7 +52,7 @@ function slay(engine: GameEngine, now: number) {
 function respawn(engine: GameEngine, now: number): number {
   let at = now;
   while (!engine.state.monster) {
-    at += 100;
+    at += STEP_MS;
     engine.tick(at);
   }
   return at;
@@ -257,8 +257,12 @@ describe("the Chronicle", () => {
     state.lore.lessons = ["aldric-10"];
     state.lore.altars = ["might"];
     state.lore.events = ["seam"];
+    state.recognition = { eldra: RECOGNITION_TIERS[4], kaelen: RECOGNITION_TIERS[3], nameless: RECOGNITION_TIERS[1] };
+    state.promises = { eldra: 2, kaelen: 1 };
     const entries = chronicleEntries(state);
     expect(entries.length).toBe(chronicleCount(state));
+    // Counted without building them, every source holds as many entries as it builds.
+    for (const source of CHRONICLE_SOURCES) expect(sourceCount(state, source), source).toBe(sourceEntries(state, source).length);
     expect(sourceCount(state, "keystone")).toBe(5);
     // Eighty Words, and the eleven Eclipses fallen before the eightieth dusk.
     expect(sourceCount(state, "king")).toBe(91);

@@ -1,0 +1,1 @@
+CREATE INDEX "saves_game_created_at_idx" ON "saves" USING btree ("game_created_at");

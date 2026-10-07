@@ -5,9 +5,14 @@
 import { ALTAR_BY_ID, legacyHarvestCost, legacyHarvestPrice } from "./data/altars";
 import { WEAVE_LEVEL_MAX, weaveTotalCost } from "./data/descent";
 import { LEGACY_RECOGNITION_TIERS, recognitionTierByRuns } from "./data/lore";
+import { NAMED_BY_ID } from "./data/relics";
 import { crystalEssenceReward } from "./formulas";
-import { seedFrom } from "./rng";
+import { emptyFates } from "./fates";
+import { generateItem } from "./loot";
+import { seededRng } from "./rng";
 import { ALTAR_REWORK_NOTICE, HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
+import { pow as dPow } from "./dmath";
+import type { Item } from "./types";
 
 /** Fills a save with the fields added since it was written. */
 export function migrateState(raw: unknown): unknown {
@@ -77,9 +82,71 @@ export function migrateState(raw: unknown): unknown {
     const woven = typeof lifetime.threads === "number" && Number.isFinite(lifetime.threads) ? lifetime.threads : 0;
     lifetime.weavings = Math.max(0, Math.floor(Math.min(descents, woven)));
   }
-  if (typeof input.rngState !== "number") merged.rngState = seedFrom(typeof merged.createdAt === "number" ? merged.createdAt : 0);
+  // Version 15 keeps no generator in the save: the server keeps the seeds of each game's fates
+  // (see `fates.ts`), the save only counts the occasions used. An older save starts counting.
+  delete merged.rngState;
+  merged.fates = { ...emptyFates(), ...(typeof input.fates === "object" && input.fates !== null ? input.fates : {}) };
+  // Version 16 takes back the Harvest, the Dawn and the Morning of versions 14 and 15.
+  if (version < 16) forgetTheMorning(merged);
   merged.version = SAVE_VERSION;
   return merged;
+}
+
+/** The marks the scenes of the Count and the Morning left in a save of versions 14 and 15. */
+const MORNING_SCENES = ["scene:tally", "scene:morning"];
+
+/**
+ * Versions 14 and 15 let the walker spare companions at dusk, and end their walk at the
+ * Morning, which took back everything but the Chronicle. Both are gone: nights spared leave
+ * nothing behind, and a walk the Morning ended gets back what it had built. Its deepest
+ * stage stands again, every essence and thread it gathered comes back to be spent anew at
+ * the altars and the Loom, and every named relic it had found is in hand again.
+ */
+function forgetTheMorning(merged: Record<string, unknown>) {
+  const dawn = merged.dawn as { mornings?: unknown; depth?: unknown; before?: { essencesEarned?: unknown; threads?: unknown }; legends?: unknown } | undefined;
+  delete merged.dawn;
+  if (Array.isArray(merged.ascensions)) {
+    merged.ascensions = merged.ascensions.map((record) => {
+      if (!record || typeof record !== "object") return record;
+      const { spared: _spared, ...rest } = record as Record<string, unknown>;
+      return rest;
+    });
+  }
+  const tutorial = merged.tutorial as { done?: unknown };
+  if (Array.isArray(tutorial.done)) merged.tutorial = { ...tutorial, done: tutorial.done.filter((id) => !MORNING_SCENES.includes(id)) };
+  const seen = (merged.lore as { seen?: unknown }).seen;
+  if (seen && typeof seen === "object") {
+    const { spared: _spared, ...rest } = seen as Record<string, unknown>;
+    (merged.lore as Record<string, unknown>).seen = rest;
+  }
+  if (!dawn || !(typeof dawn.mornings === "number" && dawn.mornings > 0)) return;
+  const number = (value: unknown) => (typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0);
+  if (typeof merged.maxStageEver === "number") merged.maxStageEver = Math.max(merged.maxStageEver, Math.floor(number(dawn.depth)));
+  if (typeof merged.essences === "number") merged.essences += number(dawn.before?.essencesEarned);
+  if (typeof merged.threads === "number") merged.threads += number(dawn.before?.threads);
+  const named = Array.isArray(merged.named) ? [...(merged.named as string[])] : [];
+  const inventory = Array.isArray(merged.inventory) ? [...(merged.inventory as Item[])] : [];
+  const level = Math.max(1, (typeof merged.maxStageEver === "number" ? merged.maxStageEver : 1) - 1);
+  const createdAt = typeof merged.createdAt === "number" ? merged.createdAt : 0;
+  for (const id of Array.isArray(dawn.legends) ? dawn.legends : []) {
+    const def = typeof id === "string" ? NAMED_BY_ID[id] : undefined;
+    if (!def || named.includes(def.id)) continue;
+    // Drawn from the game and the relic alone: the server and every device draw the same one.
+    const item = generateItem(seededRng(createdAt + hashOf(def.id)), level, { slot: def.slot, rarity: def.rarity });
+    item.named = def.id;
+    item.locked = true;
+    named.push(def.id);
+    inventory.push(item);
+  }
+  merged.named = named;
+  merged.inventory = inventory;
+}
+
+/** A string's 32-bit FNV-1a hash. */
+function hashOf(text: string): number {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < text.length; index += 1) hash = Math.imul(hash ^ text.charCodeAt(index), 0x01000193);
+  return hash >>> 0;
 }
 
 /** Levels of the Harvest an older save may hold before the refund gives up (a forged level is left to the checks). */
@@ -122,7 +189,7 @@ const LEGACY_PLENTY = { base: 2, growth: 1.6 };
 /** Threads a save written before version 11 spent on its Warp of Plenty. */
 export function legacyPlentySpend(level: number): number {
   let total = 0;
-  for (let n = 0; n < level; n += 1) total += Math.ceil(LEGACY_PLENTY.base * Math.pow(LEGACY_PLENTY.growth, n));
+  for (let n = 0; n < level; n += 1) total += Math.ceil(LEGACY_PLENTY.base * dPow(LEGACY_PLENTY.growth, n));
   return total;
 }
 
@@ -240,7 +307,7 @@ export function legacyAltarSpend(id: string, level: number): number {
   const legacy = Object.hasOwn(LEGACY_ALTARS, id) ? LEGACY_ALTARS[id] : undefined;
   if (!legacy || !(level > 0)) return 0;
   if (legacy.linear) return (legacy.base * level * (level + 1)) / 2;
-  return (legacy.base * (Math.pow(legacy.growth, level) - 1)) / (legacy.growth - 1);
+  return (legacy.base * (dPow(legacy.growth, level) - 1)) / (legacy.growth - 1);
 }
 
 /**

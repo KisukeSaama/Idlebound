@@ -23,7 +23,7 @@ export function CrystalView() {
       onPointerDown={(event) => {
         event.stopPropagation();
         event.preventDefault();
-        store.act((engine, now) => engine.clickCrystal(now));
+        store.act({ type: "crystal" });
       }}
     >
       <PixelSprite source={crystalSource()} size={76} />

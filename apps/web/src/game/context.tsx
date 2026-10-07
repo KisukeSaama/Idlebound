@@ -1,6 +1,6 @@
 "use client";
 
-import { formatNumber, type CutsceneId } from "@idlebound/game";
+import { formatNumber, lifeBits, runBits, type CutsceneId } from "@idlebound/game";
 import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
 import { currentMessages } from "@/i18n/client";
 import type { ChestId } from "@idlebound/game/art";
@@ -107,4 +107,23 @@ export function useFormat() {
   const { store } = useGameContext();
   const notation = store.state.settings.notation;
   return useCallback((value: number) => formatNumber(value, notation), [notation]);
+}
+
+/**
+ * Formats the night's HP, gold and damage: past stage 3500 the engine writes them in a larger
+ * unit (`scale.ts` in the game), read back here.
+ */
+export function useMagnitude() {
+  const { store } = useGameContext();
+  const notation = store.state.settings.notation;
+  const bits = runBits(store.state);
+  return useCallback((value: number) => formatNumber(value, notation, bits), [notation, bits]);
+}
+
+/** The same for the totals over every night (gold earned in all, the hardest blow ever). */
+export function useLifeMagnitude() {
+  const { store } = useGameContext();
+  const notation = store.state.settings.notation;
+  const bits = lifeBits(store.state);
+  return useCallback((value: number) => formatNumber(value, notation, bits), [notation, bits]);
 }

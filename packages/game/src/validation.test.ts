@@ -258,29 +258,16 @@ describe("save versions and lineages", () => {
   });
 });
 
-describe("the engine's generator", () => {
-  it("lives in the save: a reload draws the same fates, and the next draws move on", () => {
-    const state = createInitialState(T0);
-    const first = new GameEngine(structuredClone(state), undefined, T0);
-    const again = new GameEngine(structuredClone(state), undefined, T0);
-    const draws = [first.rng(), first.rng(), first.rng()];
-    expect([again.rng(), again.rng(), again.rng()]).toEqual(draws);
-    expect(first.state.rngState).not.toBe(state.rngState);
-    const reloaded = new GameEngine(structuredClone(first.state), undefined, T0);
-    expect(reloaded.rng()).toBe(first.rng());
-  });
-});
-
 describe("save version 9", () => {
   it("loads a version 8 save, verifies it and plays on", () => {
     const { engine, now } = honestGame(10);
     const legacy = JSON.parse(JSON.stringify(engine.state)) as Record<string, unknown>;
     legacy.version = 8;
-    delete legacy.rngState;
+    delete legacy.fates;
     delete (legacy.lifetime as Record<string, unknown>).ascensionEssences;
     const migrated = parseState(legacy);
     expect(migrated.version).toBe(SAVE_VERSION);
-    expect(typeof migrated.rngState).toBe("number");
+    expect(migrated.fates.strike).toBe(0);
     expect(verifyState(migrated, now)).toEqual([]);
     const next = new GameEngine(migrated, undefined, now);
     const later = playBot(next, now, 5 * 60, { clicksPerSecond: 5 });

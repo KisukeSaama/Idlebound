@@ -13,6 +13,11 @@ export const account = defineMessages({
       rejected: "Refusée par le Grand Livre",
       unverified: "E-mail à confirmer"
     },
+    /** The game stands still: no fates known ahead until the server answers (see store.waiting). */
+    waiting: {
+      label: "La route attend le Grand Livre",
+      title: "Le Grand Livre ne répond plus depuis un moment : la route s'arrête là où il peut encore la lire, et reprend dès qu'il répond. Le temps passé compte comme une absence."
+    },
     ledger: {
       guest: "Marcheur sans nom",
       guestPlain: "Invité : ta partie est gardée pour ce navigateur.",
@@ -112,6 +117,10 @@ export const account = defineMessages({
       error: "Server unreachable",
       rejected: "Refused by the Ledger",
       unverified: "E-mail not confirmed"
+    },
+    waiting: {
+      label: "The road waits for the Ledger",
+      title: "The Ledger has not answered for a while: the road stops where it can still read it, and goes on as soon as it answers. The time waited counts as time away."
     },
     ledger: {
       guest: "Unnamed walker",

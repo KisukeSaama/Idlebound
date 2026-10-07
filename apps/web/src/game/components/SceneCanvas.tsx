@@ -1,9 +1,10 @@
 "use client";
 
-import { BIOMES, MAX_STAGE, STAGES_PER_BIOME, biomeForStage, eraForStage, remembranceNight, type BiomeDef, type GameState, type MonsterState } from "@idlebound/game";
+import { BIOMES, DAWN_STAGE, STAGES_PER_BIOME, biomeForStage, drawnEraForStage, remembranceNight, type BiomeDef, type GameState, type MonsterState } from "@idlebound/game";
 import { useEffect, useRef, type RefObject } from "react";
 import { useGame } from "../context";
 import { ArenaRenderer, type Stretch } from "../pixel/arena";
+import { Atmosphere } from "../pixel/atmosphere";
 import { pageRect, prefersReducedMotion } from "../pixel/surface";
 import { gameNow } from "@/lib/clock";
 
@@ -40,9 +41,10 @@ export function monsterOnPage(): { left: number; top: number; right: number; bot
 /**
  * The combat scene's canvas (behind the HUD): the biome's layers, the monster and every
  * effect, drawn by the pixel arena renderer. It follows the state through plain method
- * calls and warms the cache with the next stretch of road while the browser idles. At the
- * last stage the scene is the Dawn (the edge of the night) whatever the biome; with "Keep
- * the night dark" every stratum keeps the backgrounds of the Kingdom.
+ * calls and warms the cache with the next stretch of road while the browser idles. At stage
+ * 3000 the scene is the Dawn (the edge of the night) whatever the biome, and below it the
+ * night is drawn again from its first stratum (`era` is the stratum drawn); with "Keep the
+ * night dark" every stratum keeps the backgrounds of the Kingdom.
  */
 export function SceneCanvas({
   sectionRef,
@@ -70,6 +72,7 @@ export function SceneCanvas({
   const { state, store } = useGame();
   const darkNight = darkNightProp ?? state.settings.darkNight ?? false;
   const canvas = useRef<HTMLCanvasElement>(null);
+  const airCanvas = useRef<HTMLCanvasElement>(null);
   const reducedSetting = state.settings.reducedMotion;
   // The Last Second: the Keep's gargoyle has lost a claw.
   const clawless = state.secrets.includes("last-second");
@@ -82,6 +85,7 @@ export function SceneCanvas({
     if (!element || !section || !arena) return;
     const arenaRenderer = new ArenaRenderer(element);
     renderer.current = arenaRenderer;
+    if (airCanvas.current) arenaRenderer.attachAir(new Atmosphere(airCanvas.current, element));
     active = { renderer: arenaRenderer, canvas: element };
     arenaRenderer.setCovered(covers > 0);
     const fit = () => {
@@ -115,14 +119,14 @@ export function SceneCanvas({
     return () => media.removeEventListener("change", apply);
   }, [renderer, reducedSetting]);
 
-  const sceneId = state.stage >= MAX_STAGE ? "dawn" : biomeId;
+  const sceneId = state.stage === DAWN_STAGE ? "dawn" : biomeId;
   useEffect(() => {
     renderer.current?.setScene(sceneId, era, fullMoon, darkNight, clawless);
   }, [renderer, sceneId, era, fullMoon, darkNight, clawless]);
 
   // A Crystal Storm: the Lantern Queen crosses the sky.
   useEffect(() => store.onFx((event) => {
-    if (event.type === "storm") renderer.current?.storm(eraForStage(store.state.stage));
+    if (event.type === "storm") renderer.current?.storm(drawnEraForStage(store.state.stage));
   }), [renderer, store]);
 
   useEffect(() => {
@@ -137,7 +141,7 @@ export function SceneCanvas({
   useEffect(() => {
     const show = () => {
       const live = store.state.monster;
-      renderer.current?.setMonster(live ? { id: live.id, kind: live.kind, event: live.event, eclipse: live.eclipse, wager: live.wager, hp: live.hp, maxHp: live.maxHp } : null, monsterKeyOf(store.state), eraForStage(store.state.stage));
+      renderer.current?.setMonster(live ? { id: live.id, kind: live.kind, event: live.event, eclipse: live.eclipse, wager: live.wager, hp: live.hp, maxHp: live.maxHp } : null, monsterKeyOf(store.state), drawnEraForStage(store.state.stage));
     };
     show();
     return store.onFx((event) => {
@@ -152,16 +156,16 @@ export function SceneCanvas({
   }, [renderer, walker, era]);
 
   // A Remembrance Night, by the walker's own calendar: lanterns hang in the scene.
-  const remembrance = remembranceNight(new Date()) !== null;
+  const remembrance = remembranceNight(gameNow(), state.zone) !== null;
   useEffect(() => {
     renderer.current?.setRemembrance(remembrance);
   }, [renderer, remembrance]);
 
-  // The next stretch of road: its biome (the Dawn at the last stage) and its era.
+  // The next stretch of road: its biome (the Dawn at stage 3000) and the stratum drawn there.
   const nextStage = stage + STAGES_PER_BIOME;
   const nextBiome = biomeForStage(nextStage);
-  const nextSceneId = nextStage >= MAX_STAGE ? "dawn" : nextBiome.id;
-  const nextEra = eraForStage(nextStage);
+  const nextSceneId = nextStage === DAWN_STAGE ? "dawn" : nextBiome.id;
+  const nextEra = drawnEraForStage(nextStage);
   useEffect(() => {
     // This stretch and the next, scenes and creatures, generated while the browser idles.
     const creatures = (biome: BiomeDef) => [...biome.monsters, biome.miniBoss, biome.boss].map((def) => def.id);
@@ -173,5 +177,10 @@ export function SceneCanvas({
     renderer.current?.prepare(stretches);
   }, [renderer, biomeId, sceneId, era, nextBiome, nextSceneId, nextEra, fullMoon, darkNight, clawless]);
 
-  return <canvas ref={canvas} className="scene-canvas" aria-hidden="true" />;
+  return (
+    <>
+      <canvas ref={canvas} className="scene-canvas" aria-hidden="true" />
+      <canvas ref={airCanvas} className="scene-air" aria-hidden="true" />
+    </>
+  );
 }

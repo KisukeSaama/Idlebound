@@ -1,5 +1,6 @@
 import type { AltarDef, AltarId } from "../types";
 import { lookup } from "./lookup";
+import { pow as dPow } from "../dmath";
 
 /**
  * Altars: permanent upgrades bought with essences. Names and descriptions live in `content/`.
@@ -40,13 +41,13 @@ const LEGACY_HARVEST = { costBase: 5, costGrowth: 1.3 };
 
 /** What level `level` of the Harvest cost an older save (rounded up, as it was paid). */
 export function legacyHarvestPrice(level: number): number {
-  return Math.ceil(LEGACY_HARVEST.costBase * Math.pow(LEGACY_HARVEST.costGrowth, level));
+  return Math.ceil(LEGACY_HARVEST.costBase * dPow(LEGACY_HARVEST.costGrowth, level));
 }
 
 /** Essences an older save spent to raise the Harvest to `level` at the least (closed form, a hair under the prices paid). */
 export function legacyHarvestCost(level: number): number {
   if (level <= 0) return 0;
-  return (LEGACY_HARVEST.costBase * (Math.pow(LEGACY_HARVEST.costGrowth, level) - 1)) / (LEGACY_HARVEST.costGrowth - 1);
+  return (LEGACY_HARVEST.costBase * (dPow(LEGACY_HARVEST.costGrowth, level) - 1)) / (LEGACY_HARVEST.costGrowth - 1);
 }
 
 /**
@@ -55,7 +56,7 @@ export function legacyHarvestCost(level: number): number {
  */
 export function altarEffect(altar: AltarDef, level: number, maxLevel = altar.maxLevel): number {
   const capped = maxLevel > 0 ? Math.min(level, maxLevel) : level;
-  return altar.stacking === "mult" ? Math.pow(1 + altar.valuePerLevel, capped) - 1 : capped * altar.valuePerLevel;
+  return altar.stacking === "mult" ? dPow(1 + altar.valuePerLevel, capped) - 1 : capped * altar.valuePerLevel;
 }
 
 export function altarCost(id: AltarId, level: number, maxLevel = ALTAR_BY_ID[id].maxLevel): number {
@@ -66,7 +67,7 @@ export function altarCost(id: AltarId, level: number, maxLevel = ALTAR_BY_ID[id]
 
 /** Price of a level ignoring the maximum. */
 export function altarLevelPrice(altar: AltarDef, level: number): number {
-  return Math.ceil(altar.costBase * Math.pow(altar.costGrowth, level));
+  return Math.ceil(altar.costBase * dPow(altar.costGrowth, level));
 }
 
 /**
@@ -77,5 +78,5 @@ export function altarLevelPrice(altar: AltarDef, level: number): number {
 export function altarTotalCost(id: AltarId, level: number): number {
   const altar = ALTAR_BY_ID[id];
   if (level <= 0) return 0;
-  return (altar.costBase * (Math.pow(altar.costGrowth, level) - 1)) / (altar.costGrowth - 1);
+  return (altar.costBase * (dPow(altar.costGrowth, level) - 1)) / (altar.costGrowth - 1);
 }

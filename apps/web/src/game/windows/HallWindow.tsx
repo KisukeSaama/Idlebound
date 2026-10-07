@@ -40,7 +40,7 @@ import { useI18n } from "@/i18n/client";
 import type { Messages } from "@/i18n/messages";
 import { BOARD_IDS, api, type BoardId, type LeaderboardData, type RollRow } from "@/lib/api";
 import { boardValue } from "@/lib/boards";
-import { perPublish, useCloud, useFormat, useGame, useStoreRef, useUi } from "../context";
+import { perPublish, useCloud, useFormat, useGame, useLifeMagnitude, useMagnitude, useStoreRef, useUi } from "../context";
 import { Picto, TrophyIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PixelSprite } from "../pixel/PixelSprite";
@@ -229,12 +229,7 @@ function Chronicle() {
   useEffect(() => {
     const current = store.state;
     if (CHRONICLE_SOURCES.every((source) => seenOf(current, source) >= sourceCount(current, source))) return;
-    store.act((engine) => {
-      for (const source of CHRONICLE_SOURCES) {
-        const count = sourceCount(engine.state, source);
-        if (seenOf(engine.state, source) < count) engine.state.lore.seen[source] = count;
-      }
-    });
+    store.act({ type: "readAll" });
   }, [store, total]);
   return (
     <div className="chronicle">
@@ -356,12 +351,12 @@ const NightList = memo(function NightList({ nights, descents, records }: { night
     for (let index = history.length - 1; index >= 0 && out.length < limit; index -= 1) {
       const record = history[index];
       if (record.threads !== undefined) {
-        out.push({ key: index, text: text.descentLine(fmt(descents - descentsAfter), fmt(record.maxStage), fmt(record.threads)), word: "" });
+        out.push({ key: index, text: text.descentLine(fmt(descents - descentsAfter), String(record.maxStage), fmt(record.threads)), word: "" });
         descentsAfter += 1;
       } else {
         const night = nights - nightsAfter;
         const word = kingWord(night, locale);
-        out.push({ key: index, text: text.nightLine(fmt(night), fmt(record.maxStage), fmt(record.essences)), word: word ? text.kingSaid(word) : "" });
+        out.push({ key: index, text: text.nightLine(fmt(night), String(record.maxStage), fmt(record.essences)), word: word ? text.kingSaid(word) : "" });
         nightsAfter += 1;
       }
     }
@@ -390,6 +385,8 @@ function Stats() {
   const label = text.stats;
   const more = t.chronicle.stats;
   const fmt = useFormat();
+  const magnitude = useMagnitude();
+  const life = useLifeMagnitude();
   const duration = (seconds: number) => formatDuration(seconds, locale);
   const met = bestiaryMet(state);
   const fragments = chronicleCount(state);
@@ -400,10 +397,10 @@ function Stats() {
     [label.kills, fmt(state.run.kills), fmt(state.lifetime.kills)],
     [label.bosses, fmt(state.run.bosses), fmt(state.lifetime.bosses)],
     [label.treasures, fmt(state.run.treasures), fmt(state.lifetime.treasures)],
-    [label.goldEarned, fmt(state.run.goldEarned), fmt(state.lifetime.goldEarned)],
+    [label.goldEarned, magnitude(state.run.goldEarned), life(state.lifetime.goldEarned)],
     [label.crystals, fmt(state.run.crystals), fmt(state.lifetime.crystals)],
     [label.skillsUsed, fmt(state.run.skillsUsed), fmt(state.lifetime.skillsUsed)],
-    [label.maxHit, fmt(state.run.maxHit), fmt(state.lifetime.maxHit)]
+    [label.maxHit, magnitude(state.run.maxHit), life(state.lifetime.maxHit)]
   ];
   // The Ledger's later pages appear once there is something to write on them.
   const optional: [string, string, boolean][] = [
@@ -415,7 +412,7 @@ function Stats() {
     [more.bestiary, `${met} / ${BESTIARY.length}`, met > 0]
   ];
   const extra: [string, string][] = [
-    [label.bestStage, fmt(state.maxStageEver)],
+    [label.bestStage, String(state.maxStageEver)],
     [label.ascensions, fmt(state.lifetime.ascensions)],
     [label.essencesEarned, fmt(state.lifetime.essencesEarned)],
     [label.shardsEarned, fmt(state.lifetime.shardsEarned)],

@@ -343,6 +343,82 @@
   margin-top: 0.45rem;
 }
 
+/* A patch note's card: the thing it touches, its tag, why, and its numbers before and after. */
+.news-entry {
+  --entry-accent: var(--gold);
+  margin: 1rem 0;
+  padding: 1rem 1.2rem 1.05rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--entry-accent);
+  background: var(--panel-2);
+  box-shadow: var(--bevel);
+}
+
+.news-entry-new {
+  --entry-accent: var(--violet-2);
+}
+
+.news-entry-up {
+  --entry-accent: var(--success);
+}
+
+.news-entry-down {
+  --entry-accent: var(--danger);
+}
+
+.news-entry-fixed {
+  --entry-accent: var(--faint);
+}
+
+.news-body .news-entry-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.7rem;
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+.news-entry-tag {
+  padding: 0.08rem 0.45rem;
+  border: 1px solid var(--entry-accent);
+  border-radius: var(--radius-sm);
+  color: var(--entry-accent);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.news-body .news-entry-context {
+  margin: 0.45rem 0 0;
+  color: var(--muted) !important;
+  font-style: italic;
+}
+
+.news-body .news-entry-changes {
+  margin: 0.7rem 0 0;
+}
+
+.news-entry-changes strong {
+  color: var(--text);
+}
+
+.news-before {
+  color: var(--faint);
+}
+
+.news-arrow {
+  color: var(--entry-accent);
+  font-weight: 700;
+}
+
+.news-entry-changes .news-after {
+  color: var(--gold-2);
+}
+
 .news-article-foot {
   display: flex;
   flex-wrap: wrap;

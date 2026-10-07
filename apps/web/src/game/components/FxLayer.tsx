@@ -3,7 +3,7 @@
 import { HERO_BY_ID } from "@idlebound/game";
 import { useEffect, useRef, type RefObject } from "react";
 import { currentMessages } from "@/i18n/client";
-import { useFormat, useStoreRef } from "../context";
+import { useMagnitude, useStoreRef } from "../context";
 import type { ArenaRenderer } from "../pixel/arena";
 import { hash2 } from "../pixel/pixels";
 import { pageRect } from "../pixel/surface";
@@ -34,7 +34,7 @@ const BURST_ZIG = 26;
 export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>; renderer: RefObject<ArenaRenderer | null> }) {
   const store = useStoreRef();
   const layer = useRef<HTMLDivElement>(null);
-  const fmt = useFormat();
+  const fmt = useMagnitude();
   const fmtRef = useRef(fmt);
   fmtRef.current = fmt;
 

@@ -1,4 +1,5 @@
 import { lookup } from "./lookup";
+import { log10 as dLog10, log2 as dLog2, pow as dPow } from "../dmath";
 
 /**
  * The Descent (BIBLE 12.7), the second layer of rebirth: Eldra unweaves the Sanctum and
@@ -57,10 +58,11 @@ export const WEAVES: readonly WeaveDef[] = [
 
 /**
  * Highest level a save may hold for any weave, the uncapped Warp of Plenty included. Level n
- * of Plenty costs 4 × 1.2^n threads and the whole thread is 512 long at the Dawn: 200 is far
- * out of reach, and keeps the cost sums below bounded.
+ * of Plenty costs 4 × 1.2^n threads, and the thread doubles every Age of new depth with no
+ * bottom to the road (2^35 at stage 10,000): 1000 lies past stage 60,000, and keeps the cost
+ * sums below bounded (about 1e80 threads).
  */
-export const WEAVE_LEVEL_MAX = 200;
+export const WEAVE_LEVEL_MAX = 1000;
 
 export const WEAVE_BY_ID = lookup(WEAVES.map((weave) => [weave.id, weave])) as Record<WeaveId, WeaveDef>;
 
@@ -77,12 +79,12 @@ const THREAD_ORIGIN = DESCENT_MIN_STAGE - THREAD_DOUBLING;
 
 export function threadsFor(deepest: number): number {
   if (!(deepest >= DESCENT_MIN_STAGE)) return 0;
-  return Math.floor(Math.pow(2, (deepest - THREAD_ORIGIN) / THREAD_DOUBLING));
+  return Math.floor(dPow(2, (deepest - THREAD_ORIGIN) / THREAD_DOUBLING));
 }
 
 /** The shallowest stage whose thread is `threads` long: `threadsFor` inverted. */
 export function stageForThreads(threads: number): number {
-  let stage = Math.max(DESCENT_MIN_STAGE, Math.ceil(THREAD_ORIGIN + THREAD_DOUBLING * Math.log2(Math.max(1, threads))));
+  let stage = Math.max(DESCENT_MIN_STAGE, Math.ceil(THREAD_ORIGIN + THREAD_DOUBLING * dLog2(Math.max(1, threads))));
   // The logarithm may land a stage off either way: settle on the first stage that weaves enough.
   while (stage > DESCENT_MIN_STAGE && threadsFor(stage - 1) >= threads) stage -= 1;
   while (threadsFor(stage) < threads) stage += 1;
@@ -95,13 +97,13 @@ export function stageForThreads(threads: number): number {
  */
 export function legacyThreadsFor(essences: number): number {
   if (!(essences >= 1e6)) return 0;
-  return Math.max(0, Math.floor(2 * (Math.log10(essences) - 5)));
+  return Math.max(0, Math.floor(2 * (dLog10(essences) - 5)));
 }
 
 export function weaveCost(id: WeaveId, level: number): number {
   const weave = WEAVE_BY_ID[id];
   if (weave.maxLevel > 0 && level >= weave.maxLevel) return Number.POSITIVE_INFINITY;
-  return Math.ceil(weave.costBase * Math.pow(weave.costGrowth, level));
+  return Math.ceil(weave.costBase * dPow(weave.costGrowth, level));
 }
 
 /** Threads spent to bring a weave from 0 to `level`. */
@@ -109,6 +111,6 @@ export function weaveTotalCost(id: WeaveId, level: number): number {
   let total = 0;
   const weave = WEAVE_BY_ID[id];
   const top = Math.min(level, weave.maxLevel > 0 ? weave.maxLevel : WEAVE_LEVEL_MAX);
-  for (let n = 0; n < top; n += 1) total += Math.ceil(weave.costBase * Math.pow(weave.costGrowth, n));
+  for (let n = 0; n < top; n += 1) total += Math.ceil(weave.costBase * dPow(weave.costGrowth, n));
   return total;
 }

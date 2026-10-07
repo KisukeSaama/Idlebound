@@ -6,11 +6,22 @@ const SUFFIXES = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "D
 
 function letterSuffix(group: number): string {
   if (group < SUFFIXES.length) return SUFFIXES[group];
-  // Past the named suffixes: aa, ab, ac… like most idle games.
-  const index = group - SUFFIXES.length;
-  const first = String.fromCharCode(97 + Math.floor(index / 26) % 26);
-  const second = String.fromCharCode(97 + (index % 26));
-  return first + second;
+  // Past the named suffixes: aa, ab, ac… like most idle games, then aaa after zz, so a
+  // deeper number never reads like a shallower one.
+  let index = group - SUFFIXES.length;
+  let length = 2;
+  let span = 26 * 26;
+  while (index >= span) {
+    index -= span;
+    length += 1;
+    span *= 26;
+  }
+  let out = "";
+  for (let place = 0; place < length; place += 1) {
+    out = String.fromCharCode(97 + (index % 26)) + out;
+    index = Math.floor(index / 26);
+  }
+  return out;
 }
 
 /** Rounds, then drops useless trailing decimal zeros (never those of the integer part). */
@@ -19,12 +30,16 @@ export function trimmed(value: number, digits: number): string {
   return text.includes(".") ? text.replace(/\.?0+$/, "") : text;
 }
 
+const LOG10_2 = Math.log10(2);
+
 /**
  * Formats a big number for display (1.23M, 4.5e21…). The output is the same in every
- * locale on purpose: idle-game notation is universal and stays compact.
+ * locale on purpose: idle-game notation is universal and stays compact. `bits`: the unit the
+ * value is written in (HP, gold and damage past stage 3500, see `scale.ts`).
  */
-export function formatNumber(value: number, notation: Notation = "letters"): string {
+export function formatNumber(value: number, notation: Notation = "letters", bits = 0): string {
   if (!Number.isFinite(value)) return value > 0 ? "∞" : "-∞";
+  if (bits !== 0 && value !== 0) return formatLog(value < 0 ? "-" : "", Math.log10(Math.abs(value)) + bits * LOG10_2, notation);
   const sign = value < 0 ? "-" : "";
   const abs = Math.abs(value);
   if (abs < 1000) {
@@ -38,6 +53,18 @@ export function formatNumber(value: number, notation: Notation = "letters"): str
   }
   const group = Math.floor(exponent / 3);
   const scaled = abs / Math.pow(10, group * 3);
+  const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
+  if (notation === "engineering") return `${sign}${trimmed(scaled, digits)}e${group * 3}`;
+  return `${sign}${trimmed(scaled, digits)}${letterSuffix(group)}`;
+}
+
+/** A number known by its base-10 logarithm, as `formatNumber` writes it (for values past a double). */
+function formatLog(sign: string, log: number, notation: Notation): string {
+  if (log < 3) return formatNumber(Number(sign + Math.pow(10, log)), notation);
+  const exponent = Math.floor(log);
+  if (notation === "scientific") return `${sign}${Math.pow(10, log - exponent).toFixed(2)}e${exponent}`;
+  const group = Math.floor(exponent / 3);
+  const scaled = Math.pow(10, log - group * 3);
   const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
   if (notation === "engineering") return `${sign}${trimmed(scaled, digits)}e${group * 3}`;
   return `${sign}${trimmed(scaled, digits)}${letterSuffix(group)}`;

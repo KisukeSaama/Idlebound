@@ -138,7 +138,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "Eldra", text: "Before the loom, the words and the lines, someone looked into the dark and began to dream. That is all I know. I never said it." },
       { by: "The Ledger", text: "Breath stratum. The dreamer breathes in, about to wake, and holds it. The Ledger holds its own breath. It never needed to." },
       { by: "An unknown hand", text: "At the foot of the page, the unknown hand signs at last: one letter, A, worn by a thumb. The same letter as on the King's crown." },
-      { by: "An unknown hand", text: "The pale line of the Dawn widens. On the other side the dreamer draws breath to wake, and says only: \"Not yet.\"" },
+      { by: "An unknown hand", text: "The pale line of the Dawn lets you through. Behind it the road goes down into the dark again: the Kingdom's first night, drawn once more." },
     ],
   ],
   fr: [
@@ -272,7 +272,7 @@ export const AGE_ECHOES_TEXT: Record<Locale, readonly (readonly LoreLine[])[]> =
       { by: "Eldra", text: "Avant le métier, les mots et les traits, quelqu'un a regardé le noir et s'est mis à rêver. C'est tout ce que je sais. Je ne l'ai jamais dit." },
       { by: "Le Grand Livre", text: "Strate du Souffle. Le rêveur inspire, près de s'éveiller, et retient son souffle. Le Grand Livre retient le sien. Jamais il n'en eut besoin." },
       { by: "Une main inconnue", text: "Au bas de la page, la main inconnue signe enfin : une seule lettre, A, usée par un pouce. La même que sur la couronne du Roi." },
-      { by: "Une main inconnue", text: "La ligne pâle de l'Aube s'élargit. De l'autre côté, le rêveur prend son souffle pour se réveiller, et dit seulement : « Pas encore. »" },
+      { by: "Une main inconnue", text: "La ligne pâle de l'Aube te laisse passer. Derrière, la route redescend dans le noir : la première nuit du Royaume, dessinée à nouveau." },
     ],
   ],
 };

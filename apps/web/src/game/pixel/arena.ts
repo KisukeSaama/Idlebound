@@ -8,6 +8,7 @@
  */
 import type { MonsterState, StrikeStyle } from "@idlebound/game";
 import { C, RAMPS, rampFor, resolveCreature, SCENE_HEIGHT, type Pal } from "@idlebound/game/art";
+import { airOf, type Atmosphere } from "./atmosphere";
 import { eclipseRing, greyPixels, remembrancePixels, SEAM_MARGIN, seamPixels, seamSpan, unfinishedOrder, unfinishedPixels, unfinishedShare, UNFINISHED_STEPS } from "./events";
 import { companionRamp, drawMotes, drawShot, Particles, SCATTER_LIFE, shotBackAngle, shotDuration, type Mote, type Shot } from "./fx";
 import type { NightGrade } from "./night";
@@ -131,6 +132,8 @@ export class ArenaRenderer {
   /** A window or a dialog is open over the scene. */
   private covered = false;
   private narrowQuery: MediaQueryList | null = null;
+  /** The air laid over the scene (atmosphere.ts): halos, reflections, the vignette. */
+  private air: Atmosphere | null = null;
   reducedMotion = false;
   /** Called when a companion shot lands (the monster flinches in its color). */
   onLand: ((color: string) => void) | null = null;
@@ -161,6 +164,23 @@ export class ArenaRenderer {
     this.canvas.style.height = `${this.height * cssScale}px`;
     this.ctx.imageSmoothingEnabled = false;
     this.draw(true);
+    this.syncAir();
+  }
+
+  /** The air over this scene: it follows the canvas's size, its scene, and when it may move. */
+  attachAir(air: Atmosphere) {
+    this.air = air;
+    this.syncAir();
+  }
+
+  private syncAir() {
+    const air = this.air;
+    if (!air) return;
+    air.still = this.reducedMotion;
+    air.setScene(this.scene ? airOf(this.scene.scene) : null);
+    air.setFrame({ scale: this.scale, width: this.width, height: this.height, top: this.sceneTop(), origin: Math.floor(this.width / 2) - 160 }, this.canvas.style.width, this.canvas.style.height);
+    if (this.covered || this.reducedMotion || !this.frame) air.stop();
+    else air.start();
   }
 
   /** CSS pixels to the logical grid. */
@@ -192,6 +212,7 @@ export class ArenaRenderer {
     this.sceneKey = key;
     this.sceneArgs = { id: sceneId, era, options: { fullMoon, darkNight, clawless } };
     this.scene = sceneSheet(sceneId, era, { fullMoon, darkNight, clawless }, this.quiet);
+    this.syncAir();
     this.accent = sceneRecipe(sceneId).accent;
     const light = this.scene.scene.light;
     this.motes = [];
@@ -214,6 +235,7 @@ export class ArenaRenderer {
     this.quiet = quiet;
     const args = this.sceneArgs;
     if (args) this.scene = sceneSheet(args.id, args.era, args.options, quiet);
+    this.syncAir();
   }
 
   /** The tone the creatures are drawn in right now. */
@@ -359,6 +381,7 @@ export class ArenaRenderer {
     this.covered = covered;
     if (!covered) this.draw(true);
     this.kick();
+    this.syncAir();
   }
 
   /** The arena's box inside the canvas, in CSS pixels. */
@@ -571,12 +594,14 @@ export class ArenaRenderer {
 
   start() {
     this.kick();
+    this.syncAir();
   }
 
   stop() {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.cancelIdle?.();
+    this.air?.stop();
   }
 
   private loop = () => {

@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS } from "./data/achievements";
+import { ACHIEVEMENTS, type AchievementDef } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID } from "./data/altars";
 import { TREASURE_MONSTER, BIOMES, biomeForStage, bossForStage, eraForStage, guardianForStage, isBiomeBossStage, isBossStage, isKingStage, THE_DAWN } from "./data/biomes";
 import { CARAVAN_BUFF_SECONDS, caravanWare, isoWeek } from "./data/caravan";
@@ -31,6 +31,7 @@ import {
   WALKER_CHANCE,
   WALKER_MIN_ASCENSIONS,
   WALKER_SECONDS,
+  localTime,
   remembranceNight,
   type EventId
 } from "./data/events";
@@ -80,7 +81,7 @@ import { PROMISE_BY_HERO, PROMISE_RUNS, UNFAILING_MARGIN_SECONDS, hireBarred, pr
 import { NAMED_BY_ID, NAMED_RELICS, namedEffect, namedSourceReached, wearing, wearsRegalia, type NamedRelicDef } from "./data/relics";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BY_ID, type MarketOfferId } from "./data/market";
 import { SKILLS, SKILL_BY_ID } from "./data/skills";
-import { ageForEra, ageForStage, MILESTONES } from "./data/strata";
+import { ERA_COUNT, ageForEra, ageForStage, MILESTONES } from "./data/strata";
 import { milestoneReached } from "./chronicle";
 import {
   ASCENSION_MIN_STAGE,
@@ -123,12 +124,19 @@ import {
   weaveValue
 } from "./formulas";
 import { generateItem } from "./loot";
-import { pick, randomInt, storedRng, uid, type Rng } from "./rng";
+import { pick, randomInt, uid, type Rng } from "./rng";
+import { localFates, occasion, starved, type Fates, type Stream } from "./fates";
+import { applyCommand, type Command } from "./commands";
+import { lifeBits, rescale, runBits } from "./scale";
 import { emptyStats, emptyTrail } from "./state";
 import type { AbsenceAccount, AltarId, BuffId, BuyMode, ChronicleEntry, Derived, GameEvent, GameState, Item, ItemSlot, MonsterDef, MonsterKind, MonsterState, OfflineSummary, PromiseState, Rarity, SkillId } from "./types";
 
 /** Past this gap between two ticks, gains are computed in one catch-up instead of simulated. */
 const CATCH_UP_THRESHOLD_MS = 5_000;
+/** The simulation's step: every tick runs whole steps of this length (see `tick`). */
+export const STEP_MS = 100;
+/** Events an engine keeps for whoever drains them (the screen drains them at every frame). */
+const KEPT_EVENTS = 400;
 /** Offline progress is simulated in slices of this many (effective) seconds, spending in between. */
 const OFFLINE_SLICE_SECONDS = 60;
 /** Most purchase batches per offline slice. */
@@ -155,10 +163,11 @@ export function offlineGains(state: GameState, seconds: number, now: number): { 
   const derived = derive(state, now, { ignoreTimed: true });
   if (derived.dps <= 0 || seconds <= 0) return { kills: 0, gold: 0 };
   const farmStage = isBossStage(state.stage) ? Math.max(1, state.stage - 1) : state.stage;
-  const timePerKill = stageHp(farmStage) / derived.dps + RESPAWN_SECONDS;
+  const bits = runBits(state);
+  const timePerKill = stageHp(farmStage, bits) / derived.dps + RESPAWN_SECONDS;
   const kills = Math.floor(seconds / timePerKill);
-  const gold = kills * stageGold(farmStage) * derived.goldMultiplier * (1 + derived.treasureChance * 9);
-  return { kills, gold: Math.floor(gold) };
+  const gold = kills * stageGold(farmStage, bits) * derived.goldMultiplier * (1 + derived.treasureChance * 9);
+  return { kills, gold: bits === 0 ? Math.floor(gold) : gold };
 }
 
 /** Whether the walker may begin a Descent (BIBLE 12.7): the night has gone deep enough. */
@@ -204,8 +213,42 @@ function strongestCompanion(derived: Derived): string | null {
   return best;
 }
 
+/** What the journal hears from the engine (see `replay.ts`): commands, and what the clock did. */
+export type JournalEvent =
+  | { kind: "command"; at: number; command: Command }
+  /** A gap of `gap` ms past the threshold, lived in one catch-up ending at `at`. */
+  | { kind: "catchUp"; at: number; gap: number }
+  /** The clock stood behind the last step: everything moved back to `at`. */
+  | { kind: "rewind"; at: number }
+  /** The page sent a save from here, and refreshed what its engine derives (see `replay.ts`). */
+  | { kind: "mark"; at: number };
+
+/**
+ * What the engine holds beside the save: the clocks of the page's own rhythms. The server
+ * keeps it after each replay, so the next journal carries on from exactly there.
+ */
+export interface EngineRuntime {
+  visible: boolean;
+  locale: "fr" | "en";
+  afkAfterMs: number | null;
+  lastInputAt: number;
+  wagerRestUntil: number;
+  autopilotTimer: number;
+  autoClickAccumulator: number;
+  achievementTimer: number;
+  companionTimer: number;
+  companionDamage: number;
+  night: boolean;
+  nightCheckAt: number;
+  awaySeconds: number;
+  aloneSeconds: number;
+  absence: AbsenceMark | null;
+  clickedThisFight: boolean;
+  touches: number[];
+}
+
 /** How things stood when the company went on alone, for the Reunion's account. */
-interface AbsenceMark {
+export interface AbsenceMark {
   maxStage: number;
   heroLevels: Record<string, number>;
   talents: number;
@@ -244,7 +287,12 @@ function bestValue(options: Purchase[]): Purchase | undefined {
 export class GameEngine {
   state: GameState;
   derived: Derived;
-  rng: Rng;
+  /**
+   * Where fates come from: the slices the server handed out (the game itself), every slice of
+   * one seed (simulations, tests), or a single generator for every draw (`Rng`, simulations
+   * that only need some randomness).
+   */
+  fates: Fates | Rng;
   /** Set by the UI: no crystal spawns and no events while the tab is hidden. */
   visible = true;
   /** Set by the UI: the language the walker reads in (the Two Tongues secret). */
@@ -259,6 +307,9 @@ export class GameEngine {
   private wagerRestUntil = 0;
   private autopilotTimer = 0;
   private events: GameEvent[] = [];
+  /** While `batch` runs: the refresh asked last, done at its end. */
+  private batching = false;
+  private refreshAt: number | null = null;
   private autoClickAccumulator = 0;
   private achievementTimer = 0;
   /** Companion damage dealt since the last "dps" event (one per second, for the UI). */
@@ -280,40 +331,169 @@ export class GameEngine {
   private touches: number[] = [];
 
   /**
-   * Without `rng` (the game itself), fates are drawn from the generator the save carries:
-   * reloading a save cannot draw a crystal or a relic again. Tests and simulations pass one.
+   * The game passes the window of fates the server handed out; without one, every slice comes
+   * from the game's creation date (tests). A single `Rng` serves every draw (simulations).
    */
-  constructor(state: GameState, rng?: Rng, now = Date.now()) {
+  constructor(state: GameState, fates?: Fates | Rng, now = Date.now()) {
     this.state = state;
-    this.rng = rng ?? storedRng(() => this.state.rngState, (next) => { this.state.rngState = next; });
+    this.fates = fates ?? localFates(state.createdAt);
     this.unlockedAchievements = new Set(state.achievements);
     this.derived = derive(state, now);
     this.lastInputAt = now;
   }
 
-  // ---------------------------------------------------------------- helpers
+  /**
+   * Hears every command and every jump of the clock, in order (the page's journal, see
+   * `replay.ts`). Null: nobody listens (the server's replay, simulations).
+   */
+  journal: ((event: JournalEvent) => void) | null = null;
 
-  private emit(event: GameEvent) {
-    this.events.push(event);
-    if (this.events.length > 400) this.events.splice(0, this.events.length - 400);
+  /** Runs a walker's command at `now` (the time of the last step), written in the journal first. */
+  perform(command: Command, now: number): unknown {
+    this.journal?.({ kind: "command", at: now, command });
+    return applyCommand(this, command, now);
   }
 
+  /** The page's rhythms, as they stand (see `EngineRuntime`). */
+  runtime(): EngineRuntime {
+    return structuredClone({
+      visible: this.visible,
+      locale: this.locale,
+      afkAfterMs: this.afkAfterMs,
+      lastInputAt: this.lastInputAt,
+      wagerRestUntil: this.wagerRestUntil,
+      autopilotTimer: this.autopilotTimer,
+      autoClickAccumulator: this.autoClickAccumulator,
+      achievementTimer: this.achievementTimer,
+      companionTimer: this.companionTimer,
+      companionDamage: this.companionDamage,
+      night: this.night,
+      nightCheckAt: this.nightCheckAt,
+      awaySeconds: this.awaySeconds,
+      aloneSeconds: this.aloneSeconds,
+      absence: this.absence,
+      clickedThisFight: this.clickedThisFight,
+      touches: this.touches
+    });
+  }
+
+  /** Takes up the page's rhythms where a replay (or the page) left them. */
+  restore(runtime: EngineRuntime) {
+    const kept = structuredClone(runtime);
+    this.visible = kept.visible;
+    this.locale = kept.locale;
+    this.afkAfterMs = kept.afkAfterMs;
+    this.lastInputAt = kept.lastInputAt;
+    this.wagerRestUntil = kept.wagerRestUntil;
+    this.autopilotTimer = kept.autopilotTimer;
+    this.autoClickAccumulator = kept.autoClickAccumulator;
+    this.achievementTimer = kept.achievementTimer;
+    this.companionTimer = kept.companionTimer;
+    this.companionDamage = kept.companionDamage;
+    this.night = kept.night;
+    this.nightCheckAt = kept.nightCheckAt;
+    this.awaySeconds = kept.awaySeconds;
+    this.aloneSeconds = kept.aloneSeconds;
+    this.absence = kept.absence;
+    this.clickedThisFight = kept.clickedThisFight;
+    this.touches = kept.touches;
+  }
+
+  // ---------------------------------------------------------------- helpers
+
+  /** Events nobody drains are dropped, the oldest first, past the last `KEPT_EVENTS` (by batches). */
+  private emit(event: GameEvent) {
+    this.events.push(event);
+    if (this.events.length > 2 * KEPT_EVENTS) this.events.splice(0, this.events.length - KEPT_EVENTS);
+  }
+
+  /**
+   * The generator of the next occasion of `stream` (see `fates.ts`): the n-th occasion of a
+   * stream draws the same numbers whatever happened in the others. The game never steps
+   * without a margin of known occasions (`starved`), so a slice is always there.
+   */
+  private fate(stream: Stream): Rng {
+    const s = this.state;
+    const count = s.fates[stream];
+    s.fates[stream] = count + 1;
+    if (typeof this.fates === "function") return this.fates;
+    const rng = occasion(this.fates, stream, count);
+    if (!rng) throw new Error(`No fate known for ${stream} ${count}.`);
+    return rng;
+  }
+
+  /** Too few fates known ahead to go on live: the road waits for the Ledger's next window. */
+  starved(): boolean {
+    return typeof this.fates !== "function" && starved(this.fates, this.state.fates);
+  }
+
+  /** The events since the last drain, the last `KEPT_EVENTS` of them. */
   drainEvents(): GameEvent[] {
-    const events = this.events;
+    const events = this.events.length > KEPT_EVENTS ? this.events.slice(-KEPT_EVENTS) : this.events;
     this.events = [];
     return events;
   }
 
   refresh(now: number) {
+    if (this.batching) {
+      this.refreshAt = now;
+      return;
+    }
     this.derived = derive(this.state, now);
   }
 
+  /**
+   * Runs `actions` with one refresh at their end, at the time of the last one asked: for a run
+   * of actions that never read `derived` in between (levels bought one at a time).
+   */
+  batch(actions: () => void) {
+    if (this.batching) return actions();
+    this.batching = true;
+    try {
+      actions();
+    } finally {
+      this.batching = false;
+      const at = this.refreshAt;
+      this.refreshAt = null;
+      if (at !== null) this.refresh(at);
+    }
+  }
+
+  /** Gold earned, in the night's unit (see `scale.ts`); the totals keep it in the walk's. */
   private earnGold(amount: number) {
     if (!(amount > 0)) return;
     const s = this.state;
     s.gold += amount;
     s.run.goldEarned += amount;
-    s.lifetime.goldEarned += amount;
+    const total = rescale(amount, runBits(s), lifeBits(s));
+    s.lifetime.goldEarned += total;
+  }
+
+  /**
+   * The night went deeper than its numbers' unit (`run` and `life`: the units before, see
+   * `scale.ts`): what it holds is written again in the larger one. Exact, a power of two.
+   */
+  private deepened(run: number, life: number, now: number) {
+    const s = this.state;
+    const nextRun = runBits(s);
+    const nextLife = lifeBits(s);
+    if (nextRun !== run) {
+      s.gold = rescale(s.gold, run, nextRun);
+      s.run.goldEarned = rescale(s.run.goldEarned, run, nextRun);
+      s.run.maxHit = rescale(s.run.maxHit, run, nextRun);
+      if (s.monster) {
+        s.monster.hp = rescale(s.monster.hp, run, nextRun);
+        s.monster.maxHp = rescale(s.monster.maxHp, run, nextRun);
+        s.monster.gold = rescale(s.monster.gold, run, nextRun);
+      }
+      if (this.absence) this.absence.gold = rescale(this.absence.gold, run, nextRun);
+      this.refresh(now);
+    }
+    if (nextLife !== life) {
+      s.lifetime.goldEarned = rescale(s.lifetime.goldEarned, life, nextLife);
+      s.lifetime.maxHit = rescale(s.lifetime.maxHit, life, nextLife);
+      if (this.absence) this.absence.goldEarned = rescale(this.absence.goldEarned, life, nextLife);
+    }
   }
 
   private earnShards(amount: number) {
@@ -490,11 +670,11 @@ export class GameEngine {
   }
 
   /** A guardian's first clear may bring back the next echo of its biome. */
-  private rollEcho(biomeId: string, era: number, now: number) {
+  private rollEcho(biomeId: string, era: number, now: number, rng: Rng) {
     const s = this.state;
     const found = echoesFound(s, biomeId);
     const chance = echoChance(era, found) * (found === 0 ? 1 : derive(s, now).fragmentChance * (1 + namedEffect(s, "fragments")));
-    if (this.rng() >= chance) return;
+    if (rng() >= chance) return;
     s.lore.echoes[biomeId] = found + 1;
     this.fragment({ source: "echo", biome: biomeId, index: found });
   }
@@ -526,7 +706,7 @@ export class GameEngine {
     const s = this.state;
     const def = NAMED_BY_ID[id];
     if (!def || s.named.includes(id)) return;
-    const item = generateItem(this.rng, Math.max(1, s.maxStageEver - 1), { slot: def.slot, rarity: def.rarity });
+    const item = generateItem(this.fate("loot"), Math.max(1, s.maxStageEver - 1), { slot: def.slot, rarity: def.rarity });
     item.named = id;
     item.locked = true;
     s.named.push(id);
@@ -546,13 +726,13 @@ export class GameEngine {
   }
 
   /** Named relics that come by chance with a kill; `frontier`: the boss that blocks the run. */
-  private rollNamed(monster: MonsterState, frontier: boolean) {
+  private rollNamed(monster: MonsterState, frontier: boolean, rng: Rng) {
     const s = this.state;
     const era = eraForStage(s.stage);
     const guardian = monster.kind === "boss";
     const king = guardian && isKingStage(s.stage);
     const roll = (def: NamedRelicDef, chance: number) => {
-      if (!s.named.includes(def.id) && this.rng() < chance) this.grantNamed(def.id);
+      if (!s.named.includes(def.id) && rng() < chance) this.grantNamed(def.id);
     };
     for (const def of NAMED_RELICS) {
       const source = def.source;
@@ -589,7 +769,7 @@ export class GameEngine {
     const s = this.state;
     if (s.secrets.includes("night-owl")) return;
     if (now >= this.nightCheckAt) {
-      const hour = new Date(now).getHours();
+      const hour = localTime(now, s.zone).getUTCHours();
       this.night = hour >= NIGHT_HOURS[0] && hour < NIGHT_HOURS[1];
       this.nightCheckAt = now + 60_000;
     }
@@ -616,35 +796,53 @@ export class GameEngine {
   // ---------------------------------------------------------------- loop
 
   /**
-   * Advances the simulation to `now`. Returns the summary of a catch-up when one happened,
-   * however short: a throttled background tab catches up in many small steps.
+   * Advances the simulation to `now`, in steps of `STEP_MS` from the last one: however the
+   * calls fall (a frame, a throttled background tab, a server replaying the journal), the
+   * same steps run. A gap longer than the catch-up threshold is lived in one catch-up instead.
+   * Returns the summary of a catch-up when one happened.
    */
   tick(now: number): OfflineSummary | null {
     const s = this.state;
     const gapMs = now - s.lastTickAt;
     if (gapMs < 0) {
       this.rewind(-gapMs, now);
+      this.journal?.({ kind: "rewind", at: now });
       return null;
     }
     if (gapMs === 0) return null;
+    // Out of fates: nothing is lived until the Ledger answers; the time waits, and comes back
+    // as a catch-up (which draws none) once the next window is in hand.
+    if (this.starved()) return null;
     this.leave();
 
     if (gapMs > CATCH_UP_THRESHOLD_MS) {
       const summary = this.catchUp(gapMs / 1000, now);
       s.lastTickAt = now;
       this.refresh(now);
+      this.journal?.({ kind: "catchUp", at: now, gap: gapMs });
       return summary;
     }
 
-    const dt = gapMs / 1000;
+    while (s.lastTickAt + STEP_MS <= now && !this.starved()) this.step(s.lastTickAt + STEP_MS);
+    return null;
+  }
+
+  /** Steps run by this engine: what the page counts to keep each journal it sends short. */
+  steps = 0;
+
+  /** One step of the simulation, `STEP_MS` long, ending at `now`. */
+  private step(now: number) {
+    const s = this.state;
+    this.steps += 1;
+    const dt = STEP_MS / 1000;
     s.lastTickAt = now;
     s.run.playTime += dt;
     s.lifetime.playTime += dt;
     this.watchNight(now, dt);
     this.watchTime(now, dt);
     s.buffs = s.buffs.filter((buff) => buff.until > now);
-    this.updateCrystal(now);
     this.refresh(now);
+    this.updateCrystal(now);
     const d = this.derived;
 
     if (!s.monster) {
@@ -702,7 +900,6 @@ export class GameEngine {
       this.achievementTimer = 0;
       this.checkAchievements();
     }
-    return null;
   }
 
   /**
@@ -771,7 +968,7 @@ export class GameEngine {
     const mark = this.absence!;
     const levels = HEROES.filter((hero) => (s.heroLevels[hero.id] ?? 0) > (mark.heroLevels[hero.id] ?? 0))
       .map((hero) => ({ heroId: hero.id, from: mark.heroLevels[hero.id] ?? 0, to: s.heroLevels[hero.id] }));
-    const gold = s.lifetime.goldEarned - mark.goldEarned;
+    const gold = rescale(s.lifetime.goldEarned - mark.goldEarned, lifeBits(s), runBits(s));
     return {
       seconds,
       fromStage: mark.maxStage,
@@ -853,7 +1050,12 @@ export class GameEngine {
 
   /** HP a boss stage's boss comes back with: its wounds taken off, the Eclipse added. */
   private bossLeft(stage: number): number {
-    return bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1) * (1 - this.woundKept(stage));
+    return bossHp(stage, runBits(this.state)) * this.kingFactor(stage) * (1 - this.woundKept(stage));
+  }
+
+  /** A King's health beyond his stage: his Eclipse. */
+  private kingFactor(stage: number): number {
+    return this.eclipsed(stage) ? ECLIPSE_HP : 1;
   }
 
   /** Share of its HP a boss stage's boss still lacks from the fights it won. */
@@ -916,7 +1118,8 @@ export class GameEngine {
 
     while (remaining > 0) {
       if (spending) spent += this.autoSpend(now);
-      const d = derive(s, now, { ignoreTimed: true });
+      let d = derive(s, now, { ignoreTimed: true });
+      let bits = runBits(s);
       if (d.dps <= 0) break;
       // Without spending the power never changes: one slice is enough.
       const slice = spending ? Math.min(remaining, OFFLINE_SLICE_SECONDS) : remaining;
@@ -940,14 +1143,14 @@ export class GameEngine {
             failedAt = stage;
             this.stoppedBy(stage);
             s.lifetime.bossFails += 1;
-            this.keepWound(stage, (d.dps * this.stageFactor(stage, d) * Math.max(0, d.bossTimer - grace)) / (bossHp(stage) * (this.eclipsed(stage) ? ECLIPSE_HP : 1)));
+            this.keepWound(stage, (d.dps * this.stageFactor(stage, d) * Math.max(0, d.bossTimer - grace)) / (bossHp(stage, bits) * this.kingFactor(stage)));
             continue;
           }
           if (fight + BOSS_RESPAWN_SECONDS > time) break;
           time -= fight + BOSS_RESPAWN_SECONDS;
           kills += 1;
           bosses += 1;
-          sliceGold += stageGold(stage) * bossHpMultiplier(stage) * d.goldMultiplier * (isBiomeBossStage(stage) ? d.guardianGold : 1);
+          sliceGold += stageGold(stage, bits) * bossHpMultiplier(stage) * d.goldMultiplier * (isBiomeBossStage(stage) ? d.guardianGold : 1);
           this.recordStageKills(stage, 1);
           if (s.trail.wound?.stage === stage) delete s.trail.wound;
           if (isBiomeBossStage(stage)) shards += 1 + Math.floor(stage / 25) + namedEffect(s, "guardianShards");
@@ -962,36 +1165,45 @@ export class GameEngine {
           time -= ROUT_STEP_SECONDS;
           const done = MONSTERS_PER_STAGE - s.kills;
           kills += done;
-          sliceGold += done * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+          sliceGold += done * stageGold(stage, bits) * d.goldMultiplier * (1 + d.treasureChance * 9);
           this.recordStageKills(stage, done);
           s.lifetime.routs += 1;
         } else {
-          const perKill = stageHp(stage) / d.dps + RESPAWN_SECONDS;
+          const perKill = stageHp(stage, bits) / d.dps + RESPAWN_SECONDS;
           const needed = MONSTERS_PER_STAGE - s.kills;
           const done = Math.min(needed, Math.floor(time / perKill));
           time -= done * perKill;
           kills += done;
-          sliceGold += done * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+          sliceGold += done * stageGold(stage, bits) * d.goldMultiplier * (1 + d.treasureChance * 9);
           this.recordStageKills(stage, done);
           s.kills += done;
           if (done < needed) break;
         }
+        const life = lifeBits(s);
         s.maxStage += 1;
         s.kills = 0;
         if (s.maxStage > s.maxStageEver) s.maxStageEver = s.maxStage;
         s.stage = s.maxStage;
         this.noteStratum(s.maxStage);
+        if (runBits(s) !== bits || lifeBits(s) !== life) {
+          // A deeper unit (see `scale.ts`): the gold of this slice and the company's damage follow.
+          this.deepened(bits, life, now);
+          sliceGold = rescale(sliceGold, bits, runBits(s));
+          gold = rescale(gold, bits, runBits(s));
+          d = derive(s, now, { ignoreTimed: true });
+          bits = runBits(s);
+        }
       }
 
       // Blocked by a boss (or at the last stage): farm the stage before it.
       if (blockedAt !== null || s.maxStage >= MAX_STAGE) {
         const base = blockedAt ?? s.stage;
         const farmStage = isBossStage(base) ? Math.max(1, base - 1) : base;
-        const perKill = stageHp(farmStage) / d.dps + RESPAWN_SECONDS;
+        const perKill = stageHp(farmStage, bits) / d.dps + RESPAWN_SECONDS;
         const done = Math.floor(time / perKill);
         time -= done * perKill;
         kills += done;
-        sliceGold += done * stageGold(farmStage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+        sliceGold += done * stageGold(farmStage, bits) * d.goldMultiplier * (1 + d.treasureChance * 9);
         this.recordStageKills(farmStage, done);
       }
       carry = time;
@@ -1076,6 +1288,7 @@ export class GameEngine {
   private purchaseOptions(now: number): Purchase[] {
     const s = this.state;
     const multiplier = heroCostMultiplier(s);
+    const bits = runBits(s);
     const base = derive(s, now, { ignoreTimed: true }).dps;
     const gain = (heroId: string, level: number, talents: string[]) => {
       const before = s.heroLevels[heroId] ?? 0;
@@ -1092,17 +1305,17 @@ export class GameEngine {
       if (level === 0) continue;
       const missing = (upTo: number) => hero.upgrades.filter((upgrade) => upgrade.level <= upTo && !s.heroUpgrades.includes(upgrade.id)).map((upgrade) => upgrade.id);
       for (const id of missing(level)) {
-        options.push({ heroId: hero.id, levels: 0, talents: [id], cost: upgradeCost(id), gain: gain(hero.id, level, [id]) });
+        options.push({ heroId: hero.id, levels: 0, talents: [id], cost: upgradeCost(id, bits), gain: gain(hero.id, level, [id]) });
       }
       // Aldric's levels raise the click, which the company never uses.
       if (hero.id === CLICK_HERO_ID) continue;
       // Up to the breakpoint, with or without its talents: a talent can wait for the gold.
       const target = nextBreakpoint(hero, level);
-      const levelsCost = heroCost(hero, level, target - level, multiplier);
+      const levelsCost = heroCost(hero, level, target - level, multiplier, bits);
       options.push({ heroId: hero.id, levels: target - level, talents: [], cost: levelsCost, gain: gain(hero.id, target, []) });
       const talents = missing(target);
       if (talents.length > 0) {
-        const cost = levelsCost + talents.reduce((total, id) => total + upgradeCost(id), 0);
+        const cost = levelsCost + talents.reduce((total, id) => total + upgradeCost(id, bits), 0);
         options.push({ heroId: hero.id, levels: target - level, talents, cost, gain: gain(hero.id, target, talents) });
       }
     }
@@ -1118,7 +1331,8 @@ export class GameEngine {
   private goldRate(d: Derived): number {
     if (d.dps <= 0) return 0;
     const stage = isBossStage(this.state.maxStage) ? Math.max(1, this.state.maxStage - 1) : this.state.maxStage;
-    return (stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9)) / (stageHp(stage) / d.dps + RESPAWN_SECONDS);
+    const bits = runBits(this.state);
+    return (stageGold(stage, bits) * d.goldMultiplier * (1 + d.treasureChance * 9)) / (stageHp(stage, bits) / d.dps + RESPAWN_SECONDS);
   }
 
   // ---------------------------------------------------------------- combat
@@ -1145,9 +1359,14 @@ export class GameEngine {
     let kind: MonsterKind = "normal";
     // The Migration: another biome's Remnants cross this stretch of road.
     const crossing = s.trail.migration?.stage === stage ? BIOMES.find((entry) => entry.id === s.trail.migration!.biome) : undefined;
-    let def: MonsterDef = pick(this.rng, (crossing ?? biome).monsters);
-    let hp = stageHp(stage);
-    let gold = stageGold(stage);
+    const rng = this.fate("spawn");
+    let def: MonsterDef = pick(rng, (crossing ?? biome).monsters);
+    // In the night's unit (see `scale.ts`).
+    const bits = runBits(s);
+    const unitHp = stageHp(stage, bits);
+    const unitGold = stageGold(stage, bits);
+    let hp = unitHp;
+    let gold = unitGold;
     let event: MonsterState["event"];
     let eclipse = false;
     if (stage === s.maxStage && routs(s, stage, d)) {
@@ -1159,47 +1378,47 @@ export class GameEngine {
     if (isBossStage(stage)) {
       kind = isBiomeBossStage(stage) ? "boss" : "miniboss";
       def = kind === "boss" ? guardianForStage(stage) : biome.miniBoss;
-      hp = bossHp(stage);
-      gold = stageGold(stage) * bossHpMultiplier(stage);
-      if (kind === "boss" && this.eclipsed(stage)) {
-        hp *= ECLIPSE_HP;
-        eclipse = true;
+      hp = bossHp(stage, bits);
+      gold = unitGold * bossHpMultiplier(stage);
+      if (kind === "boss") {
+        hp *= this.kingFactor(stage);
+        eclipse = this.eclipsed(stage);
       }
       s.bossTimeLeft = d.bossTimer;
-    } else if (this.rng() < d.treasureChance) {
+    } else if (rng() < d.treasureChance) {
       kind = "treasure";
       def = TREASURE_MONSTER;
-      gold = stageGold(stage) * 10;
+      gold = unitGold * 10;
     } else {
       const wanderer = WANDERER_BY_BIOME[biome.id];
-      if (wanderer && !s.trail.wanderers.includes(wanderer.id) && this.rng() < wanderer.chance) {
+      if (wanderer && !s.trail.wanderers.includes(wanderer.id) && rng() < wanderer.chance) {
         // The biome's rare wanderer: once a run at most.
         kind = "rare";
         def = { id: wanderer.id };
-        gold = stageGold(stage) * wanderer.gold;
+        gold = unitGold * wanderer.gold;
         s.trail.wanderers.push(wanderer.id);
       } else if (this.visible) {
         // Events of the road, only while someone watches.
-        const roll = this.rng();
+        const roll = rng();
         if (stage >= SEAM_MIN_STAGE && roll < 1 / SEAM_ODDS) {
           event = "seam";
           def = { id: "seam-warden" };
-          hp = stageHp(stage) * 6;
-          gold = stageGold(stage) * 6;
+          hp = unitHp * 6;
+          gold = unitGold * 6;
           s.bossTimeLeft = SEAM_SECONDS;
         } else if (era >= QUIET_MIN_ERA && roll < 1 / SEAM_ODDS + 1 / QUIET_ODDS) {
           event = "quiet";
           def = { id: "the-quiet" };
-          hp = stageHp(stage) * 3;
-          gold = stageGold(stage) * 3;
+          hp = unitHp * 3;
+          gold = unitGold * 3;
           s.bossTimeLeft = QUIET_SECONDS;
         } else if ((s.heroLevels[STRAY_HERO] ?? 0) > 0 && roll < 1 / SEAM_ODDS + 1 / QUIET_ODDS + 1 / STRAY_ODDS) {
           event = "stray";
           def = { id: "stray-armor" };
-          hp = stageHp(stage) * 6;
-          gold = stageGold(stage) * 6;
+          hp = unitHp * 6;
+          gold = unitGold * 6;
           s.bossTimeLeft = STRAY_SECONDS;
-        } else if (ageForEra(era) >= UNFINISHED_MIN_AGE && this.rng() < 1 / UNFINISHED_ODDS) {
+        } else if (ageForEra(era) >= UNFINISHED_MIN_AGE && rng() < 1 / UNFINISHED_ODDS) {
           event = "unfinished";
         }
       }
@@ -1211,7 +1430,7 @@ export class GameEngine {
     if (event) monster.event = event;
     if (eclipse) monster.eclipse = true;
     // Pip's Wager: one golden rat in ten stops and dares the walker, then rests a while.
-    if (kind === "treasure" && this.visible && now >= this.wagerRestUntil && this.rng() < 1 / WAGER_ODDS) {
+    if (kind === "treasure" && this.visible && now >= this.wagerRestUntil && rng() < 1 / WAGER_ODDS) {
       monster.wager = { clicks: 0, until: now + WAGER_SECONDS * 1000 };
       this.wagerRestUntil = now + WAGER_REST_SECONDS * 1000;
     }
@@ -1241,7 +1460,7 @@ export class GameEngine {
       if (monster.wager.clicks >= WAGER_CLICKS) {
         // Pip loses his bet, and pays what the road would have in the meantime, and more.
         delete monster.wager;
-        monster.gold = stageGold(s.stage) * wagerGold(s.stage, this.derived.dps, this.derived.treasureChance);
+        monster.gold = stageGold(s.stage, runBits(s)) * wagerGold(s.stage, this.derived.dps, this.derived.treasureChance);
         this.emit({ type: "event", id: "wager", won: true });
         monster.hp = 0;
         this.kill(now);
@@ -1255,7 +1474,7 @@ export class GameEngine {
     const s = this.state;
     const d = this.derived;
     if (!s.monster || s.monster.wager) return;
-    const crit = this.rng() < d.critChance;
+    const crit = this.fate("strike")() < d.critChance;
     const factor = this.targetFactor(s.monster);
     const damage = d.click * (crit ? d.critMultiplier : 1) * factor;
     if (source === "click") {
@@ -1267,7 +1486,8 @@ export class GameEngine {
       s.lifetime.crits += 1;
     }
     if (damage > s.run.maxHit) s.run.maxHit = damage;
-    if (damage > s.lifetime.maxHit) s.lifetime.maxHit = damage;
+    const hit = rescale(damage, runBits(s), lifeBits(s));
+    if (hit > s.lifetime.maxHit) s.lifetime.maxHit = hit;
     this.emit({ type: "hit", damage, crit, source });
     this.damage(damage, now);
   }
@@ -1306,7 +1526,7 @@ export class GameEngine {
     const d = this.derived;
     const stage = s.stage;
     const kills = MONSTERS_PER_STAGE - s.kills;
-    const gold = kills * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+    const gold = kills * stageGold(stage, runBits(s)) * d.goldMultiplier * (1 + d.treasureChance * 9);
     this.earnGold(gold);
     s.run.kills += kills;
     s.lifetime.kills += kills;
@@ -1350,6 +1570,7 @@ export class GameEngine {
     }
 
     let shards = 0;
+    const rng = this.fate("loot");
     const frontier = s.stage === s.maxStage;
     const firstClear = frontier && s.stage >= s.maxStageEver;
     if (isBoss) {
@@ -1364,30 +1585,30 @@ export class GameEngine {
       // beaten in this run and replayed from the stage selector pays gold only.
       if (frontier) {
         this.promiseBossFell(s.stage);
-        shards = monster.kind === "boss" ? 1 + Math.floor(s.stage / 25) + namedEffect(s, "guardianShards") : this.rng() < 0.35 ? 1 : 0;
+        shards = monster.kind === "boss" ? 1 + Math.floor(s.stage / 25) + namedEffect(s, "guardianShards") : rng() < 0.35 ? 1 : 0;
         this.earnShards(shards);
         const chance = monster.kind === "boss" ? 0.4 : 0.15;
         // The Eclipse's King always leaves something behind.
-        if ((monster.kind === "boss" && firstClear) || monster.eclipse || this.rng() < chance) {
-          this.addItem(generateItem(this.rng, s.stage, { luck: monster.kind === "boss" ? 2 : 1 }));
+        if ((monster.kind === "boss" && firstClear) || monster.eclipse || rng() < chance) {
+          this.addItem(generateItem(rng, s.stage, { luck: monster.kind === "boss" ? 2 : 1 }));
         }
         const era = eraForStage(s.stage);
         if (monster.kind === "boss" && firstClear) {
-          this.rollEcho(biomeForStage(s.stage).id, era, now);
+          this.rollEcho(biomeForStage(s.stage).id, era, now, rng);
           if (king) this.kingCleared(era);
           // Echo of a Walker: another walker's shadow comes to fight beside the company.
-          if (this.visible && s.lifetime.ascensions >= WALKER_MIN_ASCENSIONS && this.rng() < WALKER_CHANCE) {
+          if (this.visible && s.lifetime.ascensions >= WALKER_MIN_ASCENSIONS && rng() < WALKER_CHANCE) {
             this.recordKills("walker-echo", 1);
             this.addBuff("walker", WALKER_SECONDS, now);
             this.meetEvent("walker");
           }
         }
-        this.rollNamed(monster, true);
+        this.rollNamed(monster, true, rng);
       }
     } else {
-      this.rollNamed(monster, false);
+      this.rollNamed(monster, false, rng);
     }
-    if (monster.event) this.eventWon(monster, now);
+    if (monster.event) this.eventWon(monster, rng);
     this.checkNamedSources(monster.id);
 
     this.emit({ type: "kill", monster, gold, shards });
@@ -1406,10 +1627,13 @@ export class GameEngine {
     }
   }
 
-  /** The King's first fall in a stratum: the keystone (and its reading), and an Age echo. */
+  /**
+   * The King's first fall in a stratum: the keystone (and its reading), and an Age echo. Below
+   * the Dawn the night only repeats itself (BIBLE 24): the sixty keystones are all there is.
+   */
   private kingCleared(era: number) {
     const s = this.state;
-    if (s.maxStageEver > s.stage) return;
+    if (s.maxStageEver > s.stage || era >= ERA_COUNT) return;
     this.fragment({ source: "keystone", era });
     if (s.descents > 0) {
       const index = s.descents - 1;
@@ -1427,6 +1651,7 @@ export class GameEngine {
     const s = this.state;
     if (s.descents === 0 || !isKingStage(maxStage - 1)) return;
     const era = eraForStage(maxStage - 1);
+    if (era >= ERA_COUNT) return;
     const index = s.descents - 1;
     while (s.lore.readings.length <= index) s.lore.readings.push(0);
     if (s.lore.readings[index] <= era) s.lore.readings[index] = era + 1;
@@ -1447,15 +1672,15 @@ export class GameEngine {
   }
 
   /** An event creature beaten in time. */
-  private eventWon(monster: MonsterState, now: number) {
+  private eventWon(monster: MonsterState, rng: Rng) {
     const s = this.state;
     const age = ageForStage(s.stage);
     switch (monster.event) {
       case "seam":
         // The walker holds the crack shut: an elite's drop, and an echo of the Age.
         s.lifetime.seams += 1;
-        if (this.rng() < 0.35) this.earnShards(1);
-        if (this.rng() < 0.15) this.addItem(generateItem(this.rng, s.stage));
+        if (rng() < 0.35) this.earnShards(1);
+        if (rng() < 0.15) this.addItem(generateItem(rng, s.stage));
         this.ageEcho(age);
         this.emit({ type: "event", id: "seam", won: true });
         break;
@@ -1472,22 +1697,25 @@ export class GameEngine {
         this.ageEcho(Math.max(UNFINISHED_MIN_AGE, age));
         break;
     }
-    void now;
   }
 
   private advance() {
     const s = this.state;
     if (s.maxStage >= MAX_STAGE) return;
     const holds = promiseHolds(s);
+    const run = runBits(s);
+    const life = lifeBits(s);
     s.maxStage += 1;
     s.kills = 0;
     if (s.maxStage > s.maxStageEver) s.maxStageEver = s.maxStage;
+    this.deepened(run, life, s.lastTickAt);
     // Pacifist: the Fallen King reached with Brother Cinder leading the company.
     if (s.maxStage === REST_STAGE && strongestCompanion(this.derived) === "cendre") this.discover("pacifist");
     // The Migration: now and then, another biome's Remnants cross the next stretch.
-    if (this.visible && eraForStage(s.maxStage) >= MIGRATION_MIN_ERA && !isBossStage(s.maxStage) && this.rng() < 1 / MIGRATION_ODDS) {
+    const road = this.visible && eraForStage(s.maxStage) >= MIGRATION_MIN_ERA && !isBossStage(s.maxStage) ? this.fate("road") : null;
+    if (road && road() < 1 / MIGRATION_ODDS) {
       const others = BIOMES.filter((biome) => biome.id !== biomeForStage(s.maxStage).id);
-      s.trail.migration = { stage: s.maxStage, biome: pick(this.rng, others).id };
+      s.trail.migration = { stage: s.maxStage, biome: pick(road, others).id };
       this.meetEvent("migration");
     }
     // Promised never to be pushed back, the company does not walk into a seam it cannot
@@ -1562,11 +1790,12 @@ export class GameEngine {
     if (!hero) return { count: 0, cost: Number.POSITIVE_INFINITY };
     const level = s.heroLevels[heroId] ?? 0;
     const multiplier = heroCostMultiplier(s);
+    const bits = runBits(s);
     if (mode === "max") {
-      const count = Math.max(1, maxAffordableLevels(hero, level, s.gold, multiplier));
-      return { count, cost: heroCost(hero, level, count, multiplier) };
+      const count = Math.max(1, maxAffordableLevels(hero, level, s.gold, multiplier, bits));
+      return { count, cost: heroCost(hero, level, count, multiplier, bits) };
     }
-    return { count: mode, cost: heroCost(hero, level, mode, multiplier) };
+    return { count: mode, cost: heroCost(hero, level, mode, multiplier, bits) };
   }
 
   buyHero(heroId: string, mode: BuyMode | number, now: number): boolean {
@@ -1598,7 +1827,7 @@ export class GameEngine {
     const entry = UPGRADE_BY_ID[upgradeId];
     if (!entry || s.heroUpgrades.includes(upgradeId)) return false;
     if ((s.heroLevels[entry.hero.id] ?? 0) < entry.upgrade.level) return false;
-    const cost = upgradeCost(upgradeId);
+    const cost = upgradeCost(upgradeId, runBits(s));
     if (cost > s.gold) return false;
     s.gold -= cost;
     s.heroUpgrades.push(upgradeId);
@@ -1620,7 +1849,7 @@ export class GameEngine {
       .sort((a, b) => upgradeCost(a) - upgradeCost(b));
     let bought = 0;
     for (const id of available) {
-      if (upgradeCost(id) > s.gold) break;
+      if (upgradeCost(id, runBits(s)) > s.gold) break;
       if (this.buyUpgrade(id, now)) bought += 1;
     }
     return bought;
@@ -1694,29 +1923,30 @@ export class GameEngine {
       const storm = s.crystal.storm ?? 0;
       s.crystal = null;
       // A storm goes on even when a crystal slips away, as long as someone is watching.
-      if (storm > 0 && this.visible) this.placeCrystal(now, storm - 1);
+      if (storm > 0 && this.visible) this.placeCrystal(now, this.fate("crystal"), storm - 1);
     }
     if (!s.crystal && this.visible && now >= s.nextCrystalAt) {
-      s.nextCrystalAt = now + (90 + this.rng() * 150) * d.crystalWait * 1000;
-      if (this.rng() < 1 / STORM_ODDS) {
+      const rng = this.fate("crystal");
+      s.nextCrystalAt = now + (90 + rng() * 150) * d.crystalWait * 1000;
+      if (rng() < 1 / STORM_ODDS) {
         // Crystal Storm: the Lantern Queen crosses the sky, and five crystals fall in turn.
         this.recordKills("lantern-queen", 1);
         if (bestiaryKills(s, "lantern-queen") === 1) this.fragment({ source: "event", id: "storm" });
         this.emit({ type: "storm" });
-        this.placeCrystal(now, STORM_CRYSTALS - 1);
+        this.placeCrystal(now, rng, STORM_CRYSTALS - 1);
       } else {
-        this.placeCrystal(now);
+        this.placeCrystal(now, rng);
       }
     }
   }
 
   /** A crystal at a random spot; `storm` counts the crystals of a storm still to come. */
-  private placeCrystal(now: number, storm?: number) {
+  private placeCrystal(now: number, rng: Rng, storm?: number) {
     this.state.crystal = {
-      id: uid(this.rng),
+      id: uid(rng),
       expiresAt: now + (storm === undefined ? this.derived.crystalStay : STORM_CRYSTAL_SECONDS) * 1000,
-      x: 12 + this.rng() * 70,
-      y: 16 + this.rng() * 48,
+      x: 12 + rng() * 70,
+      y: 16 + rng() * 48,
       ...(storm === undefined ? {} : { storm })
     };
     this.emit({ type: "crystalSpawned" });
@@ -1730,11 +1960,13 @@ export class GameEngine {
     s.crystal = null;
     s.run.crystals += 1;
     s.lifetime.crystals += 1;
-    const roll = this.rng();
+    const rng = this.fate("catch");
+    const roll = rng();
     if (roll < 0.4) {
-      const gold = 15 * stageGold(Math.max(1, s.stage)) * this.derived.goldMultiplier;
+      const bits = runBits(s);
+      const gold = 15 * stageGold(Math.max(1, s.stage), bits) * this.derived.goldMultiplier;
       this.earnGold(gold);
-      this.emit({ type: "crystal", reward: "gold", amount: Math.floor(gold) });
+      this.emit({ type: "crystal", reward: "gold", amount: bits === 0 ? Math.floor(gold) : gold });
     } else if (roll < 0.65) {
       this.addBuff("overcharge", 15, now);
       this.emit({ type: "crystal", reward: "overcharge", amount: 15 });
@@ -1742,7 +1974,7 @@ export class GameEngine {
       this.addBuff("sharpness", 20, now);
       this.emit({ type: "crystal", reward: "sharpness", amount: 20 });
     } else if (roll < 0.97 || s.lifetime.ascensions === 0) {
-      const shards = randomInt(this.rng, 2, CRYSTAL_SHARDS_MAX);
+      const shards = randomInt(rng, 2, CRYSTAL_SHARDS_MAX);
       this.earnShards(shards);
       this.emit({ type: "crystal", reward: "shards", amount: shards });
     } else {
@@ -1753,13 +1985,13 @@ export class GameEngine {
     }
     // Célestine hears some of them, and sings back.
     if ((s.heroLevels.celestine ?? 0) > 0 || s.lore.songs > 0 || recognitionRuns(s, "celestine") > 0) {
-      if (this.rng() < SONG_CHANCE * this.derived.fragmentChance) {
+      if (rng() < SONG_CHANCE * this.derived.fragmentChance) {
         const index = s.lore.songs;
         s.lore.songs = index + 1;
         this.fragment({ source: "song", index });
       }
     }
-    if (storm > 0 && this.visible) this.placeCrystal(now, storm - 1);
+    if (storm > 0 && this.visible) this.placeCrystal(now, this.fate("crystal"), storm - 1);
     this.refresh(now);
     return true;
   }
@@ -1865,6 +2097,11 @@ export class GameEngine {
   private skipStages(count: number) {
     const s = this.state;
     const d = this.derived;
+    const run = runBits(s);
+    const life = lifeBits(s);
+    s.maxStage = count + 1;
+    this.deepened(run, life, s.lastTickAt);
+    const bits = runBits(s);
     let gold = 0;
     let kills = 0;
     let bosses = 0;
@@ -1874,11 +2111,11 @@ export class GameEngine {
         kills += 1;
         bosses += 1;
         if (isKingStage(stage)) kings += 1;
-        gold += stageGold(stage) * bossHpMultiplier(stage) * d.goldMultiplier * (isBiomeBossStage(stage) ? d.guardianGold : 1);
+        gold += stageGold(stage, bits) * bossHpMultiplier(stage) * d.goldMultiplier * (isBiomeBossStage(stage) ? d.guardianGold : 1);
         this.recordStageKills(stage, 1);
       } else {
         kills += MONSTERS_PER_STAGE;
-        gold += MONSTERS_PER_STAGE * stageGold(stage) * d.goldMultiplier * (1 + d.treasureChance * 9);
+        gold += MONSTERS_PER_STAGE * stageGold(stage, bits) * d.goldMultiplier * (1 + d.treasureChance * 9);
         this.recordStageKills(stage, MONSTERS_PER_STAGE);
       }
     }
@@ -1889,7 +2126,6 @@ export class GameEngine {
     s.lifetime.bosses += bosses;
     s.lifetime.kings += kings;
     // The Eclipse waits for a King the walker fights.
-    s.maxStage = count + 1;
     s.stage = count + 1;
     s.runStartStage = count + 1;
     this.emit({ type: "stage", stage: s.stage, biomeChanged: true });
@@ -2078,9 +2314,10 @@ export class GameEngine {
       case "great-chest": {
         if (s.inventory.length >= INVENTORY_LIMIT) return false;
         s.shards -= cost;
+        const rng = this.fate("chest");
         const item = id === "chest"
-          ? generateItem(this.rng, level)
-          : generateItem(this.rng, level, { minimum: "epic", luck: 3 });
+          ? generateItem(rng, level)
+          : generateItem(rng, level, { minimum: "epic", luck: 3 });
         this.addItem(item);
         break;
       }
@@ -2142,12 +2379,13 @@ export class GameEngine {
       case "sealed-coffer":
         if (s.inventory.length >= INVENTORY_LIMIT) return false;
         s.shards -= cost;
-        this.addItem(generateItem(this.rng, level, { minimum: "legendary", luck: 3 }));
+        this.addItem(generateItem(this.fate("chest"), level, { minimum: "legendary", luck: 3 }));
         break;
       case "three-chests":
         if (s.inventory.length > INVENTORY_LIMIT - 3) return false;
         s.shards -= cost;
-        for (let index = 0; index < 3; index += 1) this.addItem(generateItem(this.rng, level));
+        const rng = this.fate("chest");
+        for (let index = 0; index < 3; index += 1) this.addItem(generateItem(rng, level));
         break;
       case "bottled-night":
         if (!this.pourHours(2, now)) return false;
@@ -2180,7 +2418,7 @@ export class GameEngine {
 
   /** A Remembrance Night, seen: lanterns in every biome and its line in the Chronicle. */
   remember(now: number) {
-    if (remembranceNight(new Date(now))) this.meetEvent("remembrance");
+    if (remembranceNight(now, this.state.zone)) this.meetEvent("remembrance");
   }
 
   // ---------------------------------------------------------------- achievements & tutorial
@@ -2188,13 +2426,21 @@ export class GameEngine {
   checkAchievements() {
     const s = this.state;
     let changed = false;
+    // A series shares its metric: measured once, until a deed won changes what it counts.
+    const measured = new Map<AchievementDef["metric"], number>();
     for (const achievement of ACHIEVEMENTS) {
       if (this.unlockedAchievements.has(achievement.id)) continue;
-      if (achievement.metric(s) >= achievement.threshold) {
+      let value = measured.get(achievement.metric);
+      if (value === undefined) {
+        value = achievement.metric(s);
+        measured.set(achievement.metric, value);
+      }
+      if (value >= achievement.threshold) {
         this.unlockedAchievements.add(achievement.id);
         s.achievements.push(achievement.id);
         this.emit({ type: "achievement", id: achievement.id });
         changed = true;
+        measured.clear();
       }
     }
     if (changed) this.refresh(s.lastTickAt);

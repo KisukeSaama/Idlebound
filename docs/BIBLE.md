@@ -7,7 +7,7 @@ document is built, move its rules into those files and mark it here as shipped.
 
 Everything below was written from the code as it stands (save version 4): 21 heroes,
 5 biomes, 5 era tags, 13 altars, 6 powers, 6 market offers, 75 achievements, 4 relic
-slots, 4 leaderboards, stage cap 3000. Every existing number, name and rule keeps working;
+slots, 4 leaderboards, stage cap 3000 (lifted in version 1.0: the road has no bottom, section 24). Every existing number, name and rule keeps working;
 the story is laid **over** the mechanics, never against them.
 
 ---
@@ -168,11 +168,12 @@ and the last one is called **Dawn**.
 
 ### 3.9 The Dawn
 
-The technical cap of the game, stage 3000, is the edge of the night. Past it lies the
-Morning. The final guardian at stage 3000 is not a king but a thin line of pale light
-(section 8.8). The walker can reach it, can even beat it, and still cannot cross it:
-crossing would end everything. The game's last keystone fragment says only: **"Not yet."**
-(FR: *« Pas encore. »*)
+At stage 3000 the guardian is not a king but a thin line of pale light (section 8.8): the
+edge of the night as Lysandre's successors imagined it. It is a milestone, not a wall. The
+walker beats it and finds the road going on beneath it: the night draws itself again from
+its first stratum, deeper (section 24). The last keystone says: **"Not this way. Behind the
+light, the road goes down into the night again."** (FR: *« Pas par ici. Derrière la lumière,
+la route redescend dans la nuit. »*).
 
 ### 3.10 The Roll and the Ledger
 
@@ -181,7 +182,9 @@ They never meet. The only place their strands touch is **the Roll of the Bound**
 Registre des Liés*), the public leaderboard, which lists the names of every walker who
 inscribed theirs. The Roll is kept by **the Ledger** (FR: *le Grand Livre*), which records
 only what truly happened: a false memory cannot be written into it. That is the anti-cheat,
-in the world's own words.
+in the world's own words. The Ledger walks every road again before it writes it, and the
+fates of each night come from its own pages: when it cannot be reached for long, the road
+stops where the Ledger can still read it and waits (shipped in 1.1).
 
 ---
 
@@ -276,7 +279,7 @@ Every existing system, what it is in the world, and the word the UI can lean on.
 | HP curve (steeper by segment) | Older memories are denser. The Remnants of deeper strata are heavier to unmake. |
 | Eras (every 50 stages) | Strata of the night's memory (section 9). |
 | Biome cycle | The same road, each night deeper: the Hearthfields of the Void stratum are the Hearthfields as they were remembered in the Void. |
-| Stage cap 3000 | The Dawn (section 3.9). |
+| No stage cap (version 1.0) | The night has no bottom (section 24): the Dawn at stage 3000 is a milestone (section 3.9), and below it the night draws itself again. |
 | Golden rat (1% base, ×10 gold) | **Pip** (FR: *Messire Pip*), a golden rat who is the same in every stratum. In the code it is the only monster that never gets an era variant; in the world it is the only creature that is not part of the night. Nobody knows why it lets itself be caught. |
 | Treasure chance cap 25% | Pip does not like to be taken for granted. |
 
@@ -595,7 +598,7 @@ Legend: **E** existing (id in code), **N** new. Names are EN / FR.
 | N | `the-quiet` | The Quiet / Le Silence | Event, strata ≥ Void | "Colorless. Soundless. It is not a Remnant. It is where one used to be." |
 | N | `stray-armor` | Stray Armor / L'Armure errante | Event | "An empty suit of plate walking the road in the wrong direction." |
 | N | `lantern-queen` | Lantern Queen / Reine-lanterne | Event: Crystal Storm | "Queen of the moths. She follows the light to wherever someone is looking." |
-| N | `the-dawn` | The Dawn / L'Aube | Stage 3000 only | "A line of pale light. It does not attack. It only grows." |
+| N | `the-dawn` | The Dawn / L'Aube | Stage 3000 only | "A line of pale light across the road. It does not attack. It only grows." |
 
 ### 8.7 The twelve forms of the King
 
@@ -618,14 +621,16 @@ name and his Words change. Form I is the existing art.
 | XI | 2550 to 2750 | The Blank King / Le Roi blanc | Almost the color of the background. Hard to see. |
 | XII | 2800 to 2950 | Aldemar / Aldemar | A tired man in plain clothes, no crown, sword lowered. |
 | | 3000 | The Dawn / L'Aube | Replaces the King (section 8.6). |
+| | 3050 and below | The twelve forms again | Below the Dawn the Ages come round, and the King's forms with them: the Fallen King at 3050, the Titan King at 3300… (section 24). |
 
 ---
 
 ## 9. The strata: 60 eras in 12 Ages
 
-Today the code cycles five tags (Echo, Ash, Void, Astral, Primordial) after era 0. The
-finished game names **every era up to the cap** (era 0 to 59, stages 1 to 3000), so the
-descent never repeats itself. Era 0 has no tag (the present night). Tags keep the current
+The game names **every era down to the Dawn** (era 0 to 59, stages 1 to 3000), so the
+descent never repeats itself until it reaches the light. Below the Dawn the night draws itself
+again from era 0, one fold deeper (section 24): era 60 looks like the present night, era 61
+like Echo, and the Age carries the fold's number (the Kingdom II). Era 0 has no tag (the present night). Tags keep the current
 display `Tag · Monster`. Each Age also sets a visual treatment (section 18.6) and a pool of
 Age echoes (section 17).
 
@@ -750,8 +755,8 @@ revelation calendar.
 | 55 | 2751-2800 | Point / Point | "Everything began as one point of light, and someone looking at it." |
 | 56 | 2801-2850 | Spark / Étincelle | "The point is warm." |
 | 57 | 2851-2900 | Breath / Souffle | "Something breathes in, and holds it." |
-| 58 | 2901-2950 | Gaze / Regard | "Aldemar, without his crown: you came all this way. Thank you. Go back." |
-| 59 | 2951-3000 | Dawn / Aube | "Not yet." |
+| 58 | 2901-2950 | Gaze / Regard | "Aldemar, without his crown: you came all this way. The night does not end at the light. It goes on below. The road is yours." |
+| 59 | 2951-3000 | Dawn / Aube | "Not this way. Behind the light, the road goes down into the night again." |
 
 ---
 
@@ -1241,24 +1246,33 @@ refused)". Guests see "Unnamed walker" instead of "Guest".
 
 ### 12.10 The Ledger's scenes
 
-> **Shipped**: the First Dusk, Almost, the Empty Throne (`data/cutscenes.ts`,
-> `content/story/cutscenes.ts`).
+> **Shipped**: all eleven, staged like films (sets, a camera, actors, beats in time, the
+> Dusk theme), in `data/cutscenes.ts` and `content/story/cutscenes.ts`. A scene set where a
+> keystone lies says that keystone word for word.
 
-A few times in the whole game, never more, the Ledger tells a moment in pictures: a scene
-of three to six shots of the world, one image and one line each, 20 to 40 seconds, the
-night going on beneath. Every scene can be skipped and seen again in the Chronicle. The
-same rules as every line: say plainly what happens; the Truth is never stated.
+A few times in the whole game the Ledger tells a moment in pictures: a scene staged like a
+film on the world itself, a camera moving over its places, the walker and those they meet
+acting on its ground, the night going on beneath, under one melody, the Dusk theme, that
+comes back in every scene. Its length follows its weight: a small moment holds 15 to 25
+seconds, the great turns of the story (the First Dusk) up to a minute. Every
+scene can be skipped and seen again in the Chronicle. The same rules as every line: say
+plainly what happens; the Truth is never stated before its Age.
+
+Every walker sees one at once: the Long Night opens a new walk, so nobody walks a whole
+evening without knowing the Ledger tells. A scene lived and never played (a walk older than
+the scene, a road walked alone) is told once, in a toast, when the Hall that keeps it opens.
 
 | Scene | When | What it shows |
 |---|---|---|
-| **The First Dusk** (shipped) | Ascension 1 | The Keep and its King; "Night one."; "You're early."; the King going up in violet lights; the Sanctum's thirteen stones; "Dusk again." |
-| **Almost** (shipped) | Maëlle hired again after she first half remembers (~3 h) | The road at dusk; Maëlle's face in the dark: "You again? No. I'd remember. Wouldn't I?"; she keeps looking back. |
-| **The Empty Throne** (shipped) | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; the throne, its arms worn like a step. |
-| The Crown in the Ice | Stage 500 | A smaller crown under the rime. There were other kings. |
-| The Rehearsal | Stage 1,000 | The aurora: not the Dawn, its rehearsal. |
-| The Loom | Descent 1 | Eldra at her loom, the woven night on its beam. |
-| The Threshold | Stage 2,000 | Morgrath says the word nobody says. |
-| Not Yet | Stage 3,000 | The line of light, and the road ending. |
+| **The Long Night** | A new walk, before the first strike | The fields at dusk and the walker in them; the Keep at the end of the road, its King waiting; "Dusk again." |
+| **The First Dusk** | Ascension 1 | The Keep and its King; "Night one."; "You're early."; one blow and the King going up in violet lights; the Sanctum's thirteen stones; "Dusk again." |
+| **Almost** | Maëlle hired again after she first half remembers (~3 h) | The road at dusk; Maëlle's face in the dark: "You again? No. I'd remember. Wouldn't I?"; she keeps looking back. |
+| **The Empty Throne** | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; the hall left to the walker. |
+| **The Crown in the Ice** | Past stage 500 | The Rime's hall, a smaller crown frozen in its floor, Kaelen's keystone. There were other kings. |
+| **The Rehearsal** | Past stage 1,000 | The sky alight over the Keep; the walker takes it for the Dawn; Ashka's keystone: its rehearsal. |
+| **The Loom** | Descent 1 | The room below every stratum; Eldra at her loom, the night on its beam; "Mind the threads." |
+| **The Threshold** | Past stage 2,000 | The King asleep on his throne, struck without waking; Morgrath's keystone says the word nobody says. |
+| **Beneath the Light** | Past stage 3,000 | The line of pale light where the King should be, struck; its keystone; the night drawn again below, the walker going down into it. |
 
 ### 12.11 The Promise
 
@@ -1459,7 +1473,7 @@ is what carries players, so the late Ages are paced by Descents.
 
 | Milestone | When | Vector | What the player learns (Surface / Hint) | Layer |
 |---|---|---|---|---|
-| Stage 1 | 0 min | Opening line in the scene | "Dusk again." / « Le crépuscule, encore. » The word "again" on minute one. | 2 |
+| Stage 1 | 0 min | The Long Night (scene) | "Dusk again." / « Le crépuscule, encore. » The word "again" on minute one, and the King waiting at the end of the road. | 2 |
 | Stage 10 | ~2 min | Moss Alpha bestiary | "It lets her win. It always has." | 2 |
 | Maëlle hired | ~3 min | Hire line | "You look like someone who needs a bow and a friend." | 1 |
 | Stage 21 to 30 | ~10 to 40 min | Deepvaults, Echo Bat bestiary (a toast, shipped) | Bats screech before you swing. | 2 |
@@ -1491,8 +1505,9 @@ is what carries players, so the late Ages are paced by Descents.
 | Stage 2,001 to 2,250 | Descents 5+ | Age IX, the Dreamer's Room | Lantern, hearth, lullaby, window, glass. Something blinks when you do. | 6 |
 | Célestine R4 | Descents 5+ | Recognition | "someone is watching us. isn't it nice?" | 6 |
 | Stage 2,250 to 2,750 | Descents 7+ | Ages X and XI | The Unmaking, then the Blank page. | 5 |
-| Stage 2,950 | Descents 10+ | Gaze keystone | Aldemar without his crown: "Thank you. Go back." | 4 |
-| Stage 3,000 | the far end | Dawn keystone | "Not yet." / « Pas encore. » | 6 |
+| Stage 2,950 | Descents 10+ | Gaze keystone | Aldemar without his crown: "The night does not end at the light. It goes on below. The road is yours." | 4 |
+| Stage 3,000 | the far end | Dawn keystone | "Not this way." / « Pas par ici. » The road goes on below. | 6 |
+| Stage 3,001 and deeper | for good | The night drawn again (section 24) | The Kingdom II, the Elder World II… No new word: the night only repeats. | all |
 | The Awakened R5 | any time after | Recognition | "Hello." / « Bonjour. » | 6 |
 | Descent 10 | the far end | The Crown | "It wears you." | 4 |
 | After everything | forever | Fragment grammar, second readings, King's Words, Dreams | The night keeps talking. | all |
@@ -1845,6 +1860,9 @@ In Age X sounds arrive late and muffled; at the Dawn nothing sounds.
 - **Humor** lives in the companions and the bestiary; the King and the keystones are
   never jokes (the Jester is allowed one per Age).
 - **No em dash, no emoji**, in either language, as for all product copy.
+- **Silence.** The landing page says what the game is and how it plays, and nothing of what
+  lies down the road: no counts of stages, strata, companions or altars, no word of
+  companions forgetting, no Descent.
 
 ---
 
@@ -2046,3 +2064,76 @@ Everything the finished game needs, counted. "Texts" are counted once; each exis
 
 Each step is a shippable game on its own, and each one makes the next night worth
 walking.
+
+---
+
+## 24. The night has no bottom
+
+> **Shipped** (version 1.0, no new save version): the road past stage 3000 (`scale.ts`,
+> `drawnEra` in `data/strata.ts`, `scripts/deep.ts`). The rules live in PRODUCT.md ("The
+> deep road").
+
+**The thesis.** The loop is the story, and it has no end (section 0). A wall at stage 3000
+was an ending the walker never chose: the race to depth stopped by a number. The road now
+goes on for good. Nothing says so out loud: the Dawn lets the walker through, the
+night draws itself again beneath it, and the Roll keeps counting. Walking down forever is a
+way of walking the game respects; it simply never ends anything.
+
+### 24.1 The Dawn, a milestone
+
+The Dawn still stands at stage 3000, a line of pale light where the King should be (section
+3.9). Beaten, it lets the walker through. Its keystone, the last of sixty, says "Not this way.
+Behind the light, the road goes down into the night again."; Aldemar's, the stratum before,
+"The night does not end at the light. It goes on below. The road is yours." No word judges
+the walker who goes on, nor the one who stops.
+
+### 24.2 The night drawn again
+
+Below the Dawn the night draws itself again from its first stratum, by rule, never by a new
+line written per stratum:
+
+- the eras keep counting (Era LXI, LXII…), and so do the numbers: every stage is tougher than
+  the one before, as everywhere;
+- each era looks like era mod 60: era 60 the present night again (no tag, the sky dark), era
+  61 Echo, and so on, with the King's form of its Age (the Fallen King at 3050, the Titan King
+  at 3300…) and the sounds of its Age (Age X muffled again);
+- the Age carries the fold's number: the Kingdom II, the Elder World II…, then III;
+- the Chronicle gains nothing new: the sixty keystones are all there is, and a King's first
+  fall below the Dawn writes nothing (biome echoes still come, from their grammar).
+
+### 24.3 Numbers that hold
+
+A double holds about 1.8e308, a guardian's HP some thousand stages below the Dawn. Past stage
+3500 the engine writes HP, gold and damage in a larger unit, a power of two that grows every
+500 stages as much as the Remnants' HP did (`scale.ts`): the night's unit for what a night holds, the walk's unit for
+the totals over every night. Down to the Dawn nothing changed (the same games, played with the
+code before and after, end bit for bit alike), and down to stage 3500 the unit is the plain
+number. Everything
+the walker sees reads the plain number back, in every notation (letters go on after zz with
+aaa). A save is the same shape as before: no new field, no new save version.
+
+### 24.4 The pace below the Dawn
+
+Measured first with the curve simply carried on (×1.18 a stage, `scripts/deep.ts`, 9 seeds):
+the active bot gains about 50 stages a day just below the Dawn and the realistic leader about
+12, the pace falling e-fold every 900 stages or so. At that rate the road is open but nobody
+walks it: a few stages a day near 5000, almost nothing long before 10,000, a second wall in
+all but name. What a walker gains for every Age of depth (essences ×1.02 a stage, the thread
+doubling for the Warp of Plenty, the gold of deeper Remnants) covers only part of what the
+Remnants gain at ×1.18.
+
+So the night drawn again is thinner: below the Dawn the Remnants' growth eases from ×1.18 a
+stage toward ×1.152 (`curve.ts`, e-fold over 1000 stages), with no seam at stage 3000, the
+curve and its slope going on where they were. It is a knife edge, found by the long run of
+`deep.ts`: at ×1.125 the bot ran away (+590 stages in four days near 5500); at ×1.15 it held
+about 45 stages a day down to 7500, then sped up (80 a day near 9500); at ×1.155 it slowed
+too fast (12 a day near 7000). At ×1.152 the long run of seed 1 reaches stage 10,000 on day
+272, every day's save accepted: about 44 stages a day at 3000, 27 at 5000, 16 at 7500, then
+about 40 near 9500. The pace never falls to nothing, but past 7500 it rises again: what the
+walker gains every Age outgrows the Remnants a little more each Age. The next step, if the
+Roll shows it, is a growth that rises again slowly below 7500 rather than a constant one. Nothing new was added to grow stronger: the
+open altars and the Warp of Plenty already have no last level, and carry the walker down.
+
+The target: the active bot, whose pace just below the Dawn matches the leaders of the Roll
+(2820 to 3000 in a few days), still gains at least 5 stages a day at stage 10,000. The
+realistic leader of `deep.ts` (four hours a day) walks at about a quarter of that pace.

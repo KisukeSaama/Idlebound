@@ -15,7 +15,10 @@ export const news = defineMessages({
     signature: "L'équipe d'Idlebound",
     landingTitle: "Dernières nouvelles de la route",
     older: "Plus tôt sur la route",
-    feed: "Flux RSS"
+    feed: "Flux RSS",
+    tags: { new: "Nouveau", up: "Renforcé", down: "Affaibli", changed: "Ajusté", fixed: "Corrigé" },
+    colon: " : ",
+    becomes: "devient"
   },
   en: {
     metaTitle: "News",
@@ -30,6 +33,9 @@ export const news = defineMessages({
     signature: "The Idlebound team",
     landingTitle: "Latest news from the road",
     older: "Earlier on the road",
-    feed: "RSS feed"
+    feed: "RSS feed",
+    tags: { new: "New", up: "Buffed", down: "Nerfed", changed: "Adjusted", fixed: "Fixed" },
+    colon: ": ",
+    becomes: "becomes"
   }
 });

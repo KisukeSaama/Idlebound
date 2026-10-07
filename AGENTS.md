@@ -25,13 +25,22 @@ swings single seeds by ±50 stages):
 | Stage 50        | 1.5 to 2 h  |
 | First ascension | about 3 h   |
 | Stage 100       | 4 to 6 h    |
+| The deep road   | at least 5 stages a day at stage 10,000, the active bot (BIBLE 24) |
 
 - After any gameplay change (formula, number, reward, cost, timer, new mechanic), run
-  `npx tsx packages/game/scripts/milestones.ts 9` (the four milestones above),
-  `npm run balance -- 24 compare 9` (idle and active styles) and
-  `npx tsx packages/game/scripts/walls.ts 9` (a naive walker loses a few minutes at most at
-  each guardian before the King), and compare against the targets above and the figures in
-  PRODUCT.md. Report the numbers. A miss is a bug, not a note.
+  `npm run sims` (about 6 min). It plays at once, sharing six cores, `milestones.ts 9` (the
+  four milestones above), `simulate.ts 24 compare 9` (idle and active styles) and `walls.ts 9`
+  (a naive walker loses a few minutes at most at each guardian before the King). Compare against the targets above and the figures in PRODUCT.md. A change that
+  touches the road below the Dawn runs `npm run sims -- 9 deep`, which adds `deep.ts deep
+  active 3000 9 20` (from the states `deep.ts reach 9` keeps), and the long run of one seed to
+  10,000. Report the numbers. A miss is a bug, not a note.
+- While iterating, compare seed by seed instead of rerunning the nine: `npm run compare -- save
+  suite 3` before the change keeps a reference (about 2 min), `npm run compare -- suite 3`
+  after it plays the same seeds and prints what moved (median before and after, each seed's
+  change, seeds up and down). Any single script works the same way (`milestones 3`, `deep
+  deep active 3000 3 2`). A change that must not touch play (refactor, speed) shows
+  "identical on every seed". A small change sends each seed down another road: read the
+  seeds up and down, not one seed's number. The nine-seed runs above stay the final word.
 - No runaway: growth past stage 1000 must keep slowing. Late essence growth is a knife edge.
 - Idle and active styles stay within a quarter of each other at 24 h.
 
@@ -43,6 +52,12 @@ swings single seeds by ±50 stages):
   statistics the server already verifies. Add a rejection test and keep the honest-play test
   ("accepts a real multi-hour game saved regularly") green.
 - Randomness comes from the engine RNG (`rng.ts`), never `Math.random`.
+- The road has no bottom. Past stage 3500, HP, gold and damage are written in a larger unit
+  (`scale.ts`): the night's (`runBits`) for what the night holds, the walk's (`lifeBits`) for
+  totals over every night. Pass the unit to every formula that makes a magnitude, `rescale`
+  before comparing or adding numbers of two units or two saves, and display them with
+  `useMagnitude` / `useLifeMagnitude`. Above stage 3500 the unit is 0 and every number is
+  the plain one.
 - Existing saves stay valid. New `GameState` fields are optional or defaulted in
   `migrateState`, bump the save version when the shape changes, and test that a save of the
   previous version parses, verifies and plays.
@@ -119,8 +134,7 @@ change that deserves it. The news pages keep the community close: every major ve
   under "Next version", in the same change. Refactors, tests, tooling and site-only changes
   do not.
 - Only major versions get a patch note (user decision, 2026-10-05: versions pass too fast
-  for one per minor). The notes of 0.1 to 0.4 stay as they are; nothing is written for 0.5
-  and after until 1.0. Minor and patch versions keep their lines in CHANGES.md, section by
+  for one per minor). Nothing is written for 0.5 and after until 1.0. Minor and patch versions keep their lines in CHANGES.md, section by
   section. When develop's version becomes a major (only on the user's word), write its patch
   note in `apps/web/src/i18n/messages/posts.ts` from every CHANGES.md section since the
   previous note, checked against the code itself (`git diff <last noted version's commit on
@@ -129,15 +143,27 @@ change that deserves it. The news pages keep the community close: every major ve
 - At the start of a session, after `git fetch origin`: if main now carries the version named
   under "Next version", it shipped. Rename that section to the version and open a fresh
   "Next version" on top.
-- A patch note reads like the patch notes of League of Legends or Valorant: a short warm
-  intro saying what this version is about, then New, Balance, Fixes as needed. Each line
-  starts with the thing it touches (a power, an altar, a companion, a window) and says what
-  the walker will notice, with the numbers they see before and after. Signed by the team.
-  Kind `patch`, `version` set to `vX.Y` (`v1.0`), titled after it, dated the day it was last written (the release
+- A patch note reads like the patch notes of League of Legends or Valorant, and is built
+  from `entry` blocks, not bullet lists: a short warm intro saying what this version is
+  about, then New, Balance, Fixes (and other headings as needed), each holding one card per
+  thing it touches (a power, an altar, a companion, a window). A card is the thing's name, a
+  tag (new, buffed, nerfed, adjusted, fixed), one line of context saying why, in the team's
+  voice, then its changes: `Label: before => after` with the numbers the walker sees, or
+  `Label: what it does now`. Signed by the team (the page signs it). Kind `patch`, `version`
+  set to `vX.Y` (`v1.0`), titled after it, dated the day it was last written (the release
   follows it closely). Newest first in `NEWS_POSTS`.
-- Written for players, never for developers: no file, function, variable, line, commit,
-  branch, library, server or database names, no implementation detail. Say what changes on
-  the road and why it is better for the walker.
+- Written for the community, never for developers: no file, function, variable, line, commit,
+  branch, library, server, database or device-clock talk, no implementation detail, and
+  never the results of our tests or simulations ("the first ascension still comes around
+  2 h 53", "a day of play leads from stage 961 to 1186"). A number belongs in a note only
+  when the walker sees it in the game. Say what changes on the road and why it is better
+  for the walker.
+- Nothing that helps an attacker or a cheater. Security, fair play, accounts and names get
+  one plain line at most ("your account is better protected", "the Ledger keeps a closer
+  watch over the leaderboard"): never what is checked, filtered, limited or rate-limited,
+  never a hole that was closed, how it could be used, or any threshold. Honest-play
+  refusals that were fixed may be named by what the walker saw, never by the check behind
+  them. CHANGES.md may keep the details; the published note never does.
 - Every writing rule applies (FR and EN adapted, _tutoiement_, no em dash, no emoji, the
   forbidden words). No spoilers: nothing the landing page does not already show, no secret,
   never the Truth; deeper content is named without being revealed.
@@ -169,6 +195,10 @@ change that deserves it. The news pages keep the community close: every major ve
 - Scale follows depth: the farther an object is, the smaller it is and the more it blends into the sky color.
 - Characters and creatures keep a readable silhouette with a dark outline and strong contrast against the background.
 - Leave calm, empty areas. Readability beats detail.
+- One exception, the air (`pixel/atmosphere.ts`): a single layer over the arena at the screen's
+  own resolution may be smooth and translucent (halos of the scene's lights, reflections in
+  still water, the vignette). It only adds light over the pixels; it never draws a sprite,
+  never resizes one, and holds still with reduced motion.
 
 ## Creature rules
 

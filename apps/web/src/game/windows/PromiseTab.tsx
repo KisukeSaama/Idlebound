@@ -76,7 +76,7 @@ export function PromiseTab() {
   const breakWord = async () => {
     if (!given) return;
     const ok = await ui.confirm({ title: text.breakTitle, text: text.breakText, confirmLabel: text.breakLabel, danger: true });
-    if (ok) store.act((engine, now) => engine.breakPromise(now));
+    if (ok) store.act({ type: "break" });
   };
 
   // Companions met, in the order of the road. One whose request cannot be granted yet (a
@@ -142,7 +142,7 @@ export function PromiseTab() {
               {chosen ? (
                 <div className="promise-action">
                   <span className="promise-chosen"><Picto name="knot" size={14} /> {text.chosen}</span>
-                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act((engine, now) => engine.pledge(null, now))}>{text.takeBack}</button>
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => store.act({ type: "pledge", hero: null })}>{text.takeBack}</button>
                 </div>
               ) : (
                 <div className="promise-action">
@@ -151,7 +151,7 @@ export function PromiseTab() {
                     className="btn btn-sm"
                     disabled={when === null}
                     aria-label={text.giveLabel(name, tonight)}
-                    onClick={() => store.act((engine, now) => engine.pledge(hero, now))}
+                    onClick={() => store.act({ type: "pledge", hero })}
                   >
                     {when === "next" ? text.giveNext : text.give}
                   </button>

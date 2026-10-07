@@ -11,8 +11,8 @@ import {
   gameText,
   guardiansPassed,
   isKingStage,
-  markRead,
   monsterName,
+  runBits,
   talentName,
   unreadChronicle,
   type AbsenceAccount,
@@ -53,7 +53,7 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
     return unread ? { ...unread, others: unreadChronicle(store.state) - 1 } : null;
   });
   const leave = (toChronicle = false) => {
-    if (kept) store.act((engine) => markRead(engine.state, kept.entry.source, kept.index + 1));
+    if (kept) store.act({ type: "read", source: kept.entry.source, count: kept.index + 1 });
     onClose();
     if (toChronicle) ui.openWindow("hall", "chronicle");
   };
@@ -61,6 +61,8 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
   const n = t.night;
   const m = n.account;
   const fmt = (value: number) => formatNumber(value, state.settings.notation);
+  // Gold of the night, written in its unit past stage 3500.
+  const gold = (value: number) => formatNumber(value, state.settings.notation, runBits(state));
   const seed = awakenedSeed(state.settings.notation, state.settings.sound, locale);
   const portrait = (heroId: string, size: number) => (
     <span className="account-portrait" style={{ "--hero": HERO_BY_ID[heroId].color } as CSSProperties} aria-hidden="true">
@@ -103,9 +105,9 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
       <dl className="account-facts">
         <div><dt>{m.away}</dt><dd>{formatDuration(account.seconds, locale)}</dd></div>
         <div><dt>{m.road}</dt><dd>{m.roadValue(account.fromStage, account.toStage)}</dd></div>
-        <div><dt>{m.earned}</dt><dd className="is-gold">{fmt(account.gold)}</dd></div>
+        <div><dt>{m.earned}</dt><dd className="is-gold">{gold(account.gold)}</dd></div>
         {/* Under one gold piece spent would read "0": nothing worth telling. */}
-        {account.spent >= 1 ? <div><dt>{m.spent}</dt><dd>{fmt(account.spent)}</dd></div> : null}
+        {account.spent >= 1 ? <div><dt>{m.spent}</dt><dd>{gold(account.spent)}</dd></div> : null}
       </dl>
       {moments.length > 0 ? (
         <>

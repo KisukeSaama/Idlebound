@@ -1,11 +1,11 @@
 "use client";
 
-import { WAGER_CLICKS, WAGER_SECONDS, biomeForStage, biomeName, chronicleText, eraForStage, isBossStage, isBiomeBossStage, monsterName, MONSTERS_PER_STAGE, type MonsterState } from "@idlebound/game";
+import { WAGER_CLICKS, WAGER_SECONDS, biomeForStage, biomeName, chronicleText, drawnEraForStage, isBossStage, isBiomeBossStage, monsterName, MONSTERS_PER_STAGE, type MonsterState } from "@idlebound/game";
 import { useEffect, useRef, useState } from "react";
 import type { ArenaRenderer } from "../pixel/arena";
 import { uiZoom } from "../pixel/surface";
 import { currentMessages, useI18n } from "@/i18n/client";
-import { useFormat, useGame, useReveals } from "../context";
+import { useMagnitude, useGame, useReveals } from "../context";
 import { stratumLabel } from "../shell";
 import { BuffChips } from "./BuffChips";
 import { CrystalView } from "./CrystalView";
@@ -26,7 +26,7 @@ const TELL_GAP_MS = 1_500;
 
 export function Scene() {
   const { state, derived, store } = useGame();
-  const fmt = useFormat();
+  const fmt = useMagnitude();
   const { t, g, locale } = useI18n();
   const m = t.hud.scene;
   const pointer = useRef<PointerMemo>({ x: 0, y: 0, at: 0 });
@@ -63,7 +63,8 @@ export function Scene() {
   timerSpan.current.total = Math.max(timerSpan.current.total, timedEvent ? state.bossTimeLeft : derived.bossTimer, 0.001);
   const timerRatio = timed ? Math.max(0, Math.min(1, state.bossTimeLeft / timerSpan.current.total)) : 0;
   const wagerLeft = wager ? Math.max(0, wager.until - gameNow()) / 1000 : 0;
-  const era = eraForStage(state.stage);
+  // The stratum drawn: below the Dawn the night is drawn again from its first one.
+  const era = drawnEraForStage(state.stage);
   // Every run opens at dusk on the first stretch of road, with the same two words.
   const opening = state.stage === 1 && state.maxStage === 1 && state.run.playTime < OPENING_SECONDS;
   const { shown } = useReveals();
@@ -120,7 +121,7 @@ export function Scene() {
   const strike = (clientX: number, clientY: number, rect: DOMRect) => {
     const zoom = uiZoom();
     pointer.current = { x: (clientX - rect.left) / zoom, y: (clientY - rect.top) / zoom, at: performance.now() };
-    store.act((engine, now) => engine.click(now), { save: false });
+    store.act({ type: "click", count: 1 }, { save: false });
   };
 
   return (
