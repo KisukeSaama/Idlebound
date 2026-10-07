@@ -931,7 +931,8 @@ same replays, for a person to review the boards; nothing is ever refused or hidd
   reason to fail: the replayed game is what the walker could really have done.
 - A journal holds at most ten minutes of live play (6,000 steps; catch-ups count for
   nothing) and 60,000 entries, 4 MB unpacked; past that it is not replayed. Replays run in
-  worker threads (`REPLAY_WORKERS`, the cores but one, four at most), stopped after 5 s.
+  worker threads (`REPLAY_WORKERS`, the cores but one, four at most; two in the deployment, which
+  shares its host), stopped after 5 s.
   Measured: 9 ms of CPU for 30 s of play at 10 clicks per second (stages 1000, 2800 and
   9950 alike), about 0.3 core for a thousand walkers saving every 30 s; a full journal of ten
   minutes in about 0.2 s. A journal weighs about 0.5 KB gzipped for 30 s of play, 4 KB for

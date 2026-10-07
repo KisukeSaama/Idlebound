@@ -21,6 +21,8 @@ services:
       INTERNAL_API_BASE_URL: http://api:8000
       SITE_INDEXABLE: ${SITE_INDEXABLE:-false}
       TZ: Europe/Paris
+      # Below mem_limit: V8 collects harder before the container is killed.
+      NODE_OPTIONS: --max-old-space-size=384
     networks:
       - application
       - traefik
@@ -36,6 +38,9 @@ services:
       retries: 5
       start_period: 20s
     restart: unless-stopped
+    # The host runs about twenty stacks: each one keeps to its share.
+    mem_limit: 512m
+    cpus: 2
     read_only: true
     tmpfs:
       - /tmp
@@ -90,6 +95,11 @@ services:
       SMTP_URL: ${SMTP_URL:-}
       MAIL_FROM: ${MAIL_FROM:-Idlebound <no-reply@kisukesaama.com>}
       TZ: Europe/Paris
+      # Set, not derived from the host's cores: a replay takes about 9 ms (PRODUCT.md), two
+      # threads keep up with thousands of walkers.
+      REPLAY_WORKERS: "2"
+      # Per isolate (the main thread and each replay worker), below mem_limit.
+      NODE_OPTIONS: --max-old-space-size=256
     networks:
       - application
       # Only service allowed out: sending e-mails (SMTP): confirmation, password reset,
@@ -105,6 +115,8 @@ services:
       retries: 20
       start_period: 30s
     restart: unless-stopped
+    mem_limit: 1g
+    cpus: 2
     read_only: true
     tmpfs:
       - /tmp
@@ -133,6 +145,8 @@ services:
       timeout: 5s
       retries: 12
     restart: unless-stopped
+    mem_limit: 1g
+    cpus: 2
     security_opt:
       - no-new-privileges:true
 
