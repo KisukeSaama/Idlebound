@@ -1,9 +1,9 @@
-import { formatNumber, intlLocale } from "@idlebound/game";
+import { intlLocale } from "@idlebound/game";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
 import { href } from "@/i18n/routing";
-import { BOARD_IDS, boardValue, type BoardId } from "@/lib/boards";
+import { BOARD_IDS, boardValue, stageText, type BoardId } from "@/lib/boards";
 import { getI18n } from "@/i18n/server";
 import { fetchLeaderboard } from "@/lib/server-api";
 import { fullTitle, pageAlternates, pageSocial } from "@/lib/site";
@@ -81,7 +81,7 @@ export default async function LeaderboardPage({ params, searchParams }: Props) {
                       <td><span className={`rank rank-${row.rank}`}>{row.rank}</span></td>
                       <td className="board-name">{row.username}</td>
                       <td className="board-value">{boardValue(l, board, row.value)}</td>
-                      <td className="hide-sm">{board === "stage" ? day.format(new Date(row.reachedAt)) : formatNumber(row.maxStage)}</td>
+                      <td className="hide-sm">{board === "stage" ? day.format(new Date(row.reachedAt)) : stageText(row.maxStage)}</td>
                     </tr>
                   ))}
                 </tbody>

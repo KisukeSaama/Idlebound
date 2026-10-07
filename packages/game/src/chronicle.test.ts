@@ -134,7 +134,7 @@ describe("the Lost Shepherd", () => {
     const fragments = events(engine, "fragment");
     expect(fragments).toContainEqual({ type: "fragment", entry: { source: "wanderer", id: "lost-shepherd" } });
     // The same run never meets him again, even when every roll says so.
-    engine.rng = () => 0.001;
+    engine.fates = () => 0.001;
     engine.state.lifetime.treasures = 0;
     now = respawn(engine, now + 1000);
     expect(engine.state.monster!.kind).not.toBe("rare");

@@ -37,7 +37,12 @@ export const night = defineMessages({
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds} s`,
     descendedTitle: "La Descente",
     descendedText: (threads: string) => `+${threads} fils à dépenser au Sanctuaire, dans la Descente. Essences et autels sont effacés, la route reprend à l'étape 1.`,
-    cutscene: { skip: "Passer", next: "Continuer" },
+    cutscene: {
+      skip: "Passer",
+      next: "Continuer",
+      keptTitle: "Les scènes du Grand Livre",
+      kept: (count: number) => (count === 1 ? "Une scène de ta marche t'attend dans la Chronique, au Hall. Tu peux la revoir quand tu veux." : `${count} scènes de ta marche t'attendent dans la Chronique, au Hall. Tu peux les revoir quand tu veux.`)
+    },
     reunionTitle: "Retrouvailles",
     reunionText: (duration: string) => `La compagnie a tenu la route sans toi. Elle frappe trois fois plus fort pendant ${duration}.`,
     /** What the company tells the walker back at the Reunion. */
@@ -101,7 +106,12 @@ export const night = defineMessages({
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds}s`,
     descendedTitle: "The Descent",
     descendedText: (threads: string) => `+${threads} threads to spend in the Sanctum, under Descent. Essences and altars are wiped, the road starts again at stage 1.`,
-    cutscene: { skip: "Skip", next: "Continue" },
+    cutscene: {
+      skip: "Skip",
+      next: "Continue",
+      keptTitle: "The Ledger's scenes",
+      kept: (count: number) => (count === 1 ? "A scene of your walk waits in the Chronicle, in the Hall. Watch it whenever you like." : `${count} scenes of your walk wait in the Chronicle, in the Hall. Watch them whenever you like.`)
+    },
     reunionTitle: "Reunion",
     reunionText: (duration: string) => `The company held the road without you. It strikes three times harder for ${duration}.`,
     account: {

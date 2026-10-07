@@ -97,9 +97,9 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "Scratched inside the helmet: Aldric. Another walker who gave the altars every memory, until only the armor walked."
       ],
       "the-dawn": [
-        "The end of the road: a line of pale light where the Morning begins. It does not attack. It only grows.",
+        "A line of pale light across the road, where the King should stand. It does not attack. It only grows.",
         "The Ledger tried to record its length. By the time the number is written, it is wrong.",
-        "If it reaches the road, the one who holds Orvane in their sleep wakes up, and Orvane ends. Not tonight."
+        "If it reached the road, the one who holds Orvane in their sleep would wake. Beat it: the road goes on beneath."
       ],
       "titan-king": [
         "The Fallen King as the Elder World remembers him: stone to the shoulders, the crown grown into his skull.",
@@ -248,9 +248,9 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "Gravé dans le casque : Aldric. Un marcheur de plus qui a tout donné aux autels, jusqu'à ce que seule l'armure marche."
       ],
       "the-dawn": [
-        "Le bout de la route : une ligne de lumière pâle, là où commence le Matin. Elle n'attaque pas. Elle grandit.",
+        "Une ligne de lumière pâle en travers de la route, là où devrait se tenir le Roi. Elle n'attaque pas. Elle grandit.",
         "Le Grand Livre a voulu noter sa longueur. Le temps d'écrire le nombre, il est déjà faux.",
-        "Si elle atteint la route, celui qui porte Orvane dans son sommeil se réveille, et Orvane finit. Pas cette nuit."
+        "Si elle touchait la route, celui qui porte Orvane dans son sommeil s'éveillerait. Bats-la : la route continue dessous."
       ],
       "titan-king": [
         "Le roi déchu tel que s'en souvient le Monde ancien : de pierre jusqu'aux épaules, la couronne soudée au crâne.",

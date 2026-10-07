@@ -1,6 +1,6 @@
 "use client";
 
-import { BIOMES, STAGES_PER_BIOME, STAGES_PER_ERA, ageForEra, biomeForStage, eraForStage, guardianForStage } from "@idlebound/game";
+import { BIOMES, ERAS_PER_AGE, STAGES_PER_BIOME, STAGES_PER_ERA, ageName, biomeForStage, drawnEra, eraForStage, guardianForStage } from "@idlebound/game";
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { useGame } from "../context";
@@ -21,14 +21,15 @@ export function MapWindow({ onClose }: { onClose: () => void }) {
   const eraStart = era * STAGES_PER_ERA;
   const label = (value: number) => stratumLabelOf(value, g.eraName(value), locale);
   const travel = (stage: number) => {
-    store.act((engine) => engine.travel(stage));
+    store.act({ type: "travel", stage });
     onClose();
   };
 
-  // The strata reached this night, grouped by Age: the ones the road can walk back to.
+  // The strata reached this night, grouped by Age: the ones the road can walk back to. Below
+  // the Dawn the Ages come round again (the Kingdom II…), each its own group.
   const ages: { age: number; eras: number[] }[] = [];
   for (let value = 0; value <= deepestEra; value += 1) {
-    const age = ageForEra(value);
+    const age = Math.floor(value / ERAS_PER_AGE);
     if (ages.at(-1)?.age !== age) ages.push({ age, eras: [] });
     ages.at(-1)?.eras.push(value);
   }
@@ -46,7 +47,7 @@ export function MapWindow({ onClose }: { onClose: () => void }) {
           <label htmlFor="map-stratum">{t.night.map.stratum}</label>
           <select id="map-stratum" className="input" value={era} onChange={(event) => setEra(Number(event.target.value))}>
             {ages.map((group) => (
-              <optgroup key={group.age} label={g.strata.ages[group.age] ?? ""}>
+              <optgroup key={group.age} label={ageName(group.eras[0], locale)}>
                 {group.eras.map((value) => (
                   <option key={value} value={value}>
                     {t.night.map.stratumOption(label(value), value * STAGES_PER_ERA + 1, (value + 1) * STAGES_PER_ERA)}
@@ -74,9 +75,9 @@ export function MapWindow({ onClose }: { onClose: () => void }) {
               onClick={() => travel(Math.min(state.maxStage, cleared ? start : Math.max(start, state.maxStage)))}
               style={{ ["--accent" as string]: biome.accent }}
             >
-              <PixelSprite source={sceneSource(biome.id, era)} size="parent" cover className="map-scene" />
+              <PixelSprite source={sceneSource(biome.id, drawnEra(era))} size="parent" cover className="map-scene" />
               <span className="map-card-shade" aria-hidden="true" />
-              <PixelSprite source={creatureSource(guardian, era, false)} size={110} className="map-boss" />
+              <PixelSprite source={creatureSource(guardian, drawnEra(era), false)} size={110} className="map-boss" />
               <span className="map-card-body">
                 <span className="map-card-stages">{text.stageRange(start, end)}</span>
                 <span className="map-card-name">{g.biomes[biome.id].name}</span>

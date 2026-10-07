@@ -53,13 +53,13 @@ market is French-speaking, with a full English version.
 
 | Element | Rule |
 |---|---|
-| Stages | 10 monsters per stage. Technical cap at stage 3000 (floating-point precision). |
+| Stages | 10 monsters per stage. No last stage: the road goes on as deep as the walker walks (see "The deep road"). A save may name a stage up to 10,000,000. |
 | Rout | On a stage under the best stage ever (so never on the first night), when the company would fell one of its monsters in under 0.1 s (companion DPS plus automatic strikes), the whole stage falls at once: its remaining kills, their gold (a golden rat's share at its odds) and the Bestiary, then the next stage, one stage every 0.25 s. Elites and guardians are still fought. The catch-up (hidden tab, closed game) routs the same way. The first Rout is explained once by a toast; each shows "Rout · stage N" and its gold. |
 | Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through; the Keep's gate (stage 45), the King and the strata below heal whole. |
 | Biomes | 5 biomes of 10 stages, six normal creatures, an elite and a guardian each: the Verdant Plains (Field Rat, Jumpy Boar, Carrion Crow, Hollow Scarecrow, Lantern Moth, Dusk Hare; Last Reaper; Moss Alpha), the Dark Forest (Shade Wolf, Briar Witch, Grove Spinner, Mourning Owl, Toadstool Choir, Whispering Bramble; Root Knight; Heart of the Old Grove), the Forgotten Caves (Blind Crawler, Echo Bat, Crystal Mite, Drip Leech, Haunted Cart, Hollow Canary; Miner's Shade; Stone Devourer), the Corrupted Marsh (Bog Remnant, Rot Toad, Will-o'-Wisp, Drowned Courtier, Peat Cutter, Mire Heron; Mire Colossus; Baron of Rot) and the Fallen King's Ruins (Gargoyle of the Hours, Banner Wraith, Fallen Sentinel, Hollow Page, Hound of the Last Hunt, Candle Maid; Stone Warden; the King). |
-| The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000, the last one, the Dawn stands in his place. |
+| The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000 the Dawn stands in his place, a milestone: beaten, it lets the walker through. Below it the forms come round again with the Ages (the Fallen King at 3050, the Titan King at 3300…). |
 | Rare wanderers | One per biome (the Lost Shepherd, the Weeping Stag, the Singing Geode, the Ferryman, the Court Jester): 0.5% of the biome's normal spawns that are not a golden rat or an event, once a run at most, ×5 gold, a Chronicle fragment on the first defeat. |
-| Eras | Each full loop of the 5 biomes (50 stages) starts a new era, a **stratum** with its own name (60 in all, from the present night to Dawn, in 12 Ages of five: the Kingdom, the Elder World, the Hallowed, the Making of the Stars, the Loom, the Draft, the Words, the Edge of Sleep, the Dreamer's Room, the Unmaking, the Blank, the First Mark): prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial, Titan…), drawn with that era's treatment (each Age transforms creatures and scenes, and every era wears the places down; see DESIGN.md). |
+| Eras | Each full loop of the 5 biomes (50 stages) starts a new era, a **stratum** with its own name (60 in all, from the present night to Dawn, in 12 Ages of five: the Kingdom, the Elder World, the Hallowed, the Making of the Stars, the Loom, the Draft, the Words, the Edge of Sleep, the Dreamer's Room, the Unmaking, the Blank, the First Mark): prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial, Titan…), drawn with that era's treatment (each Age transforms creatures and scenes, and every era wears the places down; see DESIGN.md). Below the Dawn (era 60 on) the night draws itself again from the first stratum: the era keeps counting (Era LXI…), its look, tag and King follow era mod 60, and the Age carries the fold's number (the Kingdom II, the Elder World II…). |
 | Golden rat | 1% base spawn chance on normal stages, ×10 gold. Chance capped at 25%. |
 | Wandering crystal | Appears every 90 to 240 s while the tab is visible (sooner with Garrick's Lodestone, the Humming Loom or the Moth Lantern), stays 13 s (18 s with the Singing Stone). Gives gold (40%), overcharge DPS ×7 for 15 s (25%), sharpness click ×10 (DPS share included) for 20 s (20%), 2 to 6 shards (12%) or essences (3%, only after a first ascension). Gold = 15 monsters of the current stage; essences = 1 + 1 per 100 stages of the best stage ever. The first crystal of a new game comes after 75 s. One crystal in 20 is a **Crystal Storm**: the Lantern Queen crosses the sky and five crystals fall in turn, 3 s each, a normal reward roll each (only while the tab is visible). |
 | HP curve | Three segments (steep early, then ×1.15 then ×1.18 per stage) tuned so ascension income never outruns monster HP. |
@@ -339,6 +339,42 @@ The second layer of rebirth, for the long run (it keeps players apart after week
   levels than the last: the Descents carry the walker down without running away.
 - Each Descent reopens the strata's keystones in a second reading.
 
+### The deep road
+
+The road has no last stage (BIBLE 24). The Dawn stands at stage 3000 in the King's place;
+beaten, it lets the walker through, and the night draws itself again from its first stratum.
+
+- **Strata below the Dawn.** The era keeps counting (Era LXI from stage 3001); its look, tag,
+  sounds and King's form are those of era mod 60 (`drawnEra`): era 60 is the present night
+  again, the Fallen King guards 3050, the Titan King 3300. The Age carries the fold's number
+  (the Kingdom II, the Elder World II…, then III). The Chronicle gains nothing new below the
+  Dawn: its sixty keystones are all there is, and a King's first fall there writes nothing
+  (biome echoes still come). The map groups the strata reached by Age and fold.
+- **The Remnants' growth.** Down to stage 3000, ×1.18 a stage as always. Below, it eases
+  toward ×1.152 (`curve.ts`: e-fold over 1000 stages), with no seam at the Dawn. A knife edge
+  measured with the long run: ×1.125 runs away, ×1.15 speeds up again below 7500, ×1.155 slows
+  to a crawl.
+- **Numbers.** Past stage 3500, HP, gold and damage are written in a larger unit, a power of
+  two that grows every 500 stages as much as the Remnants' HP did (`scale.ts`): the night's
+  unit from the night's deepest stage, the walk's from the deepest stage ever reached. The
+  engine, the checks and the display read both; every notation shows the plain number (the
+  letters go on after zz with aaa). Above stage 3500 nothing changed: the same games end bit
+  for bit alike. Depths read whole on the Roll and in the Hall.
+- **Measured** (`npx tsx packages/game/scripts/deep.ts`, from each seed's state at stage 3000,
+  reached on day 13 to 14 by the active bot; DEEP_FAST=1, every day's save checked):
+  - curve carried on at ×1.18 (step 1): the active bot +392 stages in 8 days, the realistic
+    leader +95, the pace falling e-fold every 900 stages or so;
+  - final curve, 9 seeds, 30 days: the active bot 3000 to 4381 (about 46 a day), the idle
+    company alike (4388 at ×1.155, the gap a twentieth), the realistic leader of `deep.ts`
+    (four hours a day) about 15 a day (3455 at ×1.155);
+  - the long run of seed 1, every day's save checked: stage 10,000 on day 272 (742 nights,
+    30 Descents), about 44 stages a day at 3000, 37 at 4000, 27 at 5000, 16 at 7500, then up
+    again, about 40 a day near 9500: past 7500 the deep road speeds up a little (it did at
+    ×1.15 too), the one target not held.
+- **Fair play.** The gold of a walk is weighed with the Altar of Fortune at the highest level
+  the walk's essences could have bought: a Descent lowers the altar, never the gold earned
+  under it.
+
 ### Relics and market
 
 - **4 slots** (weapon, armor, amulet, ring), each with a fixed main stat (DPS, boss damage,
@@ -421,15 +457,24 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   fight is lost, the failure toast carries his line "Come back when your hands stop shaking."
 - **The Night list**: the ascension history written as one line per night, with the King's
   Word of that night.
-- **The Ledger's scenes** (BIBLE 12.10): at a few key moments, a short scene of pixel shots
-  with one line each plays over everything while the game runs on beneath (toasts wait for
-  it). A press moves to the next shot, Escape or "Skip" ends it. One ships: **the First
-  Dusk**, at the first ascension ever (the Keep and its King, "Night one", the King's first
-  Word, the King going up in violet lights, the Sanctum's thirteen stones, the fields at
-  dusk: about 25 s); its ascension toast then carries no quote. Whether a scene was lived
-  derives from the state (the first dusk: one ascension or more), so the Chronicle's "What
-  the Ledger saw" lists it on every device, to be watched again; saves already past it see
-  it there at once.
+- **The Ledger's scenes** (BIBLE 12.10): eleven moments told like a film, over everything
+  while the game runs on beneath, quieter (toasts wait for them). Shots are sets of the world
+  (the road as it is drawn at a stage, with its biome, era and King's form; a place of the
+  story; a remembered face; a thing up close; the night ink) with a camera that pans across
+  them, actors standing on their ground (the guardian, the walker) and beats in time: lines,
+  sounds, the Dusk theme, the frame of a blow. A press shows the line coming up whole, then
+  moves to the shot's next line or the next shot; Escape or "Skip" ends it. The scenes:
+  **the Long Night** (a new walk, before the first strike, about 24 s), **the First Dusk**
+  (the first ascension, about 40 s; its ascension toast then carries no quote), **Almost**
+  (Maëlle hired again after she half remembers), **the Empty Throne**
+  (ascension 13), **the Crown in the Ice**, **the Rehearsal**, **the Threshold** and
+  **Beneath the Light** (once the deepest stage is past 500, 1000, 2000 and 3000), and
+  **the Loom** (the first Descent). Whether a scene was lived derives from the state, so the
+  Chronicle's "What the Ledger saw" lists it on every device, to be watched again. Several
+  lived at once play only the last. A scene played (by its moment or from the Chronicle)
+  leaves a mark in the save; the lived scenes without one are told once, by a toast ("A scene
+  of your walk waits in the Chronicle"), as soon as the Hall is open, so a walk older than a
+  scene learns of it.
 - **Recognition**: a companion who reached level 100 in a run remembers the walker a
   little (one run; two when it kept one of the two promises their memories wait for, see
   "The Promise");
@@ -537,6 +582,8 @@ opens again, within the same cap as a hidden tab.
   **autopilot** takes over once a minute (its first action about 2 min after the last input): companions spend the gold (below) and, once they
   can beat the boss that stopped them, turn auto-advance back on and try again. Until then
   they train on the stage before it.
+- **The step.** The game advances in steps of 100 ms however often the page ticks: a
+  throttled background tab lives the same steps as a watched one (see Anti-cheat).
 - **Hidden or throttled tab, computer asleep**: when the tab wakes up after a gap of more
   than 5 s, the time elapsed is simulated in one go (up to 8 h per gap), exactly as the
   autopilot would have played it: one-minute slices, spending between slices (a single
@@ -598,9 +645,12 @@ opens again, within the same cap as a hidden tab.
 ### Balance targets
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
-(`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 48, stage 50 in
-1 h 41, first ascension at 2 h 53, stage 100 at 4 h 27, then
-steady progress carried by ascensions. A naive walker (it buys the newest companion it can afford, never the best
+(`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 47, stage 50 in
+1 h 29, first ascension at 3 h 01, stage 100 at 3 h 51, then
+steady progress carried by ascensions. Over 30 seeds: 1 min 48, 1 h 35, 2 h 55 and 3 h 59,
+the same to the minute as before the replay (1 min 48, 1 h 36, 2 h 53, 3 h 59): since the
+engine steps every 100 ms (version 1.1, the bots' cadence), any change sends every seed down
+another road, and nine seeds swing a median by a quarter of an hour either way. A naive walker (it buys the newest companion it can afford, never the best
 value) loses 2 min 27 at the stage 20 guardian, 2 min 33 at the stage 30 guardian and
 3 min 09 at the stage 40 guardian (median of
 9 seeds, `npx tsx packages/game/scripts/walls.ts 9`). The pace of a run is set by the gold a
@@ -608,9 +658,10 @@ monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to 
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
 bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
 background tab add and the first hour back with and without the Reunion. The balance
-scripts play each seed (and each profile) in its own process, four at a time at a low
-priority so the machine stays usable (`BALANCE_WORKERS=n` for another count): the 24 h
-comparison takes about a quarter of an hour. Over 120 seeds the first ascension comes at 2 h 48
+scripts play each seed (and each profile) in its own process, six at a time at a low
+priority so the machine stays usable (`BALANCE_WORKERS=n` for another count); `npm run sims`
+plays all of them at once on the same six places, in about six minutes, and `npm run compare`
+sets two versions of the game side by side, seed by seed (see AGENTS.md). Over 120 seeds the first ascension comes at 2 h 48
 (median), 80% of walkers between 2 h 01 and 3 h 43. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
@@ -688,10 +739,12 @@ rejects real play.
 
 - **Server-side only.** No local save, no import/export, for accounts and guests alike.
 - **A guest's game is kept without an account** (`guest_saves`, `GET`/`PUT`/`DELETE
-  /save/guest`). The first save (sent once the guest has struck a blow, never for a page
-  merely opened) creates the game and hands the browser an httpOnly cookie (`ib_guest`,
-  SameSite Lax, 30 days sliding); the server stores only the hash of its token, no e-mail,
-  no name, no IP. A reload, or the same browser days later, reads the game back and saves on
+  /save/guest`). A new game is begun by the server (`POST /save/guest/new`, see Anti-cheat,
+  the fates): a browser without a game gets an httpOnly cookie (`ib_guest`, SameSite Lax, 30
+  days sliding) with its new game's seed, counted as a new guest game of its address. The
+  first save (sent once the guest has struck a blow, never for a page merely opened) keeps
+  the game under that cookie; the server stores only the hash of its token, no e-mail, no
+  name, no IP. A reload, or the same browser days later, reads the game back and saves on
   top of it, with the same revisions, conflicts and catch-up as an account's. It goes
   through the same `validation.ts` (see Anti-cheat), is never ranked, and is deleted after
   **30 days without a visit** (a read or a save counts, to the day; the cookie slides with
@@ -712,7 +765,15 @@ rejects real play.
   most 30 days. Such a run replacing the account's game may claim no more time (play and
   time away) than the stored game had been credited, plus the time the server saw pass
   since that save. Two first saves sent at once keep the first written; the other gets the
-  conflict. A save never goes back to an older version than the stored one.
+  conflict. A save never goes back to an older version than the stored one. A game belongs
+  to one account: a game another account already keeps (same creation date) is refused as
+  a first save, a replacement or a guest's game (`lineage-taken`), whatever its numbers.
+- When the session ends under an account's game (password changed elsewhere, session
+  expired), the page stops saving and keeps the game in hand; the Account window opens on
+  the login tab and drops the "your game comes with you" pitch. Signing in to the same
+  account carries on with the game in hand, played time included, when nothing else was
+  saved meanwhile (otherwise the newer kept save is taken). Signing up or in to another
+  account starts it from a new game: the game in hand stays with its account.
 - Logging out leaves a fresh guest game in the browser (kept like any guest's from its
   first blow). A guest can start a new game from the account window: it replaces the kept
   one at the next save. A signed-in player cannot erase the account's game (a save refused
@@ -721,6 +782,11 @@ rejects real play.
   guest's: the header says "Not kept" until the player signs in again.
 - Two pages of the same guest are two devices of an account: the one that did not see the
   last save gets the choice between its game and the kept one.
+- Every save carries the **journal** of what the walker did since the save it builds on (see
+  Anti-cheat), gzipped (a plain journal where the browser cannot compress, or for a save sent
+  as the page goes). A journal longer than the server takes at once (ten minutes of live
+  play, back from an outage) goes in parts, one save each, the next part as soon as the last
+  one is kept.
 - The client syncs every 30 s, when the tab is hidden and when the player logs out. A player
   action (purchase, gear, ascension, settings…; not attack clicks), an achievement, a loot
   drop or a new biome also triggers a save 3 s later, with at least 15 s between uploads to
@@ -761,6 +827,20 @@ rejects real play.
 - In the choice between two games, keeping the current one when the account's game is
   further along (best stage, then play time) asks for confirmation, naming what will be
   erased (stage, ascensions, play time).
+- **Save version 16** takes back the Harvest, the Dawn and the Morning of versions 14 and 15
+  (`dawn`, and the companions spared in the ascension history, are dropped). A walk the
+  Morning ended gets back its deepest stage (`maxStageEver`), the essences and threads it
+  gathered (`essences`, `threads`, to spend again) and its named relics (each drawn again from
+  the game's creation date and the relic's id, so every device and the server hold the same
+  one). Tested: version 14 saves before the count, after it and after a Morning parse,
+  verify and play on; the Morning's walk comes back whole.
+- **Save version 15** carries no random generator: the server keeps each game's seeds, and
+  the save counts the occasions each stream of fates used (`fates`, see Anti-cheat); it also
+  keeps the walker's time zone (`zone`, the dead of night and the Remembrance Nights fall on
+  their calendar). An older save drops its generator and starts counting from zero; the
+  server gives a game kept before the seeds its own secret the first time a page opens it.
+  The checks refuse a count going back (`fates`). Tested: a version 14 save parses,
+  verifies, plays on from the server's window and its journal replays to the same game.
 - **Save version 13** counts the Descents that wove a thread (`lifetime.weavings`, the
   Rewoven Nights board). An older save counts each of its Descents, never more than its
   threads woven (each wove one at least). The checks bound it by the Descents and the threads
@@ -801,7 +881,8 @@ rejects real play.
   (the history holds only the last hundred): an older save gets the most its data proves,
   its history's sum or what its crystals cannot explain. And the engine's random generator:
   its state travels in the save, so a reload draws the same crystals, loot and events
-  again (an older save is seeded from its creation date).
+  again (an older save is seeded from its creation date; version 15 replaced it with the
+  fates the server keeps).
 - **Save version 8** tells the whole story: the Kings beaten, Seams closed and threads woven,
   the Descent (Descents, threads, Weaves, the essences mark), the Caravan's week, the
   Chronicle's new counters (Age echoes, songs, returns, sayings, Lessons, events, altar
@@ -826,12 +907,83 @@ rejects real play.
 
 ## Anti-cheat
 
-The game runs client-side, so the server cannot replay every click. It recomputes everything
-deterministic with the shared engine (`packages/game/src/validation.ts`) and refuses a save
+The game runs on the page, and the server checks what really happened: it **replays** each
+save's journal with the shared engine, from the save it builds on, with **fates only it can
+draw**, and compares the game it lands on with the one sent. The bounds below stay as a
+safety net, measured on the game the server keeps. A walker's **presence** is read from the
+same replays, for a person to review the boards; nothing is ever refused or hidden by it.
+
+**The replay** (`packages/game/src/replay.ts`, `apps/api/src/replay/`).
+- The engine is deterministic. It advances in steps of 100 ms from its last one, whatever the
+  cadence of the calls (a frame, a throttled background tab, the server); a gap past 5 s is
+  one catch-up. Everything the walker does is a named command run at the time of the last
+  step (`commands.ts`): purchases, strikes (counted per step), crystals, powers, settings, the
+  Chronicle read, presence on the page, visibility, language, time zone. Pow, exp and the
+  logarithms are written with the four operations alone (`dmath.ts`), so every browser engine
+  lands on the same numbers: `npm run engines` replays nine minutes of three deep games in
+  Chromium, Firefox and WebKit against Node's.
+- The page writes each command, each catch-up (and its gap), each step back of the clock and
+  each save in its journal (`[dt, type, payload]`). The server replays it from the stored
+  game: the save it builds on, or the revision before (a save whose answer was lost), or the
+  game as it stood when another page took it (the first device keeps its own game), with
+  the page's rhythms where the last replay left them (`runtime`: the autopilot's clock, Pip's
+  rest, the absence for the Reunion). A command the engine cannot run is skipped, never a
+  reason to fail: the replayed game is what the walker could really have done.
+- A journal holds at most ten minutes of live play (6,000 steps; catch-ups count for
+  nothing) and 60,000 entries, 4 MB unpacked; past that it is not replayed. Replays run in
+  worker threads (`REPLAY_WORKERS`, the cores but one, four at most), stopped after 5 s.
+  Measured: 9 ms of CPU for 30 s of play at 10 clicks per second (stages 1000, 2800 and
+  9950 alike), about 0.3 core for a thousand walkers saving every 30 s; a full journal of ten
+  minutes in about 0.2 s. A journal weighs about 0.5 KB gzipped for 30 s of play, 4 KB for
+  ten minutes (a save is 26 to 31 KB).
+- `REPLAY_MODE=shadow` (default): the server keeps the save as sent and logs what the replay
+  found when it is not the same game (`replay_reports`: the paths that differ, commands
+  skipped, kept 90 days, 30 per game and hour). `REPLAY_MODE=enforce`: the replayed game is
+  the one kept and ranked, the page adopts it (the save's answer carries it, and the page
+  replays what the walker did since on top of it); a save without a journal the server can
+  replay is refused (`journal`).
+- A journal sent in parts (back from an outage) is held, part after part, to the time since
+  the save before the first part, as one save would be; one that builds on an earlier
+  revision, to the time since that revision.
+
+**The fates** (`packages/game/src/fates.ts`, `apps/api/src/lib/fates.ts`).
+- Randomness is split by use: strikes, spawns, a kill's spoils, crystals appearing, crystals
+  caught, chests and the Caravan, the road's events. Each stream counts its occasions, and
+  the n-th occasion of a stream always draws the same, whatever happened in the others (the
+  n-th chest gives the same relic whatever was struck before). The save keeps the counts only.
+- Each game has a secret the server keeps beside the save, never in it nor sent. A stream's
+  occasions come in slices (8192 strikes, 2048 spawns or spoils, 32 crystals, 64 chests, 256
+  road events), each seeded by the HMAC-SHA256 of its stream and index under that secret.
+  A page receives the seeds of 16 slices from where it stands in each stream (at least
+  twenty minutes of the busiest play), with each game it opens and each save kept: nobody can
+  draw the fates past that window, offline or not.
+- Out of fates (the Ledger unreachable past the window), the road waits: nothing is lived,
+  the header says "The road waits for the Ledger", and once the Ledger answers the time
+  waited comes back as an absence (a catch-up, which draws none).
+- A new game is begun by the server (`POST /save/new`, `POST /save/guest/new`): one pending
+  seed per account and per guest cookie, with its birth date, handed out again and again
+  until a save begins that game. Asking twice gives the same game: nobody draws several and
+  keeps the luckiest. A pending seed nobody began is forgotten after 30 days.
+
+**Presence** (`presence_days`, `presence_spans`, `apps/api/src/lib/presence.ts`).
+- What the replay sees, per account and per day (kept 90 days), outside the clicks and the
+  time played: crystals that appeared and those caught, how fast (by buckets of reaction
+  time), powers used and those used within a second of coming back, ascensions, and the
+  longest stretch of these acts without a 20-minute pause. Autoclickers are tolerated: the
+  cadence and regularity of strikes, and how long the game ran, are never measured; Pip's
+  wagers, won by striking, are left out for the same reason.
+- A score of 0 to 100 weighs a stretch past ten hours (full past a day), nearly every crystal
+  caught, most catches under 300 ms, and powers relaunched the moment they come back. It
+  ranks walkers for review only: `npm run review -w @idlebound/api` (or `node review.js` in
+  the image) lists a board's walkers with their score, The Watch first, and `--hide` /
+  `--show <username>` set a row's `hidden` flag by hand. Never an automatic ban.
+
+**The bounds**, the safety net. The server recomputes everything deterministic with the
+shared engine (`packages/game/src/validation.ts`) and refuses a save
 when a ledger does not hold: gold spent vs earned, essences spent vs collected, play time vs
 real elapsed time, click and kill rates, gold per kill, boss beatable with the declared
 power, item and achievement generation rules (each deed once), no statistic going backwards,
-no backdated run. Even a first save or a replacement, with no previous save to compare to, has
+no fate drawn twice, no backdated run. Even a first save or a replacement, with no previous save to compare to, has
 its ascensions and Descents bounded by the time the game ran (30 s each at least), its guardians by
 its kills, its deepest stage by its kills (a whole stage of monsters for each stage of its
 record, a guardian alone, or one Unweave), its Ritual stacks by the powers used this run, its
@@ -881,7 +1033,7 @@ plus a won wager per golden rat. Gains between two saves allow for the rounding 
 2^53 (essences gathered move in steps of 32 at 2.5e17). A night may begin as far as the Altar
 of the Wanderer and the Ring of the Second Morning skip, the ring counted once found, worn or
 not (it may have been taken off since the dusk).
-The schema bounds what the checks walk: stages up to 3000, weave levels up to 200, and every
+The schema bounds what the checks walk: stages up to 10,000,000, weave levels up to 1000, and every
 record keyed by game ids to a size well above the game's data, so no save can make the
 server spin. The schema and the checks live in `@idlebound/game/server` and never ship to
 the browser.
@@ -975,20 +1127,20 @@ count followed play time and depth and ranked walkers almost exactly like Depth.
 
 Every value comes from saves the anti-cheat accepted, and the leaderboard keeps each
 player's best verified values (a replacement never lowers them). The landing page shows the
-top 10 of Depth and the number of ranked players. Logged-in players see their own rank and
+top 10 of Depth. Logged-in players see their own rank and
 the two walkers just ahead and just behind them ("Around you"), on the public page and in the
 Hall of the game; in the Hall, a tally's board appears once the walker has one. A walker
 enters a tally with its first one: a zero is not a place. A guest has no row: the rank comes
-with the account, from its first accepted save. A row can be hidden by hand in the database
-(`hidden` flag), for moderation: it leaves every board, and nobody counts it in their rank;
+with the account, from its first accepted save. A row can be hidden by hand (`hidden` flag), for moderation,
+after a person reviewed it (the presence scores of `npm run review`, see Anti-cheat): it leaves every board, and nobody counts it in their rank;
 its walker still sees their own rank, but nobody around.
 
 - **Who got there first.** Among equal stages, whoever reached that stage first ranks
   higher, everywhere a rank is computed (the boards, the walker's own rank and surroundings,
   the landing page's top 10). The date is the server's: the moment it accepted the save that
   raised the account's best stage (`stage_reached_at`). A save that does not raise the best
-  stage leaves the date alone. The game ends at stage 3000, so the top of Depth fills with
-  equal stages: the date keeps it meaningful.
+  stage leaves the date alone. The road has no last stage (version 1.0); among walkers at the
+  same depth, the date still decides.
 - **Tallies' ties.** On an equal tally, the highest stage ranks higher, then whoever reached
   it first.
 - **Earlier boards.** Stride, Nights, Light, Deeds and Night were retired with
@@ -1044,4 +1196,7 @@ language.
 - Local or exported saves.
 - Real-time multiplayer, chat, guilds.
 - Collecting any personal data beyond e-mail, username and password hash (a guest's game
-  carries none).
+  carries none). The presence an account's replays show (see Anti-cheat) is kept as game
+  counts per day for 90 days, never the clicks' timing, the device or the address, and the
+  journals themselves are dropped once replayed.
+- Banning or hiding anyone automatically: the presence score only orders a person's review.

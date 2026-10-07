@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { STREAMS, type Stream } from "./fates";
 import { WEAVE_LEVEL_MAX } from "./data/descent";
 import { MAX_STAGE } from "./formulas";
 import { migrateState } from "./migrate";
@@ -9,6 +10,8 @@ export { RENAMED_CREATURES, legacyAltarSpend, migrateState } from "./migrate";
 const finite = z.number().refine(Number.isFinite, "invalid number");
 const positive = finite.refine((value) => value >= 0, "negative number");
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+/** A whole number that may outgrow 2^53: the thread doubles with every Age of new depth (2^53 near stage 14,500). */
+const large = finite.refine((value) => value >= 0 && Number.isInteger(value), "not a whole number");
 
 const statBlock = z.object({
   clicks: count,
@@ -51,6 +54,26 @@ function idRecord<T extends z.ZodType>(value: T, max: number, keyLength = 40) {
 }
 const level = z.number().int().min(0).max(1_000_000);
 
+const lifetimeSchema = statBlock.extend({
+  ascensions: count,
+  essencesEarned: positive,
+  ascensionEssences: positive,
+  shardsEarned: count,
+  itemsFound: count,
+  legendaries: count,
+  mythics: count,
+  bossFails: count,
+  offlineSeconds: positive,
+  hourglasses: count,
+  bestLevelSum: count,
+  bestHired: count,
+  kings: count,
+  seams: count,
+  threads: large,
+  routs: count,
+  weavings: count
+});
+
 export const gameStateSchema = z.object({
   version: z.number().int(),
   createdAt: finite,
@@ -91,26 +114,8 @@ export const gameStateSchema = z.object({
   crystal: z.object({ id: z.string().max(40), expiresAt: finite, x: finite, y: finite, storm: z.number().int().min(0).max(10).optional() }).nullable(),
   nextCrystalAt: finite,
   run: statBlock,
-  lifetime: statBlock.extend({
-    ascensions: count,
-    essencesEarned: positive,
-    ascensionEssences: positive,
-    shardsEarned: count,
-    itemsFound: count,
-    legendaries: count,
-    mythics: count,
-    bossFails: count,
-    offlineSeconds: positive,
-    hourglasses: count,
-    bestLevelSum: count,
-    bestHired: count,
-    kings: count,
-    seams: count,
-    threads: count,
-    routs: count,
-    weavings: count
-  }),
-  ascensions: z.array(z.object({ at: finite, maxStage: stageNumber, essences: positive, threads: count.optional() })).max(200),
+  lifetime: lifetimeSchema,
+  ascensions: z.array(z.object({ at: finite, maxStage: stageNumber, essences: positive, threads: large.optional() })).max(200),
   settings: z.object({
     notation: z.enum(["letters", "scientific", "engineering"]),
     sound: z.boolean(),
@@ -169,12 +174,13 @@ export const gameStateSchema = z.object({
     eclipse: z.boolean().optional()
   }),
   descents: count,
-  threads: count,
+  threads: large,
   weaves: idRecord(z.number().int().min(0).max(WEAVE_LEVEL_MAX), 20),
   legacyThreads: count.optional(),
   legacyHarvest: z.number().int().min(0).max(1_000).optional(),
   caravanWeek: z.string().max(10),
-  rngState: z.number().int().min(0).max(0xffffffff)
+  fates: z.object(Object.fromEntries(STREAMS.map((stream) => [stream, z.number().int().min(0).max(2 ** 40)])) as Record<Stream, z.ZodNumber>).strict(),
+  zone: z.number().int().min(-14 * 60).max(14 * 60).optional()
 });
 
 export function parseState(raw: unknown): GameState {

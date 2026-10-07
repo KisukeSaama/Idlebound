@@ -7,7 +7,8 @@
     "build": "node build.mjs",
     "start": "node dist/index.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --env-file-if-exists=../../.env src/migrate-cli.ts"
+    "db:migrate": "tsx --env-file-if-exists=../../.env src/migrate-cli.ts",
+    "review": "tsx --env-file-if-exists=../../.env src/review-cli.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",

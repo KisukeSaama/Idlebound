@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { href } from "@/i18n/routing";
 import type { CloudStatus } from "../cloud";
-import { useCloud, useFormat, useGame, useReveals, useStoreRef, useUi } from "../context";
+import { useCloud, useFormat, useGame, useMagnitude, useReveals, useStoreRef, useUi } from "../context";
 import { ClickIcon, EssenceIcon, GoldIcon, Picto, ShardIcon, SwordIcon } from "../icons";
 import { goldLandsAfter } from "../pixel/arena";
 
@@ -20,10 +20,13 @@ export function GameHeader() {
   const cloud = useCloud();
   const ui = useUi();
   const fmt = useFormat();
+  const magnitude = useMagnitude();
   const { shown, freshClass } = useReveals();
   const { t, locale } = useI18n();
   const m = t.hud.header;
-  const trouble = TROUBLE.has(cloud.status) ? t.account.status[cloud.status] : null;
+  // Out of fates, the game stands still until the Ledger answers: said before anything else.
+  const waiting = useStoreRef().waiting;
+  const trouble = waiting ? t.account.waiting.label : TROUBLE.has(cloud.status) ? t.account.status[cloud.status] : null;
 
   return (
     <header className="game-header">
@@ -39,14 +42,14 @@ export function GameHeader() {
           <div className={`resource${freshClass("dps")}`} title={m.dpsTitle}>
             <SwordIcon />
             <span className="resource-label">{m.dpsLabel}</span>
-            <span className="resource-value resource-value-fixed">{fmt(derived.dps)}</span>
+            <span className="resource-value resource-value-fixed">{magnitude(derived.dps)}</span>
           </div>
         ) : null}
         {shown.click ? (
           <div className={`resource resource-click${freshClass("click")}`} title={m.clickTitle}>
             <ClickIcon />
             <span className="resource-label">{m.clickLabel}</span>
-            <span className="resource-value resource-value-fixed">{fmt(derived.click)}</span>
+            <span className="resource-value resource-value-fixed">{magnitude(derived.click)}</span>
           </div>
         ) : null}
         {shown.essences ? (
@@ -65,13 +68,13 @@ export function GameHeader() {
       <button
         type="button"
         className={`account-chip${cloud.user ? " is-online" : ""}${trouble ? " has-trouble" : ""}`}
-        title={cloud.user ? undefined : t.account.ledger.guestPlain}
+        title={waiting ? t.account.waiting.title : cloud.user ? undefined : t.account.ledger.guestPlain}
         onClick={() => ui.openWindow("account")}
       >
         {trouble ? null : <span className={`sync-dot sync-${cloud.status}`} aria-hidden="true" />}
         <span className="account-name">{cloud.user ? cloud.user.username : t.account.ledger.guest}</span>
         {trouble ? (
-          <span className={`sync-badge sync-badge-${cloud.status}`}>
+          <span className={`sync-badge sync-badge-${waiting ? "waiting" : cloud.status}`}>
             <Picto name="warning" size={14} />
             <span className="sync-badge-text">{trouble}</span>
           </span>
@@ -89,7 +92,7 @@ export function GameHeader() {
  */
 function GoldValue() {
   const store = useStoreRef();
-  const fmt = useFormat();
+  const fmt = useMagnitude();
   const [inFlight, setInFlight] = useState(0);
 
   useEffect(() => {

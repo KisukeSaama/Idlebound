@@ -1,4 +1,4 @@
-import { isApiError, type ApiError, type GameState, type PasswordIssue, type UsernameIssue } from "@idlebound/game";
+import { isApiError, type ApiError, type EngineRuntime, type FateWindow, type GameState, type Journal, type PasswordIssue, type UsernameIssue } from "@idlebound/game";
 import { currentMessages } from "@/i18n/client";
 import type { BoardId, RollRow } from "./boards";
 import { noteServerRelease, RELEASE_HEADER, VERSION_HEADER } from "./release";
@@ -108,6 +108,23 @@ export interface CloudSave {
   updatedAt: string;
   /** Milliseconds the server saw pass since this save was written. */
   elapsedMs: number;
+  /** The window of this game's fates (see `fates.ts` in the game); null until the server keeps a seed for it. */
+  fates: FateWindow | null;
+}
+
+/** A new game, as the server begins it: its birth date and the window of its fates. */
+export interface NewGame {
+  createdAt: number;
+  fates: FateWindow;
+}
+
+/** What the server answers a kept save: its revision, and the fates to play on with. */
+export interface KeptSave {
+  revision: number;
+  updatedAt: string;
+  fates: FateWindow | null;
+  /** The game the server replayed, when it kept that one rather than the one sent. */
+  replay?: { state: GameState; runtime: EngineRuntime };
 }
 
 export interface LeaderboardData {
@@ -140,14 +157,37 @@ export const api = {
    */
   openSave: (holder: string, force = false, guest = false) =>
     request<{ save: CloudSave | null; elsewhere: boolean }>("POST", guest ? "/save/guest/open" : "/save/open", { holder, force }),
-  /** `release`: the page is out of sight, and lets the game go once it is kept. */
-  putSave: (state: GameState, baseRevision: number | null, options: { replace?: boolean; keepalive?: boolean; guest?: boolean; holder?: string; release?: boolean } = {}) =>
-    request<{ revision: number; updatedAt: string }>(
+  /** The account's next game, or with `guest` this browser's: the same until a save begins it. */
+  newGame: (guest = false) => request<NewGame>("POST", guest ? "/save/guest/new" : "/save/new"),
+  /**
+   * `release`: the page is out of sight, and lets the game go once it is kept. `journal`: what
+   * the walker did since the save it builds on, as an object or gzipped (see `packJournal`);
+   * `more`: the rest of it follows in the next saves.
+   */
+  putSave: (state: GameState, baseRevision: number | null, options: { replace?: boolean; keepalive?: boolean; guest?: boolean; holder?: string; release?: boolean; journal?: Journal | string; more?: boolean } = {}) =>
+    request<KeptSave>(
       "PUT",
       options.guest ? "/save/guest" : "/save",
-      { state, baseRevision, replace: options.replace ?? false, holder: options.holder, release: options.release },
+      { state, baseRevision, replace: options.replace ?? false, holder: options.holder, release: options.release, journal: options.journal, more: options.more },
       { keepalive: options.keepalive }
     ),
   dropGuestSave: () => request<{ ok: true }>("DELETE", "/save/guest"),
   leaderboard: (board: BoardId) => request<LeaderboardData>("GET", `/leaderboard?board=${board}&limit=50`)
 };
+
+/**
+ * A journal gzipped and in base64, about ten times smaller than its JSON; the JSON itself
+ * where the browser cannot compress.
+ */
+export async function packJournal(journal: Journal): Promise<Journal | string> {
+  if (typeof CompressionStream === "undefined") return journal;
+  try {
+    const stream = new Blob([JSON.stringify(journal)]).stream().pipeThrough(new CompressionStream("gzip"));
+    const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    let binary = "";
+    for (let index = 0; index < bytes.length; index += 0x8000) binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    return btoa(binary);
+  } catch {
+    return journal;
+  }
+}

@@ -4,12 +4,14 @@ import { biomeForStage, eraForStage } from "../data/biomes";
 import { ECLIPSE_EVERY } from "../data/events";
 import { SKILL_BY_ID } from "../data/skills";
 import { skillCooldownMultiplier } from "../formulas";
-import { ageForEra } from "../data/strata";
+import { ageForEra, drawnEra, eraFold } from "../data/strata";
 import type { Locale } from "../i18n";
 import type { ChronicleEntry, GameState, Item, MonsterState, SkillId } from "../types";
 import { en } from "./en";
 import { fr } from "./fr";
 import { grammarLine } from "./grammar";
+import { roman } from "./roman";
+import type { CutsceneId } from "../data/cutscenes";
 import type { GameText, LoreLine, PromiseText } from "./types";
 
 export type { CutsceneText, Gender, GameText, HeroText, LoreLine, Memories, NameText, PromiseText } from "./types";
@@ -31,14 +33,19 @@ export function eraLabel(stage: number, locale: Locale): string {
   return TEXT[locale].eraName(eraForStage(stage));
 }
 
-/** The tag of a stratum ("" for the present night). */
+/** The tag of a stratum ("" for the present night, and for it again below the Dawn). */
 export function stratumTag(era: number, locale: Locale): string {
-  return TEXT[locale].strata.tags[era] ?? "";
+  return TEXT[locale].strata.tags[drawnEra(era)] ?? "";
 }
 
-/** The name of the Age a stratum belongs to. */
+/**
+ * The name of the Age a stratum belongs to. Below the Dawn the Ages come round again, and
+ * carry the number of the fold: the Kingdom II, the Elder World II… (BIBLE 24).
+ */
 export function ageName(era: number, locale: Locale): string {
-  return TEXT[locale].strata.ages[ageForEra(era)] ?? "";
+  const name = TEXT[locale].strata.ages[ageForEra(drawnEra(era))] ?? "";
+  const fold = eraFold(era);
+  return fold > 0 && name ? `${name} ${roman(fold + 1)}` : name;
 }
 
 export function biomeName(stage: number, locale: Locale): string {
@@ -49,8 +56,7 @@ export function biomeName(stage: number, locale: Locale): string {
 export function monsterName(monster: Pick<MonsterState, "id" | "kind">, stage: number, locale: Locale): string {
   const text = TEXT[locale];
   const name = own(text.monsters, monster.id) ?? monster.id;
-  const era = eraForStage(stage);
-  const tag = text.strata.tags[era];
+  const tag = text.strata.tags[drawnEra(eraForStage(stage))];
   if (!tag || monster.kind === "treasure" || monster.id === "the-dawn") return name;
   return `${tag} · ${name}`;
 }

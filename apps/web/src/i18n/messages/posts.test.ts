@@ -1,6 +1,6 @@
 import { BESTIARY, BIOMES, LOCALES } from "@idlebound/game";
 import { describe, expect, it } from "vitest";
-import { NEWS_POSTS, newsPost } from "./posts";
+import { NEWS_POSTS, newsPost, type NewsBlock } from "./posts";
 
 describe("the news articles", () => {
   it("each have a unique URL slug", () => {
@@ -36,6 +36,20 @@ describe("the news articles", () => {
         expect(text.body.length).toBeGreaterThan(0);
       }
       expect(post.fr.body.map((block) => block.kind)).toEqual(post.en.body.map((block) => block.kind));
+    }
+  });
+
+  it("give every entry the same tag and the same changes in every language", () => {
+    const shape = (block: NewsBlock) => (block.kind === "entry" ? [block.tag, block.context !== undefined, block.changes.map((change) => "text" in change)] : block.kind);
+    for (const post of NEWS_POSTS) {
+      expect(post.fr.body.map(shape)).toEqual(post.en.body.map(shape));
+      for (const locale of LOCALES) {
+        for (const block of post[locale].body) {
+          if (block.kind !== "entry") continue;
+          const labels = block.changes.map((change) => change.label);
+          expect(new Set(labels).size).toBe(labels.length);
+        }
+      }
     }
   });
 

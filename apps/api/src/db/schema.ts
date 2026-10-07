@@ -1,6 +1,28 @@
 import { sql } from "drizzle-orm";
+import type { EngineRuntime, GameState } from "@idlebound/game";
 import type { Pace } from "@idlebound/game/server";
-import { bigint, boolean, index, integer, jsonb, pgTable, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, date, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+/** A game as it stood at a revision, with the page's rhythms there: a journal may build on it. */
+export interface Branch {
+  revision: number;
+  state: GameState;
+  runtime: EngineRuntime | null;
+  /** The server's own ledger at that revision, and when it kept it (ms). */
+  pace: Pace | null;
+  at: number;
+}
+
+/**
+ * Where a chain of saves began: a page back from a long outage sends its journal in several
+ * saves in a row, and each is held to the time since the chain began, as one save would be.
+ */
+export interface Chain {
+  state: GameState;
+  pace: Pace | null;
+  /** When the server kept the save the chain began after (ms). */
+  at: number;
+}
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -65,8 +87,26 @@ export const saves = pgTable("saves", {
    * validation): the deepest night it saw, time claimed ahead of its clock, powers left, the
    * night's start. Null for a game last saved before it was kept.
    */
-  pace: jsonb("pace").$type<Pace>()
-});
+  pace: jsonb("pace").$type<Pace>(),
+  /**
+   * The secret the seeds of this game's fates are drawn from (see lib/fates.ts): never sent
+   * to a page, never in the save. Null for a game last saved before it was kept.
+   */
+  seed: text("seed"),
+  /** The page's rhythms where the server's last replay of this game left them (see replay.ts). */
+  runtime: jsonb("runtime").$type<EngineRuntime>(),
+  /**
+   * The game as it stood when another page took it: the page it was taken from builds on it,
+   * and its journal is replayed from here if the walker keeps that page's game.
+   */
+  branch: jsonb("branch").$type<Branch>(),
+  /**
+   * The game at the revision before this one: a page whose last save landed but whose answer
+   * was lost builds on it, and its journal is replayed from here.
+   */
+  parent: jsonb("parent").$type<Branch>(),
+  chain: jsonb("chain").$type<Chain>()
+}, (table) => [index("saves_game_created_at_idx").on(table.gameCreatedAt)]);
 
 /**
  * A guest's game: no account, no e-mail. The browser holds an httpOnly cookie, the row is
@@ -87,7 +127,13 @@ export const guestSaves = pgTable("guest_saves", {
   holder: text("holder"),
   heldAt: timestamp("held_at", { withTimezone: true }),
   /** What the server measured itself across this game's saves (see `saves`). */
-  pace: jsonb("pace").$type<Pace>()
+  pace: jsonb("pace").$type<Pace>(),
+  /** The secret of this game's fates, the page's rhythms, the game where another page took it, the revision before (see `saves`). */
+  seed: text("seed"),
+  runtime: jsonb("runtime").$type<EngineRuntime>(),
+  branch: jsonb("branch").$type<Branch>(),
+  parent: jsonb("parent").$type<Branch>(),
+  chain: jsonb("chain").$type<Chain>()
 }, (table) => [index("guest_saves_last_seen_idx").on(table.lastSeenAt)]);
 
 export const leaderboard = pgTable("leaderboard", {
@@ -120,3 +166,58 @@ export const saveRejections = pgTable("save_rejections", {
   codes: jsonb("codes").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [index("save_rejections_user_idx").on(table.userId)]);
+
+/**
+ * The seed of a game not begun yet: one per account, one per guest's cookie, handed out again
+ * and again until a save begins that game. Asking for a new game twice gives the same seed and
+ * the same birth date, so nobody draws several and keeps the luckiest.
+ */
+export const pendingSeeds = pgTable("pending_seeds", {
+  /** "u:" and the account's id, or "g:" and the hash of the guest's cookie. */
+  owner: text("owner").primaryKey(),
+  secret: text("secret").notNull(),
+  /** The new game's creation date (its lineage), chosen by the server, unique. */
+  gameCreatedAt: bigint("game_created_at", { mode: "number" }).notNull().unique(),
+  issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [index("pending_seeds_issued_idx").on(table.issuedAt)]);
+
+/**
+ * What the replay of a journal found when it did not land on the declared game, or could not
+ * run (kept 90 days, 30 per game and hour at most): the review of shadow mode reads it.
+ */
+export const replayReports = pgTable("replay_reports", {
+  id: serial("id").primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  guestId: text("guest_id"),
+  outcome: text("outcome").notNull(),
+  detail: jsonb("detail").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [index("replay_reports_user_idx").on(table.userId), index("replay_reports_created_idx").on(table.createdAt)]);
+
+/**
+ * What the replays saw of an account's presence, a row per day (kept 90 days), outside its
+ * clicks: crystals that appeared and were caught and how fast, powers used as they came back,
+ * ascensions, and the longest stretch of such acts without a 20-minute pause. Never in the
+ * save, never used on its own: it helps a person review the boards (see review-cli.ts).
+ */
+export const presenceDays = pgTable("presence_days", {
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  day: date("day", { mode: "string" }).notNull(),
+  crystalsSeen: integer("crystals_seen").notNull().default(0),
+  crystalsCaught: integer("crystals_caught").notNull().default(0),
+  /** Catches by reaction time, in the buckets of `REACTION_BUCKETS`. */
+  reactions: jsonb("reactions").$type<number[]>().notNull(),
+  powers: integer("powers").notNull().default(0),
+  promptPowers: integer("prompt_powers").notNull().default(0),
+  ascensions: integer("ascensions").notNull().default(0),
+  acts: integer("acts").notNull().default(0),
+  /** The longest stretch of acts without a long pause that ended this day, in ms. */
+  longestSpanMs: bigint("longest_span_ms", { mode: "number" }).notNull().default(0)
+}, (table) => [primaryKey({ columns: [table.userId, table.day] })]);
+
+/** The stretch of presence under way for an account: when it began, and its last act. */
+export const presenceSpans = pgTable("presence_spans", {
+  userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  startedAt: bigint("started_at", { mode: "number" }).notNull(),
+  lastAt: bigint("last_at", { mode: "number" }).notNull()
+});

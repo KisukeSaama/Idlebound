@@ -51,7 +51,7 @@ export function SkillBar() {
             className={`skill ${active ? "active" : ""} ${cooling && !active ? "cooling" : ""} ${!cooling ? "ready" : ""}${shining ? " just-ready" : ""}`}
             aria-label={label}
             onClick={() => {
-              const used = store.act((engine, time) => engine.useSkill(skill.id, time));
+              const used = store.act<boolean>({ type: "skill", id: skill.id });
               if (!used) audio.play("error");
             }}
           >

@@ -118,7 +118,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
       },
       dawn: {
         name: "The Dawn",
-        description: "The end of the road: a line of pale light where the Morning begins. It grows a little while you look at it."
+        description: "A line of pale light across the road. It grows a little while you look at it. The road does not stop there."
       }
     }
   },
@@ -232,7 +232,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
       },
       dawn: {
         name: "L'Aube",
-        description: "Le bout de la route : une ligne de lumière pâle, là où commence le Matin. Elle grandit un peu pendant que tu la regardes."
+        description: "Une ligne de lumière pâle en travers de la route. Elle grandit un peu pendant que tu la regardes. La route ne s'arrête pas là."
       }
     }
   }

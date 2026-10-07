@@ -20,7 +20,11 @@ export const privacy = defineMessages({
       { label: "Adresse e-mail", text: " : pour te connecter, confirmer ton compte et réinitialiser ton mot de passe. Jamais affichée ni partagée." },
       { label: "Pseudo", text: " : affiché publiquement dans le classement." },
       { label: "Mot de passe", text: " : stocké uniquement sous forme d'empreinte (scrypt). Personne ne peut le lire." },
-      { label: "Progression de jeu", text: " : ta progression, pour la retrouver sur tous tes appareils." }
+      { label: "Progression de jeu", text: " : ta progression, pour la retrouver sur tous tes appareils." },
+      {
+        label: "Jeu loyal",
+        text: " : à chaque envoi de ta partie, le serveur refait son chemin à partir de ce que tu as fait dans le jeu (achats, pouvoirs, cristaux, frappes comptées par instant), puis l'oublie. Il ne garde, par jour et pendant 90 jours, que quelques comptes de ta présence : cristaux apparus et attrapés et en combien de temps, pouvoirs relancés, ascensions, plus longue période de jeu sans pause. Ces comptes servent seulement à une personne qui vérifie le classement : rien n'est décidé automatiquement."
+      }
     ],
     cookiesTitle: "Cookies",
     cookiesText:
@@ -54,7 +58,11 @@ export const privacy = defineMessages({
       { label: "Email address", text: ": to sign in, confirm your account and reset your password. Never displayed or shared." },
       { label: "Username", text: ": shown publicly on the leaderboard." },
       { label: "Password", text: ": stored only as a hash (scrypt). Nobody can read it." },
-      { label: "Game progress", text: ": your progress, so you can pick it up on all your devices." }
+      { label: "Game progress", text: ": your progress, so you can pick it up on all your devices." },
+      {
+        label: "Fair play",
+        text: ": each time your game is sent, the server walks its road again from what you did in the game (purchases, powers, crystals, strikes counted per moment), then forgets it. It only keeps, per day and for 90 days, a few counts of your presence: crystals that appeared and were caught and how fast, powers used again, ascensions, the longest stretch of play without a pause. These counts only help a person who reviews the leaderboard: nothing is decided automatically."
+      }
     ],
     cookiesTitle: "Cookies",
     cookiesText:

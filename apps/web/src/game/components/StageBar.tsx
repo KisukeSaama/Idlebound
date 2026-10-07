@@ -12,7 +12,7 @@ export function StageBar() {
   const current = state.stage;
   const first = Math.max(1, Math.min(current - 2, state.maxStage - 4));
   const pips = Array.from({ length: 5 }, (_, index) => first + index);
-  const travel = (stage: number) => store.act((engine) => engine.travel(stage));
+  const travel = (stage: number) => store.act({ type: "travel", stage });
   const canProgress = !state.autoAdvance && state.stage < state.maxStage;
 
   return (
@@ -39,7 +39,7 @@ export function StageBar() {
       <button
         type="button"
         className={`auto-toggle ${state.autoAdvance ? "on" : "off"} ${canProgress ? "nudge" : ""}${freshClass("autoToggle")}`}
-        onClick={() => store.act((engine) => engine.toggleAutoAdvance())}
+        onClick={() => store.act({ type: "auto" })}
         title={state.autoAdvance ? m.autoOn : m.autoOff}
         aria-pressed={state.autoAdvance}
       >

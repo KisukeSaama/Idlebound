@@ -22,7 +22,3 @@ async function getJson<T>(path: string): Promise<T | null> {
 export function fetchLeaderboard(board: BoardId, limit = 50) {
   return getJson<LeaderboardResponse>(`/leaderboard?board=${board}&limit=${limit}`);
 }
-
-export function fetchStats() {
-  return getJson<{ players: number; bestStage: number }>("/leaderboard/stats");
-}

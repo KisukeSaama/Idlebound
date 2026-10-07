@@ -3,7 +3,7 @@
  * They run when TEST_DATABASE_URL is set (CI job, or locally with compose.dev.yml):
  *   TEST_DATABASE_URL=postgres://idlebound:idlebound@localhost:5432/idlebound_test npm test
  */
-import { GameEngine, SAVE_VERSION, createInitialState, migrateState, seededRng, validateUsername, type GameState } from "@idlebound/game";
+import { GameEngine, JournalWriter, SAVE_VERSION, createInitialState, migrateState, seededRng, validateUsername, windowFates, type FateWindow, type GameState, type Journal, type JournalBase } from "@idlebound/game";
 import type { Pace } from "@idlebound/game/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
@@ -102,6 +102,58 @@ function playedState(minutes: number, before = 0): GameState {
     }
   }
   return structuredClone(engine.state);
+}
+
+
+/**
+ * A page playing a game the server began or keeps: commands at the last step, a journal, a mark
+ * at each save (as the game's store does).
+ */
+class PlayingPage {
+  engine: GameEngine;
+  private writer: JournalWriter;
+  private head: Omit<Journal, "entries" | "end">;
+  private sent = 0;
+
+  constructor(state: GameState, base: JournalBase, fates: FateWindow, now: number) {
+    state.lastTickAt = Math.max(state.lastTickAt, now);
+    this.engine = new GameEngine(state, windowFates(fates), now);
+    this.engine.afkAfterMs = null;
+    this.engine.markInput(now);
+    this.writer = new JournalWriter(state.lastTickAt);
+    this.writer.attach(this.engine);
+    this.head = { base, open: { at: now, skipTo: now, afkAfterMs: null, locale: "fr", visible: true }, start: state.lastTickAt };
+  }
+
+  /** Plays `seconds` from the last step: ticks of 100 ms, a click every other one, crystals caught. */
+  play(seconds: number) {
+    let now = this.engine.state.lastTickAt;
+    for (let step = 0; step < seconds * 10; step += 1) {
+      now += 100;
+      this.engine.tick(now);
+      const at = this.engine.state.lastTickAt;
+      if (step % 2 === 0) this.engine.perform({ type: "click", count: 1 }, at);
+      if (this.engine.state.crystal) this.engine.perform({ type: "crystal" }, at);
+      if (step % 10 === 0) this.engine.perform({ type: "hero", id: "aldric", mode: 1 }, at);
+    }
+  }
+
+  /** What the next save sends. */
+  outgoing(): { state: GameState; journal: Journal } {
+    const at = this.engine.state.lastTickAt;
+    this.writer.mark(at);
+    this.engine.refresh(at);
+    this.sent = this.writer.entries.length;
+    return { state: structuredClone(this.engine.state), journal: { ...this.head, entries: [...this.writer.entries], end: at } };
+  }
+
+  /** The server kept the save as `revision`: the journal goes on from there. */
+  kept(revision: number, fates: FateWindow) {
+    const end = this.engine.state.lastTickAt;
+    this.writer.drop(this.sent, end);
+    this.head = { base: { revision, createdAt: this.engine.state.createdAt, ...(this.head.base.guest ? { guest: true } : {}) }, start: end };
+    this.engine.fates = windowFates(fates);
+  }
 }
 
 suite("API (real Postgres)", () => {
@@ -512,6 +564,39 @@ suite("API (real Postgres)", () => {
       const copy = await guest.call("PUT", "/save/guest", { state, baseRevision: 1 });
       expect(copy.status).toBe(409);
       expect(copy.json.error).toBe("guest_save_conflict");
+    }, 60_000);
+
+    it("never lets a second account, nor a guest, keep a copy of an account's game", async () => {
+      const owner = new Client("10.0.1.43");
+      expect((await owner.call("POST", "/auth/register", { email: `owner-${unique}@idlebound.test`, username: freshName("Own"), password })).status).toBe(201);
+      const state = playedState(3);
+      expect((await owner.call("PUT", "/save", { state, baseRevision: null })).status).toBe(200);
+
+      // The same game sent again from a new account: refused, and never ranked twice.
+      const thief = new Client("10.0.1.44");
+      expect((await thief.call("POST", "/auth/register", { email: `copy-${unique}@idlebound.test`, username: freshName("Cop"), password })).status).toBe(201);
+      const copy = await thief.call("PUT", "/save", { state, baseRevision: null });
+      expect(copy.status).toBe(422);
+      expect(codes(copy)).toContain("lineage-taken");
+      expect((await thief.call("GET", "/save")).json.save).toBeNull();
+      expect((await thief.call("GET", "/leaderboard")).json.me).toBeNull();
+
+      // Over a game of its own, by explicit choice: refused the same.
+      expect((await thief.call("PUT", "/save", { state: playedState(1), baseRevision: null })).status).toBe(200);
+      const replaced = await thief.call("PUT", "/save", { state, baseRevision: 1, replace: true });
+      expect(replaced.status).toBe(422);
+      expect(codes(replaced)).toContain("lineage-taken");
+
+      // Nor kept as a guest's, to be brought to an account later.
+      const guest = new Client("10.0.1.45");
+      const parked = await guest.call("PUT", "/save/guest", { state, baseRevision: null });
+      expect(parked.status).toBe(422);
+      expect(codes(parked)).toContain("lineage-taken");
+
+      // The owner plays on.
+      const next = structuredClone(state);
+      next.lastTickAt += 1000;
+      expect((await owner.call("PUT", "/save", { state: next, baseRevision: 1 })).status).toBe(200);
     }, 60_000);
 
     it("keeps its own ledger of a game: a record set outside any night it saw is refused", async () => {
@@ -962,5 +1047,138 @@ suite("API (real Postgres)", () => {
     expect(username.json).toEqual({ error: "invalid_username", reason: "too-short", field: "username" });
     const password = await new Client("10.0.0.16").call("POST", "/auth/register", { email: `weak-${unique}@test.fr`, username: `weak${unique}`.slice(0, 16), password: "motdepasse" });
     expect(password.json).toEqual({ error: "weak_password", reason: "too-common", field: "password" });
+  });
+  describe("journals replayed and fates kept by the server", () => {
+    const codes = (answer: { json: Record<string, any> }) => answer.json.violations.map((violation: { code: string }) => violation.code);
+    async function signedUp(ip: string, prefix: string) {
+      const client = new Client(ip);
+      const username = freshName(prefix);
+      expect((await client.call("POST", "/auth/register", { email: `${prefix.toLowerCase()}-${unique}@idlebound.test`, username, password: "Un-Mot-De-Passe-Solide" })).status).toBe(201);
+      const [user] = await sql`select id from users where username = ${username}`;
+      return { client, username, userId: user.id as string };
+    }
+
+    async function begun(client: Client, guest = false) {
+      const fresh = await client.call("POST", guest ? "/save/guest/new" : "/save/new");
+      expect(fresh.status).toBe(200);
+      const page = new PlayingPage(createInitialState(fresh.json.createdAt), { revision: null, createdAt: fresh.json.createdAt }, fresh.json.fates, Date.now() - 4 * 60_000);
+      return { page, fresh };
+    }
+
+    it("begins one game per account, whatever is asked, and replays its journal", async () => {
+      const { client, userId } = await signedUp("10.0.2.1", "Jou");
+      const { page, fresh } = await begun(client);
+      // Asked again before it began: the same seed, the same birth date.
+      const again = await client.call("POST", "/save/new");
+      expect(again.json).toEqual(fresh.json);
+      page.play(60);
+      const first = page.outgoing();
+      const saved = await client.call("PUT", "/save", { state: first.state, baseRevision: null, journal: first.journal });
+      expect(saved.status, JSON.stringify(saved.json)).toBe(200);
+      expect(saved.json.fates.strike.seeds).toHaveLength(16);
+      page.kept(saved.json.revision, saved.json.fates);
+      // The seed is the game's now: a new game is another one.
+      const [pending] = await sql`select count(*)::int as count from pending_seeds where owner = ${`u:${userId}`}`;
+      expect(pending.count).toBe(0);
+      // It carries on, gzipped as a page sends it.
+      page.play(60);
+      const second = page.outgoing();
+      const packed = (await import("node:zlib")).gzipSync(JSON.stringify(second.journal)).toString("base64");
+      const next = await client.call("PUT", "/save", { state: second.state, baseRevision: saved.json.revision, journal: packed });
+      expect(next.status, JSON.stringify(next.json)).toBe(200);
+      const [row] = await sql`select seed is not null as seed, runtime is not null as runtime, parent->>'revision' as parent from saves where user_id = ${userId}`;
+      expect(row).toEqual({ seed: true, runtime: true, parent: String(saved.json.revision) });
+      const reports = await sql`select outcome from replay_reports where user_id = ${userId}`;
+      expect(reports).toEqual([]);
+      // What the replay saw of the walker's presence is kept, outside the save.
+      const [presence] = await sql`select acts, crystals_seen from presence_days where user_id = ${userId}`;
+      expect(presence).toBeDefined();
+      expect(JSON.stringify(next.json)).not.toContain(row.seed);
+    }, 60_000);
+
+    it("reports a forged save in shadow mode, and keeps the replayed game once enforced", async () => {
+      const { env } = await import("./env");
+      const { client, userId } = await signedUp("10.0.2.2", "For");
+      const { page } = await begun(client);
+      page.play(60);
+      const first = page.outgoing();
+      const saved = await client.call("PUT", "/save", { state: first.state, baseRevision: null, journal: first.journal });
+      expect(saved.status).toBe(200);
+      page.kept(saved.json.revision, saved.json.fates);
+
+      page.play(30);
+      const shadow = page.outgoing();
+      const forged = structuredClone(shadow.state);
+      forged.gold += 25;
+      forged.lifetime.goldEarned += 25;
+      forged.run.goldEarned += 25;
+      const kept = await client.call("PUT", "/save", { state: forged, baseRevision: saved.json.revision, journal: shadow.journal });
+      expect(kept.status).toBe(200);
+      expect(kept.json.replay).toBeUndefined();
+      const [report] = await sql`select outcome, detail from replay_reports where user_id = ${userId}`;
+      expect(report.outcome).toBe("diverged");
+      expect(report.detail.diff).toContain("gold");
+
+      env.REPLAY_MODE = "enforce";
+      try {
+        // The stored game is the forged one now: the page carries on from it.
+        page.kept(kept.json.revision, kept.json.fates);
+        page.engine.state.gold = forged.gold;
+        page.engine.state.lifetime.goldEarned = forged.lifetime.goldEarned;
+        page.engine.state.run.goldEarned = forged.run.goldEarned;
+        page.play(30);
+        const sent = page.outgoing();
+        const more = structuredClone(sent.state);
+        more.gold += 40;
+        more.lifetime.goldEarned += 40;
+        more.run.goldEarned += 40;
+        const enforced = await client.call("PUT", "/save", { state: more, baseRevision: kept.json.revision, journal: sent.journal });
+        expect(enforced.status, JSON.stringify(enforced.json)).toBe(200);
+        expect(enforced.json.replay.state.gold).toBe(sent.state.gold);
+        const [row] = await sql`select (state->>'gold')::float as gold from saves where user_id = ${userId}`;
+        expect(row.gold).toBe(sent.state.gold);
+        // Without a journal: refused.
+        const bare = await client.call("PUT", "/save", { state: sent.state, baseRevision: enforced.json.revision });
+        expect(bare.status).toBe(422);
+        expect(codes(bare)).toContain("journal");
+      } finally {
+        env.REPLAY_MODE = "shadow";
+      }
+    }, 60_000);
+
+    it("gives a guest one seed per cookie, and keeps the game under that cookie", async () => {
+      const guest = new Client("10.0.2.3");
+      const { page, fresh } = await begun(guest, true);
+      expect(guest.has("ib_guest")).toBe(true);
+      const cookie = guest.value("ib_guest");
+      const again = await guest.call("POST", "/save/guest/new");
+      expect(again.json).toEqual(fresh.json);
+      expect(guest.value("ib_guest")).toBe(cookie);
+      page.play(30);
+      const first = page.outgoing();
+      const saved = await guest.call("PUT", "/save/guest", { state: first.state, baseRevision: null, journal: first.journal });
+      expect(saved.status, JSON.stringify(saved.json)).toBe(200);
+      expect(guest.value("ib_guest")).toBe(cookie);
+      const [row] = await sql`select seed is not null as seed, runtime is not null as runtime from guest_saves where game_created_at = ${fresh.json.createdAt}`;
+      expect(row).toEqual({ seed: true, runtime: true });
+      const reports = await sql`select outcome from replay_reports where guest_id is not null and detail->>'base' is null and outcome <> 'no-journal'`;
+      expect(reports.filter((report) => report.outcome !== "match")).toEqual([]);
+      // Another browser, without the cookie, gets another game: never this one's seed.
+      const other = await new Client("10.0.2.4").call("POST", "/save/guest/new");
+      expect(other.json.createdAt).not.toBe(fresh.json.createdAt);
+      expect(other.json.fates).not.toEqual(fresh.json.fates);
+    }, 60_000);
+
+    it("hands out the window of a game as it opens, and gives a game kept before the seeds its own", async () => {
+      const { client, userId } = await signedUp("10.0.2.5", "Old");
+      // A game saved by a page of the previous version: no journal, no seed yet.
+      const legacy = playedState(2) as unknown as Record<string, unknown>;
+      expect((await client.call("PUT", "/save", { state: legacy, baseRevision: null })).status).toBe(200);
+      await sql`update saves set seed = null where user_id = ${userId}`;
+      const opened = await client.call("POST", "/save/open", { holder: "page-of-the-new-version" });
+      expect(opened.json.save.fates.loot.seeds).toHaveLength(16);
+      const [row] = await sql`select seed is not null as seed from saves where user_id = ${userId}`;
+      expect(row.seed).toBe(true);
+    }, 60_000);
   });
 });

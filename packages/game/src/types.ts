@@ -1,4 +1,5 @@
 import type { EventId } from "./data/events";
+import type { FateCounts } from "./fates";
 import type { WeaveId } from "./data/descent";
 import type { MilestoneId } from "./data/strata";
 import type { Notation } from "./numbers";
@@ -383,8 +384,16 @@ export interface GameState {
   legacyHarvest?: number;
   /** ISO week of the last Caravan purchase (one ware a week). */
   caravanWeek: string;
-  /** The engine's random generator, carried by the save: a reload draws the same fates again. */
-  rngState: number;
+  /**
+   * Occasions used in each stream of fates (see `fates.ts`): a reload draws the same fates
+   * again, and the seeds that decide them stay with the server.
+   */
+  fates: FateCounts;
+  /**
+   * The walker's time zone, in minutes ahead of UTC, as their device last told it: the dead
+   * of night (Night Owl) and the Remembrance Nights fall on their own calendar.
+   */
+  zone?: number;
 }
 
 export interface Derived {

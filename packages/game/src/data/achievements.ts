@@ -4,6 +4,8 @@ import { SECRETS, bestiaryMet, rememberedCompanions } from "./lore";
 import { chronicleCount } from "../chronicle";
 import { eraForStage } from "./biomes";
 import { lookup } from "./lookup";
+import { lifeBits, rescale } from "../scale";
+import { log as dLog } from "../dmath";
 
 export type AchievementCategory = "progression" | "combat" | "wealth" | "companions" | "ascension" | "secrets";
 
@@ -64,7 +66,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   ...series("kings", "combat", (s) => s.lifetime.kings, [1, 10, 100, 1_000]),
   ...series("seams", "combat", (s) => s.lifetime.seams, [1, 25, 100]),
   // Then about what a walker has earned by the end of each Age, down to the last one.
-  ...series("gold", "wealth", (s) => s.lifetime.goldEarned, [1e3, 1e6, 1e9, 1e12, 1e18, 1e24, 1e36, 1e45, 1e65, 1e80, 1e100, 1e115, 1e135, 1e155, 1e170, 1e190, 1e205, 1e225]),
+  // In plain numbers: past stage 3500 the totals are written in a larger unit (see `scale.ts`).
+  ...series("gold", "wealth", (s) => rescale(s.lifetime.goldEarned, lifeBits(s), 0), [1e3, 1e6, 1e9, 1e12, 1e18, 1e24, 1e36, 1e45, 1e65, 1e80, 1e100, 1e115, 1e135, 1e155, 1e170, 1e190, 1e205, 1e225]),
   ...series("treasure", "wealth", (s) => s.lifetime.treasures, [1, 25, 250]),
   ...series("crystal", "wealth", (s) => s.lifetime.crystals, [1, 10, 50, 250]),
   ...series("levels", "companions", heroLevelSum, [100, 500, 1_500, 4_000, 10_000]),
@@ -76,7 +79,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   ...series("descents", "ascension", (s) => s.descents, [1, 3, 10, 25]),
   ...series("legend", "secrets", (s) => s.lifetime.legendaries, [1, 10]),
   ...series("mythic", "secrets", (s) => s.lifetime.mythics, [1], 0.05),
-  ...series("hit", "combat", (s) => s.lifetime.maxHit, [1e3, 1e9, 1e18, 1e30]),
+  ...series("hit", "combat", (s) => rescale(s.lifetime.maxHit, lifeBits(s), 0), [1e3, 1e9, 1e18, 1e30]),
   ...series("time", "secrets", (s) => s.lifetime.playTime, [3_600, 36_000, 360_000]),
   ...series("fails", "secrets", (s) => s.lifetime.bossFails, [1, 50]),
   ...series("bestiary", "secrets", bestiaryMet, [10, 25, 45, 63]),
@@ -110,7 +113,7 @@ export function achievementProgress(def: AchievementDef, value: number): number 
   if (value >= def.threshold) return 1;
   if (floor > 0 && def.threshold / floor >= LOG_PROGRESS_RATIO) {
     if (value <= floor) return 0;
-    return Math.log(value / floor) / Math.log(def.threshold / floor);
+    return dLog(value / floor) / dLog(def.threshold / floor);
   }
   return Math.max(0, (value - floor) / (def.threshold - floor));
 }

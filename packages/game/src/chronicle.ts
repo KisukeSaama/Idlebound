@@ -8,8 +8,7 @@ import {
   ageEchoesFound,
   bestiaryKills,
   echoesFound,
-  recognitionTier,
-  rememberedCompanions
+  recognitionTier
 } from "./data/lore";
 import { BIOMES } from "./data/biomes";
 import { promisesKept } from "./data/promises";
@@ -22,9 +21,33 @@ export const CHRONICLE_SOURCES: readonly ChronicleSource[] = [
   "keystone", "milestone", "king", "echo", "age", "wanderer", "event", "memory", "promise", "lesson", "song", "dream", "saying", "relic", "altar", "secret", "crown"
 ];
 
+/** A companion's Recognition tier, each worked out once, at the first ask. */
+function tiersOf(state: GameState): (hero: string) => number {
+  const known = new Map<string, number>();
+  return (hero) => {
+    let tier = known.get(hero);
+    if (tier === undefined) {
+      tier = recognitionTier(state, hero);
+      known.set(hero, tier);
+    }
+    return tier;
+  };
+}
+
 /** Whether a walker has lived one of the milestones of their own story. */
 export function milestoneReached(state: GameState, id: MilestoneId): boolean {
-  const tiers = () => RECOGNITION_HEROES.map((hero) => recognitionTier(state, hero));
+  return reached(state, id, tiersOf(state));
+}
+
+/** The milestones a walker has lived, in their order, the companions' tiers worked out once for all. */
+export function milestonesReached(state: GameState): MilestoneId[] {
+  const tierOf = tiersOf(state);
+  return MILESTONES.filter((id) => reached(state, id, tierOf));
+}
+
+function reached(state: GameState, id: MilestoneId, tierOf: (hero: string) => number): boolean {
+  const tiers = () => RECOGNITION_HEROES.map((hero) => tierOf(hero));
+  const remembered = () => RECOGNITION_HEROES.filter((hero) => tierOf(hero) >= 5).length;
   switch (id) {
     case "ascend-1": return state.lifetime.ascensions >= 1;
     case "ascend-5": return state.lifetime.ascensions >= 5;
@@ -39,13 +62,13 @@ export function milestoneReached(state: GameState, id: MilestoneId): boolean {
     case "remember-first": return tiers().some((tier) => tier >= 1);
     case "remember-third": return tiers().some((tier) => tier >= 3);
     case "remember-whole": return tiers().some((tier) => tier >= 5);
-    case "remember-five": return rememberedCompanions(state) >= 5;
-    case "remember-ten": return rememberedCompanions(state) >= 10;
-    case "remember-all": return rememberedCompanions(state) >= RECOGNITION_HEROES.length;
-    case "kaelen-ran": return recognitionTier(state, "kaelen") >= 4;
-    case "nameless-speaks": return recognitionTier(state, "nameless") >= 3;
-    case "eldra-loom": return recognitionTier(state, "eldra") >= 5;
-    case "awakened-hello": return recognitionTier(state, "awakened") >= 5;
+    case "remember-five": return remembered() >= 5;
+    case "remember-ten": return remembered() >= 10;
+    case "remember-all": return remembered() >= RECOGNITION_HEROES.length;
+    case "kaelen-ran": return tierOf("kaelen") >= 4;
+    case "nameless-speaks": return tierOf("nameless") >= 3;
+    case "eldra-loom": return tierOf("eldra") >= 5;
+    case "awakened-hello": return tierOf("awakened") >= 5;
   }
 }
 
@@ -68,7 +91,7 @@ export function sourceEntries(state: GameState, source: ChronicleSource): Chroni
       break;
     }
     case "milestone":
-      for (const id of MILESTONES) if (milestoneReached(state, id)) entries.push({ source, id });
+      for (const id of milestonesReached(state)) entries.push({ source, id });
       break;
     case "king":
       for (let night = 1; night <= state.lifetime.ascensions; night += 1) {
@@ -152,6 +175,9 @@ export function sourceCount(state: GameState, source: ChronicleSource): number {
     case "song": return state.lore.songs;
     case "dream": return state.lore.dreams;
     case "saying": return Math.min(SAYINGS, state.lore.sayings);
+    case "milestone": return milestonesReached(state).length;
+    // One entry for each tier a companion reached, from the first to the fifth.
+    case "memory": return RECOGNITION_HEROES.reduce((total, hero) => total + Math.max(0, Math.min(5, recognitionTier(state, hero))), 0);
     default: return sourceEntries(state, source).length;
   }
 }

@@ -1,4 +1,4 @@
-import { ALTAR_REWORK_NOTICE, CLICK_HERO_ID, HARVEST_NOTICE, HARVEST_NOTICE_TOLD, HERO_BY_ID, SKILLS, heroCost, isBossStage, isSkillUnlocked, type GameState, type SkillDef } from "@idlebound/game";
+import { ALTAR_REWORK_NOTICE, CLICK_HERO_ID, HARVEST_NOTICE, HARVEST_NOTICE_TOLD, HERO_BY_ID, SKILLS, heroCost, isBossStage, isSkillUnlocked, runBits, type GameState, type SkillDef } from "@idlebound/game";
 import type { WindowId } from "./context";
 
 /**
@@ -42,8 +42,8 @@ function companyJoined(state: GameState): boolean {
 function applies(state: GameState, id: Lesson): boolean {
   switch (id) {
     // Only before the company: once someone has joined, the walker's own blade is a choice.
-    case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) === 0 && !companyJoined(state) && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1);
-    case "companion": return (state.heroLevels.maelle ?? 0) === 0 && state.gold >= HERO_BY_ID.maelle.baseCost;
+    case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) === 0 && !companyJoined(state) && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1, 1, runBits(state));
+    case "companion": return (state.heroLevels.maelle ?? 0) === 0 && state.gold >= heroCost(HERO_BY_ID.maelle, 0, 1, 1, runBits(state));
     case "boss": return isBossStage(state.stage) && state.monster !== null && state.monster.kind !== "normal" && state.lifetime.bosses === 0;
     case "skill": return state.lifetime.skillsUsed === 0 && SKILLS.some((skill) => isSkillUnlocked(state, skill.id));
     case "farm": return !state.autoAdvance && state.lifetime.bossFails > 0;

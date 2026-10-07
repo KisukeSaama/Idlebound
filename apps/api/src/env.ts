@@ -15,7 +15,15 @@ const schema = z.object({
   TRUSTED_PROXY_COUNT: z.coerce.number().int().min(0).default(1),
   /** smtp(s)://user:pass@host:port; without it, e-mails are written to the logs. */
   SMTP_URL: z.string().optional(),
-  MAIL_FROM: z.string().default("Idlebound <no-reply@kisukesaama.com>")
+  MAIL_FROM: z.string().default("Idlebound <no-reply@kisukesaama.com>"),
+  /**
+   * What the server does with the journal it replays (see routes/save.ts). "shadow" (default):
+   * it compares and logs the differences, and keeps the save as the page sent it. "enforce":
+   * the replayed game is the one kept, a save without a journal it can replay is refused.
+   */
+  REPLAY_MODE: z.enum(["shadow", "enforce"]).default("shadow"),
+  /** Replay worker threads; 0 replays inline. Default: the cores but one, four at most. */
+  REPLAY_WORKERS: z.coerce.number().int().min(0).max(32).optional()
 });
 
 const parsed = schema.parse(process.env);

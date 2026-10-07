@@ -60,6 +60,9 @@ export interface Scene {
   light: SceneLight | null;
   /** Row of the ground line: where the monster stands. */
   ground: number;
+  /** Row of the horizon, and where still water lies (a mask of the grid), for the air to reflect. */
+  horizon: number;
+  water: Uint8Array | null;
   /** Where the light comes from (the creature's shadow falls the other way), and the shadow's color. */
   source: { x: number; y: number } | null;
   shadow: Pal;
@@ -272,6 +275,9 @@ function composeScene(sceneId: string, recipe: SceneRecipe, era: number, options
     skyTop,
     light,
     ground: SCENE_FLOOR,
+    horizon: recipe.horizon,
+    // The Unmaking's grey and the Blank's outline leave no water to reflect anything.
+    water: age >= 9 ? null : ground.water,
     source: age >= 10 ? null : moon && skyRecipe !== recipe ? { x: moon.x, y: moon.y } : recipe.source,
     shadow: recipe.shadow ?? recipe.prop,
     twinkles: age >= 10 ? [] : sky.twinkles,
@@ -510,22 +516,32 @@ const ASTRAL_TABLE = onRamp([C.vaultNight, C.vault1, C.vault2, C.vault3, C.vault
 
 /**
  * Layers drawn over one another as one image, each on its frame `at` (looping on its own
- * frames): what the water reflects, the map's cards, the workshop's views.
+ * frames): what the water reflects, the map's cards, the workshop's views. `shift` moves a
+ * layer sideways, pinned ones too: a camera panning across the planes of a scene.
  */
-export function compositeLayers(layers: readonly SceneLayer[], width: number, at = 0, out: Pixels = createPixels(width, H), origin = 0): Pixels {
+export function compositeLayers(layers: readonly SceneLayer[], width: number, at: number | ((layer: SceneLayer) => number) = 0, out: Pixels = createPixels(width, H), origin = 0, shift: (layer: SceneLayer) => number = () => 0): Pixels {
   for (const layer of layers) {
-    const frame = layer.frames[at % layer.frames.length];
-    const left = layer.anchor === "right" ? width - frame.w : 0;
+    const frame = layer.frames[(typeof at === "number" ? at : at(layer)) % layer.frames.length];
+    const moved = shift(layer);
+    const left = (layer.anchor === "right" ? width - frame.w : 0) - moved;
+    // Tiling layers start at `origin` (a view wider or narrower than the scene keeps it centered).
+    const first = layer.anchor ? 0 : (((-origin + moved) % frame.w) + frame.w) % frame.w;
+    const from = layer.anchor ? Math.max(0, left) : 0;
+    const to = layer.anchor ? Math.min(width, left + frame.w) : width;
+    const { idx, alpha, emit, w } = frame;
     for (let y = 0; y < H; y += 1) {
-      for (let x = 0; x < width; x += 1) {
-        // Tiling layers start at `origin` (a view wider or narrower than the scene keeps it centered).
-        const fx = layer.anchor ? x - left : (((x - origin) % frame.w) + frame.w) % frame.w;
-        if (fx < 0 || fx >= frame.w) continue;
-        const from = y * frame.w + fx;
-        if (frame.idx[from] === EMPTY || bayer(x, y) * 255 >= frame.alpha[from]) continue;
-        out.idx[y * width + x] = frame.idx[from];
-        out.alpha[y * width + x] = 255;
-        out.emit[y * width + x] = frame.emit[from];
+      const row = y * w;
+      const target = y * width;
+      let fx = layer.anchor ? from - left : first;
+      for (let x = from; x < to; x += 1, fx += 1) {
+        if (fx === w) fx = 0;
+        const at = row + fx;
+        const pal = idx[at];
+        // A pixel less than solid shows on its share of an ordered 4 × 4 mask.
+        if (pal === EMPTY || (alpha[at] < 255 && bayer(x, y) * 255 >= alpha[at])) continue;
+        out.idx[target + x] = pal;
+        out.alpha[target + x] = 255;
+        out.emit[target + x] = emit[at];
       }
     }
   }

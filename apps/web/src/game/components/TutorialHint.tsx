@@ -23,7 +23,7 @@ export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
   return (
     <div className={`tutorial-hint hint-${placement} hint-${hint.position}`} role="note" onPointerDown={(event) => event.stopPropagation()}>
       <span>{hintText(hint)}</span>
-      <button type="button" aria-label={m.okLabel} onClick={() => store.act((engine) => engine.completeTutorial(hint.id))}>{m.ok}</button>
+      <button type="button" aria-label={m.okLabel} onClick={() => store.act({ type: "tutorial", step: hint.id })}>{m.ok}</button>
     </div>
   );
 
@@ -60,7 +60,7 @@ export function useHintDismissal() {
     shown.current = id;
     if (before === null || before === id) return;
     const current = store.state;
-    if (!current.tutorial.done.includes(before) && hintLearned(current, before)) store.apply((engine) => engine.completeTutorial(before));
+    if (!current.tutorial.done.includes(before) && hintLearned(current, before)) store.apply({ type: "tutorial", step: before });
   }, [store, id]);
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export function useHintDismissal() {
     const timer = setInterval(() => {
       if (document.visibilityState !== "visible") return;
       read += READ_STEP_MS;
-      if (read >= HINT_READ_MS) store.apply((engine) => engine.completeTutorial(id));
+      if (read >= HINT_READ_MS) store.apply({ type: "tutorial", step: id });
     }, READ_STEP_MS);
     return () => clearInterval(timer);
   }, [store, id, timed]);

@@ -14,7 +14,7 @@ import { lru } from "./surface";
 
 /** The last scenes looked at, as pixels (the views need no canvas). */
 const scenes = lru(6);
-const sceneOf = (sceneId: string, era: number, options: SceneOptions = {}): Scene =>
+export const sceneOf = (sceneId: string, era: number, options: SceneOptions = {}): Scene =>
   scenes.get(`${sceneId}:${era}:${options.darkNight ? "dark" : ""}`, () => renderScene(sceneId, era, options));
 
 /** Frames of a stage: enough for every layer's loop (2 or 4 frames). */
@@ -25,15 +25,6 @@ export type Depth = "far" | "middle" | "near";
 
 function depthOf(layer: SceneLayer): Depth {
   return layer.anchor ? "near" : layer.depth <= 0.2 ? "far" : "middle";
-}
-
-/** Where a biome's guardian stands in a view `width` columns wide: its box, feet on the scene's ground. */
-export function guardianBox(biomeId: string, era: number, width = SCENE_WIDTH, options: SceneOptions = {}): { x: number; y: number; w: number; h: number } | null {
-  const boss = BIOMES.find((biome) => biome.id === biomeId)?.boss.id;
-  if (!boss) return null;
-  const still = renderCreature(boss, { era });
-  const x = Math.floor(width / 2) - Math.round(still.pixels.w / 2);
-  return { x, y: sceneOf(biomeId, era, options).ground - still.feet, w: still.pixels.w, h: still.pixels.h };
 }
 
 /**

@@ -5,7 +5,7 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 - The game only: one line per change a walker can see or feel on the road, in plain words,
   starting with the thing it touches, with the numbers they will notice (before and after).
-  No file, function or commit names. The site around the game (landing page, wiki, news,
+  No file, function or commit names, and no results of our tests or simulations. The site around the game (landing page, wiki, news,
   menus) has no line here: a site change worth telling gets an announcement.
 - Sorted under **New**, **Balance**, **Fixes**. Empty headings are left out.
 - Every merge into main ships the version of the root package.json. The heading "Next
@@ -14,10 +14,64 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   since the previous one (here, everything after v0.4).
 - Up to v0.5.3, releases were git tags; they are no longer used.
 
-## Next version: v0.7.0
+## Next version: v1.2.0
+
+## v1.1.0
 
 ### New
 
+- The road waits for the Ledger: when the Ledger stays out of reach long enough (about twenty
+  minutes of the busiest play), the game stops where it stands, the header says "The road
+  waits for the Ledger", and it goes on as soon as the Ledger answers; the time waited comes
+  back as time away. Before, the game played on without it for as long as the page stayed
+  open.
+- A new game begins with the Ledger: one per account, and one per browser for a walker
+  without an account, the same until it is played.
+
+### Fair play
+
+- Every save carries what the walker did since the last one, and the Ledger walks the road
+  again from it with the shared engine, from the save it builds on; for now it compares and
+  notes what differs (shadow mode), and keeps its own game once enforced.
+- Fates are split by use (strikes, spawns, spoils, crystals appearing and caught, chests,
+  the road's events), the n-th of each always the same; their seeds stay with the Ledger,
+  which hands out a window of them at a time. The odds are those of before.
+- The game advances in steps of 100 ms whatever the page does, and its maths are written so
+  every browser lands on the same numbers.
+- The Ledger keeps, per account and per day, what it sees of the walker's presence outside
+  their strikes (crystals and how fast, powers relaunched, ascensions, the longest stretch
+  without a pause), for a person to review the leaderboard. Nothing is decided by it alone.
+- Keeping one device's game over the other's, when that device is further along, is
+  accepted: its road is walked again from where the other device took the game.
+
+## v1.0.0
+
+### New
+
+- The road: it no longer stops at stage 3000. The Dawn still stands there, and once beaten
+  lets you through; below it the night draws itself again from its first stratum (Era LXI,
+  the Kingdom II, the Fallen King at 3050…), as deep as you walk. Depth stays open on the
+  Roll. HP, gold and damage read in your notation at any depth (the letters go on after zz
+  with aaa), and depths read whole in the Hall and the epilogue (10432, not 10.4K).
+- The Dawn's keystone and Aldemar's words before it, the Dawn's Bestiary page and its place
+  now open onto the road below instead of closing it.
+- Below the Dawn the Remnants grow stronger a little more slowly with each stage, from
+  ×1.18 toward ×1.152, so the road neither runs away nor freezes.
+
+- The Ledger's scenes play like films, under their own theme, a melody that comes back in
+  every scene: the camera moves over the world, the walker and the King face each other on
+  its ground, a blow strikes in a frame of two colors and a shake, lines come up under the
+  picture a word at a time in a cinema frame of night ink, the night quiet beneath. A press
+  shows a line whole, then the next; Skip still ends it. Reduced motion keeps still pictures.
+  The First Dusk, Almost and the Empty Throne are staged again, and six scenes are new: the
+  Long Night opens every new walk, and five more wait at the great turns of the road (deep
+  stages and the first Descent). Scenes you lived but never saw are
+  told once, and wait in the Chronicle.
+  The walker appears in them in their own drawing, as Aldric: on guard, striding, lunging.
+- The world's air: the lights of every place (windows, lanterns, braziers, crystals, the moon)
+  glow softly and flicker when they are fire, the Mire's pools reflect the creature and the
+  lights above them, and the edges of the view sink into the night, in the Ledger's scenes
+  too. Reduced motion keeps it still.
 - Accounts: you can change your username from the account window, once every 90 days
   (password required). The leaderboard shows the new name at once, and the old one becomes
   free for other walkers.
@@ -29,6 +83,15 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   the powers used in the meantime; a night begun with the Ring of the Second Morning worn,
   once the ring is taken off; and a crystal's essences caught by a walker whose essences
   gathered have grown past a hundred quadrillion.
+- Saving: deep in the night, the first save after a Descent could be refused (the gold you
+  earned with the Altar of Fortune high was weighed against the Sanctum just unwoven). It no
+  longer is.
+- Accounts: when your session ended without the page reloading (your password changed on
+  another device), creating or joining another account from that page carried the old
+  account's game over to it. A game now belongs to one account only: the new one starts
+  its own walk, and the Ledger never keeps the same game under two names.
+- Accounts: when your session ends while you play, logging back in now keeps everything you
+  played since, instead of going back to your last save.
 - Fair play: the Ledger now checks your relics, forge levels, shards, golden rats, Seams and
   the gold of each save much more closely, so the leaderboard ranks only walks that really
   happened. An honest walk sees no difference.

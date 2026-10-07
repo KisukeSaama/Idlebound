@@ -124,7 +124,10 @@ export const KING_FORMS: readonly string[] = [
   "aldemar"
 ];
 
-/** At the stage cap, the Dawn stands where the King should be. */
+/**
+ * At stage 3000, the Dawn stands where the King should be: a milestone, not a wall. Past it
+ * the night draws itself again, and its Kings with it (BIBLE 24).
+ */
 export const THE_DAWN = "the-dawn";
 export const DAWN_STAGE = 3000;
 
@@ -138,11 +141,14 @@ export function bossForStage(stage: number): MonsterDef {
   return isBiomeBossStage(stage) ? guardianForStage(stage) : biomeForStage(stage).miniBoss;
 }
 
-/** The guardian of a biome-boss stage: its biome's guardian, the King's form of the Age, or the Dawn. */
+/**
+ * The guardian of a biome-boss stage: its biome's guardian, the King's form of the Age, or the
+ * Dawn. Below the Dawn the Ages come round again, and the King's forms with them.
+ */
 export function guardianForStage(stage: number): MonsterDef {
-  if (stage >= DAWN_STAGE) return { id: THE_DAWN };
+  if (stage === DAWN_STAGE) return { id: THE_DAWN };
   if (isKingStage(stage)) {
-    const age = Math.min(KING_FORMS.length - 1, Math.floor(eraForStage(stage) / 5));
+    const age = Math.floor(eraForStage(stage) / 5) % KING_FORMS.length;
     return { id: KING_FORMS[age] };
   }
   return biomeForStage(stage).boss;

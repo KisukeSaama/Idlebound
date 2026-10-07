@@ -28,6 +28,7 @@ import {
   promiseText,
   rarityColor,
   recognitionTier,
+  runBits,
   regaliaWord,
   skillText,
   wearsRegalia,
@@ -47,7 +48,7 @@ import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
 import { hintsAnsweredBy } from "./hints";
 import { SKILL_PICTO, type PictoName } from "./icons";
-import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, revealMark, stratumLabel, type RevealId } from "./shell";
+import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, reveals, revealMark, sceneMark, stratumLabel, type RevealId } from "./shell";
 import { describePromise } from "./text";
 import { useArrival, useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
@@ -216,15 +217,25 @@ export default function GameApp() {
   // The loading screen follows the server's answer (or its silence).
   useSyncExternalStore(cloud.subscribe, cloud.getVersion, () => 0);
 
+  // A scene played, by its moment or from the Chronicle, is marked in the save: it is no
+  // longer waiting to be told.
+  const playScene = useCallback(
+    (id: CutsceneId) => {
+      store.apply({ type: "tutorial", step: sceneMark(id) });
+      setCutscene(id);
+    },
+    [store]
+  );
+
   const ui = useMemo<GameUi>(() => ({
     openWindow: (id, tab) => {
       // A hint that pointed to this place is answered by the walker opening it.
-      for (const hint of hintsAnsweredBy(store.state, id)) store.apply((engine) => engine.completeTutorial(hint));
+      for (const hint of hintsAnsweredBy(store.state, id)) store.apply({ type: "tutorial", step: hint });
       setOpenWindow({ id, tab });
     },
     closeWindow: () => setOpenWindow(null),
     toast,
-    playCutscene: setCutscene,
+    playCutscene: playScene,
     openChest: (id, buy) => {
       const caught: Item[] = [];
       chestLoot.current = caught;
@@ -243,7 +254,7 @@ export default function GameApp() {
   // Load the game from the server, then start the loop. No local save: progress only
   // exists on the server, under an account or, for a guest, under this browser's cookie.
   useEffect(() => {
-    // Dev tool: window.__idlebound.act((engine) => …) from the console.
+    // Dev tool: window.__idlebound.act({ type: "…" }) from the console (a command, see commands.ts).
     if (process.env.NODE_ENV !== "production") (window as unknown as { __idlebound?: GameStore }).__idlebound = store;
     let cancelled = false;
     const see = () => {
@@ -293,7 +304,7 @@ export default function GameApp() {
   // fetched ahead for the walkers who may meet an echo.
   useEffect(() => {
     if (!ready) return;
-    const remember = () => store.apply((engine, now) => engine.remember(now));
+    const remember = () => store.apply({ type: "remember" });
     remember();
     const timer = setInterval(remember, REMEMBER_EVERY_MS);
     if (store.state.lifetime.ascensions >= WALKER_MIN_ASCENSIONS) void loadRoll();
@@ -314,7 +325,7 @@ export default function GameApp() {
       const place = id as keyof typeof m.night.reveal;
       const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : place === "altars2" || place === "altars3" ? g.places.sanctum.name : m.hud.windowTitles[place].label;
       toast({ tone: "info", icon: REVEAL_PICTO[id], title, text: m.night.reveal[place] });
-      store.apply((current) => current.completeTutorial(revealMark(id)));
+      store.apply({ type: "tutorial", step: revealMark(id) });
     };
     // What arrived after this walker was already past its threshold is told once, at load.
     const late = () => {
@@ -350,29 +361,49 @@ export default function GameApp() {
     };
   }, [ready, store, toast, fresh]);
 
-  // The Ledger's scenes: one plays when the walker lives its moment during play. A load (a
-  // new engine) only takes note of the moments already lived; several lived at once (a long
-  // road walked alone) play only the last, the others wait in the Chronicle.
+  // The Ledger's scenes: one plays when the walker lives its moment during play, and a new
+  // walk opens on the Long Night. A load (a new engine) only takes note of the moments already
+  // lived; several lived at once (a long road walked alone) play only the last. The scenes
+  // lived and never played are told once, in a toast, when the Hall that keeps them is open.
   useEffect(() => {
     if (!ready) return;
     let engine = store.engine;
     let known = new Set(witnessedCutscenes(store.state));
+    const play = (id: CutsceneId) => {
+      pump.forget(new Set(gameText(currentLocale()).cutscenes[id].lines));
+      playScene(id);
+    };
+    const load = () => {
+      const state = store.state;
+      const untouched = state.lifetime.clicks === 0 && state.lifetime.kills === 0 && state.maxStageEver <= 1;
+      if (untouched && !state.tutorial.done.includes(sceneMark("prologue"))) play("prologue");
+      else tellKept();
+    };
+    const tellKept = () => {
+      const state = store.state;
+      if (!reveals(state).hall) return;
+      const kept = witnessedCutscenes(state).filter((id) => !state.tutorial.done.includes(sceneMark(id)));
+      if (kept.length === 0) return;
+      const m = currentMessages().night.cutscene;
+      toast({ tone: "violet", icon: "moon", title: m.keptTitle, text: m.kept(kept.length) });
+      for (const id of kept) store.apply({ type: "tutorial", step: sceneMark(id) });
+    };
+    load();
     const check = () => {
       const lived = witnessedCutscenes(store.state);
       if (store.engine !== engine) {
         engine = store.engine;
         known = new Set(lived);
+        load();
         return;
       }
       const fresh = lived.filter((id) => !known.has(id));
-      if (fresh.length === 0) return;
       known = new Set(lived);
-      const id = fresh[fresh.length - 1];
-      pump.forget(new Set(gameText(currentLocale()).cutscenes[id].lines));
-      setCutscene(id);
+      if (fresh.length > 0) play(fresh[fresh.length - 1]);
+      else tellKept();
     };
     return store.subscribe(check);
-  }, [ready, store, pump]);
+  }, [ready, store, pump, playScene, toast]);
 
   // Audio settings, and the place that colours every sound.
   useEffect(() => {
@@ -436,7 +467,7 @@ export default function GameApp() {
           // The first Rout says what happened, once.
           if (!store.state.tutorial.done.includes(ROUT_TOLD)) {
             toast({ tone: "info", icon: "sparkle", title: m.routTitle, text: m.routText });
-            store.apply((current) => current.completeTutorial(ROUT_TOLD));
+            store.apply({ type: "tutorial", step: ROUT_TOLD });
           }
           break;
         case "spawn":
@@ -513,7 +544,7 @@ export default function GameApp() {
           break;
         case "crystal":
           audio.play("crystal");
-          toast({ tone: "violet", icon: "gem", title: m.crystalTitle, text: event.reward === "gold" ? m.crystal.gold(fmt(event.amount)) : m.crystal[event.reward](event.amount) });
+          toast({ tone: "violet", icon: "gem", title: m.crystalTitle, text: event.reward === "gold" ? m.crystal.gold(formatNumber(event.amount, store.state.settings.notation, runBits(store.state))) : m.crystal[event.reward](event.amount) });
           break;
         case "kingWord":
           // The first Word is spoken in the scene of the first dusk, with its own sound.
@@ -669,7 +700,7 @@ export default function GameApp() {
       if (event.ctrlKey || event.metaKey || event.altKey) return;
       const skill = SKILLS.find((entry) => entry.hotkey === event.key);
       if (skill && isSkillUnlocked(store.state, skill.id)) {
-        const used = store.act((engine, now) => engine.useSkill(skill.id, now));
+        const used = store.act<boolean>({ type: "skill", id: skill.id });
         if (!used) audio.play("error");
       }
     };

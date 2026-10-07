@@ -78,9 +78,16 @@ export function bestiaryMet(state: GameState): number {
   return BESTIARY.filter((entry) => bestiaryKills(state, entry.id) > 0).length;
 }
 
+/** The creatures of each page, in the Bestiary's order. */
+const PAGE_CREATURES = new Map<BestiaryPage, string[]>();
+for (const entry of BESTIARY) {
+  if (!PAGE_CREATURES.has(entry.page)) PAGE_CREATURES.set(entry.page, []);
+  PAGE_CREATURES.get(entry.page)!.push(entry.id);
+}
+
 /** Whether every creature of a page has been met. */
 export function bestiaryPageComplete(state: GameState, page: BestiaryPage): boolean {
-  return BESTIARY.every((entry) => entry.page !== page || bestiaryKills(state, entry.id) > 0);
+  return (PAGE_CREATURES.get(page) ?? []).every((id) => bestiaryKills(state, id) > 0);
 }
 
 /** Gold bonus of the completed Bestiary pages. */
@@ -183,10 +190,17 @@ export function recognitionRuns(state: GameState, heroId: string): number {
   return Object.hasOwn(state.recognition, heroId) ? state.recognition[heroId] : 0;
 }
 
+/** The tiers' thresholds at each Kinship level met: `recognitionTier` asks for them all the time. */
+const THRESHOLDS_BY_KINSHIP = new Map<number, readonly number[]>();
+
 /** Runs needed for each tier, lowered by the Kinship weave (never under one run a tier). */
 export function recognitionThresholds(state: GameState, tiers: readonly number[] = RECOGNITION_TIERS): readonly number[] {
   const kinship = Object.hasOwn(state.weaves, "kinship") ? state.weaves.kinship ?? 0 : 0;
-  return tiers.map((threshold, index) => Math.max(index + 1, threshold - kinship));
+  const known = tiers === RECOGNITION_TIERS ? THRESHOLDS_BY_KINSHIP.get(kinship) : undefined;
+  if (known) return known;
+  const thresholds = tiers.map((threshold, index) => Math.max(index + 1, threshold - kinship));
+  if (tiers === RECOGNITION_TIERS) THRESHOLDS_BY_KINSHIP.set(kinship, thresholds);
+  return thresholds;
 }
 
 /**
@@ -212,9 +226,10 @@ export function recognitionTier(state: GameState, heroId: string): number {
   const kept = Object.hasOwn(state.promises, heroId) ? state.promises[heroId] : 0;
   const held = rememberedTier(state, heroId);
   const already = held > 0 ? RECOGNITION_PROMISES[held - 1] : 0;
+  const thresholds = recognitionThresholds(state);
   let tier = 0;
-  for (const [index, threshold] of recognitionThresholds(state).entries()) {
-    if (runs < threshold || kept < RECOGNITION_PROMISES[index] - already) break;
+  for (let index = 0; index < thresholds.length; index += 1) {
+    if (runs < thresholds[index] || kept < RECOGNITION_PROMISES[index] - already) break;
     tier = index + 1;
   }
   return Math.max(tier, held);

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
 import { achievementText, gameText, itemName, monsterName, skillText } from "./content";
@@ -23,6 +24,8 @@ import {
   bossHp,
   bossHpMultiplier,
   derive,
+  deriveAt,
+  deriveBase,
   relicCompanyGain,
   essencesForStage,
   heroCost,
@@ -105,6 +108,23 @@ describe("formulas", () => {
     const affordable = maxAffordableLevels(hero, 0, ten);
     expect(affordable).toBe(10);
     expect(heroCost(hero, 0, affordable)).toBeLessThanOrEqual(ten);
+  });
+
+  it("gives the same numbers from a base worked out once, at any levels", () => {
+    for (const name of ["walker-descent", "walker-2990"]) {
+      const { state: raw, now } = JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), "utf8")) as { state: GameState; now: number };
+      const state = migrateState(raw) as GameState;
+      for (const options of [{}, { ignoreTimed: true }]) {
+        const base = deriveBase(state, now, options);
+        expect(deriveAt(base, state.heroLevels)).toEqual(derive(state, now, options));
+        for (const hero of HEROES) {
+          for (const more of [1, 25, 1000]) {
+            const heroLevels = { ...state.heroLevels, [hero.id]: (state.heroLevels[hero.id] ?? 0) + more };
+            expect(deriveAt(base, heroLevels)).toEqual(derive({ ...state, heroLevels }, now, options));
+          }
+        }
+      }
+    }
   });
 
   it("only grants essences from the Fallen King on", () => {
@@ -324,7 +344,7 @@ describe("idle and active balance", () => {
     const state = lateGame();
     const base = derive(state, T0).click;
     state.altars.blade = 4;
-    expect(derive(state, T0).click).toBeCloseTo(base * Math.pow(1 + ALTAR_BY_ID.blade.valuePerLevel, 4));
+    expect(derive(state, T0).click / (base * Math.pow(1 + ALTAR_BY_ID.blade.valuePerLevel, 4))).toBeCloseTo(1, 12);
   });
 
   it("caps altars and prices their levels exponentially", () => {
@@ -587,7 +607,7 @@ describe("anti-cheat", () => {
   });
 
   it("levels companions and pushes stages while away, up to a boss they cannot beat", () => {
-    const engine = newGame(4);
+    const engine = newGame(5);
     let now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
     engine.state.autoAdvance = true;
     engine.state.stage = engine.state.maxStage;
@@ -644,7 +664,7 @@ describe("anti-cheat", () => {
   it("finds each companion's next breakpoint", () => {
     const maelle = HERO_BY_ID.maelle;
     expect([0, 9, 10, 49, 100, 150, 199, 200, 224, 225].map((level) => nextBreakpoint(maelle, level))).toEqual([10, 10, 25, 50, 150, 200, 200, 225, 225, 250]);
-    expect([199, 200, 224, 225].map(milestoneMultiplier)).toEqual([1, 3.5, 3.5, 12.25]);
+    expect([199, 200, 224, 225].map((level) => milestoneMultiplier(level))).toEqual([1, 3.5, 3.5, 12.25]);
   });
 
   it("keeps the gold earned while away when offline spending is off", () => {

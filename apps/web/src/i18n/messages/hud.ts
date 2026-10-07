@@ -252,6 +252,8 @@ export const hud = defineMessages({
     /** Anti-cheat rejections (HTTP 422), by violation code. */
     violations: {
       generic: "Cette progression ne respecte pas les règles du jeu.",
+      fates: "Des coups du sort déjà tirés ont été tirés une seconde fois.",
+      journal: "Le Grand Livre n'a pas pu refaire le chemin de cette partie depuis la dernière fois.",
       "stage-order": "Les étapes franchies ne se suivent pas dans l'ordre.",
       "created-at": "La date de début de cette partie est impossible. L'horloge de ton appareil est peut-être déréglée.",
       time: "Cette partie compte plus de temps de jeu qu'il ne s'en est écoulé. L'horloge de ton appareil est peut-être déréglée.",
@@ -284,6 +286,7 @@ export const hud = defineMessages({
       "shards-earned": "Plus d'éclats gagnés que tes combats et ton recyclage n'en rapportent.",
       version: "Cette progression vient d'une version du jeu plus ancienne que celle déjà gardée. Recharge la page.",
       "lineage-time": "Cette partie compte plus de temps de jeu qu'il ne s'en est écoulé depuis la dernière partie du compte.",
+      "lineage-taken": "Cette partie appartient déjà à un autre compte. Recharge la page pour commencer celle de ce compte.",
       record: "Ton record dépasse de loin la plus profonde nuit que le Grand Livre t'a vu marcher. Recharge la page pour reprendre la partie gardée.",
       powers: "Plus de pouvoirs utilisés que leur temps de recharge ne le permet.",
       caravan: "La Caravane est venue une semaine qui n'est pas celle-ci."
@@ -532,6 +535,8 @@ export const hud = defineMessages({
     },
     violations: {
       generic: "This progress does not follow the rules of the game.",
+      fates: "Fates already drawn were drawn a second time.",
+      journal: "The Ledger could not walk this game's road again since last time.",
       "stage-order": "The stages cleared are out of order.",
       "created-at": "This game's start date is impossible. Your device's clock may be wrong.",
       time: "This game counts more play time than has passed. Your device's clock may be wrong.",
@@ -564,6 +569,7 @@ export const hud = defineMessages({
       "shards-earned": "More shards earned than your fights and salvaging could yield.",
       version: "This progress comes from an older version of the game than the one already kept. Reload the page.",
       "lineage-time": "This game counts more play time than has passed since the account's last game.",
+      "lineage-taken": "This game already belongs to another account. Reload the page to start this account's own.",
       record: "Your record lies far past the deepest night the Ledger saw you walk. Reload the page to pick up the kept game.",
       powers: "More powers used than their cooldowns allow.",
       caravan: "The Caravan came in a week that is not this one."

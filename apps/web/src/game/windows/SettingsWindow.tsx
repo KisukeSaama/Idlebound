@@ -34,7 +34,7 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
   const text = t.windows.settings;
   const settings = state.settings;
   const volumeStep = stepForGain(settings.volume);
-  const update = (patch: Partial<typeof settings>) => store.act((engine) => Object.assign(engine.state.settings, patch));
+  const update = (patch: Partial<typeof settings>) => store.act({ type: "settings", patch });
   // Language the browser asks for, shown next to "Automatic". Read after mount (no navigator on the server).
   const [detected, setDetected] = useState<(typeof LOCALES)[number] | null>(null);
   useEffect(() => setDetected(negotiateLocale(navigator.languages)), []);

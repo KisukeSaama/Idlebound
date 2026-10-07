@@ -17,24 +17,6 @@ export function seededRng(seed: number): Rng {
   };
 }
 
-/**
- * The same generator, its state kept outside (in the save): each draw reads the state and
- * writes the next one, so a game reloaded from a save draws the same numbers again.
- */
-export function storedRng(read: () => number, write: (state: number) => void): Rng {
-  return () => {
-    const next = ((read() >>> 0) + MULBERRY_STEP) >>> 0;
-    write(next);
-    return mulberryValue(next);
-  };
-}
-
-/** A generator state (unsigned 32-bit) spread from any number, such as a creation date. */
-export function seedFrom(value: number): number {
-  const whole = Number.isFinite(value) ? Math.floor(Math.abs(value)) : 0;
-  return Math.floor(mulberryValue(((whole % 4294967296) + MULBERRY_STEP) >>> 0) * 4294967296) >>> 0;
-}
-
 export function randomInt(rng: Rng, min: number, max: number): number {
   return Math.floor(min + rng() * (max - min + 1));
 }
@@ -43,6 +25,7 @@ export function pick<T>(rng: Rng, list: readonly T[]): T {
   return list[Math.floor(rng() * list.length)];
 }
 
+/** An id drawn from the fates alone (one draw, 52 bits): the same on the device and when the server replays it. */
 export function uid(rng: Rng): string {
-  return Math.floor(rng() * 2 ** 32).toString(36) + Date.now().toString(36).slice(-4);
+  return Math.floor(rng() * 2 ** 52).toString(36);
 }

@@ -1,10 +1,15 @@
-import { migrateState, type ApiError, type GameState } from "@idlebound/game";
+import { createInitialState, migrateState, type ApiError, type EngineRuntime, type FateWindow, type GameState, type Journal } from "@idlebound/game";
 import { leaderboardSummary, safeParseState, verifyFirstSight, verifyNewLineage, verifyPace, verifySaveVersion, verifyState, verifyTransition, type Pace, type Violation } from "@idlebound/game/server";
-import { eq, sql as raw } from "drizzle-orm";
+import { and, eq, ne, sql as raw } from "drizzle-orm";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
 import { db } from "../db/client";
-import { guestSaves, leaderboard, saveRejections, saves } from "../db/schema";
+import { guestSaves, leaderboard, pendingSeeds, saveRejections, saves, type Branch, type Chain } from "../db/schema";
+import { env } from "../env";
+import { fateWindow, newSecret } from "../lib/fates";
+import { accountOwner, consumePending, decodeJournal, findPending, guestOwner, pendingSeed, recordPresence, report } from "../lib/replays";
+import { runReplay } from "../replay/pool";
+import type { ReplayVerdict } from "../replay/check";
 import { forgetGuest, guestId, keepGuest, newGuest, renewGuest, visitDue } from "../lib/guest";
 import { fail } from "../lib/errors";
 import { clientIp, limiter, tooMany } from "../lib/rate-limit";
@@ -53,7 +58,14 @@ const putBody = z.object({
   /** The page sending the save; absent from pages older than the hold (they hold nothing). */
   holder: holderId.optional(),
   /** The page is out of sight: the game is saved, and any other page may take it at once. */
-  release: z.boolean().optional()
+  release: z.boolean().optional(),
+  /**
+   * What the walker did since the save it builds on (see `replay.ts` in the game), as JSON or
+   * gzipped JSON in base64. The server replays it and compares (see `REPLAY_MODE`).
+   */
+  journal: z.union([z.string().max(700_000), z.record(z.string(), z.unknown())]).optional(),
+  /** More of the journal follows in the next saves (the page is back from a long outage). */
+  more: z.boolean().optional()
 });
 
 const openBody = z.object({
@@ -71,6 +83,11 @@ interface Stored {
   holder: string | null;
   heldAt: Date | null;
   pace: Pace | null;
+  seed: string | null;
+  runtime: EngineRuntime | null;
+  branch: Branch | null;
+  parent: Branch | null;
+  chain: Chain | null;
 }
 
 interface Written {
@@ -79,13 +96,21 @@ interface Written {
   gameCreatedAt: number;
   updatedAt: Date;
   pace: Pace;
+  seed: string | null;
+  runtime: EngineRuntime | null;
+  /** The revision it follows, as the server kept it (null for a game seen for the first time). */
+  parent: Branch | null;
+  /** Cleared when another game takes the row: where another page left the old one means nothing now. */
+  branch?: null;
+  /** Where the chain of saves under way began, if one is (see `Chain`). */
+  chain: Chain | null;
   /** Left out by a page that sent no id: the hold stays as it was. */
   holder?: string | null;
   heldAt?: Date | null;
 }
 
 type Outcome =
-  | { status: 200; body: { revision: number; updatedAt: string } }
+  | { status: 200; body: { revision: number; updatedAt: string; fates: FateWindow | null; replay?: { state: GameState; runtime: EngineRuntime } } }
   | { status: 409 | 422; body: Record<string, unknown> }
   | { status: 429; body: { error: ApiError }; retryAfter?: number };
 
@@ -93,6 +118,12 @@ type Outcome =
 interface Ledger {
   /** Key of the replacement limit; null when nothing can be stored under it yet. */
   key: string | null;
+  /** Whose game this is: the account's row, or a guest's. */
+  kind: "account" | "guest";
+  /** Who the replay reports and the presence are kept for. */
+  who: { userId?: string; guestId?: string };
+  /** Owners whose pending seed may begin a game this ledger keeps (see lib/replays.ts). */
+  owners: string[];
   conflict: ApiError;
   /** The stored game, its row locked until the transaction ends. */
   load(tx: Tx): Promise<Stored | undefined>;
@@ -100,6 +131,8 @@ interface Ledger {
   witness(tx: Tx, next: GameState): Promise<Stored | undefined>;
   /** Oldest creation date of a game the server never saw before. */
   oldest: number;
+  /** Another account already keeps the game born at `createdAt`: this one would be its copy. */
+  claimed(tx: Tx, createdAt: number): Promise<boolean>;
   reject(tx: Tx, codes: string[]): Promise<void>;
   /** Writes the accepted game; an outcome when it could not be written after all. */
   write(tx: Tx, existing: Stored | undefined, values: Written, witness: Stored | undefined): Promise<Outcome | null>;
@@ -120,12 +153,35 @@ function heldElsewhere(row: Stored, holder: string, now: number): boolean {
   return row.holder !== null && row.holder !== holder && row.heldAt !== null && now - row.heldAt.getTime() < HOLD_MS;
 }
 
-/** What `GET` answers for a stored game. */
-function stored(row: Stored) {
+/** What `GET` answers for a stored game: the save, and the window of its fates (`seed` is the row's secret). */
+function stored(row: Stored, seed: string | null) {
   // The time the server saw pass since this save: the most a closed game may be credited
   // when it opens again, whatever the device's clock says.
   const elapsedMs = Math.max(0, Date.now() - row.updatedAt.getTime());
-  return { state: row.state, revision: row.revision, updatedAt: row.updatedAt.toISOString(), elapsedMs };
+  const fates = seed ? fateWindow(seed, (migrateState(row.state) as GameState).fates) : null;
+  return { state: row.state, revision: row.revision, updatedAt: row.updatedAt.toISOString(), elapsedMs, fates };
+}
+
+/**
+ * Where a journal begins, as the server kept it; null when it keeps nothing there any more.
+ * `earlier`: it begins before the stored revision (where another page took the game, or the
+ * revision before a save whose answer was lost), and the checks measure from there.
+ */
+function journalBase(journal: Journal, ledger: Ledger, existing: Stored | undefined, previous: GameState | undefined, witness: Stored | undefined): { state: GameState; runtime: EngineRuntime | null; earlier?: Branch } | null {
+  const { revision, guest } = journal.base;
+  if (revision === null) return journal.open ? { state: createInitialState(journal.base.createdAt), runtime: null } : null;
+  const own = (guest === true) === (ledger.kind === "guest");
+  if (own && existing && previous) {
+    if (existing.revision === revision) return { state: previous, runtime: existing.runtime };
+    for (const kept of [existing.branch, existing.parent]) {
+      if (kept?.revision === revision) {
+        const state = migrateState(kept.state) as GameState;
+        return { state, runtime: kept.runtime, earlier: { ...kept, state } };
+      }
+    }
+  }
+  if (!own && witness && witness.revision === revision) return { state: migrateState(witness.state) as GameState, runtime: witness.runtime };
+  return null;
 }
 
 /** Checks a save against what its ledger holds and writes it. Accounts and guests alike. */
@@ -140,12 +196,16 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
   if (!parsedBody.success) return { status: 400, body: fail("invalid_request") };
   const parsed = safeParseState(parsedBody.data.state);
   if (!parsed.ok) return { status: 400, body: fail("invalid_save", { detail: parsed.error }) };
-  const next = parsed.state;
+  const declared = parsed.state;
+  let next = declared;
   const now = Date.now();
   const { baseRevision, replace, holder, release } = parsedBody.data;
+  const enforce = env.REPLAY_MODE === "enforce";
+  const journal = decodeJournal(parsedBody.data.journal);
   // Checks that need no stored data run before the transaction: the row lock and the
-  // pooled connection are held only for what depends on the previous save.
-  const stateViolations = verifyState(next, now);
+  // pooled connection are held only for what depends on the previous save. Enforced, they
+  // run on the replayed game instead, once it is known.
+  const stateViolations = enforce ? [] : verifyState(declared, now);
 
   return db.transaction(async (tx): Promise<Outcome> => {
     const existing = await ledger.load(tx);
@@ -175,11 +235,77 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     if (existing) violations.push(...verifySaveVersion(existing.state, parsedBody.data.state));
     const sameLineage = existing && previous && previous.createdAt === next.createdAt;
     const witness = sameLineage ? undefined : await ledger.witness(tx, next);
+    if (!sameLineage) {
+      // A game belongs to one account: a copy of one another account keeps (sent again after
+      // a sign-out, or by hand) would rank the same walk twice. Two copies sent at once wait
+      // for each other here, so the second one sees the first.
+      await tx.execute(raw`select pg_advisory_xact_lock(${next.createdAt}::bigint)`);
+      if (await ledger.claimed(tx, next.createdAt)) {
+        violations.push({ code: "lineage-taken", message: "Another account already keeps this game." });
+      }
+    }
+
+    // The game's fates: its own secret, the guest's it came from, or the pending seed that began it.
+    let secret: string | null = null;
+    let pendingOwner: string | null = null;
+    if (sameLineage) secret = existing.seed;
+    else if (witness) secret = witness.seed;
+    else {
+      const pending = await findPending(tx, ledger.owners, next.createdAt);
+      if (pending) {
+        secret = pending.secret;
+        pendingOwner = pending.owner;
+      }
+    }
+    // The journal, replayed from the save it builds on with those fates (see REPLAY_MODE).
+    let verdict: ReplayVerdict | null = null;
+    let problem: string | null = null;
+    let earlier: Branch | undefined;
+    if (journal === "invalid") problem = "journal-invalid";
+    else if (!journal) problem = "no-journal";
+    else if (!secret) problem = "no-seed";
+    else {
+      const base = journalBase(journal.journal, ledger, existing, previous, witness);
+      if (!base) problem = "no-base";
+      else {
+        earlier = base.earlier;
+        verdict = await runReplay({ base: base.state, runtime: base.runtime, journal: journal.journal, secret, declared });
+        if (verdict.outcome === "failed") problem = verdict.error ?? "failed";
+      }
+    }
+    const ignored = (verdict?.ignored ?? 0) + (journal && journal !== "invalid" ? journal.dropped : 0);
+    if (problem || verdict?.outcome === "diverged" || ignored > 0 || (verdict?.stray ?? 0) > 0) {
+      await report(tx, ledger.who, problem ?? verdict!.outcome, {
+        mode: env.REPLAY_MODE,
+        problem,
+        diff: verdict?.diff ?? [],
+        ignored,
+        stray: verdict?.stray ?? 0,
+        steps: verdict?.steps ?? 0,
+        ms: Math.round(verdict?.ms ?? 0),
+        base: journal && journal !== "invalid" ? journal.journal.base.revision : null
+      });
+    }
+    if (enforce) {
+      // The replayed game is the one kept: what the walker could really have done.
+      if (problem || !verdict?.state) violations.push({ code: "journal", message: "The journal could not be replayed." });
+      else {
+        next = verdict.state;
+        violations.push(...verifyState(next, now));
+      }
+    }
     // The save this one carries on, as the server kept it, and what the server measured since.
     let kept: { state: GameState; pace: Pace | null; elapsedMs: number } | undefined;
     if (existing && previous && sameLineage) {
-      kept = { state: previous, pace: existing.pace, elapsedMs: now - existing.updatedAt.getTime() };
-      violations.push(...verifyTransition(previous, next, kept.elapsedMs));
+      // Within a chain of saves (a long journal sent in parts), the time counts from the save
+      // the chain began after: the parts together are held as one save would be.
+      // A journal that begins at an earlier revision is held to that revision and the time since.
+      kept = earlier
+        ? { state: earlier.state, pace: earlier.pace, elapsedMs: now - earlier.at }
+        : existing.chain
+          ? { state: migrateState(existing.chain.state) as GameState, pace: existing.chain.pace, elapsedMs: now - existing.chain.at }
+          : { state: previous, pace: existing.pace, elapsedMs: now - existing.updatedAt.getTime() };
+      violations.push(...verifyTransition(kept.state, next, kept.elapsedMs));
     } else if (witness) {
       // A guest's game brought to the account: the server kept it, so it is held to its own
       // last save, like any game that carries on.
@@ -209,8 +335,21 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     const revision = (existing?.revision ?? 0) + 1;
     const updatedAt = new Date(now);
     const hold = holder === undefined ? {} : release ? { holder: null, heldAt: null } : { holder, heldAt: updatedAt };
-    const refused = await ledger.write(tx, existing, { state: next, revision, gameCreatedAt: next.createdAt, updatedAt, pace: paced.pace, ...hold }, witness);
-    return refused ?? { status: 200, body: { revision, updatedAt: updatedAt.toISOString() } };
+    // A game without a secret yet (begun before the seeds, or without a pending one) gets one
+    // now: the page plays its next draws from the window this answer carries.
+    const seed = secret ?? newSecret();
+    const runtime = verdict?.runtime ?? null;
+    const parent = existing && sameLineage ? { revision: existing.revision, state: existing.state as GameState, runtime: existing.runtime, pace: existing.pace, at: existing.updatedAt.getTime() } : null;
+    // A part of a longer journal begins a chain, or carries it on; the last part ends it.
+    const chain = parsedBody.data.more && existing && sameLineage
+      ? existing.chain ?? { state: existing.state as GameState, pace: existing.pace, at: existing.updatedAt.getTime() }
+      : null;
+    const refused = await ledger.write(tx, existing, { state: next, revision, gameCreatedAt: next.createdAt, updatedAt, pace: paced.pace, seed, runtime, parent, chain, ...(sameLineage ? {} : { branch: null }), ...hold }, witness);
+    if (refused) return refused;
+    if (pendingOwner) await consumePending(tx, pendingOwner);
+    if (ledger.who.userId && verdict?.presence) await recordPresence(tx, ledger.who.userId, verdict.presence, now);
+    const corrected = enforce && verdict?.outcome === "diverged" && verdict.runtime ? { replay: { state: next, runtime: verdict.runtime } } : {};
+    return { status: 200, body: { revision, updatedAt: updatedAt.toISOString(), fates: fateWindow(seed, next.fates), ...corrected } };
   });
 }
 
@@ -219,7 +358,15 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
  * now and the walker did not ask to take it over (`elsewhere`, nothing changed). The game is
  * answered either way, so the page shows it.
  */
-async function open<Row extends Stored>(c: Context, load: (tx: Tx) => Promise<Row | undefined>, hold: (tx: Tx, holder: string, at: Date) => Promise<void>) {
+/** What opening a game writes to its row: who holds it, where another page left it, its secret. */
+interface Hold {
+  holder: string;
+  heldAt: Date;
+  branch?: Branch;
+  seed?: string;
+}
+
+async function open<Row extends Stored>(c: Context, load: (tx: Tx) => Promise<Row | undefined>, hold: (tx: Tx, patch: Hold) => Promise<void>) {
   let input: unknown;
   try {
     input = await c.req.json();
@@ -234,8 +381,14 @@ async function open<Row extends Stored>(c: Context, load: (tx: Tx) => Promise<Ro
     if (!row) return { row, elsewhere: false };
     const now = Date.now();
     if (!force && heldElsewhere(row, holder, now)) return { row, elsewhere: true };
-    await hold(tx, holder, new Date(now));
-    return { row, elsewhere: false };
+    const patch: Hold = { holder, heldAt: new Date(now) };
+    // Taken from another page: that page builds on this revision, and its journal may still
+    // be replayed from here if the walker keeps its game (see `journalBase`).
+    if (row.holder !== null && row.holder !== holder) patch.branch = { revision: row.revision, state: row.state as GameState, runtime: row.runtime, pace: row.pace, at: row.updatedAt.getTime() };
+    // A game begun before the seeds gets its secret as it opens: the page plays from its window.
+    if (!row.seed) patch.seed = newSecret();
+    await hold(tx, patch);
+    return { row: { ...row, seed: patch.seed ?? row.seed }, elsewhere: false };
   });
 }
 
@@ -249,7 +402,17 @@ export const saveRoutes = new Hono()
     const user = await currentUser(c);
     if (!user) return c.json(fail("login_required"), 401);
     const [row] = await db.select().from(saves).where(eq(saves.userId, user.id)).limit(1);
-    return c.json({ save: row ? stored(row) : null });
+    return c.json({ save: row ? stored(row, row.seed) : null });
+  })
+
+  // The seed of the account's next game (see lib/replays.ts): the same until a save begins it.
+  .post("/new", async (c) => {
+    const user = await currentUser(c);
+    if (!user) return c.json(fail("login_required"), 401);
+    const wait = openLimiter.consume(user.id);
+    if (wait > 0) return tooMany(c, wait);
+    const seed = await pendingSeed(accountOwner(user.id));
+    return c.json({ createdAt: seed.createdAt, fates: fateWindow(seed.secret, undefined) });
   })
 
   .post("/open", async (c) => {
@@ -260,12 +423,12 @@ export const saveRoutes = new Hono()
     const opened = await open(
       c,
       async (tx) => (await tx.select().from(saves).where(eq(saves.userId, user.id)).for("update").limit(1))[0],
-      async (tx, holder, heldAt) => {
-        await tx.update(saves).set({ holder, heldAt }).where(eq(saves.userId, user.id));
+      async (tx, patch) => {
+        await tx.update(saves).set(patch).where(eq(saves.userId, user.id));
       }
     );
     if (!opened) return c.json(fail("invalid_request"), 400);
-    return c.json({ save: opened.row ? stored(opened.row) : null, elsewhere: opened.elsewhere });
+    return c.json({ save: opened.row ? stored(opened.row, opened.row.seed) : null, elsewhere: opened.elsewhere });
   })
 
   .put("/", async (c) => {
@@ -280,6 +443,10 @@ export const saveRoutes = new Hono()
     const moved = { guest: false };
     const outcome = await keep(c, {
       key: user.id,
+      kind: "account",
+      who: { userId: user.id },
+      // A game begun as a guest in this browser and never kept there comes with its seed.
+      owners: guest ? [accountOwner(user.id), guestOwner(guest)] : [accountOwner(user.id)],
       conflict: "save_conflict",
       load: async (tx) => (await tx.select().from(saves).where(eq(saves.userId, user.id)).for("update").limit(1))[0],
       // The game this browser played as a guest, when it is the one being saved.
@@ -289,6 +456,7 @@ export const saveRoutes = new Hono()
         return row && row.gameCreatedAt === next.createdAt ? row : undefined;
       },
       oldest: user.createdAt.getTime() - MAX_GUEST_AGE_MS,
+      claimed: async (tx, createdAt) => (await tx.select({ userId: saves.userId }).from(saves).where(and(eq(saves.gameCreatedAt, createdAt), ne(saves.userId, user.id))).limit(1)).length > 0,
       reject: async (tx, codes) => {
         if (rejectionLog.consume(user.id) === 0) await tx.insert(saveRejections).values({ userId: user.id, codes });
       },
@@ -347,7 +515,25 @@ export const saveRoutes = new Hono()
       await db.update(guestSaves).set({ lastSeenAt: new Date() }).where(eq(guestSaves.id, id));
       renewGuest(c);
     }
-    return c.json({ save: stored(row) });
+    return c.json({ save: stored(row, row.seed) });
+  })
+
+  // The seed of this browser's next guest game: the same for a cookie until a save begins it.
+  // A browser without a cookie gets one now, counted as a new guest game of its address.
+  .post("/guest/new", async (c) => {
+    const ip = clientIp(c);
+    const ipWait = guestOpenIp.consume(ip);
+    if (ipWait > 0) return tooMany(c, ipWait);
+    let id = guestId(c);
+    if (!id) {
+      const createWait = guestCreateIp.consume(ip);
+      if (createWait > 0) return tooMany(c, createWait);
+      const guest = newGuest();
+      keepGuest(c, guest.token);
+      id = guest.id;
+    }
+    const seed = await pendingSeed(guestOwner(id));
+    return c.json({ createdAt: seed.createdAt, fates: fateWindow(seed.secret, undefined) });
   })
 
   .post("/guest/open", async (c) => {
@@ -359,8 +545,8 @@ export const saveRoutes = new Hono()
     const opened = await open(
       c,
       async (tx) => (id ? (await tx.select().from(guestSaves).where(eq(guestSaves.id, id)).for("update").limit(1))[0] : undefined),
-      async (tx, holder, heldAt) => {
-        await tx.update(guestSaves).set({ holder, heldAt }).where(eq(guestSaves.id, id!));
+      async (tx, patch) => {
+        await tx.update(guestSaves).set(patch).where(eq(guestSaves.id, id!));
       }
     );
     if (!opened) return c.json(fail("invalid_request"), 400);
@@ -371,7 +557,7 @@ export const saveRoutes = new Hono()
       await db.update(guestSaves).set({ lastSeenAt: new Date() }).where(eq(guestSaves.id, id));
       renewGuest(c);
     }
-    return c.json({ save: row ? stored(row) : null, elsewhere });
+    return c.json({ save: row ? stored(row, row.seed) : null, elsewhere });
   })
 
   .put("/guest", async (c) => {
@@ -386,6 +572,9 @@ export const saveRoutes = new Hono()
     const cookie: { issued: string | null; lastSeenAt: Date | null } = { issued: null, lastSeenAt: null };
     const outcome = await keep(c, {
       key: id,
+      kind: "guest",
+      who: id ? { guestId: id } : {},
+      owners: id ? [guestOwner(id)] : [],
       conflict: "guest_save_conflict",
       load: async (tx) => {
         if (!id) return undefined;
@@ -395,12 +584,19 @@ export const saveRoutes = new Hono()
       },
       witness: async () => undefined,
       oldest: Date.now() - MAX_GUEST_AGE_MS,
+      // An account's game is never a guest's to keep, nor to bring to another account.
+      claimed: async (tx, createdAt) => (await tx.select({ userId: saves.userId }).from(saves).where(eq(saves.gameCreatedAt, createdAt)).limit(1)).length > 0,
       reject: async (tx, codes) => {
         if (id && rejectionLog.consume(id) === 0) await tx.insert(saveRejections).values({ guestId: id, codes });
       },
       write: async (tx, existing, values) => {
         if (existing && id) {
           await tx.update(guestSaves).set({ ...values, lastSeenAt: values.updatedAt }).where(eq(guestSaves.id, id));
+          return null;
+        }
+        // The game this cookie's pending seed began: its row, under the cookie it already has.
+        if (id && (await tx.select({ owner: pendingSeeds.owner }).from(pendingSeeds).where(eq(pendingSeeds.owner, guestOwner(id))).limit(1)).length > 0) {
+          await tx.insert(guestSaves).values({ id, ...values, lastSeenAt: values.updatedAt });
           return null;
         }
         // A new guest game (or one whose row is gone): a new row under a new cookie.

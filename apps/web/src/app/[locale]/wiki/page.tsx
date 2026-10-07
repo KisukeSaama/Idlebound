@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS, ALTARS, BESTIARY, ERA_COUNT, MAX_STAGE, NAMED_RELICS, SECRETS } from "@idlebound/game";
+import { ACHIEVEMENTS, ALTARS, BESTIARY, ERA_COUNT, NAMED_RELICS, SECRETS } from "@idlebound/game";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Art } from "@/game/pixel/Art";
@@ -37,7 +37,8 @@ export default async function WikiIndexPage({ params }: Props) {
     { label: w.index.counts.deeds, value: ACHIEVEMENTS.length, to: wikiHref(locale, "deeds") },
     { label: w.index.counts.secrets, value: SECRETS.length, to: `${wikiHref(locale, "deeds")}#secrets` },
     { label: w.index.counts.strata, value: ERA_COUNT, to: wikiHref(locale, "strata") },
-    { label: w.index.counts.stages, value: MAX_STAGE, to: wikiHref(locale, "calculator") }
+    // The road has no bottom.
+    { label: w.index.counts.stages, value: "∞", to: wikiHref(locale, "calculator") }
   ];
 
   return (
@@ -84,7 +85,7 @@ export default async function WikiIndexPage({ params }: Props) {
             {numbers.map((entry) => (
               <div key={entry.label}>
                 <dt><Link href={entry.to}>{entry.label}</Link></dt>
-                <dd>{count(locale, entry.value)}</dd>
+                <dd>{typeof entry.value === "number" ? count(locale, entry.value) : entry.value}</dd>
               </div>
             ))}
           </dl>

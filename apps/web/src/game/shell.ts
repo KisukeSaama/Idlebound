@@ -12,6 +12,7 @@ import {
   promisesOpen,
   stratumTag,
   type ChronicleSource,
+  type CutsceneId,
   type GameState,
   type Locale
 } from "@idlebound/game";
@@ -56,6 +57,11 @@ export const ANNOUNCED_AT_LOAD: readonly RevealId[] = ["promise"];
 /** Id kept in `state.tutorial.done` once an element was announced (short: the list holds 50). */
 export function revealMark(id: RevealId): string {
   return `ui:${id}`;
+}
+
+/** The mark a scene of the Ledger leaves in the save once it was played or told. */
+export function sceneMark(id: CutsceneId): string {
+  return `scene:${id}`;
 }
 
 export type Reveals = Record<RevealId, boolean>;
