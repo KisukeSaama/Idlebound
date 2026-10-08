@@ -14,7 +14,15 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   since the previous one (here, everything after v0.4).
 - Up to v0.5.3, releases were git tags; they are no longer used.
 
-## Next version: v1.2.0
+## Next version: v1.2.1
+
+### Fixes
+
+- Talents on a phone: a single tap buys a talent within reach. Before, on some phones the
+  first tap only opened its card and the second one bought it. A talent out of reach or
+  already learned still opens its card when touched.
+
+## v1.2.0
 
 ## v1.1.0
 
