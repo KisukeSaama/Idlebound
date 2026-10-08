@@ -1039,13 +1039,22 @@ button.resource:hover .resource-label {
   font-weight: 700;
 }
 
-.skill:hover .skill-tip,
 .skill:focus-visible .skill-tip,
-.talent:hover .talent-tip,
 .talent:focus-visible .talent-tip {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0);
+}
+
+/* Only a real pointer hovers. On a phone, a card that a tap reveals turns that tap into a
+   hover and the key only answers the second one. */
+@media (hover: hover) {
+  .skill:hover .skill-tip,
+  .talent:hover .talent-tip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
 }
 
 @keyframes skill-active {
@@ -3677,10 +3686,16 @@ kbd {
   }
 }
 
-/* Touch screens have no hover: tooltips would stick after a tap. */
+/* Touch screens have no hover: tooltips would stick after a tap. A talent out of reach (or
+   learned) does nothing when touched, so a tap opens its card; one to buy is bought at once. */
 @media (hover: none) {
   .skill-tip {
     display: none;
+  }
+  .talent:disabled:hover .talent-tip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
   }
 }
 
