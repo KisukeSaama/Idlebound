@@ -155,7 +155,7 @@ export default function GameApp() {
       const room = roomOnScreen();
       let changed = false;
       while (onScreen.length < room && line.length > 0) {
-        const entry = line.shift() as Toast;
+        const entry = { ...(line.shift() as Toast), shownAt: performance.now() };
         onScreen = [...onScreen, entry];
         changed = true;
         schedule(entry);
@@ -173,7 +173,7 @@ export default function GameApp() {
         next();
         return;
       }
-      const counted = { ...entry, id: same.id, count: (same.count ?? 1) + 1 };
+      const counted = { ...entry, id: same.id, shownAt: same.shownAt, count: (same.count ?? 1) + 1 };
       const waiting = line.indexOf(same);
       if (waiting >= 0) {
         line[waiting] = counted;
@@ -195,7 +195,16 @@ export default function GameApp() {
       setToasts(onScreen);
       next();
     };
-    return { add, next, forget };
+    /** A toast tapped away leaves at once, and the next one in line takes its place. */
+    const dismiss = (id: number) => {
+      if (!onScreen.some((entry) => entry.id === id)) return;
+      clearTimeout(timers.get(id));
+      timers.delete(id);
+      onScreen = onScreen.filter((entry) => entry.id !== id);
+      setToasts(onScreen);
+      next();
+    };
+    return { add, next, forget, dismiss };
   }, []);
   const toast = useCallback((input: ToastInput) => {
     toastId.current += 1;
@@ -750,7 +759,7 @@ export default function GameApp() {
           {chest ? <ChestOpening request={chest} onDone={() => setChest(null)} /> : null}
           {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
           {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
-          <Toasts toasts={toasts} held={covered} />
+          <Toasts toasts={toasts} held={covered} onDismiss={pump.dismiss} />
           <InstallInvite covered={covered} />
         </div>
       </GameContext.Provider>

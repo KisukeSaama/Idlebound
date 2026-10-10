@@ -3532,6 +3532,9 @@ kbd {
   background: color-mix(in srgb, var(--toast-color) 12%, #13111b);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--toast-color) 60%, #000), var(--bevel), 0 12px 26px rgba(0, 0, 0, 0.5);
   animation: toast-in 160ms ease-out;
+  /* The stack lets taps through; a toast itself is cleared by a tap (Toasts.tsx). */
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .toast-gold { --toast-color: var(--gold); }
