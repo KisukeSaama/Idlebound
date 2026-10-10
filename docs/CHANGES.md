@@ -21,6 +21,8 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 - Talents on a phone: a single tap buys a talent within reach. Before, on some phones the
   first tap only opened its card and the second one bought it. A talent out of reach or
   already learned still opens its card when touched.
+- Confirmations opened from a window: Escape closes the confirmation alone and leaves the
+  window open. Before, it closed both at once.
 
 ## v1.2.0
 
