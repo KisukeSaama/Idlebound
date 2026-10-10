@@ -14,7 +14,15 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   since the previous one (here, everything after v0.4).
 - Up to v0.5.3, releases were git tags; they are no longer used.
 
-## Next version: v1.2.1
+## Next version: v1.2.2
+
+### Fixes
+
+- Bag: every relic card is as tall as the tallest one, and Salvage sits at the right edge.
+  Salvaging relic after relic keeps the next one's button under the pointer. Before, the
+  cards moved up and down as they changed places.
+
+## v1.2.1
 
 ### Fixes
 
