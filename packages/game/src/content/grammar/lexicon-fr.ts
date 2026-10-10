@@ -14,7 +14,7 @@ export const FR_STRATA: readonly FrLexicon[] = [
   fr("carte:f|porte brisée:f|botte:f|cadre vide:m", "trou:m|à@bord:m|brume:f|champ manquant:m", "a disparu|a oublié un mot|a cessé de marcher|a gardé le silence", "manquant|muet/muette|inachevé", "sans couleur="),
   fr("éclat d'étoile:m|étoile tombée:f|morceau de ciel:m|longue-vue:f", "cratère:m|mine:f|ciel:m|veine:f", "a levé les yeux|a brillé|a compté les étoiles|a creusé vers le ciel", "froid|brillant|encore chaud", "argenté"),
   // Âge II : le Monde ancien
-  fr("premier caillou:m|racine:f|graine:f|tablette d'argile:f", "boue:f|à@fond:m|terre profonde:f|première grotte:f", "a creusé|a cessé de creuser|a écrit FOND|a renoncé", "ancien/ancienne|dernier/dernière|faux/fausse", "brun"),
+  fr("premier caillou:m|racine:f|graine:f|tablette d'argile:f", "boue:f|à@fond:m|terre profonde:f|première grotte:f", "a creusé|a cessé de creuser|a écrit FOND|a renoncé", "ancien/ancienne|enfoui/enfouie|faux/fausse", "brun"),
   fr("dent de géant:f|main de pierre:f|osselet:m|rocher:m", "vallée:f|empreinte:f|carrière:f|flanc de montagne:m", "a soulevé une montagne|a frappé du pied|a fait trembler le sol|a continué", "immense|lourd|immobile", "ocre"),
   fr("écaille:f|os:m|œuf:m|croc de dragon:m", "cage thoracique:f|antre:m|sur@trésor:m|vallée des os:f", "a salué|a craché du feu|a ondulé|a attendu mille ans", "vaste|fier/fière|chaud", "doré"),
   fr("coquillage:m|ancre:f|sel:mM|cloche noyée:f", "marée:f|récif:m|à@fond de la mer:m|eaux basses:fp", "a sombré|a dérivé|a nagé|a suivi la marée", "mouillé|salé|noyé", "vert d'eau="),

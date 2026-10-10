@@ -268,7 +268,10 @@ export function shotAir(shot: CutsceneShot, picture: Pixels, cam: number): AirSc
 
 /** One frame of a shot at a pose. */
 export function drawPose(shot: CutsceneShot, pose: ShotPose): Pixels {
-  const { out, actors } = drawSet(shot, pose);
+  const set = drawSet(shot, pose);
+  const { actors } = set;
+  // A memory's or an object's frame is held in a cache: darkened or flashed, a copy is.
+  const out = (shot.set.kind === "memory" || shot.set.kind === "object") && (pose.light < WAKE_STEPS || pose.flash) ? clonePixels(set.out) : set.out;
   if (pose.light < WAKE_STEPS) {
     // The set comes up out of the dark; its own lights (a fire, a stone's glow) shine first.
     const table = darkTable(pose.light);

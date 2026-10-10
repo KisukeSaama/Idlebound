@@ -743,7 +743,8 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
     else if ((given.broken && !now.broken) || now.kings < given.kings) fail("promise", "A broken promise was mended.");
   }
   // One dusk later, last night's word is remembered as it was.
-  if (nights === 1 && next.descents === previous.descents && next.lastPromise !== given?.hero) fail("promise", "Last night's word was rewritten.");
+  // A word given after the previous save (at dusk itself) is not known here: nothing to hold it to.
+  if (nights === 1 && given && next.descents === previous.descents && next.lastPromise !== given.hero) fail("promise", "Last night's word was rewritten.");
   if (previous.named.some((id) => !next.named.includes(id))) fail("rollback", "A named relic was forgotten.");
   if (next.descents < previous.descents) fail("rollback", "Descents went down.");
   if (b.threads > a.threads && next.descents === previous.descents) fail("descent", "Threads woven without a Descent.");

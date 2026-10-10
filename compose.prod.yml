@@ -4,7 +4,8 @@
 #   docker compose -f compose.prod.yml up --build
 #   → http://localhost:3000
 #
-# The real deployment on the server uses deploy/compose.yml through GitLab CI.
+# The real deployment on the server uses deploy/compose.yml through GitLab CI. The limits
+# (memory, CPU, replay workers) are the same here, so a release is checked within them.
 
 x-logging: &logging
   driver: json-file
@@ -23,6 +24,9 @@ services:
       PUBLIC_SITE_URL: http://localhost:3000
       INTERNAL_API_BASE_URL: http://api:8000
       SITE_INDEXABLE: "false"
+      NODE_OPTIONS: --max-old-space-size=384
+    mem_limit: 512m
+    cpus: 2
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
@@ -54,6 +58,10 @@ services:
       # Locally we serve plain HTTP: a Secure cookie would never be sent back.
       COOKIE_SECURE: "false"
       TRUSTED_PROXY_COUNT: "1"
+      REPLAY_WORKERS: "2"
+      NODE_OPTIONS: --max-old-space-size=256
+    mem_limit: 1g
+    cpus: 2
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,6 +86,8 @@ services:
       POSTGRES_DB: idlebound
       POSTGRES_USER: idlebound
       POSTGRES_PASSWORD: idlebound
+    mem_limit: 1g
+    cpus: 2
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     healthcheck:

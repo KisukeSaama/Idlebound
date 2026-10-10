@@ -196,7 +196,7 @@ const fr: StrataText = {
     // Âge VI : l'Ébauche
     { by: "Séraphine", text: "Les arbres ne sont ici que des contours, jamais coloriés. Avant qu'Orvane soit achevée, quelqu'un l'a d'abord dessinée." },
     { by: "Le Grand Livre", text: "Tout, dans cette strate, est dessiné au fusain. Tes mains laissent des traînées sur tout ce que tu touches." },
-    { by: "Lysandre", text: "Un second Orvane, dessiné à côté du premier, jamais achevé. Le nôtre n'était pas le seul brouillon du monde. Encore tort." },
+    { by: "Lysandre", text: "Une seconde Orvane, dessinée à côté de la première, jamais achevée. La nôtre n'était pas le seul brouillon du monde. Encore tort." },
     { by: "Une main inconnue", text: "On a dessiné quelque chose ici, puis on l'a gommé. La forme reste sur la page. Qui a dessiné Orvane a changé d'avis." },
     { by: "Eldra", text: "Sous ce monde, les lignes d'un plus ancien, grattées pour faire place. Je n'ai dessiné ni l'un ni l'autre. J'ai seulement tissé la nuit." },
     // Âge VII : les Mots

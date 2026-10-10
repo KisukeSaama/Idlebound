@@ -6,7 +6,9 @@ import { checkJournal, type ReplayJob, type ReplayVerdict } from "./check";
 /**
  * Replays run off the request loop, in a few worker threads: a long journal never holds the
  * API. A replay that runs past `REPLAY_TIMEOUT_MS` is stopped (its worker replaced) and counts
- * as failed. Run from the sources (development, tests), replays run inline.
+ * as failed. Run from the sources (development, tests), replays run inline. A replay still
+ * waiting for a worker after `REPLAY_TIMEOUT_MS` gives up as "busy": the save waiting on it
+ * holds a database connection, and a burst of replays would hold them all.
  */
 const REPLAY_TIMEOUT_MS = 5_000;
 
@@ -78,7 +80,14 @@ export function runReplay(job: ReplayJob): Promise<ReplayVerdict> {
   if (inline) return Promise.resolve(checkJournal(job));
   if (slots.length === 0) for (let index = 0; index < size; index += 1) slots.push(spawn());
   return new Promise((resolve) => {
-    queue.push({ id: nextId++, job, resolve });
+    const pending: Pending = { id: nextId++, job, resolve };
+    queue.push(pending);
+    setTimeout(() => {
+      const index = queue.indexOf(pending);
+      if (index === -1) return;
+      queue.splice(index, 1);
+      resolve({ outcome: "failed", error: "busy", diff: [], ignored: 0, stray: 0, steps: 0, ms: 0 });
+    }, REPLAY_TIMEOUT_MS).unref();
     pump();
   });
 }

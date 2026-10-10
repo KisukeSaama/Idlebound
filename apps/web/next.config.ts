@@ -23,6 +23,8 @@ const config: NextConfig = {
   outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
   transpilePackages: ["@idlebound/game"],
   poweredByHeader: false,
+  // Cloudflare compresses at the edge (Brotli): gzip here would spend the server's CPU twice.
+  compress: false,
   reactStrictMode: true,
   // Images are already optimized to WebP (assets-src/optimize.py): no sharp at runtime.
   images: { unoptimized: true },

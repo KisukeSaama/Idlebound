@@ -157,11 +157,13 @@ function renderGrid(recipe: ResolvedRecipe, grid: CreatureGrid, options: Creatur
 function closeEyes(target: Pixels, blink: boolean, halfClosed: boolean) {
   if (!blink && !halfClosed) return;
   const { w } = target;
+  // The eyes as they were: a row closed above must not make the next one look like the top.
+  const eye = target.emit.slice();
   for (let at = w; at < target.idx.length; at += 1) {
-    if (target.emit[at] !== 1 || target.idx[at] === EMPTY) continue;
+    if (eye[at] !== 1 || target.idx[at] === EMPTY) continue;
     let above = at - w;
-    while (above >= 0 && target.emit[above]) above -= w;
-    if (halfClosed && !blink && (target.emit[at - w] || !target.emit[at + w])) continue;
+    while (above >= 0 && eye[above]) above -= w;
+    if (halfClosed && !blink && (eye[at - w] || !eye[at + w])) continue;
     const lid = above >= 0 && target.idx[above] !== EMPTY ? target.idx[above] : C.ink;
     target.idx[at] = lid;
     target.emit[at] = 0;

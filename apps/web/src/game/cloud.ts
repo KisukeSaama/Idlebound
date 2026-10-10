@@ -113,6 +113,8 @@ export class CloudSync {
   private unread = false;
   /** The stored game is being read: no upload leaves before the comparison is made. */
   private reading = false;
+  /** init() is still trying to load the game: it owns those attempts, the periodic sync waits. */
+  private loading = false;
   /**
    * The session ended while an account's game was running: the id of that account. The game
    * is no guest's to keep, and no other account's to take.
@@ -177,17 +179,22 @@ export class CloudSync {
     this.timer ??= setInterval(() => {
       if (Date.now() - this.lastUploadAt >= SYNC_INTERVAL_MS) void this.sync();
     }, SYNC_CHECK_MS);
-    for (let attempt = 0; ; attempt += 1) {
-      const answered = await this.load();
-      if (run !== this.generation) return;
-      if (answered) {
-        if (this.reaching) this.set({ reaching: null });
-        return;
+    this.loading = true;
+    try {
+      for (let attempt = 0; ; attempt += 1) {
+        const answered = await this.load();
+        if (run !== this.generation) return;
+        if (answered) {
+          if (this.reaching) this.set({ reaching: null });
+          return;
+        }
+        const delay = Math.min(REACH_MAX_MS, REACH_FIRST_MS * 2 ** attempt);
+        this.set({ reaching: { attempts: attempt + 1, nextAt: Date.now() + delay } });
+        await this.pause(delay);
+        if (run !== this.generation) return;
       }
-      const delay = Math.min(REACH_MAX_MS, REACH_FIRST_MS * 2 ** attempt);
-      this.set({ reaching: { attempts: attempt + 1, nextAt: Date.now() + delay } });
-      await this.pause(delay);
-      if (run !== this.generation) return;
+    } finally {
+      if (run === this.generation) this.loading = false;
     }
   }
 
@@ -493,16 +500,16 @@ export class CloudSync {
    * One upload at a time: a call while one is under way waits for it and sends nothing.
    * Resolves true when the server kept the game.
    */
-  private upload(baseRevision: number | null, replace: boolean, keepalive = false): Promise<boolean> {
+  private upload(baseRevision: number | null, replace: boolean, keepalive = false, leaving = false): Promise<boolean> {
     if (this.flight) return this.flight;
     if (this.adrift !== null) return Promise.resolve(false);
-    this.flight = this.send(baseRevision, replace, keepalive).finally(() => {
+    this.flight = this.send(baseRevision, replace, keepalive, leaving).finally(() => {
       this.flight = null;
     });
     return this.flight;
   }
 
-  private async send(baseRevision: number | null, replace: boolean, keepalive: boolean): Promise<boolean> {
+  private async send(baseRevision: number | null, replace: boolean, keepalive: boolean, leaving: boolean): Promise<boolean> {
     // Whose game this is when the request leaves; signing in meanwhile does not change it.
     const guest = this.user === null;
     this.lastUploadAt = Date.now();
@@ -516,8 +523,8 @@ export class CloudSync {
     // It leaves at once (the page is going), so its journal is not compressed.
     const lasting = keepalive && new TextEncoder().encode(JSON.stringify({ state, journal: outgoing.journal })).length <= KEEPALIVE_MAX_BYTES;
     const journal = lasting ? outgoing.journal : await packJournal(outgoing.journal);
-    // Out of sight, the page lets the game go once it is kept: another page opens it at once.
-    const release = document.visibilityState === "hidden";
+    // Out of sight or leaving, the page lets the game go once it is kept: another page opens it at once.
+    const release = leaving || document.visibilityState === "hidden";
     const result = await api.putSave(state, baseRevision, { replace, keepalive: lasting, guest, holder: this.holder, release, journal, more: outgoing.more });
     if (result.ok) {
       this.store.kept(outgoing.checkpoint, result.data.revision, guest, result.data.fates);
@@ -547,6 +554,8 @@ export class CloudSync {
         }
         const cloud = await api.getSave(guest);
         if (cloud.ok && cloud.data.save) this.set({ pendingChoice: cloud.data.save, status: "idle", message: result.error });
+        // The conflict could not be read: nothing was kept, and leaving now would lose it.
+        else this.set({ status: "error", message: cloud.ok ? result.error : cloud.error });
         break;
       }
       case 403:
@@ -598,7 +607,7 @@ export class CloudSync {
 
   /** Periodic sync, after a player action, on page hide, or on logout. */
   async sync(options: { force?: boolean; keepalive?: boolean } = {}) {
-    if (this.adrift !== null || this.elsewhere || this.pendingChoice || this.reading) return;
+    if (this.adrift !== null || this.elsewhere || this.pendingChoice || this.reading || this.loading) return;
     // The stored game was never read (server away at sign-in, or at load): read it first,
     // never write over it blind. A page-hide save has no time for that.
     if (this.unread) {
@@ -640,8 +649,25 @@ export class CloudSync {
       this.dispose();
       return true;
     }
-    this.store.start();
+    // Another page took the game meanwhile: this one stands aside, it does not play on.
+    if (!this.elsewhere) this.store.start();
     return false;
+  }
+
+  /**
+   * The walker leaves the game for another page of the site (the page itself stays): what was
+   * played is kept and the game let go, and coming back in this tab is the same page.
+   */
+  depart() {
+    this.store.stop();
+    const holds = this.keepsGame();
+    this.dispose();
+    if (!holds) return;
+    keepPageId(this.holder);
+    void (async () => {
+      if (this.flight) await this.flight;
+      if (this.keepsGame()) await this.upload(this.revision, false, true, true);
+    })();
   }
 
   /** The stored game (an account's or a guest's) is loaded, and the server takes its saves: it can be handed over. */

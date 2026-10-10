@@ -114,6 +114,9 @@ Content colors live with the game data, not in CSS:
   cards, market offers, achievement tiles.
 - **Item cards** (`.item-tip`, `.skill-tip`, `.talent-tip`): the tooltip of old games, ink
   `--tip-bg`, a 2px `--tip-border` rim and a black line, names in their rarity color.
+  Hover opens them only where a real pointer hovers (`hover: hover`): on touch, a card a tap
+  reveals would swallow that tap (iOS turns it into a hover). Powers show no card on touch;
+  a talent shows its card on touch only when it cannot be bought (reachable or owned).
 - **Section headings**: Cinzel, left aligned, followed by the ruled line of old portal
   headers (a lit line over a black one), on public pages and in windows (`.section-heading`).
 - **Modals** (`Modal.tsx`): the only secondary surface in the game. A window: black line,

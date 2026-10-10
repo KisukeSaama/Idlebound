@@ -285,8 +285,7 @@ export default function GameApp() {
     window.addEventListener("beforeunload", onLeave);
     return () => {
       cancelled = true;
-      store.stop();
-      cloud.dispose();
+      cloud.depart();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("beforeunload", onLeave);
     };
@@ -697,8 +696,11 @@ export default function GameApp() {
         setOpenWindow(null);
         return;
       }
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
-      const skill = SKILLS.find((entry) => entry.hotkey === event.key);
+      if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
+      // Read by the key's place, not its letter: on a French keyboard, the number row without
+      // Shift types "&", "é"...
+      const digit = /^(?:Digit|Numpad)(\d)$/.exec(event.code)?.[1];
+      const skill = SKILLS.find((entry) => entry.hotkey === digit);
       if (skill && isSkillUnlocked(store.state, skill.id)) {
         const used = store.act<boolean>({ type: "skill", id: skill.id });
         if (!used) audio.play("error");

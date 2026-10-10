@@ -14,7 +14,7 @@ export const EN_STRATA: readonly EnLexicon[] = [
   en("map|broken door|boot|empty frame", "hole|at@edge|fog|missing field", "vanished|forgot a word|stopped walking|kept silent", "missing|mute|unfinished", "colorless"),
   en("star-shard|fallen star|piece of sky|spyglass", "crater|mine|sky|vein", "looked up|shone|counted the stars|dug for the sky", "cold|bright|still warm", "silver"),
   // Age II: the Elder World
-  en("first pebble|root|seed|clay tablet", "mud#m|at@bottom|deep ground|first cave", "dug|stopped digging|wrote BOTTOM|gave up", "ancient|final|wrong", "brown"),
+  en("first pebble|root|seed|clay tablet", "mud#m|at@bottom|deep ground|first cave", "dug|stopped digging|wrote BOTTOM|gave up", "ancient|buried|wrong", "brown"),
   en("giant's tooth|stone hand|knucklebone|boulder", "valley|footprint|quarry|mountainside", "lifted a mountain|stamped|shook the ground|kept going", "huge|heavy|unmoved", "ochre"),
   en("scale|bone|egg|dragon's fang", "ribcage|lair|on@hoard|valley of bones", "bowed|breathed fire|coiled|waited a thousand years", "vast|proud|warm", "gold"),
   en("shell|anchor|salt#m|drowned bell", "tide|reef|on@seabed|shallows#p", "sank|drifted|swam|followed the tide", "wet|salted|drowned", "sea-green"),

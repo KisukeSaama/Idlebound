@@ -7,6 +7,7 @@ import { href } from "@/i18n/routing";
 import type { CloudStatus } from "../cloud";
 import { useCloud, useFormat, useGame, useMagnitude, useReveals, useStoreRef, useUi } from "../context";
 import { ClickIcon, EssenceIcon, GoldIcon, Picto, ShardIcon, SwordIcon } from "../icons";
+import { rescale, runBits } from "@idlebound/game";
 import { goldLandsAfter } from "../pixel/arena";
 
 /**
@@ -96,10 +97,12 @@ function GoldValue() {
   const [inFlight, setInFlight] = useState(0);
 
   useEffect(() => {
-    const flying = new Map<ReturnType<typeof setTimeout>, number>();
+    // Each kill's gold in the unit of its night (scale.ts): the unit may grow while it flies.
+    const flying = new Map<ReturnType<typeof setTimeout>, { gold: number; bits: number }>();
     const total = () => {
+      const bits = runBits(store.state);
       let sum = 0;
-      for (const value of flying.values()) sum += value;
+      for (const value of flying.values()) sum += rescale(value.gold, value.bits, bits);
       return sum;
     };
     const unsubscribe = store.onFx((event) => {
@@ -109,7 +112,7 @@ function GoldValue() {
         flying.delete(id);
         setInFlight(total());
       }, goldLandsAfter(still) * 1000);
-      flying.set(id, event.gold);
+      flying.set(id, { gold: event.gold, bits: event.bits });
       setInFlight(total());
     });
     return () => {

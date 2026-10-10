@@ -256,6 +256,27 @@ describe("CloudSync hand-over to a newer release", () => {
     cloud.dispose();
   });
 
+  it("stands aside rather than playing on when the last save finds the game taken elsewhere", async () => {
+    const { store, cloud } = await signedIn();
+    fetchMock.mockResolvedValueOnce(json({ error: "game_elsewhere" }, 409));
+    expect(await cloud.handOver()).toBe(false);
+    expect(cloud.elsewhere).toBe("taken");
+    const before = store.state.lastTickAt;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(store.state.lastTickAt).toBe(before);
+    cloud.dispose();
+  });
+
+  it("warns before leaving when a conflict could not be read", async () => {
+    const { store, cloud } = await signedIn();
+    fetchMock.mockResolvedValueOnce(json({ error: "save_conflict" }, 409)).mockRejectedValueOnce(new TypeError("offline"));
+    await cloud.sync({ force: true });
+    expect(cloud.status).toBe("error");
+    expect(cloud.wouldLose()).toBe(true);
+    store.stop();
+    cloud.dispose();
+  });
+
   it("waits for an upload under way, then sends the latest game", async () => {
     const { store, cloud } = await signedIn();
     let answer: (response: Response) => void = () => {};
@@ -614,6 +635,23 @@ describe("CloudSync with the game open on another page", () => {
     cloud.resume();
     expect(calls()).toEqual(["GET /api/auth/me", "POST /api/save/open", "PUT /api/save"]);
     cloud.dispose();
+  });
+
+  it("keeps the game and lets it go when the walker leaves for another page of the site", async () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal("sessionStorage", {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+      removeItem: (key: string) => storage.delete(key)
+    });
+    const { store, cloud } = await signedIn(played(42), 5);
+    store.start();
+    fetchMock.mockResolvedValueOnce(kept(6));
+    cloud.depart();
+    await vi.waitFor(() => expect(calls()).toHaveLength(3));
+    expect(bodyOf(2)).toMatchObject({ holder: cloud.holder, release: true });
+    // Coming back in this tab is the same page.
+    expect(new CloudSync(new GameStore(createInitialState())).holder).toBe(cloud.holder);
   });
 
   it("lets the game go when the page is out of sight, so another page opens it without asking", async () => {

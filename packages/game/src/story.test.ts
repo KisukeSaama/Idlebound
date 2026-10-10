@@ -22,6 +22,7 @@ import {
 import { NAMED_RELICS } from "./data/relics";
 import { ERA_COUNT, MILESTONES, keystonesFound } from "./data/strata";
 import { GameEngine, STEP_MS, canDescend, descentPreview } from "./engine";
+import { scaleBits } from "./scale";
 import { MAX_TREASURE_CHANCE, RESPAWN_SECONDS, WAGER_MAX_GOLD, bossHp, derive, essencesForStage, skillCooldownMultiplier, stageGold, stageHp, wagerGold, wandererSkip } from "./formulas";
 import { LOCALES } from "./i18n";
 import { generateItem } from "./loot";
@@ -419,6 +420,9 @@ describe("events of the Long Night", () => {
     expect(wagerGold(300, Infinity, MAX_TREASURE_CHANCE)).toBeCloseTo(WAGER_MAX_GOLD);
     expect(wagerGold(300, 1, 0.25)).toBe(WAGER_MIN_GOLD);
     expect(wagerGold(300, 0, 0)).toBe(WAGER_MIN_GOLD);
+    // Deep on the road, the company's damage and the stage's HP are read in the same unit.
+    const bits = scaleBits(5000);
+    expect(wagerGold(5000, stageHp(5000, bits), 0, bits)).toBeCloseTo(wagerGold(300, stageHp(300), 0));
 
     // Every roll says yes: a golden rat each time, and Pip would dare each time.
     const state = createInitialState(T0);

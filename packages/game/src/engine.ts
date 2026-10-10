@@ -77,7 +77,7 @@ import {
   recognitionTier,
   type SecretId
 } from "./data/lore";
-import { PROMISE_BY_HERO, PROMISE_RUNS, UNFAILING_MARGIN_SECONDS, hireBarred, promiseAbstains, promiseHolds, promiseOf, promisesKept, standingPromise } from "./data/promises";
+import { PROMISE_BY_HERO, PROMISE_RUNS, UNFAILING_MARGIN_SECONDS, hireBarred, promiseAbstains, promiseHolds, promiseKings, promiseOf, promisesKept, standingPromise } from "./data/promises";
 import { NAMED_BY_ID, NAMED_RELICS, namedEffect, namedSourceReached, wearing, wearsRegalia, type NamedRelicDef } from "./data/relics";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BY_ID, type MarketOfferId } from "./data/market";
 import { SKILLS, SKILL_BY_ID } from "./data/skills";
@@ -603,7 +603,8 @@ export class GameEngine {
     const held = promiseHolds(this.state);
     const king = isKingStage(stage);
     const guardian = isBiomeBossStage(stage);
-    if (king) progress.kings += 1;
+    // Counted up to what the word asks: the rest of the night adds nothing to it.
+    if (king && progress.kings < promiseKings(def)) progress.kings += 1;
     if (def.kind === "head" && (def.until === "king" ? king : guardian)) progress.released = true;
     if (def.kind === "wait" && guardian && (def.guardian === "king" ? king : bossForStage(stage).id === def.guardian)) progress.waited = true;
     this.promiseProgress(held);
@@ -868,7 +869,8 @@ export class GameEngine {
           this.companionDamage += amount;
           this.damage(amount, now);
         }
-        if (s.monster && (s.monster.kind === "boss" || s.monster.kind === "miniboss" || s.monster.event)) {
+        // The Unfinished has no hurry: it waits, half drawn, to be beaten.
+        if (s.monster && (s.monster.kind === "boss" || s.monster.kind === "miniboss" || (s.monster.event && s.monster.event !== "unfinished"))) {
           s.bossTimeLeft -= dt;
           if (s.bossTimeLeft <= 0) {
             if (s.monster.event) this.eventEscapes();
@@ -1120,7 +1122,11 @@ export class GameEngine {
       if (spending) spent += this.autoSpend(now);
       let d = derive(s, now, { ignoreTimed: true });
       let bits = runBits(s);
-      if (d.dps <= 0) break;
+      // Nobody fights: the walker stays where they were sent back, before the boss that won.
+      if (d.dps <= 0) {
+        blockedAt = failedAt;
+        break;
+      }
       // Without spending the power never changes: one slice is enough.
       const slice = spending ? Math.min(remaining, OFFLINE_SLICE_SECONDS) : remaining;
       remaining -= slice;
@@ -1190,6 +1196,7 @@ export class GameEngine {
           this.deepened(bits, life, now);
           sliceGold = rescale(sliceGold, bits, runBits(s));
           gold = rescale(gold, bits, runBits(s));
+          spent = rescale(spent, bits, runBits(s));
           d = derive(s, now, { ignoreTimed: true });
           bits = runBits(s);
         }
@@ -1460,7 +1467,7 @@ export class GameEngine {
       if (monster.wager.clicks >= WAGER_CLICKS) {
         // Pip loses his bet, and pays what the road would have in the meantime, and more.
         delete monster.wager;
-        monster.gold = stageGold(s.stage, runBits(s)) * wagerGold(s.stage, this.derived.dps, this.derived.treasureChance);
+        monster.gold = stageGold(s.stage, runBits(s)) * wagerGold(s.stage, this.derived.dps, this.derived.treasureChance, runBits(s));
         this.emit({ type: "event", id: "wager", won: true });
         monster.hp = 0;
         this.kill(now);
@@ -1536,7 +1543,7 @@ export class GameEngine {
       s.trail.fieldKills += kills;
       if (s.trail.fieldKills >= NOTCH_KILLS) this.discover("thousandth-notch");
     }
-    this.emit({ type: "rout", stage, kills, gold });
+    this.emit({ type: "rout", stage, kills, gold, bits: runBits(s) });
     this.advance();
     s.respawnIn = ROUT_STEP_SECONDS;
   }
@@ -1611,7 +1618,7 @@ export class GameEngine {
     if (monster.event) this.eventWon(monster, rng);
     this.checkNamedSources(monster.id);
 
-    this.emit({ type: "kill", monster, gold, shards });
+    this.emit({ type: "kill", monster, gold, bits: runBits(s), shards });
     s.monster = null;
     s.respawnIn = isBoss ? BOSS_RESPAWN_SECONDS : RESPAWN_SECONDS;
     s.bossTimeLeft = 0;

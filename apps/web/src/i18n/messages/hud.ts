@@ -75,6 +75,7 @@ export const hud = defineMessages({
     },
     buffs: {
       label: "Effets actifs",
+      seconds: (value: Count) => `${value} s`,
       rage: "Rage : DPS ×2",
       fortune: "Fortune : or ×2",
       autoclick: "Frappe automatique : 5 coups/s",
@@ -289,7 +290,7 @@ export const hud = defineMessages({
       "lineage-taken": "Cette partie appartient déjà à un autre compte. Recharge la page pour commencer celle de ce compte.",
       record: "Ton record dépasse de loin la plus profonde nuit que le Grand Livre t'a vu marcher. Recharge la page pour reprendre la partie gardée.",
       powers: "Plus de pouvoirs utilisés que leur temps de recharge ne le permet.",
-      caravan: "La Caravane est venue une semaine qui n'est pas celle-ci."
+      caravan: "La Roulotte est venue une semaine qui n'est pas celle-ci."
     } as Record<string, string>
   },
   en: {
@@ -360,6 +361,7 @@ export const hud = defineMessages({
     },
     buffs: {
       label: "Active effects",
+      seconds: (value: Count) => `${value}s`,
       rage: "Rage: DPS ×2",
       fortune: "Fortune: gold ×2",
       autoclick: "Auto-strike: 5 blows/s",

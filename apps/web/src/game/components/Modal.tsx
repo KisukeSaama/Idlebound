@@ -12,6 +12,9 @@ const DISMISS_PX = 96;
 const DISMISS_SPEED = 0.6;
 const SHEET_OUT_MS = 160;
 
+/** Open windows, oldest first: only the top one hears Escape and holds the focus. */
+const stack: object[] = [];
+
 interface ModalProps {
   title: string;
   icon?: ReactNode;
@@ -42,7 +45,11 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, asi
     const previous = document.activeElement as HTMLElement | null;
     const first = dialog.current?.querySelector<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
     first?.focus({ preventScroll: true });
+    const self = {};
+    stack.push(self);
     const onKey = (event: KeyboardEvent) => {
+      // A confirmation over a window: Escape closes the confirmation alone.
+      if (stack[stack.length - 1] !== self) return;
       if (event.key === "Escape" && closeRef.current) {
         event.stopPropagation();
         closeRef.current();
@@ -64,6 +71,7 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, asi
     document.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("keydown", onKey, true);
+      stack.splice(stack.indexOf(self), 1);
       uncover();
       previous?.focus?.({ preventScroll: true });
     };

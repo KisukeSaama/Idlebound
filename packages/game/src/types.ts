@@ -430,10 +430,11 @@ export interface Derived {
 export type GameEvent =
   | { type: "hit"; damage: number; crit: boolean; source: "click" | "auto" }
   | { type: "dps"; damage: number }
-  | { type: "kill"; monster: MonsterState; gold: number; shards: number }
+  /** `bits`: the unit of `gold` (see `scale.ts`), the night's when the monster fell. */
+  | { type: "kill"; monster: MonsterState; gold: number; bits: number; shards: number }
   | { type: "spawn"; monster: MonsterState }
-  /** A Rout: the rest of a stage fell at once (`kills` Remnants, `gold` earned). */
-  | { type: "rout"; stage: number; kills: number; gold: number }
+  /** A Rout: the rest of a stage fell at once (`kills` Remnants, `gold` earned in a unit of `bits`). */
+  | { type: "rout"; stage: number; kills: number; gold: number; bits: number }
   | { type: "stage"; stage: number; biomeChanged: boolean }
   | { type: "bossFailed"; stage: number }
   | { type: "loot"; item: Item }

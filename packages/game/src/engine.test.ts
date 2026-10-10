@@ -74,6 +74,11 @@ describe("numbers", () => {
     expect(formatNumber(2_340_000)).toBe("2.34M");
     expect(formatNumber(1e15)).toBe("1Qa");
     expect(formatNumber(1.5e21, "scientific")).toBe("1.50e21");
+    // Rounded up to a thousand, a number goes on to the next group.
+    expect(formatNumber(999_999)).toBe("1M");
+    expect(formatNumber(999_999, "engineering")).toBe("1e6");
+    expect(formatNumber(9_999_000, "scientific")).toBe("1.00e7");
+    expect(formatNumber(999_999, "letters", 400)).toMatch(/^\d+(\.\d+)?[a-zA-Z]+$/);
     expect(formatNumber(1e60)).toMatch(/^1[a-z]{2}$/);
     expect(formatNumber(100_000)).toBe("100K");
     expect(formatNumber(20e6)).toBe("20M");
@@ -135,6 +140,25 @@ describe("formulas", () => {
 });
 
 describe("combat loop", () => {
+  it("lets the Unfinished wait to be beaten, without a timer", () => {
+    const engine = newGame();
+    engine.state.monster = { id: "remnant", hp: 100, maxHp: 100, kind: "normal", gold: 1, event: "unfinished" };
+    run(engine, T0, 5);
+    expect(engine.state.monster?.event).toBe("unfinished");
+  });
+
+  it("leaves a company that cannot fight before the boss that beat it, through a catch-up", () => {
+    const engine = newGame();
+    const s = engine.state;
+    s.maxStage = 5;
+    s.stage = 4;
+    s.autoAdvance = false;
+    const summary = engine.catchUp(600, T0 + 600_000);
+    expect(s.stage).toBe(4);
+    expect(s.autoAdvance).toBe(false);
+    expect(summary.blockedAt).toBe(5);
+  });
+
   it("spawns a monster and kills it by clicking", () => {
     const engine = newGame();
     let now = run(engine, T0, 1);
