@@ -2408,7 +2408,14 @@ button.resource:hover .resource-label {
 .bag-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  /* Every row as tall as the tallest relic: salvaging one keeps the next one's buttons under the pointer. */
+  grid-auto-rows: 1fr;
   gap: 10px;
+}
+
+/* Salvage holds the right edge, whatever the lock button says. */
+.bag-grid .item-actions .btn-danger {
+  margin-left: auto;
 }
 
 /* ------------------------------------------------ market */
