@@ -14,7 +14,14 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   since the previous one (here, everything after v0.4).
 - Up to v0.5.3, releases were git tags; they are no longer used.
 
-## Next version: v1.2.1
+## Next version: v1.2.2
+
+### Fixes
+
+- Buttons on iPhone: powers, companions and every key of the game answer the first tap.
+  Before, on iPhone a tap often went nowhere and the key needed a second one.
+
+## v1.2.1
 
 ### Fixes
 

@@ -52,6 +52,7 @@ import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, reveals, revealMark, sceneMark
 import { describePromise } from "./text";
 import { useArrival, useNewRelease } from "./newRelease";
 import { GameStore } from "./store";
+import { installFastTap } from "./tap";
 import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ElsewhereModal } from "./components/ElsewhereModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
@@ -293,6 +294,9 @@ export default function GameApp() {
 
   // The engine reads in the walker's language (Two Tongues).
   useEffect(() => store.setLocale(locale), [store, locale]);
+
+  // A tap on a key answers the first time, on iPhone too.
+  useEffect(() => installFastTap(window), []);
 
   const loadRoll = useCallback(() => {
     roll.current ??= api.leaderboard("stage").then((result) => (result.ok ? result.data.rows.map((row) => row.username) : []), () => []);
