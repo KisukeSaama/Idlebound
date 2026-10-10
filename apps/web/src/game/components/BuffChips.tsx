@@ -41,14 +41,14 @@ export function BuffChips() {
           <Picto name={chip.icon} size={16} />
           <span className="buff-label">{chip.label}</span>
           {chip.short ? <span className="buff-short" aria-hidden="true">{chip.short}</span> : null}
-          {chip.seconds >= 0 ? <span className="buff-time">{formatTime(chip.seconds)}</span> : null}
+          {chip.seconds >= 0 ? <span className="buff-time">{formatTime(chip.seconds, m.seconds)}</span> : null}
         </li>
       ))}
     </ul>
   );
 }
 
-function formatTime(seconds: number): string {
+function formatTime(seconds: number, short: (value: number) => string): string {
   if (seconds >= 60) return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
-  return `${Math.ceil(seconds)}s`;
+  return short(Math.ceil(seconds));
 }

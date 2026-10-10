@@ -47,13 +47,21 @@ export function formatNumber(value: number, notation: Notation = "letters", bits
     return sign + Math.floor(abs).toString();
   }
   const exponent = Math.floor(Math.log10(abs));
-  if (notation === "scientific") {
-    const mantissa = abs / Math.pow(10, exponent);
-    return `${sign}${mantissa.toFixed(2)}e${exponent}`;
-  }
+  if (notation === "scientific") return scientific(sign, abs / Math.pow(10, exponent), exponent);
   const group = Math.floor(exponent / 3);
-  const scaled = abs / Math.pow(10, group * 3);
+  return grouped(sign, abs / Math.pow(10, group * 3), group, notation);
+}
+
+/** `mantissa`e`exponent`, a mantissa that rounds up to 10 carried to the next exponent (never "10.00e6"). */
+function scientific(sign: string, mantissa: number, exponent: number): string {
+  if (Number(mantissa.toFixed(2)) >= 10) return `${sign}${(mantissa / 10).toFixed(2)}e${exponent + 1}`;
+  return `${sign}${mantissa.toFixed(2)}e${exponent}`;
+}
+
+/** `scaled` thousands to the `group`, one that rounds up to 1000 carried to the next group (never "1000K"). */
+function grouped(sign: string, scaled: number, group: number, notation: Notation): string {
   const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
+  if (Number(scaled.toFixed(digits)) >= 1000) return grouped(sign, scaled / 1000, group + 1, notation);
   if (notation === "engineering") return `${sign}${trimmed(scaled, digits)}e${group * 3}`;
   return `${sign}${trimmed(scaled, digits)}${letterSuffix(group)}`;
 }
@@ -62,12 +70,9 @@ export function formatNumber(value: number, notation: Notation = "letters", bits
 function formatLog(sign: string, log: number, notation: Notation): string {
   if (log < 3) return formatNumber(Number(sign + Math.pow(10, log)), notation);
   const exponent = Math.floor(log);
-  if (notation === "scientific") return `${sign}${Math.pow(10, log - exponent).toFixed(2)}e${exponent}`;
+  if (notation === "scientific") return scientific(sign, Math.pow(10, log - exponent), exponent);
   const group = Math.floor(exponent / 3);
-  const scaled = Math.pow(10, log - group * 3);
-  const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
-  if (notation === "engineering") return `${sign}${trimmed(scaled, digits)}e${group * 3}`;
-  return `${sign}${trimmed(scaled, digits)}${letterSuffix(group)}`;
+  return grouped(sign, Math.pow(10, log - group * 3), group, notation);
 }
 
 const DURATION_UNITS: Record<Locale, { d: string; h: string; min: string; s: string }> = {

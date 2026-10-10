@@ -29,12 +29,6 @@ import { darker, materialOf, outline, shade } from "./shade";
 
 export const RELIC_SIZE = 32;
 
-export function drawShapes(shapes: readonly Shape[], size: number, materials: Readonly<Record<string, MaterialId | Material>>, seed = 1): Pixels {
-  const placed: Placed[] = shapes.map((shape) => ({ shape, layer: 1 }));
-  const pixels = outline(shade(rasterize(placed, size), placed, { materials, seed }));
-  return applyColors(pixels, reduceColors(pixels));
-}
-
 /** Forge runes engraved on a relic: one more every five levels, the fifth at the cap of 20. */
 export function forgeRunes(forge: number): number {
   if (forge <= 0) return 0;

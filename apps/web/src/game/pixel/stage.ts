@@ -15,7 +15,7 @@ import { lru } from "./surface";
 /** The last scenes looked at, as pixels (the views need no canvas). */
 const scenes = lru(6);
 export const sceneOf = (sceneId: string, era: number, options: SceneOptions = {}): Scene =>
-  scenes.get(`${sceneId}:${era}:${options.darkNight ? "dark" : ""}`, () => renderScene(sceneId, era, options));
+  scenes.get(`${sceneId}:${era}:${options.fullMoon ? "full" : ""}:${options.darkNight ? "dark" : ""}:${options.clawless ? "clawless" : ""}`, () => renderScene(sceneId, era, options));
 
 /** Frames of a stage: enough for every layer's loop (2 or 4 frames). */
 export const STAGE_FRAMES = 4;

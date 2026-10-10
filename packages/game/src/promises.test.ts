@@ -863,6 +863,12 @@ describe("the Promise: what the Ledger refuses", () => {
     expect(verifyTransition(previous, after, 60_000).map((violation) => violation.code)).not.toContain("promise");
     after.lastPromise = "maelle";
     expect(verifyTransition(previous, after, 60_000).map((violation) => violation.code)).toContain("promise");
+    // A word given at dusk itself, after the last save, is remembered at the next dusk.
+    const unsaid = structuredClone(previous);
+    delete unsaid.trail.promise;
+    const dawn = structuredClone(after);
+    dawn.lastPromise = "cendre";
+    expect(verifyTransition(unsaid, dawn, 60_000).map((violation) => violation.message)).not.toContain("Last night's word was rewritten.");
   });
 });
 

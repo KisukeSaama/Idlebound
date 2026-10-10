@@ -45,6 +45,8 @@ const MAX_GUEST_AGE_MS = 30 * 86_400_000;
  * no longer holds its game, and another page opens it without asking.
  */
 const HOLD_MS = 2 * 60_000;
+/** A save whose replay found every worker busy is asked again after this. */
+const BUSY_RETRY_SECONDS = 5;
 
 /** A page's id: random, chosen by the page, only ever compared with another. */
 const holderId = z.string().min(16).max(64);
@@ -197,6 +199,8 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
   const parsed = safeParseState(parsedBody.data.state);
   if (!parsed.ok) return { status: 400, body: fail("invalid_save", { detail: parsed.error }) };
   const declared = parsed.state;
+  // The creation date names the game's lineage in the database (a bigint): a whole number.
+  if (!Number.isSafeInteger(declared.createdAt)) return { status: 400, body: fail("invalid_save", { detail: "createdAt" }) };
   let next = declared;
   const now = Date.now();
   const { baseRevision, replace, holder, release } = parsedBody.data;
@@ -240,6 +244,8 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
       // a sign-out, or by hand) would rank the same walk twice. Two copies sent at once wait
       // for each other here, so the second one sees the first.
       await tx.execute(raw`select pg_advisory_xact_lock(${next.createdAt}::bigint)`);
+      // A first save sent twice at once: the second one finds the first one's game here.
+      if (!existing && (await ledger.load(tx))) return { status: 409, body: fail(ledger.conflict) };
       if (await ledger.claimed(tx, next.createdAt)) {
         violations.push({ code: "lineage-taken", message: "Another account already keeps this game." });
       }
@@ -266,10 +272,13 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     else if (!secret) problem = "no-seed";
     else {
       const base = journalBase(journal.journal, ledger, existing, previous, witness);
-      if (!base) problem = "no-base";
+      // A new game's journal begins the game the save names, never another one.
+      if (!base || (journal.journal.base.revision === null && journal.journal.base.createdAt !== declared.createdAt)) problem = "no-base";
       else {
         earlier = base.earlier;
         verdict = await runReplay({ base: base.state, runtime: base.runtime, journal: journal.journal, secret, declared });
+        // Every worker was busy: enforced, the save comes back a little later rather than refused.
+        if (enforce && verdict.error === "busy") return { status: 429, body: fail("too_many_attempts", { retryAfter: BUSY_RETRY_SECONDS }), retryAfter: BUSY_RETRY_SECONDS };
         if (verdict.outcome === "failed") problem = verdict.error ?? "failed";
       }
     }
@@ -341,8 +350,11 @@ async function keep(c: Context, ledger: Ledger): Promise<Outcome | { status: 400
     const runtime = verdict?.runtime ?? null;
     const parent = existing && sameLineage ? { revision: existing.revision, state: existing.state as GameState, runtime: existing.runtime, pace: existing.pace, at: existing.updatedAt.getTime() } : null;
     // A part of a longer journal begins a chain, or carries it on; the last part ends it.
+    // A journal that began at an earlier revision begins its chain there.
     const chain = parsedBody.data.more && existing && sameLineage
-      ? existing.chain ?? { state: existing.state as GameState, pace: existing.pace, at: existing.updatedAt.getTime() }
+      ? earlier
+        ? { state: earlier.state, pace: earlier.pace, at: earlier.at }
+        : existing.chain ?? { state: existing.state as GameState, pace: existing.pace, at: existing.updatedAt.getTime() }
       : null;
     const refused = await ledger.write(tx, existing, { state: next, revision, gameCreatedAt: next.createdAt, updatedAt, pace: paced.pace, seed, runtime, parent, chain, ...(sameLineage ? {} : { branch: null }), ...hold }, witness);
     if (refused) return refused;

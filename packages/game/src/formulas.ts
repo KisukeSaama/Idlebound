@@ -114,8 +114,9 @@ export const MAX_TREASURE_CHANCE = 0.25;
  * A won Pip's Wager, in times the stage's gold: what the road would have paid in
  * `WAGER_PAY_SECONDS` at the company's pace, golden rats included, three golden rats at least.
  */
-export function wagerGold(stage: number, dps: number, treasureChance: number): number {
-  const road = dps > 0 ? (WAGER_PAY_SECONDS * (1 + treasureChance * 9)) / (stageHp(stage) / dps + RESPAWN_SECONDS) : 0;
+export function wagerGold(stage: number, dps: number, treasureChance: number, bits = 0): number {
+  // `dps` in the night's unit (`bits`, see `scale.ts`), like the stage's HP it is measured against.
+  const road = dps > 0 ? (WAGER_PAY_SECONDS * (1 + treasureChance * 9)) / (stageHp(stage, bits) / dps + RESPAWN_SECONDS) : 0;
   return Math.max(WAGER_MIN_GOLD, road);
 }
 

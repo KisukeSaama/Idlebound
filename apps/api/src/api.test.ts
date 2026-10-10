@@ -1169,6 +1169,32 @@ suite("API (real Postgres)", () => {
       expect(other.json.fates).not.toEqual(fresh.json.fates);
     }, 60_000);
 
+    it("keeps the first of a guest's two first saves sent at once under its cookie, the other a conflict", async () => {
+      const guest = new Client("10.0.2.5");
+      const { page } = await begun(guest, true);
+      const cookie = guest.value("ib_guest");
+      page.play(30);
+      const first = page.outgoing();
+      const [a, b] = await Promise.all([
+        guest.call("PUT", "/save/guest", { state: first.state, baseRevision: null, journal: first.journal }),
+        guest.call("PUT", "/save/guest", { state: first.state, baseRevision: null, journal: first.journal })
+      ]);
+      expect([a.status, b.status].sort()).toEqual([200, 409]);
+      expect(guest.value("ib_guest")).toBe(cookie);
+      const rows = await sql`select id from guest_saves where game_created_at = ${first.state.createdAt}`;
+      expect(rows).toHaveLength(1);
+    }, 60_000);
+
+    it("refuses a save whose creation date is not a whole number, without failing", async () => {
+      const guest = new Client("10.0.2.6");
+      const { page } = await begun(guest, true);
+      page.play(30);
+      const first = page.outgoing();
+      const answer = await guest.call("PUT", "/save/guest", { state: { ...first.state, createdAt: first.state.createdAt + 0.5 }, baseRevision: null, journal: first.journal });
+      expect(answer.status).toBe(400);
+      expect(answer.json.error).toBe("invalid_save");
+    }, 60_000);
+
     it("hands out the window of a game as it opens, and gives a game kept before the seeds its own", async () => {
       const { client, userId } = await signedUp("10.0.2.5", "Old");
       // A game saved by a page of the previous version: no journal, no seed yet.

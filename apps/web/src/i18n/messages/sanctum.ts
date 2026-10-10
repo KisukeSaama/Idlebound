@@ -86,7 +86,7 @@ export const sanctum = defineMessages({
       takesTitle: "La Descente prend",
       takes: ["Tes essences", "Les niveaux de tous tes autels", "Tout ce que prend une ascension : or, compagnons et talents, étape"],
       keepsTitle: "Elle laisse",
-      keeps: ["Ton équipement, tes reliques et tes éclats", "Tes succès, la Chronique et le Bestiaire", "La Reconnaissance de tes compagnons", "Ta meilleure étape, tes fils et tes Tissages"],
+      keeps: ["Ton équipement, tes reliques et tes éclats", "Tes hauts faits, la Chronique et le Bestiaire", "La Reconnaissance de tes compagnons", "Ta meilleure étape, tes fils et tes Tissages"],
       stonesKept: (pct: number) => `Pierres mémoires : tu gardes ${pct} % des niveaux de chaque autel.`,
       preview: "Descendre maintenant te donnerait",
       threadsCount: (count: string) => `${count} fils`,
@@ -94,7 +94,7 @@ export const sanctum = defineMessages({
       descend: "Descendre",
       confirmTitle: "Descendre ?",
       confirmText: (threads: string, none: boolean) =>
-        `${none ? "Tu ne gagneras aucun fil : va d'abord plus loin que ton record d'étape." : `Tu gagnes ${threads} fils, à dépenser en Tissages permanents.`} Tu perds tes essences et les niveaux de tous tes autels, et comme à l'ascension ton or, tes compagnons et ton étape. Tu gardes ton équipement, tes éclats, tes succès, la Chronique et la Reconnaissance.`,
+        `${none ? "Tu ne gagneras aucun fil : va d'abord plus loin que ton record d'étape." : `Tu gagnes ${threads} fils, à dépenser en Tissages permanents.`} Tu perds tes essences et les niveaux de tous tes autels, et comme à l'ascension ton or, tes compagnons et ton étape. Tu gardes ton équipement, tes éclats, tes hauts faits, la Chronique et la Reconnaissance.`,
       confirmLabel: "Descendre",
       weaves: "Tissages",
       weavesHint: "Dépense tes fils ici. Ces améliorations sont permanentes : aucune Descente ne les retire.",
@@ -113,7 +113,7 @@ export const sanctum = defineMessages({
       bought: "Achat fait. La Roulotte repart et revient la semaine prochaine avec une autre offre.",
       left: "La Roulotte est repartie. Elle revient la semaine prochaine avec une nouvelle offre.",
       tokenOwned: "Tu as déjà le Jeton. On ne peut en avoir qu'un.",
-      packFull: (room: number) => `Il te faut ${room} places libres dans ton sac.`
+      packFull: (room: number) => (room > 1 ? `Il te faut ${room} places libres dans ton sac.` : "Il te faut une place libre dans ton sac.")
     },
     armory: {
       regalia: "Regalia d'Orvane",

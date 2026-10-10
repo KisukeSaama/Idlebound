@@ -241,7 +241,7 @@ export const VOICES_TEXT: Record<Locale, VoicesText> = {
     kingRepels: ["Reviens quand tes mains ne trembleront plus."],
     eclipseWords: [
       "La troisième marche. Attention. Qui m'a dit ça ? Ça fait si longtemps que je n'ai pas monté d'escalier.",
-      "J'ai mal aux pieds. Plus depuis la dernière fois que j'ai marché sur la route. C'est déjà le crépuscule ?",
+      "J'ai mal aux pieds. Ça ne m'était plus arrivé depuis la dernière fois que j'ai marché sur la route. C'est déjà le crépuscule ?",
       "J'ai une épée. Pourquoi j'ai une épée ? Ah. La route. Je la parcourais, comme toi.",
       "Les rats dans le blé. Les racines. Les chauves-souris. Je connais cette route. Je l'ai parcourue le premier.",
       "Attends. Je devais monter ces marches. Pas m'asseoir en haut.",

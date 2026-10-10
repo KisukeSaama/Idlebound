@@ -23,6 +23,38 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   already learned still opens its card when touched.
 - Confirmations opened from a window: Escape closes the confirmation alone and leaves the
   window open. Before, it closed both at once.
+- Leaving the game for another page of the site (the home page, the wiki) keeps what was
+  played and lets the game go: coming back plays on at once. Before, up to 30 s of play
+  were lost and the game said it was played on another page.
+- A new version arriving while another page had taken the game: this page stands aside.
+  Before, it played on behind the notice, and nothing it played was kept.
+- The Ledger out of reach at load: the page waits and tries again at its own pace, and
+  loads the game once. Before, it also asked every 5 s and could load the game twice.
+- A save conflict that could not be read (network lost at that moment) is shown as a
+  trouble, and leaving the page warns that play would be lost. Before, it looked saved.
+- Powers on a French keyboard: the keys 1 to 7 of the number row (and the keypad) use the
+  powers without Shift. Holding a key no longer repeats the refusal sound.
+- The purse past stage 3500: gold still flying to the counter no longer makes it show 0
+  for a moment when the numbers change unit.
+- Pip's Wager past stage 3500 pays what the road would have paid, as above it. Before, it
+  always paid its minimum (30 times the stage's gold).
+- The Unfinished waits to be beaten. Before, it vanished a tenth of a second after it
+  appeared, and its echo of the Draft was almost never heard.
+- A promise standing through more than 100 Kings in one night no longer stops the game
+  from saving.
+- A long absence with no companion who can fight leaves the walker before the guardian
+  that beat them, auto-advance off. Before, they came back facing it again.
+- Numbers that round up to a thousand go on to the next unit: "1M", not "1000K"
+  (and "1.00e7", not "10.00e6").
+- A save after a word given at dusk itself, kept once the night ended, is no longer
+  refused ("Last night's word was rewritten").
+- Keeping this page's game after another page played on (a long absence sent in several
+  parts): the later parts are no longer refused.
+- Two pages of a new guest saving their first save at once: one keeps the game, the other
+  is asked which to keep. Before, the second could start another game under a new key.
+- French: the Caravan is the Roulotte everywhere, the Deeds are "hauts faits" everywhere,
+  "Il te faut une place libre" for a single space, and a few lines of lore read right.
+- Age VIII: half-closed eyes lose only their top row. Before, tall eyes closed to a line.
 
 ## v1.2.0
 
