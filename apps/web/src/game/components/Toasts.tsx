@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { useI18n } from "@/i18n/client";
 import type { ToastInput } from "../context";
 import { Picto } from "../icons";
@@ -11,6 +11,8 @@ export interface Toast extends ToastInput {
   id: number;
   /** How many times a stacked toast was told while it waited or showed. */
   count?: number;
+  /** When it came on screen (`performance.now()`), for the grace before a tap clears it. */
+  shownAt?: number;
 }
 
 /** Space between the scene's top bar (stages, active effects) and the first toast. */
@@ -19,6 +21,12 @@ const GAP = 8;
 /** A toast stack narrower than this does not fit beside the creature: it goes above it. */
 const MIN_SIDE = 250;
 const MAX_WIDTH = 360;
+
+/**
+ * A toast that just appeared under a thumb already striking is not cleared by that strike:
+ * it stays at least this long, so it can be read.
+ */
+const TAP_GRACE_MS = 700;
 
 /** Portrait phones: the scene on top, the companions' list under it (the same test as the CSS). */
 export const PHONE_QUERY = "(max-width: 900px) and (min-height: 561px), (max-width: 599px)";
@@ -121,7 +129,17 @@ function dock(container: HTMLElement, top: number, room: Room | null) {
   }
 }
 
-export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boolean }) {
+/**
+ * A tap on a toast clears it and goes on to what lies under it: a crystal behind a toast is
+ * caught, the creature is struck. The toast stack never steals a tap.
+ */
+function tapThrough(event: ReactPointerEvent<HTMLDivElement>) {
+  const { clientX, clientY, pointerId, pointerType, isPrimary } = event;
+  const under = document.elementsFromPoint(clientX, clientY).find((element) => !element.closest(".toasts"));
+  under?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, composed: true, clientX, clientY, pointerId, pointerType, isPrimary, button: 0, buttons: 1 }));
+}
+
+export function Toasts({ toasts, held = false, onDismiss }: { toasts: Toast[]; held?: boolean; onDismiss: (id: number) => void }) {
   const root = useRef<HTMLDivElement>(null);
   const reposition = useRef<() => void>(() => {});
   const { t } = useI18n();
@@ -183,7 +201,17 @@ export function Toasts({ toasts, held = false }: { toasts: Toast[]; held?: boole
   return (
     <div ref={root} className={`toasts ${held ? "held" : ""}`} role="status" aria-live="polite">
       {toasts.map((toast) => (
-        <div key={toast.id} className={`toast toast-${toast.tone}`} style={toast.color ? { ["--toast-color" as string]: toast.color } : undefined}>
+        <div
+          key={toast.id}
+          className={`toast toast-${toast.tone}`}
+          style={toast.color ? { ["--toast-color" as string]: toast.color } : undefined}
+          onPointerDown={(event) => {
+            if (event.button !== 0) return;
+            event.preventDefault();
+            if (event.timeStamp - (toast.shownAt ?? 0) >= TAP_GRACE_MS) onDismiss(toast.id);
+            tapThrough(event);
+          }}
+        >
           {toast.icon ? <Picto name={toast.icon} size={28} className="toast-icon" /> : null}
           <div>
             <div className="toast-title">

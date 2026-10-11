@@ -197,7 +197,9 @@ Content colors live with the game data, not in CSS:
 - **Toasts**: on the right of the scene, next to the companions panel, under the scene's top
   bar (placement details under Motion), at most 4 at once (2 on phones), auto-dismiss 3.8 s
   (4.5 s for danger). The others wait in line and none is dropped; while more than a
-  screenful waits, each goes after 2.6 s. Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
+  screenful waits, each goes after 2.6 s. A tap clears a toast (once it has shown 0.7 s, so a
+  thumb already striking does not clear it unread) and goes on to what lies under it: a
+  crystal behind it is caught, the creature struck. Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
   in the item's rarity color), success, info, danger.
   A promise speaks through them in the companion's voice, as a quote (8 s): the request when
   the word is given (info, with the rule), "Your word holds" once it would hold at dusk
@@ -333,7 +335,10 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
   hidden, toasts across the scene, windows open as sheets.
 - **Touch**: the game is not a page. No double-tap zoom, no long-press menu on the art, no
   text selection anywhere (windows and the loading screen included, only form fields take
-  one), no pull to refresh, lists that scroll keep their scroll to themselves. Tooltips of powers
+  one), no pull to refresh, lists that scroll keep their scroll to themselves. A button
+  answers the finger that lifts on it without sliding, at once (iOS Safari would otherwise
+  hold back the first tap of a screen that redraws all the time); the late native click of
+  that tap is dropped, and a finger that slides is a scroll. Tooltips of powers
   are off and the keyboard shortcuts are not listed on touch screens. Where the browser can
   vibrate (Android), short pulses mark a critical blow of the walker's own hand, a purchase,
   a power, a loot, a guardian or elite down, a failed boss and an ascension or Descent; a
