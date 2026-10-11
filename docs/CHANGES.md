@@ -21,6 +21,11 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 - Bag: every relic card is as tall as the tallest one, and Salvage sits at the right edge.
   Salvaging relic after relic keeps the next one's button under the pointer. Before, the
   cards moved up and down as they changed places.
+- Buttons on iPhone: powers, companions and every key of the game answer the first tap.
+  Before, on iPhone a tap often went nowhere and the key needed a second one.
+- Notifications: a tap clears one at once, and the same tap reaches what lies under it, so
+  a crystal behind a notification is caught and the creature is struck. Before, a
+  notification could not be cleared and hid the crystals until it left on its own.
 
 ## v1.2.1
 
