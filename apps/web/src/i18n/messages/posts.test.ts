@@ -1,4 +1,6 @@
 import { BESTIARY, BIOMES, LOCALES } from "@idlebound/game";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { NEWS_POSTS, newsPost, type NewsBlock } from "./posts";
 
@@ -39,12 +41,23 @@ describe("the news articles", () => {
     }
   });
 
-  it("give every entry the same tag and the same changes in every language", () => {
-    const shape = (block: NewsBlock) => (block.kind === "entry" ? [block.tag, block.context !== undefined, block.changes.map((change) => "text" in change)] : block.kind);
+  it("give every entry the same tag and the same changes, every figure the same art, every spoiler the same blocks in every language", () => {
+    const shape = (block: NewsBlock): unknown =>
+      block.kind === "entry" ? [block.tag, block.context !== undefined, block.changes.map((change) => "text" in change)]
+      : block.kind === "figure" ? [block.kind, block.art.map((art) => [art.spec, art.scene, art.label !== undefined])]
+      : block.kind === "compare" ? [block.kind, block.before, block.after]
+      : block.kind === "spoiler" ? [block.kind, block.body.map(shape)]
+      : block.kind;
+    const flat = (blocks: NewsBlock[]): NewsBlock[] => blocks.flatMap((block) => (block.kind === "spoiler" ? [block, ...flat(block.body)] : [block]));
     for (const post of NEWS_POSTS) {
       expect(post.fr.body.map(shape)).toEqual(post.en.body.map(shape));
       for (const locale of LOCALES) {
-        for (const block of post[locale].body) {
+        for (const block of flat(post[locale].body)) {
+          if (block.kind === "spoiler") {
+            expect(block.label.length).toBeGreaterThan(0);
+            expect(block.body.length).toBeGreaterThan(0);
+          }
+          if (block.kind === "figure") expect(block.art.length).toBeGreaterThan(0);
           if (block.kind !== "entry") continue;
           const labels = block.changes.map((change) => change.label);
           expect(new Set(labels).size).toBe(labels.length);
@@ -58,6 +71,19 @@ describe("the news articles", () => {
     for (const post of NEWS_POSTS) {
       expect(biomes.has(post.cover.biome)).toBe(true);
       if (post.cover.creature) expect(BESTIARY.some((entry) => entry.id === post.cover.creature)).toBe(true);
+    }
+  });
+
+  it("slide between two pictures that exist, kept under the version they show", () => {
+    const flat = (blocks: NewsBlock[]): NewsBlock[] => blocks.flatMap((block) => (block.kind === "spoiler" ? flat(block.body) : [block]));
+    for (const post of NEWS_POSTS) {
+      for (const block of flat(post.en.body)) {
+        if (block.kind !== "compare") continue;
+        for (const picture of [block.before, block.after]) {
+          expect(picture).toMatch(new RegExp(`^/news/${post.version?.slice(1).replace(".", "-")}/[a-z0-9-]+\\.png$`));
+          expect(existsSync(fileURLToPath(new URL(`../../../public${picture}`, import.meta.url)))).toBe(true);
+        }
+      }
     }
   });
 

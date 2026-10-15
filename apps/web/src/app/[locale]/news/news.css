@@ -419,6 +419,207 @@
   color: var(--gold-2);
 }
 
+/* A figure: the change shown in the world's own art, side by side, a caption under them. */
+.news-figure {
+  margin: 1rem 0 1.4rem;
+}
+
+.news-figure-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 56px), 1fr));
+  gap: 0.7rem;
+}
+
+.news-figure-art {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+}
+
+.news-figure-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+/* A creature standing in its scene, as on the cover: the scene from the ground up. */
+.news-figure-scene {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 0;
+}
+
+.news-figure-standing {
+  position: relative;
+  align-self: end;
+  width: 70%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: end center;
+  margin-bottom: 4%;
+}
+
+
+.news-figure-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.news-figure figcaption {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-style: italic;
+  text-wrap: pretty;
+}
+
+/* Before and after: the same place twice, a handle sliding between them. */
+.news-compare {
+  --share: 50%;
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.news-compare img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.news-compare-before {
+  clip-path: inset(0 calc(100% - var(--share)) 0 0);
+}
+
+.news-compare-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--share);
+  width: 2px;
+  translate: -1px 0;
+  background: var(--gold-2);
+  box-shadow: 0 0 0 1px #000;
+  pointer-events: none;
+}
+
+.news-compare-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  translate: -50% -50%;
+  rotate: 45deg;
+  background: var(--gold-2);
+  border: 1px solid #000;
+}
+
+.news-compare-tag {
+  position: absolute;
+  top: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  background: rgba(11, 10, 20, 0.82);
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.news-compare-tag-before {
+  left: 0.5rem;
+}
+
+.news-compare-tag-after {
+  right: 0.5rem;
+}
+
+.news-compare-range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+}
+
+.news-compare:has(.news-compare-range:focus-visible) {
+  outline: 2px solid var(--gold-2);
+  outline-offset: 2px;
+}
+
+/* Spoilers: a choice to read the article with or without them, and each one veiled until asked. */
+.news-spoiler-modes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.2rem 0 0.4rem;
+}
+
+.news-spoiler-modes-label {
+  margin-right: 0.3rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.news-spoiler-modes .btn[aria-pressed="true"] {
+  border-color: var(--violet);
+  color: var(--violet-2);
+}
+
+.news-spoiler-veil {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--border-strong);
+  background: repeating-linear-gradient(135deg, var(--bg-2) 0 6px, var(--bg) 6px 12px);
+}
+
+.news-body .news-spoiler-veil p {
+  flex: 1 1 14rem;
+  margin: 0;
+  display: grid;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.news-spoiler-veil p strong {
+  font-family: var(--font-display);
+  color: var(--violet-2);
+}
+
+.news-spoiler-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--violet-2);
+}
+
+.news-spoiler-open {
+  padding-left: 0.9rem;
+  border-left: 1px dashed var(--violet);
+}
+
 .news-article-foot {
   display: flex;
   flex-wrap: wrap;

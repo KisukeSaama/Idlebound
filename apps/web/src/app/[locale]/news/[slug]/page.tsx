@@ -3,11 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
+import { Art } from "@/game/pixel/Art";
 import { newsPost, type NewsBlock, type NewsTag } from "@/i18n/messages/posts";
 import { href, newsCoverHref, newsFeedHref, newsHref, newsPath } from "@/i18n/routing";
 import { getI18n } from "@/i18n/server";
 import { SITE_NAME, fullTitle, organizationLd, pathAlternates, pathSocial, siteUrl } from "@/lib/site";
 import { NewsCover, NewsMeta } from "../NewsCard";
+import { NewsCompare } from "../NewsCompare";
+import { NewsSpoiler, NewsSpoilers } from "../NewsSpoilers";
 import "../../landing.css";
 import "../news.css";
 
@@ -73,12 +76,7 @@ export default async function NewsArticlePage({ params }: Props) {
             <p className="news-lead">{text.summary}</p>
           </header>
           <div className="news-body">
-            {text.body.map((block, index) =>
-              block.kind === "h2" ? <h2 key={index}>{block.text}</h2>
-              : block.kind === "list" ? <ul key={index}>{block.items.map((item) => <li key={item}>{item}</li>)}</ul>
-              : block.kind === "entry" ? <NewsEntry key={index} entry={block} words={t.news} />
-              : <p key={index}>{block.text}</p>
-            )}
+            {text.body.some((block) => block.kind === "spoiler") ? <NewsSpoilers><NewsBlocks blocks={text.body} words={t.news} /></NewsSpoilers> : <NewsBlocks blocks={text.body} words={t.news} />}
           </div>
           <footer className="news-article-foot">
             <p className="news-signature">{t.news.signature}</p>
@@ -91,8 +89,54 @@ export default async function NewsArticlePage({ params }: Props) {
   );
 }
 
+type EntryWords = { tags: Record<NewsTag, string>; colon: string; becomes: string };
+
+/** The blocks of an article, in order; a spoiler holds blocks of its own. */
+function NewsBlocks({ blocks, words }: { blocks: NewsBlock[]; words: EntryWords }) {
+  return blocks.map((block, index) =>
+    block.kind === "h2" ? <h2 key={index}>{block.text}</h2>
+    : block.kind === "list" ? <ul key={index}>{block.items.map((item) => <li key={item}>{item}</li>)}</ul>
+    : block.kind === "entry" ? <NewsEntry key={index} entry={block} words={words} />
+    : block.kind === "figure" ? <NewsFigure key={index} figure={block} />
+    : block.kind === "compare" ? (
+      <figure key={index} className="news-figure">
+        <NewsCompare before={block.before} after={block.after} alt={block.alt} />
+        <figcaption>{block.caption}</figcaption>
+      </figure>
+    )
+    : block.kind === "spoiler" ? <NewsSpoiler key={index} label={block.label}><NewsBlocks blocks={block.body} words={words} /></NewsSpoiler>
+    : <p key={index}>{block.text}</p>
+  );
+}
+
+/** World art showing a change, each picture with its few words, and a caption under them all. A creature given a scene stands on its ground. */
+function NewsFigure({ figure }: { figure: Extract<NewsBlock, { kind: "figure" }> }) {
+  return (
+    <figure className="news-figure">
+      <div className="news-figure-row">
+        {figure.art.map((art, index) => (
+          <div key={index} className="news-figure-art">
+            <div className="news-figure-frame pixel-frame">
+              {art.scene ? (
+                <>
+                  <Art spec={art.scene} size="parent" cover className="news-figure-scene" />
+                  <div className="news-figure-standing">
+                    <Art spec={art.spec} size="parent" />
+                  </div>
+                </>
+              ) : <Art spec={art.spec} size="parent" />}
+            </div>
+            {art.label ? <span className="news-figure-label">{art.label}</span> : null}
+          </div>
+        ))}
+      </div>
+      <figcaption>{figure.caption}</figcaption>
+    </figure>
+  );
+}
+
 /** A patch note's card: the thing it touches, its tag, why, and each change before and after. */
-function NewsEntry({ entry, words }: { entry: Extract<NewsBlock, { kind: "entry" }>; words: { tags: Record<NewsTag, string>; colon: string; becomes: string } }) {
+function NewsEntry({ entry, words }: { entry: Extract<NewsBlock, { kind: "entry" }>; words: EntryWords }) {
   return (
     <section className={`news-entry news-entry-${entry.tag}`}>
       <h3 className="news-entry-head">

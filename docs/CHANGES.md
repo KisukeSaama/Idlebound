@@ -14,7 +14,9 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   since the previous one (here, everything after v0.4).
 - Up to v0.5.3, releases were git tags; they are no longer used.
 
-## Next version: v1.2.3
+## Next version
+
+## v1.2.3
 
 ### Fixes
 

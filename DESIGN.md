@@ -430,6 +430,17 @@ panel with a 3 px left border in the tag's color (violet new, green buffed, red 
 adjusted, grey fixed), the name in Cinzel beside a small outlined uppercase tag, an italic
 muted line saying why, then its changes as bullets, each a bold label and either plain words
 or the old value muted, an arrow in the tag's color and the new value in bold pale gold.
+A figure lines up pixel frames of the world's art on one row (as many as fit, 56 px at
+least), each with a small muted label under it, then an italic muted caption; a creature
+given a scene stands on its ground, as on the cover. A before and after is one 4:3 pixel frame
+holding both pictures at whole pixels: the old one on the left of a 2 px pale gold handle with
+a diamond, the new one on the right, small "Before" and "After" labels in the top corners; the
+whole frame drags the handle (a hidden range input, so keys move it too, and its focus rings
+the frame in gold). A note holding spoilers opens on a "Spoilers" choice, "No spoilers"
+(pressed by default, on every visit) or "With spoilers", violet when pressed. A veiled
+passage is a dashed panel striped in the night's two inks, a crossed eye, "Further down the
+road" in violet Cinzel over the muted name of what it hides, and a "Reveal" button; revealed,
+it reads behind a dashed violet rule. Going back to "No spoilers" veils everything again.
 
 The wiki (`/[locale]/wiki`, styles in `src/wiki/wiki.css`) reads like an old fan encyclopedia
 built with the site's tokens. On wide screens a sticky contents column (the search, then the
