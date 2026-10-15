@@ -618,7 +618,7 @@ name and his Words change. Form I is the existing art.
 | VIII | 1800 to 2000 | The Sleeping King / Le Roi endormi | Asleep on the throne. He still fights, eyes closed. |
 | IX | 2050 to 2250 | The King at the Window / Le Roi à la fenêtre | Turned away from you, looking out of a bright window. |
 | X | 2300 to 2500 | The Hollow Crown / La Couronne creuse | Only the crown, floating, holding the shape of a head. |
-| XI | 2550 to 2750 | The Blank King / Le Roi blanc | Almost the color of the background. Hard to see. |
+| XI | 2550 to 2750 | The Blank King / Le Roi blanc | White on white: paper drawn in ink on the pale page. |
 | XII | 2800 to 2950 | Aldemar / Aldemar | A tired man in plain clothes, no crown, sword lowered. |
 | | 3000 | The Dawn / L'Aube | Replaces the King (section 8.6). |
 | | 3050 and below | The twelve forms again | Below the Dawn the Ages come round, and the King's forms with them: the Fallen King at 3050, the Titan King at 3300… (section 24). |
@@ -1753,7 +1753,7 @@ half of the story: **the deeper, the less finished the world looks**, until Dawn
 | VIII Sleep | Slower animations (×0.6), soft 2-step ramps, eyes half closed. | Mist, the moon low |
 | IX Dreamer's Room | Warm lamp light from one side (orange ramp), domestic props in the backgrounds: a lamp, a hearth, a window. The window shows a pale rectangle. | Enormous, blurred, familiar shapes |
 | X Unmaking | Colors drain toward grey; the outline stays. | Sounds muffle too (section 19) |
-| XI Blank | Pale on pale: sprites are drawn in outline only on a sky that has turned off-white lilac. | The night is almost gone |
+| XI Blank | A pen drawing on the page (**shipped**): an ink outline around a body of paper white, shadows in hatching, the color leaving era by era, on a sky that has turned off-white lilac; the places stay in pale outline, shadows a pale wash. | The night is almost gone |
 | XII First Mark | Fewer and fewer pixels, at the same size (never a coarser pixel): thin parts fall away era by era, the masses merge into flat tones; the Dawn is a single horizontal line that widens. | A single point of light, then a line |
 
 The scene's **sky brightens by Age**, from the night purple of Age I to the pale lilac of

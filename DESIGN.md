@@ -531,8 +531,10 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   blue outline; vertical threads at a steady spacing, some hanging loose, and a flicker;
   paper and charcoal hatching with thumb smudges; bodies written in runes; soft 2-step
   ramps (a body of one material keeps its ramp), half closed eyes, slower breathing; warm
-  lamp light from one side; colors draining to grey; outline only (lighter along the top,
-  deeper underneath); fewer and fewer pixels at the same size (thin parts fall away era by
+  lamp light from one side; colors draining to grey; a pen drawing on the page (an ink
+  outline, lighter along the top and deepest underneath, around a body of opaque paper
+  white, its shadows turned to diagonal hatching: three pale tones at the Pale, two at the
+  Faint, then paper and strokes, pencil-light at the Blank and fresh ink at the Ink); fewer and fewer pixels at the same size (thin parts fall away era by
   era, the masses merge into two or three flat tones in a fresh outline, the eyes stay; a
   drawing already down to lines, like the Dawn, keeps them). Every treatment is solid
   pixels: stars sit on a hand-laid tile of sky, smudges and threads on regular grids, never
@@ -654,7 +656,8 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   crystals) catches its other edge low down, every other row. Its shadow is its own
   silhouette laid on the ground from its feet, leaning away from the moon and toward the
   walker, deepest in a solid oval where it stands and thinning to a checker as it reaches
-  away. The Hearthfields' milestone stone lights its rune once the stage is cleared.
+  away. On the pale page of the Blank and the First Mark it is a lilac wash, not a pool of
+  night. The Hearthfields' milestone stone lights its rune once the stage is cleared.
 
   **Wear of the world** (`wear.ts`): the deeper the stratum, the older the place. At the
   present night the buildings stand, a window still lit. Each stratum of the Kingdom reads
@@ -764,7 +767,7 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   King, the Star-Crowned whose crown is seven cold stars, the Woven King whose threads leave
   the top of the frame, the Sketched King in charcoal on nothing, the King's Name written in
   glowing 3 × 5 runes, the Sleeping King, the King at the Window seen from behind, the
-  Hollow Crown floating over a dotted outline, the Blank King drawn by his edges, Aldemar
+  Hollow Crown floating over a dotted outline, the Blank King in ink on paper, white on white, Aldemar
   in plain clothes, his skin an ashen moonlit ramp rather than warm flesh); each reads under its own Age's treatment. The map shows each stratum's
   form. At stage 3000 the Dawn, a line of light, stands in the King's place; below it the
   forms come round again with the Ages.
