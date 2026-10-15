@@ -1,3 +1,4 @@
+import type { ArtSpec } from "../../game/pixel/Art";
 import type { RouteId } from "../routing";
 
 /** One line of a change: what it touches, then its value before and after, or what it does now. */
@@ -6,16 +7,25 @@ export type NewsChange = { label: string; before: string; after: string } | { la
 /** How a change feels to the walker, shown as a tag beside its name. */
 export type NewsTag = "new" | "up" | "down" | "changed" | "fixed";
 
+/** One picture of a figure: world art drawn by code, standing in a scene if one is given, and the few words under it. */
+export type NewsArt = { spec: ArtSpec; scene?: ArtSpec; label?: string };
+
 /**
  * One block of an article: a paragraph, a heading, a bulleted list, or an entry. An entry is
  * the patch note's card: the thing it touches, a tag, a line of context saying why, and its
- * changes, each with the numbers the walker will see.
+ * changes, each with the numbers the walker will see. A figure shows the change in the world's
+ * own art. A compare slides between two frozen pictures of the same place (`/news/<version>/`),
+ * before and after a change of art the generator no longer draws the old way. A spoiler holds
+ * what the road keeps for later: veiled until the reader asks.
  */
 export type NewsBlock =
   | { kind: "p"; text: string }
   | { kind: "h2"; text: string }
   | { kind: "list"; items: string[] }
-  | { kind: "entry"; name: string; tag: NewsTag; context?: string; changes: NewsChange[] };
+  | { kind: "entry"; name: string; tag: NewsTag; context?: string; changes: NewsChange[] }
+  | { kind: "figure"; art: NewsArt[]; caption: string }
+  | { kind: "compare"; before: string; after: string; alt: { before: string; after: string }; caption: string }
+  | { kind: "spoiler"; label: string; body: NewsBlock[] };
 
 /** The words of an article in one language. `link` closes it with a call to a page of the site. */
 export type NewsText = { title: string; summary: string; body: NewsBlock[]; link?: { route: RouteId; label: string } };
@@ -35,6 +45,401 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  * walker, never how it is built. Read on the server only, so the game never carries them.
  */
 export const NEWS_POSTS: NewsPost[] = [
+  {
+    slug: "patch-notes-1-2",
+    date: "2026-10-16",
+    kind: "patch",
+    version: "v1.2",
+    cover: { biome: "dark-forest", creature: "shade-wolf" },
+    fr: {
+      title: "Notes de mise à jour 1.2",
+      summary: "La 1.2 rend la route plus sûre sous le doigt : un seul toucher suffit sur téléphone, ta partie te suit d'une page à l'autre, et quelques créatures profondes retrouvent leur trait.",
+      body: [
+        { kind: "p", text: "Bonsoir, marcheuse, marcheur. La 1.2 ne t'apporte pas de nouvelle route : elle répare celle que tu foules déjà. Tes doigts sont mieux écoutés, ta partie ne se perd plus entre deux pages, et quelques créatures des profondeurs retrouvent le trait qu'elles auraient toujours dû avoir. Ce qui touche aux Âges lointains reste voilé plus bas : à toi de choisir si tu veux le voir." },
+        { kind: "h2", text: "Sous le doigt" },
+        {
+          kind: "entry",
+          name: "Sur téléphone",
+          tag: "fixed",
+          context: "Sur un téléphone, chaque geste doit compter du premier coup.",
+          changes: [
+            { label: "Talents", before: "un premier toucher ouvrait la carte, un second l'achetait", after: "un seul toucher achète un talent à ta portée" },
+            { label: "Talent hors de portée ou déjà appris", text: "un toucher ouvre toujours sa carte" },
+            { label: "Boutons sur iPhone", before: "un toucher se perdait souvent", after: "pouvoirs, compagnons et chaque touche du jeu répondent au premier toucher" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Notifications",
+          tag: "fixed",
+          context: "Une notification ne doit jamais te voler un cristal.",
+          changes: [
+            { label: "Toucher une notification", before: "elle restait jusqu'à partir d'elle-même, et cachait les cristaux", after: "elle disparaît aussitôt" },
+            { label: "Ce qu'il y a dessous", text: "le même toucher l'atteint : le cristal est attrapé, la créature frappée" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Sac",
+          tag: "fixed",
+          context: "Recycler relique après relique ne doit pas devenir une chasse au bouton.",
+          changes: [
+            { label: "Cartes de reliques", before: "elles montaient et descendaient en changeant de place", after: "toutes aussi hautes que la plus haute" },
+            { label: "Recycler", text: "toujours au bord droit, et le bouton de la relique suivante reste sous ton doigt" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "relic", slot: "weapon", base: 1, rarity: "common" }, label: "Commune" },
+            { spec: { kind: "relic", slot: "armor", base: 2, rarity: "rare" }, label: "Rare" },
+            { spec: { kind: "relic", slot: "amulet", base: 1, rarity: "epic" }, label: "Épique" },
+            { spec: { kind: "relic", slot: "ring", base: 2, rarity: "legendary" }, label: "Légendaire" }
+          ],
+          caption: "Modeste ou légendaire, chaque relique tient désormais dans une carte de la même taille."
+        },
+        {
+          kind: "entry",
+          name: "Pouvoirs au clavier",
+          tag: "fixed",
+          context: "Sur un clavier français, les chiffres demandaient une gymnastique inutile.",
+          changes: [
+            { label: "Touches 1 à 7", before: "il fallait Maj sur un clavier français", after: "sans Maj, sur la rangée du haut comme sur le pavé numérique" },
+            { label: "Touche gardée enfoncée", before: "le son du refus se répétait", after: "il ne sonne qu'une fois" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "power", id: "frenzy" }, label: "1" },
+            { spec: { kind: "power", id: "rally" }, label: "2" },
+            { spec: { kind: "power", id: "hawkeye" }, label: "3" },
+            { spec: { kind: "power", id: "goldrain" }, label: "4" },
+            { spec: { kind: "power", id: "ritual" }, label: "5" }
+          ],
+          caption: "Tes pouvoirs, chacun sous son chiffre, sans Maj."
+        },
+        {
+          kind: "entry",
+          name: "Fenêtres et nombres",
+          tag: "fixed",
+          changes: [
+            { label: "Échap sur une confirmation", before: "fermait la confirmation et la fenêtre", after: "ferme la confirmation seule" },
+            { label: "Nombres arrondis au millier", before: "« 1000K »", after: "« 1M »" },
+            { label: "Ta bourse au-delà de l'étape 3500", before: "affichait 0 un instant quand les nombres changeaient d'unité", after: "garde son compte" }
+          ]
+        },
+        { kind: "h2", text: "Ta partie" },
+        {
+          kind: "entry",
+          name: "D'une page à l'autre",
+          tag: "fixed",
+          context: "Aller lire le wiki ne doit rien te coûter sur la route.",
+          changes: [
+            { label: "Quitter le jeu pour une autre page du site", before: "jusqu'à 30 s de jeu perdues, et le jeu disait qu'on jouait sur une autre page", after: "tout est gardé, et le jeu reprend dès ton retour" },
+            { label: "Nouvelle version pendant que tu joues ailleurs", text: "la page restée en arrière s'efface au lieu de jouer pour rien" },
+            { label: "Grand Livre injoignable au chargement", text: "la page attend, réessaie à son rythme et charge ta partie une seule fois" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Ce que garde le Grand Livre",
+          tag: "fixed",
+          context: "Des marches honnêtes se voyaient refuser par le Grand Livre. Plus maintenant.",
+          changes: [
+            { label: "Une parole donnée au crépuscule même", before: "« La parole de la nuit dernière a été réécrite »", after: "acceptée" },
+            { label: "Une promesse tenue à travers plus de 100 Rois en une nuit", before: "empêchait le Grand Livre de garder ta partie", after: "acceptée" },
+            { label: "Une longue absence revenue en plusieurs parts", before: "les dernières parts refusées", after: "acceptées" },
+            { label: "Partie non gardée pendant une coupure", before: "elle paraissait gardée", after: "signalée comme un souci, et quitter la page te prévient" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Longue absence sans combattant",
+          tag: "fixed",
+          context: "Revenir face au gardien qui t'a battu n'a rien d'un accueil.",
+          changes: [{ label: "Au retour", before: "tu retrouvais le gardien qui t'avait battu", after: "tu attends juste avant lui, avance auto coupée" }]
+        },
+        { kind: "h2", text: "Sur la route" },
+        {
+          kind: "entry",
+          name: "Le Pari de Pip",
+          tag: "fixed",
+          context: "Plus bas que l'étape 3500, Pip comptait mal.",
+          changes: [{ label: "Gain au-delà de l'étape 3500", before: "toujours son minimum, 30 fois l'or de l'étape", after: "ce que la route aurait payé, comme plus haut" }]
+        },
+        {
+          kind: "entry",
+          name: "En français",
+          tag: "fixed",
+          changes: [
+            { label: "Noms", text: "la Roulotte et les hauts faits s'appellent ainsi partout" },
+            { label: "Lignes", text: "« Il te faut une place libre » pour une seule place, et quelques lignes du Grand Livre se lisent enfin juste" }
+          ]
+        },
+        { kind: "h2", text: "La route profonde" },
+        { kind: "p", text: "Les corrections qui suivent montrent des Âges que tu n'as peut-être pas encore atteints. Elles restent voilées tant que tu ne les demandes pas." },
+        {
+          kind: "spoiler",
+          label: "L'Âge XI, des étapes 2501 à 2750",
+          body: [
+            {
+              kind: "entry",
+              name: "Le Blanc",
+              tag: "fixed",
+              context: "Dans cet Âge, les Restes s'effacent de la page. Ils devaient devenir un dessin à l'encre, pas un fantôme qu'on traverse du regard.",
+              changes: [
+                { label: "Créatures", before: "un contour à peine visible, le décor à travers le corps", after: "un trait d'encre sombre autour d'un corps blanc, les ombres en hachures" },
+                { label: "Strate après strate", text: "elles perdent leurs couleurs, de Pâle jusqu'à Encre" },
+                { label: "Ombres au sol", before: "une flaque noire", after: "un lavis pâle" }
+              ]
+            },
+            {
+              kind: "figure",
+              art: [
+                { spec: { kind: "creature", id: "field-rat", era: 50, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 50 }, label: "Pâle" },
+                { spec: { kind: "creature", id: "field-rat", era: 51, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 51 }, label: "Ténu" },
+                { spec: { kind: "creature", id: "field-rat", era: 52, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 52 }, label: "Marge" },
+                { spec: { kind: "creature", id: "field-rat", era: 53, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 53 }, label: "Vierge" },
+                { spec: { kind: "creature", id: "field-rat", era: 54, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 54 }, label: "Encre" }
+              ],
+              caption: "Le Rat des champs, strate après strate : la couleur s'en va, le trait reste."
+            },
+            {
+              kind: "compare",
+              before: "/news/1-2/blank-before.png",
+              after: "/news/1-2/blank-after.png",
+              alt: { before: "L'Épouvantail creux avant : un contour pâle, le décor visible à travers son corps", after: "L'Épouvantail creux après : un trait d'encre autour d'un corps blanc hachuré" },
+              caption: "Vierge, des étapes 2651 à 2700 : fais glisser pour voir l'Épouvantail creux avant et après. Le décor ne se voit plus à travers lui."
+            }
+          ]
+        },
+        {
+          kind: "spoiler",
+          label: "L'Âge VIII et l'Inachevé",
+          body: [
+            {
+              kind: "entry",
+              name: "Âge VIII",
+              tag: "fixed",
+              context: "Les paupières lourdes de cet Âge fermaient trop les grands yeux.",
+              changes: [{ label: "Yeux mi-clos", before: "les grands yeux se fermaient en une ligne", after: "ils ne perdent que leur rangée du haut" }]
+            },
+            {
+              kind: "compare",
+              before: "/news/1-2/eyes-before.png",
+              after: "/news/1-2/eyes-after.png",
+              alt: { before: "La Chouette endeuillée avant : ses yeux fermés en une ligne", after: "La Chouette endeuillée après : des paupières lourdes, et ses yeux ouverts dessous" },
+              caption: "La Chouette endeuillée à l'Âge VIII : des paupières lourdes, et des yeux toujours là."
+            },
+            {
+              kind: "entry",
+              name: "L'Inachevé",
+              tag: "fixed",
+              context: "Il apparaissait pour disparaître aussitôt.",
+              changes: [{ label: "Combat", before: "il disparaissait un dixième de seconde après son arrivée", after: "il attend qu'on le batte, et son écho de l'Ébauche se fait enfin entendre" }]
+            }
+          ]
+        },
+        { kind: "p", text: "Merci de marcher avec nous, et merci à celles et ceux qui nous ont signalé ces soucis. Bonne route." }
+      ],
+      link: { route: "play", label: "Reprendre la route" }
+    },
+    en: {
+      title: "Patch notes 1.2",
+      summary: "1.2 makes the road surer under your finger: one tap is enough on a phone, your game follows you from page to page, and a few creatures of the deep get their line back.",
+      body: [
+        { kind: "p", text: "Good evening, walker. 1.2 brings no new road: it mends the one you already walk. Your fingers are better heard, your game no longer slips away between two pages, and a few creatures of the deep get back the line they should always have had. What touches the far Ages stays veiled further down: you choose whether to see it." },
+        { kind: "h2", text: "Under your finger" },
+        {
+          kind: "entry",
+          name: "On a phone",
+          tag: "fixed",
+          context: "On a phone, every gesture should count the first time.",
+          changes: [
+            { label: "Talents", before: "a first tap opened the card, a second bought it", after: "a single tap buys a talent within reach" },
+            { label: "Talent out of reach or already learned", text: "a tap still opens its card" },
+            { label: "Buttons on iPhone", before: "a tap often went nowhere", after: "powers, companions and every key of the game answer the first tap" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Notifications",
+          tag: "fixed",
+          context: "A notification should never steal a crystal from you.",
+          changes: [
+            { label: "Tapping a notification", before: "it stayed until it left on its own, hiding the crystals", after: "it clears at once" },
+            { label: "What lies under it", text: "the same tap reaches it: the crystal is caught, the creature struck" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Bag",
+          tag: "fixed",
+          context: "Salvaging relic after relic should not turn into chasing a button.",
+          changes: [
+            { label: "Relic cards", before: "they moved up and down as they changed places", after: "every one as tall as the tallest" },
+            { label: "Salvage", text: "always at the right edge, and the next relic's button stays under your finger" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "relic", slot: "weapon", base: 1, rarity: "common" }, label: "Common" },
+            { spec: { kind: "relic", slot: "armor", base: 2, rarity: "rare" }, label: "Rare" },
+            { spec: { kind: "relic", slot: "amulet", base: 1, rarity: "epic" }, label: "Epic" },
+            { spec: { kind: "relic", slot: "ring", base: 2, rarity: "legendary" }, label: "Legendary" }
+          ],
+          caption: "Humble or legendary, every relic now sits in a card of the same size."
+        },
+        {
+          kind: "entry",
+          name: "Powers on the keyboard",
+          tag: "fixed",
+          context: "On a French keyboard, the numbers asked for pointless finger work.",
+          changes: [
+            { label: "Keys 1 to 7", before: "needed Shift on a French keyboard", after: "no Shift, on the top row as on the keypad" },
+            { label: "Key held down", before: "the refusal sound repeated", after: "it sounds once" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "power", id: "frenzy" }, label: "1" },
+            { spec: { kind: "power", id: "rally" }, label: "2" },
+            { spec: { kind: "power", id: "hawkeye" }, label: "3" },
+            { spec: { kind: "power", id: "goldrain" }, label: "4" },
+            { spec: { kind: "power", id: "ritual" }, label: "5" }
+          ],
+          caption: "Your powers, each under its number, no Shift."
+        },
+        {
+          kind: "entry",
+          name: "Windows and numbers",
+          tag: "fixed",
+          changes: [
+            { label: "Escape on a confirmation", before: "closed the confirmation and the window", after: "closes the confirmation alone" },
+            { label: "Numbers rounding up to a thousand", before: "\"1000K\"", after: "\"1M\"" },
+            { label: "Your purse past stage 3500", before: "showed 0 for a moment when the numbers changed unit", after: "keeps its count" }
+          ]
+        },
+        { kind: "h2", text: "Your game" },
+        {
+          kind: "entry",
+          name: "From page to page",
+          tag: "fixed",
+          context: "Going to read the wiki should cost you nothing on the road.",
+          changes: [
+            { label: "Leaving the game for another page of the site", before: "up to 30 s of play lost, and the game said it was played on another page", after: "everything is kept, and the game goes on the moment you return" },
+            { label: "A new version while you play elsewhere", text: "the page left behind stands aside instead of playing for nothing" },
+            { label: "Ledger out of reach at load", text: "the page waits, tries again at its own pace and loads your game once" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "What the Ledger keeps",
+          tag: "fixed",
+          context: "Honest walks could see the Ledger refuse them. Not anymore.",
+          changes: [
+            { label: "A word given at dusk itself", before: "\"Last night's word was rewritten\"", after: "accepted" },
+            { label: "A promise standing through more than 100 Kings in one night", before: "stopped the Ledger from keeping your game", after: "accepted" },
+            { label: "A long absence sent back in several parts", before: "the later parts refused", after: "accepted" },
+            { label: "Play not kept during a dropped connection", before: "it looked kept", after: "shown as a trouble, and leaving the page warns you" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Long absence with no fighter",
+          tag: "fixed",
+          context: "Coming back to the guardian that beat you is no welcome.",
+          changes: [{ label: "On return", before: "you faced the guardian that beat you again", after: "you wait just before it, auto-advance off" }]
+        },
+        { kind: "h2", text: "On the road" },
+        {
+          kind: "entry",
+          name: "Pip's Wager",
+          tag: "fixed",
+          context: "Below stage 3500, Pip counted wrong.",
+          changes: [{ label: "Payout past stage 3500", before: "always his minimum, 30 times the stage's gold", after: "what the road would have paid, as above it" }]
+        },
+        {
+          kind: "entry",
+          name: "In French",
+          tag: "fixed",
+          changes: [
+            { label: "Names", text: "the Caravan and the Deeds carry the same French names everywhere" },
+            { label: "Lines", text: "a single free space is asked for in the singular, and a few lines of the Ledger read right at last" }
+          ]
+        },
+        { kind: "h2", text: "The deep road" },
+        { kind: "p", text: "The fixes below show Ages you may not have reached yet. They stay veiled until you ask for them." },
+        {
+          kind: "spoiler",
+          label: "Age XI, stages 2501 to 2750",
+          body: [
+            {
+              kind: "entry",
+              name: "The Blank",
+              tag: "fixed",
+              context: "In this Age the Remnants fade from the page. They were meant to become an ink drawing, not a ghost you could see through.",
+              changes: [
+                { label: "Creatures", before: "a faint outline, the scenery showing through the body", after: "a dark ink line around a white body, shadows in hatching" },
+                { label: "Stratum by stratum", text: "they lose their colors, from Pale down to Ink" },
+                { label: "Shadows on the ground", before: "a black pool", after: "a pale wash" }
+              ]
+            },
+            {
+              kind: "figure",
+              art: [
+                { spec: { kind: "creature", id: "field-rat", era: 50, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 50 }, label: "Pale" },
+                { spec: { kind: "creature", id: "field-rat", era: 51, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 51 }, label: "Faint" },
+                { spec: { kind: "creature", id: "field-rat", era: 52, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 52 }, label: "Margin" },
+                { spec: { kind: "creature", id: "field-rat", era: 53, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 53 }, label: "Blank" },
+                { spec: { kind: "creature", id: "field-rat", era: 54, animated: false }, scene: { kind: "scene", biome: "green-plains", era: 54 }, label: "Ink" }
+              ],
+              caption: "The Field Rat, stratum by stratum: the color goes, the line stays."
+            },
+            {
+              kind: "compare",
+              before: "/news/1-2/blank-before.png",
+              after: "/news/1-2/blank-after.png",
+              alt: { before: "The Hollow Scarecrow before: a pale outline, the scenery showing through its body", after: "The Hollow Scarecrow after: an ink line around a white, hatched body" },
+              caption: "Blank, stages 2651 to 2700: slide to see the Hollow Scarecrow before and after. The scenery no longer shows through it."
+            }
+          ]
+        },
+        {
+          kind: "spoiler",
+          label: "Age VIII and the Unfinished",
+          body: [
+            {
+              kind: "entry",
+              name: "Age VIII",
+              tag: "fixed",
+              context: "The heavy lids of this Age closed tall eyes too far.",
+              changes: [{ label: "Half-closed eyes", before: "tall eyes closed to a line", after: "they lose only their top row" }]
+            },
+            {
+              kind: "compare",
+              before: "/news/1-2/eyes-before.png",
+              after: "/news/1-2/eyes-after.png",
+              alt: { before: "The Mourning Owl before: its eyes closed to a line", after: "The Mourning Owl after: heavy lids, and its eyes open beneath" },
+              caption: "The Mourning Owl in Age VIII: heavy lids, and eyes still there."
+            },
+            {
+              kind: "entry",
+              name: "The Unfinished",
+              tag: "fixed",
+              context: "It appeared only to vanish at once.",
+              changes: [{ label: "Fight", before: "it vanished a tenth of a second after it arrived", after: "it waits to be beaten, and its echo of the Draft is heard at last" }]
+            }
+          ]
+        },
+        { kind: "p", text: "Thank you for walking with us, and thank you to everyone who told us about these troubles. Safe travels." }
+      ],
+      link: { route: "play", label: "Take the road again" }
+    }
+  },
   {
     slug: "patch-notes-1-1",
     date: "2026-10-06",

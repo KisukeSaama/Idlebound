@@ -18,7 +18,15 @@ export const news = defineMessages({
     feed: "Flux RSS",
     tags: { new: "Nouveau", up: "Renforcé", down: "Affaibli", changed: "Ajusté", fixed: "Corrigé" },
     colon: " : ",
-    becomes: "devient"
+    becomes: "devient",
+    spoilers: {
+      modesLabel: "Spoilers",
+      without: "Sans spoil",
+      with: "Avec spoil",
+      title: "Plus loin sur la route",
+      reveal: "Révéler"
+    },
+    compare: { before: "Avant", after: "Après", label: "Glisser entre avant et après" }
   },
   en: {
     metaTitle: "News",
@@ -36,6 +44,14 @@ export const news = defineMessages({
     feed: "RSS feed",
     tags: { new: "New", up: "Buffed", down: "Nerfed", changed: "Adjusted", fixed: "Fixed" },
     colon: ": ",
-    becomes: "becomes"
+    becomes: "becomes",
+    spoilers: {
+      modesLabel: "Spoilers",
+      without: "No spoilers",
+      with: "With spoilers",
+      title: "Further down the road",
+      reveal: "Reveal"
+    },
+    compare: { before: "Before", after: "After", label: "Slide between before and after" }
   }
 });
