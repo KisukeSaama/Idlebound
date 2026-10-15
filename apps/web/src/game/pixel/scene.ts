@@ -279,7 +279,8 @@ function composeScene(sceneId: string, recipe: SceneRecipe, era: number, options
     // The Unmaking's grey and the Blank's outline leave no water to reflect anything.
     water: age >= 9 ? null : ground.water,
     source: age >= 10 ? null : moon && skyRecipe !== recipe ? { x: moon.x, y: moon.y } : recipe.source,
-    shadow: recipe.shadow ?? recipe.prop,
+    // On the page, a creature's shadow is a pale wash, not a pool of night.
+    shadow: age >= 10 ? C.haze : recipe.shadow ?? recipe.prop,
     twinkles: age >= 10 ? [] : sky.twinkles,
     twinkleDim: brighten(recipe.sky[Math.min(2, recipe.sky.length - 1)], age / 11),
     night:

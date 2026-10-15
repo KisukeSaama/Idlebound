@@ -14,7 +14,16 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   since the previous one (here, everything after v0.4).
 - Up to v0.5.3, releases were git tags; they are no longer used.
 
-## Next version: v1.2.2
+## Next version: v1.2.3
+
+### Fixes
+
+- The Blank (stages 2501 to 2750): creatures are drawn in ink on the page, a dark line
+  around a white body with hatched shadows, and lose their color stratum by stratum.
+  Their shadows are a pale wash. Before, only a faint outline was left and the scenery
+  showed through the body, under a black shadow.
+
+## v1.2.2
 
 ### Fixes
 

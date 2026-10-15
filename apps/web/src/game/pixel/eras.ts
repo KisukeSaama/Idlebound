@@ -394,29 +394,60 @@ function drained(amount: number) {
   return (source: Pixels): Pixels => remap(source, GREY, (x, y) => bayer(x, y) < amount);
 }
 
-/** Blank: only the outline is left, pale on a pale sky: lighter along the top, deeper underneath. */
-function blank(source: Pixels): Pixels {
-  const out = createPixels(source.w, source.h);
-  for (let y = 0; y < source.h; y += 1) {
-    for (let x = 0; x < source.w; x += 1) {
-      const at = y * source.w + x;
-      if (source.idx[at] === EMPTY) continue;
-      if (source.emit[at]) {
-        out.idx[at] = source.idx[at];
+/**
+ * Blank: the creature becomes a pen drawing on the page, the one thing still being written.
+ * The ink outline holds, the body is the white of the paper, and its shadows turn to
+ * hatching. Each stratum takes a little more: Pale keeps three pale tones, Faint two, then
+ * only the paper and the ink's strokes, fewer with every page.
+ */
+function inked(step: number) {
+  // Hatching: a tone darker than `sparse` gets a light stroke every 6 pixels, darker than
+  // `dense` a dark one between them.
+  const dense = [0, 0.25, 0.3, 0.2, 0.35][step];
+  const sparse = [0, 0, 0.5, 0.45, 0.6][step];
+  // The dense strokes are darker than the sparse ones; the Blank's are pencil-light, the Ink's fresh ink.
+  const strokes = step === 3 ? [C.haze, C.lilac] : [C.night3, C.haze];
+  return (source: Pixels): Pixels => {
+    const { w, h } = source;
+    let low = 255;
+    let high = 0;
+    for (let at = 0; at < source.idx.length; at += 1) {
+      if (source.idx[at] === EMPTY || source.emit[at]) continue;
+      const luma = palLuma(source.idx[at]);
+      low = Math.min(low, luma);
+      high = Math.max(high, luma);
+    }
+    const span = Math.max(1, high - low);
+    const out = createPixels(w, h);
+    for (let y = 0; y < h; y += 1) {
+      for (let x = 0; x < w; x += 1) {
+        const at = y * w + x;
+        const pal = source.idx[at];
+        if (pal === EMPTY) continue;
         out.alpha[at] = 255;
-        out.emit[at] = 1;
-      } else if (!interior(source, x, y)) {
-        const open = (dx: number, dy: number) => {
-          const nx = x + dx;
-          const ny = y + dy;
-          return nx < 0 || ny < 0 || nx >= source.w || ny >= source.h || source.idx[ny * source.w + nx] === EMPTY;
-        };
-        out.idx[at] = open(0, -1) ? C.lilac : open(0, 1) ? C.amethyst : C.haze;
-        out.alpha[at] = 255;
+        if (source.emit[at]) {
+          out.idx[at] = pal;
+          out.emit[at] = source.emit[at];
+          continue;
+        }
+        if (!interior(source, x, y)) {
+          // The pen's line: lighter where it faces the sky, deepest underneath.
+          const open = (dy: number) => y + dy < 0 || y + dy >= h || source.idx[at + dy * w] === EMPTY;
+          out.idx[at] = open(-1) ? C.dusk : open(1) ? C.ink : C.night3;
+          continue;
+        }
+        const tone = (palLuma(pal) - low) / span;
+        if (step === 0) out.idx[at] = tone < 0.3 ? C.haze : tone < 0.6 ? C.lilac : C.moon;
+        else if (step === 1) out.idx[at] = tone < 0.3 ? C.lilac : C.moon;
+        else out.idx[at] = C.moon;
+        if (step === 0) continue;
+        const diagonal = (x + y) % 6;
+        if (diagonal === 0 && tone < Math.max(dense, sparse)) out.idx[at] = strokes[1];
+        else if (diagonal === 3 && tone < dense) out.idx[at] = strokes[0];
       }
     }
-  }
-  return out;
+    return out;
+  };
 }
 
 /** One pass of erosion (`grow` false) or dilation of a mask, by a cross or by a 3 x 3 square. */
@@ -588,7 +619,7 @@ export function treatment(era: number, recipe: Pick<ResolvedRecipe, "rank">): Tr
     case 9:
       return { ...base, post: drained(0.25 + step * 0.18) };
     case 10:
-      return { ...base, post: blank };
+      return { ...base, post: inked(step) };
     default:
       return { ...base, post: fewer };
   }
