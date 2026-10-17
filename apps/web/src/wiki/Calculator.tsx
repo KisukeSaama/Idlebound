@@ -2,7 +2,7 @@
 
 import {
   ASCENSION_MIN_STAGE,
-  DENSITY_PER_STRATUM,
+  DENSITY_BY_RARITY,
   DESCENT_MIN_STAGE,
   MAX_STAGE,
   ageForEra,
@@ -69,7 +69,7 @@ export function Calculator() {
     { label: c.gold, value: gold },
     { label: c.essences, value: essences > 0 ? formatNumber(essences) : c.essencesNone(ASCENSION_MIN_STAGE - 1) },
     { label: c.threads, value: threads > 0 ? numbers.format(threads) : c.threadsNone(numbers.format(DESCENT_MIN_STAGE)) },
-    { label: c.density, value: `×${formatNumber(Math.pow(1 + DENSITY_PER_STRATUM, era))}` }
+    { label: c.density, value: c.densityValue(formatNumber(Math.pow(1 + DENSITY_BY_RARITY.common, era)), formatNumber(Math.pow(1 + DENSITY_BY_RARITY.mythic, era))) }
   ];
 
   return (

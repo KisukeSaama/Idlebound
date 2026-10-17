@@ -363,9 +363,9 @@ road only as far as the heart has already been, and never the whole way.*
 | Relics drop from bosses | Guardians hold the memories of objects. Unmade, they leave the object behind. |
 | Relics survive ascension | Objects do not forget. |
 | 4 slots (weapon DPS, armor boss damage, amulet click, ring gold) | Weapon: strength of the company. Armor: standing against guardians. Amulet: the walker's own hand. Ring: coin sticks to it. |
-| 5 rarities | How clearly the object is remembered: common (a blur), rare, epic, legendary (a story), mythic (a myth, more real than the night itself). |
+| 5 rarities | How clearly the object is remembered: common (a blur), rare, epic, legendary (a story), mythic (a myth, more real than the night itself). The clearer, the more of the object comes back: its weight, what it did (traits), who carried it (memory), section 11.0. |
 | Legendary and mythic essence affix | Objects remembered this well carry memory in them. |
-| Density (shipped): a worn relic multiplies companion damage per stratum below the present night it came from | Older memories are denser (6.1), and so are the objects they held: a blade remembered in the Void weighs more than one from the Hearthfields. |
+| Density (shipped): a worn relic multiplies companion damage per stratum below the present night it came from, more for a clearer memory (1.3) | Older memories are denser (6.1), and so are the objects they held: a blade remembered in the Void weighs more than one from the Hearthfields, and a myth more than a blur. |
 | Forge up to +20 (Brom) | Brom re-forges a relic with sky-shards; each fold of the metal adds a remembered detail. |
 | Salvage for shards | Unmaking an object gives back the sky-glass that held it together. |
 | Inventory 48, full salvages | The walker's pack. Brom's rule: "If you can't carry it, it was never yours." |
@@ -399,6 +399,7 @@ one).
 | Spending while away by breakpoints (shipped): the next companion first, then levels up to a talent or a milestone, saving for one within reach | Companions spend as soldiers do: a friend met on the road is welcomed first, then the coin goes to what makes them stronger at once, never a coin at a time. For a technique almost within reach, they wait a little. |
 | Closed game (shipped): the time since the last save is caught up when it opens again, like a hidden tab (8 h at most, the Long Thread's hours included), never more than the server saw pass | The company does not wait for the walker. They keep the road for a night and tell it at the Reunion. Past a night, the world holds its breath and waits, perfectly still. |
 | The dream leaves no inventory | Dreams leave only a feeling that you were somewhere: one line (**Dreams on return**, section 12.8). The inventory is the company's to tell, at the Reunion. |
+| The company's satchel (shipped, 1.3): relics the guardians left during the absence, opened at the Reunion | What fell on the road while the walker was gone, the company picked up and kept. By the fire, they hand it over (section 11.0). |
 | Guest play (shipped), kept for the browser that played it, forgotten after 30 days without a visit, never ranked | An **unnamed walker**. The Ledger holds a thread without a name for thirty nights after it was last walked; the Roll only takes names. |
 | Account creation | **Inscribing your name on the Roll.** |
 | E-mail confirmation within 3 days | **Sealing the name.** An unsealed name fades from the Ledger after three nights. |
@@ -1031,9 +1032,28 @@ talent names are kept; the dossier reads them as history.
 
 ## 11. Relics
 
-Random relics stay as they are (noun + rarity adjective + biome suffix, e.g. *Fine Blade of
-the Grove*). On top of them, **24 named relics** with a legend, a fixed source and one
-**unique effect**, plus the **Crown**, which cannot be worn.
+Random relics keep their name (noun + rarity adjective + biome suffix, e.g. *Fine Blade of
+the Grove*), and since 1.3 they **remember** (section 11.0). On top of them, **24 named
+relics** with a legend, a fixed source and one **unique effect**, plus the **Crown**, which
+cannot be worn.
+
+### 11.0 What relics remember (shipped, 1.3)
+
+A relic is a memory of an object (6.5), and the clearer the memory, the more of the object
+comes back. A blur (common) or a clear outline (rare) brings back only its weight; a story
+(epic and better) brings back what the object did; a legend or a myth also who carried it.
+
+| Mechanic | In the world |
+|---|---|
+| **Density by rarity**: ×1.02 (common) to ×1.032 (mythic) per stratum below the present night, down to the sixtieth | A blurred memory weighs little even from deep down; a myth from the same stratum weighs as the stratum itself. Below the Dawn the night is drawn again from its first stratum: nothing remembered there weighs more than the First Mark. |
+| **Traits** (epic and better, two for a mythic): one effect of the slot's own role, while worn | The object remembers what it did, and does it again in the walker's hand. The weapon remembers the company it led (Vanguard, the Host, Rout, Steady Rhythm), the armor the guardians it stood against (Bulwark, Old Scars, Spoils, Skyglass, Regicide), the amulet the rhythm of the night and of the hand (Attention, Second Breath, Keen Edge, Pip's Friend, Storm Caller), the ring fortune and absence (Fortune, Homecoming, Lucky Star, Deep Satchel, Vigil). |
+| **Memory** (legendary and mythic): a companion who once walked in the company; their damage ×1.5 (legendary) or ×2 (mythic) while worn | A story has a teller. The companion does not remember the walker yet (Recognition is theirs to give), but their hands remember the weight of the object. |
+| **Places** (sets): the biome of a relic's first stage; two and four of one place worn together | Relics of the Wychwood remember the same trees. Worn together, they remember each other: the Plains pay, the Wychwood breathes slower (Patience), the Deepvaults give up their shards and their relics, the Mire holds the guardians longer, the Crown weighs on the King. |
+| **Awakening** (Brom, at the forge): a relic remembered again at the walker's deepest night, in the same place, for shards per stratum | Brom does not reforge the object: he holds it in the fire until it remembers the night as it is now. It keeps everything it was and takes the weight of that depth. "A good blade is never too old. It is only asleep." |
+| **The company's satchel**: relics the guardians left while the walker was away, kept to be opened at the Reunion | The inventory is the company's to tell (6.7): what fell on the road while the walker was gone, they picked up and kept. They hand it over by the fire, the humblest first, the best last, as one tells a good story. |
+| **The road's debt**: after 12 relics of the road without an epic or better, the next one is | The night does not let a walker go too long without a story. |
+| **The first fall of the King** leaves an epic relic or better | The first time Aldemar falls, something of his court falls with him. |
+| **Salvage on arrival** (the walker's choice: commons, or commons and rares) | Brom's rule ("If you can't carry it, it was never yours"), applied before the pack: the blurs go straight back to sky-glass. |
 
 **Rules for named relics:**
 

@@ -319,7 +319,11 @@ export const wiki = defineMessages({
         oddsNote: "Chance de rareté d'une relique ordinaire. Le grand coffre de l'étal n'en donne que d'épiques ou mieux.",
         forgeTo: "Forger jusqu'à",
         shards: (cost: number) => `${cost} éclats`,
-        crown: "À partir de la dixième Descente, un cinquième emplacement apparaît dans la fenêtre d'équipement. Rien ne peut le remplir."
+        crown: "À partir de la dixième Descente, un cinquième emplacement apparaît dans la fenêtre d'équipement. Rien ne peut le remplir.",
+        trait: "Trait",
+        set: "Parure",
+        setTwo: "2 portées",
+        setFour: "4 portées"
       },
       bestiary: { goldPage: "+1 % d'or une fois complète" },
       biomes: {
@@ -443,6 +447,7 @@ export const wiki = defineMessages({
       threads: "Fils tissés à cette profondeur",
       threadsNone: (stage: string) => `aucun avant l'étape ${stage}`,
       density: "Densité d'une relique trouvée ici",
+      densityValue: (common: string, mythic: string) => `×${common} pour une commune, ×${mythic} pour une mythique`,
       stratum: "Strate",
       age: "Âge"
     }
@@ -754,7 +759,11 @@ export const wiki = defineMessages({
         oddsNote: "Rarity chance of an ordinary relic. The stall's great chest only gives epic or better.",
         forgeTo: "Forge up to",
         shards: (cost: number) => `${cost} shards`,
-        crown: "From the tenth Descent, a fifth slot appears in the equipment window. Nothing can fill it."
+        crown: "From the tenth Descent, a fifth slot appears in the equipment window. Nothing can fill it.",
+        trait: "Trait",
+        set: "Set",
+        setTwo: "2 worn",
+        setFour: "4 worn"
       },
       bestiary: { goldPage: "+1% gold once complete" },
       biomes: {
@@ -878,6 +887,7 @@ export const wiki = defineMessages({
       threads: "Threads woven at this depth",
       threadsNone: (stage: string) => `none before stage ${stage}`,
       density: "Density of a relic found here",
+      densityValue: (common: string, mythic: string) => `×${common} for a common, ×${mythic} for a mythic`,
       stratum: "Stratum",
       age: "Age"
     }

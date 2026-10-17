@@ -1,4 +1,5 @@
 import { AFFIX_BASE, AFFIX_CAP, RARITIES, RARITY_INFO, SLOTS, SLOT_BASE_COUNT, SLOT_MAIN_STAT, levelScale } from "./data/items";
+import { TRAIT_COUNT, memoryPool, remembersBearer, slotTraits } from "./data/traits";
 import { pick, uid, type Rng } from "./rng";
 import type { Affix, AffixStat, Item, ItemSlot, Rarity } from "./types";
 
@@ -34,7 +35,24 @@ function rollAffix(rng: Rng, stat: AffixStat, rarity: Rarity, level: number): Af
   return { stat, value: Math.floor(value * 10_000) / 10_000 };
 }
 
-export function generateItem(rng: Rng, level: number, options: { slot?: ItemSlot; rarity?: Rarity; luck?: number; minimum?: Rarity } = {}): Item {
+/**
+ * What a relic remembers beyond its weight (`data/traits.ts`): its traits, and who carried it
+ * among the companions the walker ever had (`bestHired`). Drawn after everything else, so the
+ * draws of a relic's slot, rarity and affixes stay what they always were.
+ */
+export function rememberRelic(item: Item, rng: Rng, bestHired: number): Item {
+  const pool = slotTraits(item.slot).map((trait) => trait.id);
+  const traits: string[] = [];
+  while (traits.length < TRAIT_COUNT[item.rarity] && pool.length > 0) {
+    const [id] = pool.splice(Math.floor(rng() * pool.length), 1);
+    traits.push(id);
+  }
+  if (traits.length > 0) item.traits = traits;
+  if (remembersBearer(item.rarity)) item.memory = pick(rng, memoryPool(bestHired));
+  return item;
+}
+
+export function generateItem(rng: Rng, level: number, options: { slot?: ItemSlot; rarity?: Rarity; luck?: number; minimum?: Rarity; bestHired?: number } = {}): Item {
   const slot = options.slot ?? pick(rng, SLOTS);
   const rarity = options.rarity ?? rollRarity(rng, options.luck ?? 1, options.minimum);
   const info = RARITY_INFO[rarity];
@@ -49,5 +67,6 @@ export function generateItem(rng: Rng, level: number, options: { slot?: ItemSlot
   if (rarity === "legendary" || rarity === "mythic") affixes.push(rollAffix(rng, "essence", rarity, level));
   const base = Math.floor(rng() * SLOT_BASE_COUNT[slot]);
 
-  return { uid: uid(rng), slot, rarity, level: Math.max(1, Math.floor(level)), base, affixes, forge: 0 };
+  const item: Item = { uid: uid(rng), slot, rarity, level: Math.max(1, Math.floor(level)), base, affixes, forge: 0 };
+  return rememberRelic(item, rng, options.bestHired ?? 0);
 }

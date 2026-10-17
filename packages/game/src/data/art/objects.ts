@@ -868,6 +868,73 @@ export const CHESTS: Record<ChestId, ChestRecipe> = {
 };
 
 /**
+ * The company's satchel (BIBLE 6.7): where it keeps the relics the guardians left while the
+ * walker was away. Old leather 30 pixels wide, drawn through `ICON_INK` like the chests: the
+ * strap, the flap closed over the body by a gold clasp, the flap thrown back (its darker
+ * underside), the open mouth (its back rim, then the dark inside) and the front of the body.
+ */
+export interface SatchelRecipe {
+  strap: readonly string[];
+  flap: readonly string[];
+  flapOpen: readonly string[];
+  mouth: readonly string[];
+  body: readonly string[];
+}
+
+export const SATCHEL: SatchelRecipe = {
+  strap: [
+    "..........nnnnnnnnnn..........",
+    "........nn..........nn........",
+    ".......b..............b.......",
+    "......b................b......",
+    ".....b..................b....."
+  ],
+  flap: [
+    ".....nnnnnnnnnnnnnnnnnnnn.....",
+    "....nnBBBBBBBBBBBBBBBBBBnb....",
+    "...nBBBBBBBBBBBBBBBBBBBBBBb...",
+    "..nBBBBBBBBBBBBBBBBBBBBBBBBb..",
+    "..bBBBBBBBBBBBBBBBBBBBBBBBBb..",
+    "...bBBBBBBBBBBBBBBBBBBBBBBb...",
+    "....bBBBBBBBBBBBBBBBBBBBBb....",
+    ".....bbBBBBBBBBBBBBBBBBbb.....",
+    ".......bbbbbbgGGgbbbbbb.......",
+    ".............gYYg.............",
+    ".............gGGg............."
+  ],
+  flapOpen: [
+    "........wwwwwgYYgwwwww........",
+    "......wbbbbbbbbbbbbbbbbw......",
+    ".....wbbbbbbbbbbbbbbbbbbw.....",
+    ".....nnnnnnnnnnnnnnnnnnnn....."
+  ],
+  mouth: [
+    ".....nnnnnnnnnnnnnnnnnnnn.....",
+    "....n11111111111111111111b...."
+  ],
+  body: [
+    ".....nnnnnnnnnnnnnnnnnnnn.....",
+    "....nBBBBBBBBBBBBBBBBBBBBb....",
+    "...nBBBBBBBBBBBBBBBBBBBBBBb...",
+    "..nBBBBBBBBBBBBBBBBBBBBBBBBb..",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".nBnBnBnBnBnBnBnBnBnBnBnBnBBb.",
+    ".nBBBBBBBBBBBBBBBBBBBBBBBBBBb.",
+    ".bBBBBBBBBBBBBBBBBBBBBBBBBBbb.",
+    "..bBBBBBBBBBBBBBBBBBBBBBBBbb..",
+    "...bbBBBBBBBBBBBBBBBBBBBbbb...",
+    ".....bbbbbbbbbbbbbbbbbbbb.....",
+    ".......wwwwwwwwwwwwwwww......."
+  ]
+};
+
+/**
  * The wandering crystal (16 × 24): three facets that catch the light in turn. `0` to `3`
  * are steps of the essence ramp, `f` marks the facets that light up frame by frame.
  */

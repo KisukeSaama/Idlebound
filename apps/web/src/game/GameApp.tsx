@@ -37,7 +37,8 @@ import {
   type ChronicleEntry,
   type CutsceneId,
   type GameEvent,
-  type Item
+  type Item,
+  type TraitId
 } from "@idlebound/game";
 import { currentLocale, currentMessages, useI18n } from "@/i18n/client";
 import { api } from "@/lib/api";
@@ -57,6 +58,7 @@ import { CloudChoiceModal } from "./components/CloudChoiceModal";
 import { ElsewhereModal } from "./components/ElsewhereModal";
 import { ConfirmDialog, type ConfirmRequest } from "./components/ConfirmDialog";
 import { ChestOpening, type ChestOpeningRequest } from "./components/ChestOpening";
+import { SatchelOpening, type SatchelOpeningRequest } from "./components/SatchelOpening";
 import { Cutscene } from "./components/Cutscene";
 import { ReunionModal } from "./components/ReunionModal";
 import { GameHeader } from "./components/GameHeader";
@@ -105,7 +107,9 @@ const REVEAL_PICTO: Partial<Record<RevealId, PictoName>> = {
   caravan: "stall",
   promise: "knot",
   altars2: "gem",
-  altars3: "gem"
+  altars3: "gem",
+  traits: "sparkle",
+  awaken: "sparkle"
 };
 /** Creatures whose new Bestiary lines are worth a toast: the great ones and the wanderers. */
 const HERALDED = new Set([...BIOMES.flatMap((biome) => [biome.boss.id, biome.miniBoss.id]), ...Object.keys(WANDERER_BY_ID), "echo-bat"]);
@@ -119,6 +123,7 @@ export default function GameApp() {
   const [reunion, setReunion] = useState<{ account: AbsenceAccount; seconds: number } | null>(null);
   const [cutscene, setCutscene] = useState<CutsceneId | null>(null);
   const [chest, setChest] = useState<ChestOpeningRequest | null>(null);
+  const [satchel, setSatchel] = useState<SatchelOpeningRequest | null>(null);
   /** While a chest is being bought, the relics it gives, kept for its opening instead of a toast. */
   const chestLoot = useRef<Item[] | null>(null);
   const [mobileTab, setMobileTab] = useState<"heroes" | "scene">("heroes");
@@ -211,10 +216,10 @@ export default function GameApp() {
     pump.add({ ...input, id: toastId.current });
   }, [pump]);
 
-  const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null || chest !== null;
+  const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null || chest !== null || satchel !== null;
   // A newer release waits only while a reload would take something from the screen: a
-  // scene, a chest, a question, a toast still to be read. An open window comes back closed.
-  const leaving = useNewRelease(cloud, confirmRequest === null && reunion === null && cutscene === null && chest === null && toasts.length === 0);
+  // scene, a chest or the satchel, a question, a toast still to be read. An open window comes back closed.
+  const leaving = useNewRelease(cloud, confirmRequest === null && reunion === null && cutscene === null && chest === null && satchel === null && toasts.length === 0);
   useEffect(() => {
     holding.current = covered;
     if (!covered) pump.next();
@@ -257,6 +262,11 @@ export default function GameApp() {
       }
       if (bought && caught[0]) setChest({ chest: id, item: caught[0] });
       return bought;
+    },
+    openSatchel: () => {
+      const items = store.act<Item[]>({ type: "openSatchel" }) ?? [];
+      if (items.length > 0) setSatchel({ items, kept: store.state.satchel.length });
+      else toast({ tone: "info", icon: "chest", title: currentMessages().windows.gear.satchelFull });
     },
     confirm: (options) => new Promise<boolean>((resolve) => setConfirmRequest({ ...options, resolve }))
   }), [toast, store]);
@@ -335,7 +345,7 @@ export default function GameApp() {
       const m = currentMessages();
       const g = gameText(currentLocale());
       const place = id as keyof typeof m.night.reveal;
-      const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : place === "altars2" || place === "altars3" ? g.places.sanctum.name : m.hud.windowTitles[place].label;
+      const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : place === "altars2" || place === "altars3" ? g.places.sanctum.name : place === "traits" || place === "awaken" ? m.hud.windowTitles.gear.label : m.hud.windowTitles[place].label;
       toast({ tone: "info", icon: REVEAL_PICTO[id], title, text: m.night.reveal[place] });
       store.apply({ type: "tutorial", step: revealMark(id) });
     };
@@ -523,15 +533,21 @@ export default function GameApp() {
           audio.play("loot");
           haptics.pulse("loot");
           const legend = event.item.named ? g.relics[event.item.named]?.legend : undefined;
+          // What it remembers doing, by name: the reason to look at it.
+          const traits = (event.item.traits ?? []).map((id) => g.relicTraits[id as TraitId]?.name).filter(Boolean);
+          const base = m.loot(g.rarities[event.item.rarity], event.item.level);
           toast({
             tone: "loot",
             icon: "chest",
             title: legend ? m.namedTitle(itemName(event.item, locale)) : itemName(event.item, locale),
-            text: legend ?? m.loot(g.rarities[event.item.rarity], event.item.level),
+            text: legend ?? (traits.length > 0 ? m.lootTraits(base, new Intl.ListFormat(locale, { type: "conjunction" }).format(traits)) : base),
             color: rarityColor(event.item.rarity, store.state.settings.colorblind)
           });
           break;
         }
+        case "awakened":
+          toast({ tone: "gold", icon: "sparkle", title: m.awakened(itemName(event.item, locale), fmt(event.item.depth ?? event.item.level)), text: m.awakenedText, color: rarityColor(event.item.rarity, store.state.settings.colorblind) });
+          break;
         case "skillUnlocked": {
           const skill = SKILL_BY_ID[event.skillId];
           const text = skillText(event.skillId, locale, store.state);
@@ -757,6 +773,7 @@ export default function GameApp() {
           <ElsewhereModal />
           {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
           {chest ? <ChestOpening request={chest} onDone={() => setChest(null)} /> : null}
+          {satchel ? <SatchelOpening request={satchel} onDone={() => setSatchel(null)} /> : null}
           {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
           {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
           <Toasts toasts={toasts} held={covered} onDismiss={pump.dismiss} />

@@ -7,15 +7,20 @@ import {
   HERO_BY_ID,
   MARKET_OFFERS,
   NAMED_RELICS,
+  PLACES,
+  PLACE_BONUS,
   PROMISES,
   RARITIES,
   RARITY_INFO,
   SKILLS,
   SLOTS,
   SLOT_MAIN_STAT,
+  TRAIT_COUNT,
   WEAVE_BY_ID,
   essencesForStage,
   forgeCost,
+  slotTraits,
+  traitValue,
   formatNumber,
   stageGold,
   stageHp,
@@ -402,9 +407,51 @@ export function relicSlots(ctx: WikiContext): Slots {
         ))}
       </div>
     ),
+    traits: (
+      <div className="wiki-table-wrap">
+        <table className="wiki-table">
+          <thead>
+            <tr>
+              <th scope="col">{w.slots.relics.trait}</th>
+              {TRAIT_RARITIES.map((rarity) => <th key={rarity} scope="col" style={{ color: RARITY_INFO[rarity].color }}>{g.rarities[rarity]}</th>)}
+            </tr>
+          </thead>
+          {SLOTS.map((slot) => (
+            <tbody key={slot}>
+              <tr><th scope="colgroup" colSpan={TRAIT_RARITIES.length + 1}>{g.slots[slot]}</th></tr>
+              {slotTraits(slot).map((trait) => (
+                <tr key={trait.id}>
+                  <th scope="row">{g.relicTraits[trait.id].name}</th>
+                  {TRAIT_RARITIES.map((rarity) => <td key={rarity}>{g.relicTraits[trait.id].effect(traitValue(trait.id, rarity))}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          ))}
+        </table>
+      </div>
+    ),
+    places: (
+      <div className="wiki-table-wrap">
+        <table className="wiki-table">
+          <thead><tr><th scope="col">{w.slots.relics.set}</th><th scope="col">{w.slots.relics.setTwo}</th><th scope="col">{w.slots.relics.setFour}</th></tr></thead>
+          <tbody>
+            {PLACES.map((place) => (
+              <tr key={place}>
+                <th scope="row">{g.relicPlaces[place].name}</th>
+                <td>{g.relicPlaces[place].two(PLACE_BONUS[place][0])}</td>
+                <td>{g.relicPlaces[place].four(PLACE_BONUS[place][1])}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ),
     crown: <CrownBlock ctx={ctx} />
   };
 }
+
+/** The rarities that remember a trait. */
+const TRAIT_RARITIES = RARITIES.filter((rarity) => TRAIT_COUNT[rarity] > 0);
 
 /** The Crown of Orvane: a fifth slot that cannot be filled, from the tenth Descent. */
 export function CrownBlock({ ctx }: { ctx: WikiContext }) {

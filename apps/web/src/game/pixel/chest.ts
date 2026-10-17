@@ -20,23 +20,23 @@ export const OPENING_HEIGHT = 100;
 /** Frames a second of the opening: positions move on whole frames. */
 export const OPENING_FPS = 30;
 
-const CHEST_WIDTH = 30;
-const CHEST_LEFT = (OPENING_WIDTH - CHEST_WIDTH) / 2;
+export const CHEST_WIDTH = 30;
+export const CHEST_LEFT = (OPENING_WIDTH - CHEST_WIDTH) / 2;
 /** Last row of the chest's body. */
-const FLOOR = 89;
+export const FLOOR = 89;
 /** The middle of the grid, between its two middle columns. */
-const MIDDLE = (OPENING_WIDTH - 1) / 2;
+export const MIDDLE = (OPENING_WIDTH - 1) / 2;
 /** Where the relic hangs once found, the middle of the reel: its top row. */
-const RELIC_TOP = 14;
+export const RELIC_TOP = 14;
 /** Most colors of the whole scene, the reel full of relics included. */
-const SCENE_COLORS = 24;
+export const SCENE_COLORS = 24;
 
 /** The chest falls in from above, then waits a breath. */
-const DROP = 0.32;
+export const DROP = 0.32;
 const FIRST_KNOCK = 0.46;
 /** One knock per rarity climbed: a shake, then stillness. */
 const KNOCK = 0.42;
-const SHAKE = 0.24;
+export const SHAKE = 0.24;
 const RING_LIFE = 0.5;
 /** After the last knock: the lid bursts up, then hangs tipped back. */
 const LIFT = 0.12;
@@ -138,7 +138,7 @@ export function warmOpening(spec: OpeningSpec) {
   for (const relic of reelRelics(spec)) relicOf(relic);
 }
 
-function rampOf(rarity: Rarity): readonly Pal[] {
+export function rampOf(rarity: Rarity): readonly Pal[] {
   return RAMPS[rampFor(RARITY_INFO[rarity].color)];
 }
 
@@ -183,7 +183,7 @@ function chestSprites(id: ChestId): ChestSprites {
 
 const relics = new Map<string, Pixels>();
 
-function relicOf(item: ReelRelic): Pixels {
+export function relicOf(item: ReelRelic): Pixels {
   const key = `${item.slot}:${item.base ?? 0}:${item.rarity}:${item.forge}:${item.named ?? ""}`;
   let pixels = relics.get(key);
   if (!pixels) {
@@ -198,7 +198,7 @@ function relicOf(item: ReelRelic): Pixels {
  * `fade`, the rows near the top of the grid keep fewer and fewer of their pixels, in the
  * ordered pattern.
  */
-function stamp(target: Pixels, source: Pixels, dx: number, dy: number, below = Infinity, fade = 0) {
+export function stamp(target: Pixels, source: Pixels, dx: number, dy: number, below = Infinity, fade = 0) {
   for (let y = 0; y < source.h; y += 1) {
     if (dy + y >= below) break;
     for (let x = 0; x < source.w; x += 1) {
@@ -210,7 +210,7 @@ function stamp(target: Pixels, source: Pixels, dx: number, dy: number, below = I
   }
 }
 
-function light(target: Pixels, x: number, y: number, pal: Pal) {
+export function light(target: Pixels, x: number, y: number, pal: Pal) {
   setPixel(target, Math.round(x), Math.round(y), pal, 255, 1);
 }
 
@@ -218,7 +218,7 @@ function light(target: Pixels, x: number, y: number, pal: Pal) {
  * A ring of light one pixel wide around (cx, cy). `dither` keeps every other pixel of it
  * (2) or one in four (4), in a fixed pattern, so a ring thins out instead of fading.
  */
-function ring(target: Pixels, cx: number, cy: number, radius: number, pal: Pal, dither: 1 | 2 | 4) {
+export function ring(target: Pixels, cx: number, cy: number, radius: number, pal: Pal, dither: 1 | 2 | 4) {
   const reach = Math.ceil(radius) + 1;
   for (let y = Math.max(0, Math.floor(cy - reach)); y <= Math.min(target.h - 1, Math.ceil(cy + reach)); y += 1) {
     for (let x = Math.max(0, Math.floor(cx - reach)); x <= Math.min(target.w - 1, Math.ceil(cx + reach)); x += 1) {
@@ -231,7 +231,7 @@ function ring(target: Pixels, cx: number, cy: number, radius: number, pal: Pal, 
 }
 
 /** A ring going out from a knock or the burst: bright and whole, then cooler and thinner. */
-function wave(target: Pixels, cx: number, cy: number, age: number, life: number, speed: number, ramp: readonly Pal[]) {
+export function wave(target: Pixels, cx: number, cy: number, age: number, life: number, speed: number, ramp: readonly Pal[]) {
   if (age < 0 || age >= life) return;
   const share = age / life;
   const top = ramp.length - 1;
@@ -243,7 +243,7 @@ function wave(target: Pixels, cx: number, cy: number, age: number, life: number,
  * Sparks thrown up out of the chest when the lid bursts: each its own angle, speed and life,
  * from a hash of its number, falling back under their weight and blinking out at the end.
  */
-function sparks(target: Pixels, x: number, y: number, age: number, ramp: readonly Pal[], count: number) {
+export function sparks(target: Pixels, x: number, y: number, age: number, ramp: readonly Pal[], count: number) {
   const top = ramp.length - 1;
   for (let index = 0; index < count; index += 1) {
     const life = 0.45 + hash2(index, 1, 71) * 0.45;
@@ -262,7 +262,7 @@ function sparks(target: Pixels, x: number, y: number, age: number, ramp: readonl
  * it opens wide in a blink, then narrows to nothing. White at the heart, the rarity's color
  * around it, its edge every other pixel.
  */
-function beam(target: Pixels, bottom: number, age: number, ramp: readonly Pal[]) {
+export function beam(target: Pixels, bottom: number, age: number, ramp: readonly Pal[]) {
   if (age >= BEAM) return;
   const half = age < 0.1 ? 3 + (age / 0.1) * 9 : 12 * (1 - (age - 0.1) / (BEAM - 0.1));
   if (half < 0.5) return;
@@ -280,7 +280,7 @@ function beam(target: Pixels, bottom: number, age: number, ramp: readonly Pal[])
 }
 
 /** Dust thrown out at the chest's feet as it lands. */
-function dust(target: Pixels, age: number) {
+export function dust(target: Pixels, age: number) {
   if (age < 0 || age >= 0.3) return;
   for (let index = 0; index < 5; index += 1) {
     const reach = 2 + index * 2 + age * (18 + index * 6);

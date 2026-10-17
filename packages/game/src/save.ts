@@ -39,7 +39,10 @@ const itemSchema = z.object({
   })).min(1).max(6),
   forge: z.number().int().min(0).max(100),
   locked: z.boolean().optional(),
-  named: z.string().max(40).optional()
+  named: z.string().max(40).optional(),
+  traits: z.array(z.string().max(20)).max(2).optional(),
+  memory: z.string().max(40).optional(),
+  depth: z.number().int().min(1).max(MAX_STAGE).optional()
 });
 
 const skillState = z.object({ activeUntil: finite, readyAt: finite });
@@ -111,6 +114,8 @@ export const gameStateSchema = z.object({
   achievements: z.array(z.string().max(40)).max(500),
   equipment: z.partialRecord(z.enum(["weapon", "armor", "amulet", "ring"]), itemSchema),
   inventory: z.array(itemSchema).max(200),
+  satchel: z.array(itemSchema).max(20),
+  drought: z.number().int().min(0).max(1_000),
   crystal: z.object({ id: z.string().max(40), expiresAt: finite, x: finite, y: finite, storm: z.number().int().min(0).max(10).optional() }).nullable(),
   nextCrystalAt: finite,
   run: statBlock,
@@ -126,7 +131,8 @@ export const gameStateSchema = z.object({
     buyMode: z.union([z.literal(1), z.literal(10), z.literal(25), z.literal(100), z.literal("max")]),
     offlineSpending: z.boolean(),
     darkNight: z.boolean(),
-    colorblind: z.boolean()
+    colorblind: z.boolean(),
+    salvageOnArrival: z.enum(["none", "common", "rare"])
   }),
   tutorial: z.object({ done: z.array(z.string().max(40)).max(50) }),
   bestiary: idRecord(count, 300),

@@ -23,7 +23,7 @@ import { useI18n } from "@/i18n/client";
 import { useGame, useReveals, useUi } from "../context";
 import { Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
-import { awakenedSeed, portraitSource } from "../pixel/sources";
+import { awakenedSeed, portraitSource, satchelSource } from "../pixel/sources";
 import { REUNION_SOURCES } from "../shell";
 import { Modal } from "./Modal";
 
@@ -59,6 +59,8 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
   };
   const g = gameText(locale);
   const n = t.night;
+  // The satchel the company kept: what this absence filled, and whatever an earlier one left unopened.
+  const satchel = state.satchel.length;
   const m = n.account;
   const fmt = (value: number) => formatNumber(value, state.settings.notation);
   // Gold of the night, written in its unit past stage 3500.
@@ -99,7 +101,12 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
       icon={<Picto name="campfire" size={30} />}
       onClose={() => leave()}
       size="md"
-      footer={<button type="button" className="btn btn-gold" onClick={() => leave()}>{m.resume}</button>}
+      footer={satchel > 0 ? (
+        <>
+          <button type="button" className="btn btn-ghost" onClick={() => leave()}>{m.resume}</button>
+          <button type="button" className="btn btn-gold" onClick={() => { leave(); ui.openSatchel(); }}>{t.windows.gear.satchelOpen}</button>
+        </>
+      ) : <button type="button" className="btn btn-gold" onClick={() => leave()}>{m.resume}</button>}
     >
       <p className="ledger-voice">{n.reunionText(formatDuration(seconds, locale))}</p>
       <dl className="account-facts">
@@ -141,6 +148,15 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
             ))}
           </ul>
         </>
+      ) : null}
+      {satchel > 0 ? (
+        <div className="account-satchel">
+          <PixelSprite source={satchelSource()} size={64} />
+          <span className="account-line">
+            <strong>{t.windows.gear.satchelTitle}</strong>
+            <span>{t.windows.gear.satchelText(satchel)}</span>
+          </span>
+        </div>
       ) : null}
       {kept ? <KeptFragment kept={kept} onOpen={shown.hall && kept.others > 0 ? () => leave(true) : null} /> : null}
     </Modal>

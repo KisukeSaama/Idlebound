@@ -17,7 +17,6 @@ import {
   SEAM_SECONDS,
   STORM_CRYSTALS,
   STORM_CRYSTAL_SECONDS,
-  STORM_ODDS,
   STRAY_HERO,
   STRAY_ODDS,
   TIDE_CRYSTAL_SECONDS,
@@ -36,7 +35,8 @@ import {
   type EventId
 } from "./data/events";
 import { CLICK_HERO_ID, HEROES, HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
-import { FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO } from "./data/items";
+import { DROUGHT_DROPS, FORGE_MAX, INVENTORY_LIMIT, RARITIES, RARITY_INFO } from "./data/items";
+import { awakenDepth, relicDepth } from "./data/traits";
 import {
   BESTIARY_BY_ID,
   DREAM_MIN_SECONDS,
@@ -86,15 +86,20 @@ import { milestoneReached } from "./chronicle";
 import {
   ASCENSION_MIN_STAGE,
   BOSS_RESPAWN_SECONDS,
-  WOUND_CAP,
   WOUND_KEEP,
-  WOUND_LAST_STAGE,
   MAX_STAGE,
   MONSTERS_PER_STAGE,
   RESPAWN_SECONDS,
   ROUT_STEP_SECONDS,
   altarLevel,
   altarPrice,
+  awakenPrice,
+  guardianShardsAt,
+  relicChance,
+  roadLuck,
+  satchelSize,
+  stormChance,
+  woundCapAt,
   ascensionPreview,
   wandererSkip,
   bossHp,
@@ -707,7 +712,7 @@ export class GameEngine {
     const s = this.state;
     const def = NAMED_BY_ID[id];
     if (!def || s.named.includes(id)) return;
-    const item = generateItem(this.fate("loot"), Math.max(1, s.maxStageEver - 1), { slot: def.slot, rarity: def.rarity });
+    const item = generateItem(this.fate("loot"), Math.max(1, s.maxStageEver - 1), { slot: def.slot, rarity: def.rarity, bestHired: s.lifetime.bestHired });
     item.named = id;
     item.locked = true;
     s.named.push(id);
@@ -1067,8 +1072,10 @@ export class GameEngine {
 
   /** A guardian or an elite of the present night keeps the wounds of a fight it won (`dealt`: share of its HP). */
   private keepWound(stage: number, dealt: number) {
-    if (isKingStage(stage) || stage > WOUND_LAST_STAGE) return;
-    this.state.trail.wound = { stage, share: Math.min(WOUND_CAP, this.woundKept(stage) + dealt * WOUND_KEEP) };
+    // The present night's guardians keep them, and deeper ones against armor that remembers scars.
+    const cap = woundCapAt(this.state, stage);
+    if (cap <= 0) return;
+    this.state.trail.wound = { stage, share: Math.min(cap, this.woundKept(stage) + dealt * WOUND_KEEP) };
   }
 
   /** Damage factor against a boss stage's guardian, for the catch-up and the autopilot. */
@@ -1114,6 +1121,8 @@ export class GameEngine {
     let failedAt: number | null = s.autoAdvance ? null : s.maxStage;
     const unfailing = promiseOf(s, "unfailing") !== undefined;
     const holds = promiseHolds(s);
+    // The spoils of the road while the walker is away, all drawn from one occasion of the fates.
+    let spoils: Rng | null = null;
     s.stage = s.maxStage;
     // Whatever stood in the road (an event, Pip's dare) is gone when the walker comes back.
     s.monster = null;
@@ -1156,14 +1165,21 @@ export class GameEngine {
           time -= fight + BOSS_RESPAWN_SECONDS;
           kills += 1;
           bosses += 1;
+          const guardian = isBiomeBossStage(stage);
+          const firstClear = guardian && stage >= s.maxStageEver;
+          const eclipse = this.eclipsed(stage);
+          if (isKingStage(stage)) kings += 1;
+          // A guardian or an elite leaves a relic as on an open tab: the company keeps it in its satchel.
+          spoils ??= this.fate("loot");
+          if (firstClear || eclipse || spoils() < relicChance(s, guardian)) {
+            const first = isKingStage(stage) && s.lifetime.kings + kings === 1;
+            this.stash(this.roadRelic(spoils, stage, guardian ? 2 : 1, first ? "epic" : undefined));
+          }
           sliceGold += stageGold(stage, bits) * bossHpMultiplier(stage) * d.goldMultiplier * (isBiomeBossStage(stage) ? d.guardianGold : 1);
           this.recordStageKills(stage, 1);
           if (s.trail.wound?.stage === stage) delete s.trail.wound;
-          if (isBiomeBossStage(stage)) shards += 1 + Math.floor(stage / 25) + namedEffect(s, "guardianShards");
-          if (isKingStage(stage)) {
-            kings += 1;
-            s.trail.eclipse = false;
-          }
+          if (isBiomeBossStage(stage)) shards += guardianShardsAt(s, stage);
+          if (isKingStage(stage)) s.trail.eclipse = false;
           this.promiseBossFell(stage);
         } else if (routs(s, stage, d)) {
           // The Rout, as in an open tab: the whole stage falls in one step.
@@ -1592,12 +1608,13 @@ export class GameEngine {
       // beaten in this run and replayed from the stage selector pays gold only.
       if (frontier) {
         this.promiseBossFell(s.stage);
-        shards = monster.kind === "boss" ? 1 + Math.floor(s.stage / 25) + namedEffect(s, "guardianShards") : rng() < 0.35 ? 1 : 0;
+        const guardian = monster.kind === "boss";
+        shards = guardian ? guardianShardsAt(s, s.stage) : rng() < 0.35 ? 1 : 0;
         this.earnShards(shards);
-        const chance = monster.kind === "boss" ? 0.4 : 0.15;
-        // The Eclipse's King always leaves something behind.
-        if ((monster.kind === "boss" && firstClear) || monster.eclipse || rng() < chance) {
-          this.addItem(generateItem(rng, s.stage, { luck: monster.kind === "boss" ? 2 : 1 }));
+        // The Eclipse's King always leaves something behind, and the first King of the walk an epic or better.
+        if ((guardian && firstClear) || monster.eclipse || rng() < relicChance(s, guardian)) {
+          const first = king && s.lifetime.kings === 1;
+          this.dropOnRoad(this.roadRelic(rng, s.stage, guardian ? 2 : 1, first ? "epic" : undefined));
         }
         const era = eraForStage(s.stage);
         if (monster.kind === "boss" && firstClear) {
@@ -1687,7 +1704,7 @@ export class GameEngine {
         // The walker holds the crack shut: an elite's drop, and an echo of the Age.
         s.lifetime.seams += 1;
         if (rng() < 0.35) this.earnShards(1);
-        if (rng() < 0.15) this.addItem(generateItem(rng, s.stage));
+        if (rng() < 0.15) this.dropOnRoad(this.roadRelic(rng, s.stage, 1));
         this.ageEcho(age);
         this.emit({ type: "event", id: "seam", won: true });
         break;
@@ -1715,6 +1732,8 @@ export class GameEngine {
     s.maxStage += 1;
     s.kills = 0;
     if (s.maxStage > s.maxStageEver) s.maxStageEver = s.maxStage;
+    // Wounds stay with the boss at the head of the run: the road left behind heals them.
+    if (s.trail.wound && s.trail.wound.stage < s.maxStage) delete s.trail.wound;
     this.deepened(run, life, s.lastTickAt);
     // Pacifist: the Fallen King reached with Brother Cinder leading the company.
     if (s.maxStage === REST_STAGE && strongestCompanion(this.derived) === "cendre") this.discover("pacifist");
@@ -1746,9 +1765,9 @@ export class GameEngine {
       s.trail.rest = this.clickedThisFight ? 0 : s.trail.rest + 1;
       if (s.trail.rest >= REST_FAILS) this.discover("let-him-rest");
     }
-    // A guardian or an elite of the present night keeps its wounds for the next fight.
+    // A guardian or an elite at the head of the run keeps its wounds for the next fight.
     const monster = s.monster;
-    if (monster) {
+    if (monster && s.stage === s.maxStage) {
       const kept = this.woundKept(s.stage);
       this.keepWound(s.stage, Math.max(0, (monster.maxHp * (1 - kept) - Math.max(0, monster.hp)) / monster.maxHp));
     }
@@ -1935,7 +1954,7 @@ export class GameEngine {
     if (!s.crystal && this.visible && now >= s.nextCrystalAt) {
       const rng = this.fate("crystal");
       s.nextCrystalAt = now + (90 + rng() * 150) * d.crystalWait * 1000;
-      if (rng() < 1 / STORM_ODDS) {
+      if (rng() < stormChance(s)) {
         // Crystal Storm: the Lantern Queen crosses the sky, and five crystals fall in turn.
         this.recordKills("lantern-queen", 1);
         if (bestiaryKills(s, "lantern-queen") === 1) this.fragment({ source: "event", id: "storm" });
@@ -2214,12 +2233,110 @@ export class GameEngine {
 
   // ---------------------------------------------------------------- equipment
 
-  /** A new item: in its slot when empty, else in the pack; a full pack salvages it (unless `force`). */
-  private addItem(item: Item, force = false) {
+  /**
+   * A relic of the road (a guardian, an elite, a Seam, the satchel), with the walker's luck on
+   * the road. Past `DROUGHT_DROPS` relics without an epic or better, the road owes one: the
+   * next is an epic at least (drawn without the luck, so the debt is never a shortcut to a legend).
+   */
+  private roadRelic(rng: Rng, level: number, luck: number, minimum?: Rarity): Item {
+    const s = this.state;
+    const owed = s.drought >= DROUGHT_DROPS && (minimum === undefined || RARITIES.indexOf(minimum) < 2);
+    const item = owed
+      ? generateItem(rng, level, { minimum: "epic", bestHired: s.lifetime.bestHired })
+      : generateItem(rng, level, { luck: luck * roadLuck(s), minimum, bestHired: s.lifetime.bestHired });
+    s.drought = RARITIES.indexOf(item.rarity) >= 2 ? 0 : s.drought + 1;
+    return item;
+  }
+
+  /** Whether the walker's setting salvages this relic as it arrives (never a named one). */
+  private salvagedOnArrival(item: Item): boolean {
+    const setting = this.state.settings.salvageOnArrival;
+    if (item.named || setting === "none") return false;
+    return RARITIES.indexOf(item.rarity) <= RARITIES.indexOf(setting);
+  }
+
+  /** A relic found on the road while the walker is here: to an empty slot, else salvaged as they asked, else to the pack. */
+  private dropOnRoad(item: Item) {
+    if (!this.state.equipment[item.slot] || !this.salvagedOnArrival(item)) return this.addItem(item);
+    this.count(item);
+    this.earnShards(RARITY_INFO[item.rarity].shards);
+  }
+
+  /** A relic counted among the relics found. */
+  private count(item: Item) {
     const s = this.state;
     s.lifetime.itemsFound += 1;
     if (item.rarity === "legendary") s.lifetime.legendaries += 1;
     if (item.rarity === "mythic") s.lifetime.mythics += 1;
+  }
+
+  /**
+   * A relic the guardians left while the walker was away, into the company's satchel. The
+   * walker's setting salvages the lesser ones (never one for an empty slot, as on the road); a
+   * full satchel keeps the rarest and the deepest, and those it cannot keep come back as shards.
+   */
+  private stash(item: Item) {
+    const s = this.state;
+    this.count(item);
+    if (s.equipment[item.slot] && this.salvagedOnArrival(item)) {
+      this.earnShards(RARITY_INFO[item.rarity].shards);
+      return;
+    }
+    s.satchel.push(item);
+    s.satchel.sort((a, b) => RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) || b.level - a.level);
+    // A satchel that lost room (a ring of Deep Satchel taken off) gives back all it can no longer hold.
+    while (s.satchel.length > satchelSize(s)) this.earnShards(RARITY_INFO[s.satchel.pop()!.rarity].shards);
+  }
+
+  /**
+   * The walker opens the company's satchel: each relic goes to its slot when empty, else to
+   * the pack, the humblest first and the rarest last; what a full pack cannot take stays in it.
+   */
+  openSatchel(now: number): Item[] {
+    const s = this.state;
+    if (s.satchel.length === 0) return [];
+    const given: Item[] = [];
+    const kept: Item[] = [];
+    const order = [...s.satchel].sort((a, b) => RARITIES.indexOf(a.rarity) - RARITIES.indexOf(b.rarity) || a.level - b.level);
+    for (const item of order) {
+      if (!s.equipment[item.slot]) s.equipment[item.slot] = item;
+      else if (s.inventory.length < INVENTORY_LIMIT) s.inventory.push(item);
+      else {
+        kept.push(item);
+        continue;
+      }
+      given.push(item);
+    }
+    s.satchel = kept;
+    this.refresh(now);
+    return given;
+  }
+
+  /**
+   * Brom awakens a relic at the walker's deepest night: remembered again in the same place, a
+   * deeper loop down, it keeps what it remembers and takes the density of that depth.
+   */
+  awaken(itemUid: string, now: number): boolean {
+    const s = this.state;
+    const worn = Object.values(s.equipment).find((item) => item?.uid === itemUid);
+    const item = worn ?? s.inventory.find((entry) => entry.uid === itemUid);
+    if (!item) return false;
+    const depth = awakenDepth(item, s.maxStageEver);
+    if (depth <= relicDepth(item)) return false;
+    const cost = awakenPrice(s, item);
+    if (cost > s.shards) return false;
+    if (promiseAbstains(s, "shards") || (worn && item.slot === "weapon" && promiseOf(s, "anvil"))) return this.held();
+    s.shards -= cost;
+    item.depth = depth;
+    this.emit({ type: "awakened", item });
+    this.refresh(now);
+    return true;
+  }
+
+  /** A new item: in its slot when empty, else in the pack; a full pack salvages it (unless `force`). */
+  private addItem(item: Item, force = false) {
+    const s = this.state;
+    this.count(item);
     if (!s.equipment[item.slot]) {
       s.equipment[item.slot] = item;
     } else if (s.inventory.length >= INVENTORY_LIMIT && !force) {
@@ -2243,8 +2360,18 @@ export class GameEngine {
     const previous = s.equipment[item.slot];
     s.equipment[item.slot] = item;
     if (previous) s.inventory.splice(index, 0, previous);
+    this.holdWounds();
     this.refresh(now);
     return true;
+  }
+
+  /** Wounds a boss keeps only while the armor that held them is worn: taken off, they close to what is left. */
+  private holdWounds() {
+    const wound = this.state.trail.wound;
+    if (!wound) return;
+    const cap = woundCapAt(this.state, wound.stage);
+    if (cap <= 0) delete this.state.trail.wound;
+    else wound.share = Math.min(wound.share, cap);
   }
 
   unequip(slot: ItemSlot, now: number): boolean {
@@ -2254,6 +2381,7 @@ export class GameEngine {
     if (slot === "weapon" && promiseOf(s, "anvil")) return this.held();
     delete s.equipment[slot];
     s.inventory.push(item);
+    this.holdWounds();
     this.refresh(now);
     return true;
   }
@@ -2322,9 +2450,10 @@ export class GameEngine {
         if (s.inventory.length >= INVENTORY_LIMIT) return false;
         s.shards -= cost;
         const rng = this.fate("chest");
+        const bestHired = s.lifetime.bestHired;
         const item = id === "chest"
-          ? generateItem(rng, level)
-          : generateItem(rng, level, { minimum: "epic", luck: 3 });
+          ? generateItem(rng, level, { bestHired })
+          : generateItem(rng, level, { minimum: "epic", luck: 3, bestHired });
         this.addItem(item);
         break;
       }
@@ -2386,13 +2515,13 @@ export class GameEngine {
       case "sealed-coffer":
         if (s.inventory.length >= INVENTORY_LIMIT) return false;
         s.shards -= cost;
-        this.addItem(generateItem(this.fate("chest"), level, { minimum: "legendary", luck: 3 }));
+        this.addItem(generateItem(this.fate("chest"), level, { minimum: "legendary", luck: 3, bestHired: s.lifetime.bestHired }));
         break;
       case "three-chests":
         if (s.inventory.length > INVENTORY_LIMIT - 3) return false;
         s.shards -= cost;
         const rng = this.fate("chest");
-        for (let index = 0; index < 3; index += 1) this.addItem(generateItem(rng, level));
+        for (let index = 0; index < 3; index += 1) this.addItem(generateItem(rng, level, { bestHired: s.lifetime.bestHired }));
         break;
       case "bottled-night":
         if (!this.pourHours(2, now)) return false;

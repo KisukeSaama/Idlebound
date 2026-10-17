@@ -1117,12 +1117,12 @@ describe("a relic's worth to the company", () => {
     state.heroLevels = { maelle: 10 };
     const weapon = { uid: "w", slot: "weapon" as const, rarity: "rare" as const, level: 120, base: 0, affixes: [{ stat: "dps" as const, value: 0.5 }, { stat: "gold" as const, value: 0.3 }], forge: 2 };
     const ring = { uid: "r", slot: "ring" as const, rarity: "common" as const, level: 10, base: 0, affixes: [{ stat: "gold" as const, value: 0.2 }], forge: 0 };
-    // Stage 120 lies two strata below the present night: ×1.03 twice; two forge levels: +20% on the affix.
-    expect(relicCompanyGain(state, weapon, T0)).toBeCloseTo((1 + 0.5 * 1.2) * 1.03 ** 2);
+    // Stage 120 lies two strata below the present night: ×1.025 twice for a rare; two forge levels: +20% on the affix.
+    expect(relicCompanyGain(state, weapon, T0)).toBeCloseTo((1 + 0.5 * 1.2) * 1.025 ** 2);
     expect(relicCompanyGain(state, ring, T0)).toBe(1);
     // Against the empty slot, whatever is worn there: the score of a relic in the pack does not move when another is worn.
     state.equipment.weapon = { ...weapon, uid: "worn", forge: 0 };
-    expect(relicCompanyGain(state, weapon, T0)).toBeCloseTo((1 + 0.5 * 1.2) * 1.03 ** 2);
+    expect(relicCompanyGain(state, weapon, T0)).toBeCloseTo((1 + 0.5 * 1.2) * 1.025 ** 2);
     // It is what the company deals with it, over what it deals without.
     const bare = derive({ ...state, equipment: {} }, T0).dps;
     expect(derive({ ...state, equipment: { weapon } }, T0).dps / bare).toBeCloseTo(relicCompanyGain(state, weapon, T0));

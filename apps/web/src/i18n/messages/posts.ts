@@ -46,6 +46,311 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    slug: "patch-notes-1-3",
+    date: "2026-10-17",
+    kind: "patch",
+    version: "v1.3",
+    cover: { biome: "forgotten-caves" },
+    fr: {
+      title: "Notes de mise à jour 1.3",
+      summary: "Les reliques se souviennent : ce qu'elles ont fait, qui les portait, d'où elles viennent. Brom les réveille, et ta compagnie te garde une besace pendant ton absence.",
+      body: [
+        { kind: "p", text: "Bonsoir, marcheuse, marcheur. Jusqu'ici, une relique, c'était un nom, une couleur et quelques pourcentages : on la regardait à peine avant de la recycler. La 1.3 change ça. Une relique bien souvenue revient avec son histoire : ce qu'elle a fait, la main qui la tenait, le lieu d'où elle vient. Et parce qu'on s'attache à ce qui a une histoire, une relique aimée ne devient plus jamais trop vieille." },
+        { kind: "h2", text: "Ce que les reliques se rappellent" },
+        {
+          kind: "entry",
+          name: "Les traits",
+          tag: "new",
+          context: "Plus une relique est bien souvenue, plus elle se rappelle ce qu'elle a fait. Une épique ou mieux le refait dans ta main.",
+          changes: [
+            { label: "Épique, légendaire", text: "un trait de son emplacement, son effet tant que tu la portes, plus fort à chaque rareté" },
+            { label: "Mythique", text: "deux traits" },
+            { label: "L'arme, la force de la compagnie", text: "Avant-garde, la Troupe, Débandade, Cadence" },
+            { label: "L'armure, face aux gardiens", text: "Rempart, Vieilles cicatrices, Butin, Verre du ciel, Régicide" },
+            { label: "L'amulette, le rythme de la nuit et de ta main", text: "Attention, Second souffle, le Fil, Ami de Messire Pip, Appel de l'averse" },
+            { label: "L'anneau, la fortune et l'absence", text: "Fortune, Retour au feu, Bonne étoile, Besace profonde, Veille" },
+            { label: "Sur chaque carte", text: "le nom du trait dans la couleur de la relique, puis ce qu'il fait, en clair" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "relic", slot: "weapon", base: 1, rarity: "epic" }, label: "Épique" },
+            { spec: { kind: "relic", slot: "armor", base: 3, rarity: "legendary" }, label: "Légendaire" },
+            { spec: { kind: "relic", slot: "amulet", base: 2, rarity: "mythic" }, label: "Mythique" }
+          ],
+          caption: "Une épique se souvient d'un trait, une mythique de deux."
+        },
+        {
+          kind: "entry",
+          name: "La mémoire d'un compagnon",
+          tag: "new",
+          context: "Une légende a toujours quelqu'un pour la raconter.",
+          changes: [
+            { label: "Légendaire et mythique", text: "elle se souvient d'un compagnon déjà venu dans ta compagnie" },
+            { label: "Ce compagnon, tant que tu la portes", text: "×1,5 dégâts (légendaire), ×2 (mythique)" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Les parures",
+          tag: "new",
+          context: "Les reliques d'un même lieu se souviennent les unes des autres.",
+          changes: [
+            { label: "Le lieu d'une relique", text: "le biome où elle est tombée, que son nom dit déjà (« sylvestre », « fangeuse »…)" },
+            { label: "2 puis 4 reliques d'un lieu portées ensemble", text: "une parure s'éveille, puis une plus forte" },
+            { label: "Parure des plaines", text: "plus d'or, et des rats dorés à quatre" },
+            { label: "Parure sylvestre", text: "un bonus de Patience plus fort" },
+            { label: "Parure des profondeurs", text: "plus d'éclats, et plus de reliques à quatre" },
+            { label: "Parure fangeuse", text: "plus de temps contre les élites et les gardiens" },
+            { label: "Parure royale", text: "plus de dégâts contre le roi" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Densité",
+          tag: "changed",
+          context: "Un souvenir flou pèse peu, même venu de très loin. Un mythe pèse de tout son poids.",
+          changes: [
+            { label: "Par strate sous la nuit présente", before: "×1,03 pour toutes les reliques", after: "×1,02 commune, ×1,024 rare, ×1,027 épique, ×1,03 légendaire, ×1,032 mythique" },
+            { label: "Compagnie ×N", text: "compte désormais les traits, la mémoire et les parures" }
+          ]
+        },
+        { kind: "h2", text: "Ce que tu en fais" },
+        {
+          kind: "entry",
+          name: "Le Réveil",
+          tag: "new",
+          context: "Une relique que tu aimes ne devrait jamais rester derrière toi.",
+          changes: [
+            { label: "À la forge", text: "Brom réveille une relique à ta nuit la plus profonde, dans le même lieu" },
+            { label: "Elle garde", text: "ses bonus, ses traits, sa mémoire et sa parure" },
+            { label: "Elle prend", text: "la densité de cette profondeur, et ses bonus grandissent comme si elle y était tombée" },
+            { label: "Prix par strate descendue", text: "20, 60, 160, 500 ou 1 600 éclats, de commune à mythique" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "La besace de la compagnie",
+          tag: "new",
+          context: "Pendant ton absence, la compagnie ramasse ce que les gardiens laissent sur la route. Elle te le garde.",
+          changes: [
+            { label: "Page cachée ou jeu fermé", before: "aucune relique", after: "les gardiens et les élites franchis laissent leurs reliques aux chances habituelles" },
+            { label: "La besace", text: "garde les 6 plus précieuses, les autres deviennent des éclats" },
+            { label: "Aux Retrouvailles", text: "ouvre-la : les reliques en sortent une à une, cachées jusqu'à ce que tu les touches, la plus rare en dernier" },
+            { label: "Avant même de l'ouvrir", text: "la lumière de la plus précieuse filtre sous le rabat" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [{ spec: { kind: "satchel" }, label: "La besace" }],
+          caption: "Elle t'attend aux Retrouvailles, ou dans ton inventaire si tu préfères l'ouvrir plus tard."
+        },
+        {
+          kind: "entry",
+          name: "Une relique sur la route",
+          tag: "new",
+          context: "Trouver une relique devait se voir.",
+          changes: [
+            { label: "Quand un gardien, une élite ou une Brèche en laisse une", text: "elle jaillit, retombe devant toi, brille selon sa rareté, puis vole à ton inventaire" },
+            { label: "Dès l'épique", text: "des anneaux de sa lumière" },
+            { label: "Une légende", text: "une colonne de lumière" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Trouvailles",
+          tag: "new",
+          changes: [
+            { label: "La première chute du roi", text: "laisse une relique épique ou mieux" },
+            { label: "Après 12 reliques de la route sans épique ni mieux", text: "la suivante l'est" },
+            { label: "Recycler à l'arrivée, dans l'inventaire", text: "les communes, ou les communes et les rares, deviennent des éclats dès qu'elles arrivent (jamais une relique nommée)" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Reliques rares",
+          tag: "changed",
+          context: "Les traits commencent à l'épique : une rare reste un contour net, un peu plus dense qu'une commune.",
+          changes: [{ label: "Densité d'une rare", before: "×1,03 par strate", after: "×1,024" }]
+        },
+        {
+          kind: "spoiler",
+          label: "Au-delà de l'étape 3000",
+          body: [
+            {
+              kind: "entry",
+              name: "Densité au-delà de l'Aube",
+              tag: "changed",
+              context: "Sous l'Aube, la nuit se redessine depuis sa première strate : ce qu'on s'y rappelle ne pèse pas plus lourd que la Première Marque.",
+              changes: [{ label: "Densité au-delà de la soixantième strate", before: "elle grandissait encore à chaque strate", after: "celle de la soixantième" }]
+            }
+          ]
+        },
+        { kind: "h2", text: "Corrections" },
+        {
+          kind: "entry",
+          name: "Blessures des gardiens",
+          tag: "fixed",
+          changes: [
+            { label: "Un gardien rejoué sous ton étape la plus lointaine", before: "pouvait garder les blessures d'un combat perdu", after: "n'en garde plus" },
+            { label: "Une blessure laissée derrière toi sur la route", text: "se referme dès que la compagnie l'a dépassée" }
+          ]
+        }
+      ],
+      link: { route: "play", label: "Reprendre la route" }
+    },
+    en: {
+      title: "Patch notes 1.3",
+      summary: "Relics remember: what they did, who carried them, where they come from. Brom awakens them, and your company keeps a satchel for you while you are away.",
+      body: [
+        { kind: "p", text: "Good evening, walker. Until now a relic was a name, a color and a few percentages: you barely looked at it before salvaging it. 1.3 changes that. A relic clearly remembered comes back with its story: what it did, the hand that held it, the place it comes from. And because we grow fond of what has a story, a relic you love is never too old again." },
+        { kind: "h2", text: "What relics remember" },
+        {
+          kind: "entry",
+          name: "Traits",
+          tag: "new",
+          context: "The more clearly a relic is remembered, the more it recalls what it did. An epic or better does it again in your hand.",
+          changes: [
+            { label: "Epic, legendary", text: "a trait of its slot, its effect while you wear it, stronger at each rarity" },
+            { label: "Mythic", text: "two traits" },
+            { label: "The weapon, the company's strength", text: "Vanguard, the Host, Rout, Steady Rhythm" },
+            { label: "The armor, against guardians", text: "Bulwark, Old Scars, Spoils, Skyglass, Regicide" },
+            { label: "The amulet, the rhythm of the night and of your hand", text: "Attention, Second Breath, Keen Edge, Pip's Friend, Storm Caller" },
+            { label: "The ring, fortune and absence", text: "Fortune, Homecoming, Lucky Star, Deep Satchel, Vigil" },
+            { label: "On every card", text: "the trait's name in the relic's color, then what it does, plainly" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "relic", slot: "weapon", base: 1, rarity: "epic" }, label: "Epic" },
+            { spec: { kind: "relic", slot: "armor", base: 3, rarity: "legendary" }, label: "Legendary" },
+            { spec: { kind: "relic", slot: "amulet", base: 2, rarity: "mythic" }, label: "Mythic" }
+          ],
+          caption: "An epic remembers a trait, a mythic two."
+        },
+        {
+          kind: "entry",
+          name: "A companion's memory",
+          tag: "new",
+          context: "A legend always has someone to tell it.",
+          changes: [
+            { label: "Legendary and mythic", text: "it remembers a companion who once walked in your company" },
+            { label: "That companion, while you wear it", text: "×1.5 damage (legendary), ×2 (mythic)" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Sets",
+          tag: "new",
+          context: "Relics of one place remember each other.",
+          changes: [
+            { label: "A relic's place", text: "the biome it dropped in, which its name already says (\"of the Grove\", \"of the Mire\"…)" },
+            { label: "2 then 4 relics of one place worn together", text: "a set wakes, then a stronger one" },
+            { label: "Plains set", text: "more gold, and golden rats at four" },
+            { label: "Grove set", text: "a stronger Patience bonus" },
+            { label: "Depths set", text: "more shards, and more relics at four" },
+            { label: "Mire set", text: "more time against elites and guardians" },
+            { label: "Crown set", text: "more damage to the King" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Density",
+          tag: "changed",
+          context: "A blurred memory weighs little, even from far below. A myth weighs all it can.",
+          changes: [
+            { label: "Per stratum below the present night", before: "×1.03 for every relic", after: "×1.02 common, ×1.024 rare, ×1.027 epic, ×1.03 legendary, ×1.032 mythic" },
+            { label: "Company ×N", text: "now counts traits, memory and sets" }
+          ]
+        },
+        { kind: "h2", text: "What you do with them" },
+        {
+          kind: "entry",
+          name: "Awakening",
+          tag: "new",
+          context: "A relic you love should never be left behind.",
+          changes: [
+            { label: "At the forge", text: "Brom awakens a relic at your deepest night, in the same place" },
+            { label: "It keeps", text: "its bonuses, traits, memory and set" },
+            { label: "It takes", text: "the density of that depth, and its bonuses grow as if it had dropped there" },
+            { label: "Price per stratum gone down", text: "20, 60, 160, 500 or 1,600 shards, from common to mythic" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "The company's satchel",
+          tag: "new",
+          context: "While you are away, the company picks up what the guardians leave on the road. It keeps it for you.",
+          changes: [
+            { label: "Page hidden or game closed", before: "no relics", after: "the guardians and elites passed leave their relics at the usual odds" },
+            { label: "The satchel", text: "keeps the 6 most precious, the others turn into shards" },
+            { label: "At the Reunion", text: "open it: the relics come out one by one, hidden until you touch them, the rarest last" },
+            { label: "Before you even open it", text: "the light of the most precious leaks under the flap" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [{ spec: { kind: "satchel" }, label: "The satchel" }],
+          caption: "It waits for you at the Reunion, or in your inventory if you would rather open it later."
+        },
+        {
+          kind: "entry",
+          name: "A relic on the road",
+          tag: "new",
+          context: "Finding a relic should be seen.",
+          changes: [
+            { label: "When a guardian, an elite or a Seam leaves one", text: "it is thrown out, falls in front of you, shines for its rarity, then flies to your inventory" },
+            { label: "From epic up", text: "rings of its light" },
+            { label: "A legend", text: "a column of light" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Finds",
+          tag: "new",
+          changes: [
+            { label: "The King's first fall", text: "leaves an epic relic or better" },
+            { label: "After 12 relics of the road without an epic or better", text: "the next one is" },
+            { label: "Salvage on arrival, in the inventory", text: "commons, or commons and rares, turn into shards as they arrive (never a named relic)" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Rare relics",
+          tag: "changed",
+          context: "Traits begin at epic: a rare stays a clear outline, a little denser than a common.",
+          changes: [{ label: "Density of a rare", before: "×1.03 per stratum", after: "×1.024" }]
+        },
+        {
+          kind: "spoiler",
+          label: "Past stage 3000",
+          body: [
+            {
+              kind: "entry",
+              name: "Density beyond the Dawn",
+              tag: "changed",
+              context: "Below the Dawn the night draws itself again from its first stratum: what is remembered there weighs no more than the First Mark.",
+              changes: [{ label: "Density past the sixtieth stratum", before: "it still grew with every stratum", after: "that of the sixtieth" }]
+            }
+          ]
+        },
+        { kind: "h2", text: "Fixes" },
+        {
+          kind: "entry",
+          name: "Guardians' wounds",
+          tag: "fixed",
+          changes: [
+            { label: "A guardian replayed below your furthest stage", before: "could keep the wounds of a lost fight", after: "no longer does" },
+            { label: "A wound left behind on the road", text: "closes once the company has passed it" }
+          ]
+        }
+      ],
+      link: { route: "play", label: "Back on the road" }
+    }
+  },
+  {
     slug: "patch-notes-1-2",
     date: "2026-10-16",
     kind: "patch",

@@ -194,6 +194,18 @@ Content colors live with the game data, not in CSS:
   riddle until found. Named relics show their unique effect in gold and their legend in
   italics. Recognition draws one to five thin gold rings around a companion's portrait
   frame, brighter with each tier.
+- **A relic's card** (`ItemCard` in `GearWindow.tsx`, also in the chest and the satchel):
+  under its affixes and density, what it remembers, one line each: every trait, its name in
+  the relic's rarity color (bold) then its effect in plain words at its value; the companion
+  who carried it in `--gold-2` ("Carried by Brom: Brom deals ×2 damage while you wear it");
+  its place in `--faint` small print, with how many of it are worn ("Grove set · 2 of 4
+  worn", or "… if you wear it" in the pack, this one counted); once awakened, "Awakened at
+  stage N" in `--violet-2`. "Company ×N" counts traits, memory and sets. Worn, a relic a
+  deeper night can take gets an "Awaken" key (violet, its shard price) beside "Forge". The
+  totals panel lists the sets awake (two or four of a place) with their effect. The pack's
+  toolbar holds the salvage on arrival select ("Nothing", "Commons", "Commons and rares"),
+  its rule in its title. While the satchel holds relics, a banner leads the pack (the closed
+  satchel's pixels, its count, "Open the satchel").
 - **Toasts**: on the right of the scene, next to the companions panel, under the scene's top
   bar (placement details under Motion), at most 4 at once (2 on phones), auto-dismiss 3.8 s
   (4.5 s for danger). The others wait in line and none is dropped; while more than a
@@ -915,6 +927,32 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   with "Worn at once" when its slot was empty, and "Take it". The loot toast is not shown for
   it. A press, Enter, Space or "Open it now" jumps to the relic; Escape closes. With reduced
   motion the risen relic is shown at once, still, and fades in.
+- **The company's satchel opened** (`components/SatchelOpening.tsx`, `pixel/satchel.ts`, art
+  `SATCHEL`): over everything, on the chest's 80 x 100 grid and layout. A soft leather satchel
+  (30 pixels wide: strap, flap closed by a gold clasp over a rounded body) drops in with a puff
+  of dust and waits, bobbing a pixel; a thread of light leaks along the lower edge of its flap
+  in the ramp of the rarest relic inside (none for a satchel of commons). A touch, Enter or
+  Space: it tugs twice (a ring of that light each time, a shake), then throws its flap back on
+  a column of that light, two rings and sparks. Its relics climb out of the mouth one by one,
+  the humblest first, each hidden in its own shadow: the inside in night ink, the rim one
+  pixel wide in its rarity's light (grey for a common; a legend's flickers to white, slower
+  than three times a second), and "Touch the relic to reveal it" ("Something shines" for a
+  legend). Touched, it fills in by eighths through the ordered mask (0.25 s for a common to
+  1 s for a mythic), then hangs in rings of its light with sparks; a legend climbs into its
+  own column of light. Its card comes under it with "Next", and a row of small frames counts
+  the relics out so far (empty frames for those still inside, never what they hold).
+  "Reveal all", or the last relic's "Everything it kept", ends on the haul: "The most
+  precious" over its card, then the others' cards, rarest first, and "Back on the road". With
+  reduced motion every picture is still and a touch reveals at once. Escape closes.
+- **A relic falls on the road** (`ArenaRenderer.relic`, `pixel/arena.ts`): a relic found on a
+  guardian, an elite or a Seam is thrown up out of the slain monster as it comes apart, falls
+  on the road in front of where it stood, then lies there shining for its rarity: a common or
+  a rare a beat, with sparks for a rare; from epic up, rings of its light going out from it;
+  a legend in a column of its light, white at its heart and dithered at its edges, narrowing
+  as it ends (0.2 s to 1.3 s from common to mythic). Then it flies to the pack of the rail,
+  faster and faster, going by eighths over the last of the way (up and away when the rail is
+  hidden). A chest's or a gift's relic does not fall. With reduced motion it lies there,
+  still, and fades.
 - **Lines over the scene** (the opening line, what stays after an absence): one line in a
   band at the top of the arena, right under the scene's top bar, in the sky above the
   creature's head, never over it: small Cinzel (0.82 to 1 rem), centered, on a strip of night

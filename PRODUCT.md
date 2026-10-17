@@ -108,9 +108,11 @@ late game; mashing the mouse is never required.
   of 9 seeds, every profile giving its word at each dusk to the strongest companion who can
   ask, among the promises its style can keep: a profile that strikes gives no word to
   Ysolde nor to Nyx) every style stands within a quarter of the others (the best over the
-  worst: 1.23): the occasional player leads (1186, back every hour for 10 minutes, the tab
-  left open to the autopilot, ascending when a boss blocks the company, 4 h of real play),
-  then 10 clicks/s (1069), continuous bursts (1020), 5/s (1014), idle (987) and 2/s (961).
+  worst: 1.18 since the relics remember, version 1.3): the occasional player leads (1157,
+  back every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
+  blocks the company, 4 h of real play), then 10 clicks/s (1082), 5/s (1079), 2/s (1038),
+  continuous bursts (1014) and idle (984). Before 1.3 the same runs stood at 898 to 1052
+  (1.17) on the same seeds; earlier figures: 961 to 1186 (1.23).
   Before the cap on damage to guardians the same runs stood at 936 to 1009 (1.08): every
   style went deeper with the cap, the occasional player most (+179).
   Before the Rout and the doubling words (save version 11) the same runs stood at 836 to
@@ -384,20 +386,69 @@ beaten, it lets the walker through, and the night draws itself again from its fi
   guardian at ×10 always outlast a monster of their stage).
 - **5 rarities** (common, rare, epic, legendary, mythic) with 1 to 4 affixes; legendary and
   mythic add an ascension-essence affix. Power scales with the stage the item dropped at.
-- **Density**: a worn relic multiplies companion damage (and the clicks' share of it) by
-  ×1.03 per stratum below the present night it dropped in (`DENSITY_PER_STRATUM`, read
-  from its level: no field of its own, so older items have it too). Four relics from the
-  last stratum give about ×1,000, from stratum 21 (stage 1000) about ×11. The Ledger
-  bounds it with the item level (never deeper than the best stage).
+- **Density**: a worn relic multiplies companion damage (and the clicks' share of it) per
+  stratum below the present night it is remembered in, by rarity (`DENSITY_BY_RARITY`):
+  ×1.02 common, ×1.024 rare, ×1.027 epic, ×1.03 legendary, ×1.032 mythic (×1.03 for every
+  relic before 1.3). Its stratum is its depth's: where it dropped (its level), or as deep as
+  it was awakened, and it stops at the last of the sixty strata: below the Dawn a relic weighs
+  what one of the First Mark weighs (since 1.3; before, density kept growing past the Dawn,
+  and with the relics that remember it carried the deep road off). The Ledger bounds it with
+  the depth (never deeper than the best stage).
+- **What a relic remembers** (`data/traits.ts`, BIBLE 11.0, save version 17):
+  - **Traits**, from epic up (one; two for a mythic): one effect of the slot's role, its
+    value by rarity (epic, legendary, mythic). Weapon: Vanguard (company damage ×1.1 / 1.3 /
+    1.5), the Host (+0.5 / 1.25 / 1.5% company damage per companion hired), Rout (a stage routs
+    under 0.2 / 0.3 / 0.5 s instead of 0.1 s), Steady Rhythm (Patience bonus ×1.05 / 1.15 /
+    1.25). Armor: Bulwark (+1 / 3 / 5 s boss timer), Old Scars (an elite or guardian that
+    pushed the company back keeps 25 / 35 / 50% of its wounds at any depth, never the King;
+    up to stage 44 the usual 75% stands), Spoils (+10 / 20 / 35 points of relic chance from
+    guardians, half from elites), Skyglass (guardian shards ×1.5 / 2 / 3), Regicide (damage
+    to the King ×1.5 / 2 / 3). Amulet: Attention (crystals 10 / 15 / 25% sooner), Second
+    Breath (powers -6 / 10 / 15%, within the 40% floor), Keen Edge (the whole strike ×1.1 /
+    1.35 / 1.5), Pip's Friend (+0.6 / 1 / 1.5 points of golden rat chance, inside the cap),
+    Storm Caller (a crystal is a Storm 1 in 16 / 13 / 10 instead of 20). Ring: Fortune (gold
+    ×1.1 / 1.4 / 1.75), Homecoming (Reunion ×3.5 / 4 / 5 instead of ×3), Lucky Star
+    (legendary and mythic weights ×1.25 / 1.5 / 1.75 on the road: guardians, elites, Seams,
+    the satchel; never the chests), Deep Satchel (+1 / 2 / 3 relics in the satchel), Vigil
+    (+0.5 / 1 / 1.5 h to a single catch-up).
+  - **Memory**, legendary and mythic: a companion among those the walker ever hired (the
+    first at least, never Aldric), whose damage is ×1.5 (legendary) or ×2 (mythic) while worn.
+  - **Places** (sets): a relic's place is the biome of its level, whatever its depth. Two and
+    four worn of one place: the Plains gold ×1.2 / 1.5 (and +1 point of golden rat chance at
+    four), the Grove Patience bonus ×1.1 / 1.25, the Depths guardian shards ×1.25 / 2 (and +10
+    points of relic chance at four), the Mire +2 / 5 s boss timer, the Crown damage to the King
+    ×1.25 / 1.75.
+  - An older save's relics remember from version 17 on, drawn from each relic's id (the same
+    on every device and on the server).
+- **Awakening** (`awaken`, at the forge, worn or in the pack): a relic goes to the deepest
+  stage of its own place within the best stage (its level plus whole loops of 50), keeping
+  its traits, memory and place; density and affixes grow with that depth. Shards per stratum
+  gained: 20 common, 60 rare, 160 epic, 500 legendary, 1600 mythic (the Unfinished Hammer
+  lowers it as at the forge). Refused under the words that keep shards or the weapon.
 - **One figure per relic**: "Company ×N", what the relic multiplies in the company's damage
-  as it stands, against its slot left empty (`relicCompanyGain`: DPS affix with its forge,
-  density, a named effect on the Patience bonus). The pack compares it with the worn relic
-  and sorts by it within a rarity. Gold, strikes, crits and damage to guardians are not the
-  company's damage: they stay listed apart, as affixes.
-- Drops: biome guardians 40% (guaranteed on a first clear), elites 15%. Guardians give
-  `1 + stage/25` shards, elites 1 shard 35% of the time. A drop goes straight to an empty
-  equipment slot. Only the boss at the furthest stage of the run drops relics and shards: a boss
-  replayed from the stage selector pays gold only.
+  as it stands, against its slot left empty (`relicCompanyGain`: the company's damage with it
+  over without it: DPS affix with its forge and depth, density, traits, memory, the places it
+  completes with the others worn, a named effect on the Patience bonus). The pack compares it
+  with the worn relic and sorts by it within a rarity. Gold, strikes, crits and damage to
+  guardians are not the company's damage: they stay listed apart, as affixes and traits.
+- Drops: biome guardians 40% (guaranteed on a first clear), elites 15% (the trait Spoils and
+  four relics of the Depths add to both). Guardians give `1 + stage/25` shards (Skyglass and
+  the Depths multiply them), elites 1 shard 35% of the time. Only the boss at the furthest
+  stage of the run drops relics and shards: a boss replayed from the stage selector pays gold
+  only. The first King of the walk (the first ever) leaves an epic or better. **The road's
+  debt**: after 12 relics of the road (guardians, elites, Seams, the satchel) without an epic
+  or better (`state.drought`), the next one is epic or better, drawn without luck.
+- Where a relic of the road goes: to an empty equipment slot; else, when the walker's
+  **salvage on arrival** setting (`settings.salvageOnArrival`: none, commons, commons and
+  rares; in the pack) takes its rarity, straight to shards (never a named relic); else to the
+  pack. Chests and gifts always come whole.
+- **The company's satchel** (`state.satchel`): during a catch-up, every boss beaten at the
+  frontier rolls its relic as online (the same chances, the first clear, the Eclipse, the
+  first King, the debt), from one occasion of the fates per catch-up. Up to 6 are kept (Deep
+  Satchel adds), the rarest and deepest first; the others, and those the salvage setting
+  takes, come back as shards. It survives ascensions and Descents. `openSatchel` hands each
+  relic to its empty slot or the pack, the humblest first; a full pack leaves the rest in it.
+  The Reunion shows it with an "Open the satchel" button; the pack shows it until opened.
 - **Forge** (up to +20, +10% per level) costs `ceil(rarity shards × 2 × 1.35^forge)`;
   **salvaging** returns the rarity's shards (1, 3, 8… from common up) plus 50% per forge
   level. Items can be locked, salvaged in bulk up to a rarity, and unequipped. Inventory
@@ -602,7 +653,8 @@ opens again, within the same cap as a hidden tab.
   Reunion and the company's account (road, gold earned and spent, walls, who joined,
   levels). An 8 h catch-up takes 0.1 to 0.2 s on a desktop (measured at stages 32, 97 and
   379). A live tab saves every 30 s, so reloading it loses nothing, a guest's game included
-  (see Saves).
+  (see Saves). Relics the guardians leave during a catch-up go to the company's satchel (see
+  Relics and market), opened at the Reunion.
 - **Spending while away** (switch at the top of the companions panel, on by default): the
   next companion is hired (level 1) as soon as the gold allows, in shop order. Then each
   purchase is weighed by companion DPS gained per gold: a companion's levels up to their next
@@ -646,8 +698,10 @@ opens again, within the same cap as a hidden tab.
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
 (`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 47, stage 50 in
-1 h 29, first ascension at 3 h 01, stage 100 at 3 h 51, then
-steady progress carried by ascensions. Over 30 seeds: 1 min 48, 1 h 35, 2 h 55 and 3 h 59,
+1 h 24, first ascension at 2 h 52, stage 100 at 3 h 41 (version 1.3, relics that remember;
+before it 1 h 29, 3 h 01 and 3 h 51), then
+steady progress carried by ascensions. Over 30 seeds: 1 min 48, 1 h 33, 3 h 11 and 4 h 08
+(before 1.3: 1 min 48, 1 h 35, 2 h 55 and 3 h 59),
 the same to the minute as before the replay (1 min 48, 1 h 36, 2 h 53, 3 h 59): since the
 engine steps every 100 ms (version 1.1, the bots' cadence), any change sends every seed down
 another road, and nine seeds swing a median by a quarter of an hour either way. A naive walker (it buys the newest companion it can afford, never the best
@@ -1020,7 +1074,13 @@ cheapest): relics found never pass those sources (`item`). Legendaries and mythi
 within the relics found and within a generous share of their sources (a tenth of guardians
 and Seams plus one per 250 shards spent for legendaries, a fiftieth plus one per 2000 for
 mythics, plus the named ones and a lucky few). A relic the server saw never changes except
-its forge going up, and a relic held that was never found is refused. Shards earned fit the
+its forge going up and its depth (awakened, a whole loop of 50 at a time, never past the best
+stage, its shards counted with the forge's), and a relic held that was never found is
+refused; relics in the satchel count with the others. A relic's traits must be of its slot,
+as many as its rarity holds; its memory a companion once hired, on a legendary or a mythic
+only; a satchel holds 9 at most. Guardians' shards are bounded under the strongest Skyglass
+and Depths either save holds, wounds past stage 44 under the strongest Old Scars held, the
+gold of a kill under the best Fortune and Plains either save holds. Shards earned fit the
 guardians, Seams, crystals and the salvage of the relics found (each legendary and mythic at
 its worth, a guardian's or Seam's other relic as an epic, a chest's as a rare), plus at most
 0.5 / 1.7 of the shards spent (forge levels salvaged; a chest's epic is far cheaper than

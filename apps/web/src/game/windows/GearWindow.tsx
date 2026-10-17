@@ -2,6 +2,15 @@
 
 import {
   AFFIX_BASE,
+  MEMORY_MULT,
+  PLACES,
+  PLACE_BONUS,
+  awakenDepth,
+  awakenPrice,
+  placeCount,
+  relicDepth,
+  relicPlace,
+  traitValue,
   CROWN_DESCENTS,
   CROWN_HOLD_MS,
   EQUIPMENT_CAP,
@@ -29,7 +38,9 @@ import {
   type GameState,
   type Item,
   type Locale,
-  type Rarity
+  type Rarity,
+  type Settings,
+  type TraitId
 } from "@idlebound/game";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useI18n } from "@/i18n/client";
@@ -37,7 +48,7 @@ import { useFormat, useGame, useReveals, useUi } from "../context";
 import { Picto, ShardIcon, SlotIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 import { PixelSprite } from "../pixel/PixelSprite";
-import { relicSource } from "../pixel/sources";
+import { relicSource, satchelSource } from "../pixel/sources";
 import { useRemembered } from "../remembered";
 import { formatAffix } from "../text";
 import { PromiseNotice } from "./PromiseTab";
@@ -131,6 +142,7 @@ export function RelicIcon({ item }: { item: Item }) {
 export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?: Item; children?: React.ReactNode }) {
   const { t, g, locale } = useI18n();
   const { state } = useGame();
+  const fmt = useFormat();
   const main = item.affixes[0];
   const named = item.named ? NAMED_BY_ID[item.named] : undefined;
   const legend = item.named ? g.relics[item.named] : undefined;
@@ -142,6 +154,11 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
   const score = relicCompanyGain(state, item, now);
   const scoreDelta = compareTo ? score / relicCompanyGain(state, compareTo, now) - 1 : null;
   const signed = (pct: number) => `${pct > 0 ? "+" : pct < 0 ? "-" : ""}${percent(Math.abs(pct), locale)}`;
+  // Its place: how many relics of it are worn, this one counted (as if worn, when it is not).
+  const place = relicPlace(item);
+  const worn = Object.values(state.equipment).filter((other) => other !== undefined);
+  const wearing = worn.some((other) => other.uid === item.uid);
+  const together = wearing ? placeCount(worn, place) : placeCount(worn.filter((other) => other.slot !== item.slot), place) + 1;
   return (
     <article className={`item-card rarity-${item.rarity} ${named ? "named" : ""}`} style={{ ["--rarity" as string]: rarityColor(item.rarity, state.settings.colorblind) }}>
       <header className="item-head">
@@ -166,6 +183,17 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
         ))}
         {density > 1 ? <li className="density" title={t.windows.gear.densityTitle(relicStratum(item))}>{t.windows.gear.density(mult(density))}</li> : null}
         {named ? <li className="named-effect">{g.namedEffects[named.effect.kind](named.effect.pct)}</li> : null}
+        {(item.traits ?? []).map((id) => {
+          const trait = g.relicTraits[id as TraitId];
+          return trait ? (
+            <li key={id} className="item-trait" title={t.windows.gear.traitTitle}>
+              <strong>{trait.name}</strong> {trait.effect(traitValue(id as TraitId, item.rarity))}
+            </li>
+          ) : null;
+        })}
+        {item.memory && g.heroes[item.memory] ? <li className="item-memory" title={t.windows.gear.memoryTitle}>{g.relicMemory(g.heroes[item.memory].name, MEMORY_MULT[item.rarity])}</li> : null}
+        <li className="item-place" title={t.windows.gear.placeTitle}>{(wearing ? t.windows.gear.place : t.windows.gear.placeIf)(g.relicPlaces[place].name, together)}</li>
+        {relicDepth(item) > item.level ? <li className="item-awakened">{t.windows.gear.awakened(fmt(relicDepth(item)))}</li> : null}
       </ul>
       {legend ? <p className="item-legend">{legend.legend}</p> : null}
       {delta !== null ? (
@@ -185,6 +213,9 @@ function Equipped() {
   const fmt = useFormat();
   const mult = useMultiplier();
   const density = equipmentDensity(state);
+  const worn = Object.values(state.equipment).filter((item) => item !== undefined);
+  // The places answering each other among the relics worn: two, then four.
+  const sets = PLACES.map((place) => ({ place, count: placeCount(worn, place) })).filter((entry) => entry.count >= 2);
   // A word given: no shard spent (Garrick), or the weapon left on the anvil (Brom).
   const frugal = promiseAbstains(state, "shards");
   const anvil = promiseOf(state, "anvil") !== undefined;
@@ -204,8 +235,21 @@ function Equipped() {
             );
           }
           const cost = forgePrice(state, item);
+          const depth = awakenDepth(item, state.maxStageEver);
+          const awakenCost = awakenPrice(state, item);
           return (
             <ItemCard key={slot} item={item}>
+              {depth > relicDepth(item) ? (
+                <button
+                  type="button"
+                  className="btn btn-violet btn-sm"
+                  disabled={state.shards < awakenCost || frugal || (anvil && slot === "weapon")}
+                  onClick={() => store.act({ type: "awaken", uid: item.uid })}
+                  title={text.awakenTitle(fmt(depth))}
+                >
+                  {text.awaken} <ShardIcon size={14} /> {fmt(awakenCost)}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="btn btn-violet btn-sm"
@@ -246,6 +290,24 @@ function Equipped() {
             </div>
           ) : null}
         </dl>
+        {sets.length > 0 ? (
+          <>
+            <h3 className="gear-sets-title">{text.setsTitle}</h3>
+            <ul className="gear-sets">
+              {sets.map(({ place, count }) => {
+                const four = count >= 4;
+                const value = PLACE_BONUS[place][four ? 1 : 0];
+                const set = g.relicPlaces[place];
+                return (
+                  <li key={place} title={text.placeTitle}>
+                    <strong>{set.name}</strong> <span className="set-count">{four ? text.setFour : text.setTwo}</span>
+                    <p>{four ? set.four(value) : set.two(value)}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : null}
         {wearsRegalia(state) ? (
           <p className="regalia-line">
             <strong>{t.sanctum.armory.regalia}</strong> {t.sanctum.armory.regaliaWorn(Math.round(REGALIA_KING_DAMAGE * 100))}
@@ -308,6 +370,25 @@ function CrownSlot() {
   );
 }
 
+/** The company's satchel, while it holds relics the walker has not opened yet. */
+function SatchelBanner() {
+  const { state } = useGame();
+  const { t } = useI18n();
+  const ui = useUi();
+  const text = t.windows.gear;
+  if (state.satchel.length === 0) return null;
+  return (
+    <div className="satchel-banner card">
+      <PixelSprite source={satchelSource()} size={64} />
+      <div>
+        <strong>{text.satchelTitle}</strong>
+        <p>{text.satchelText(state.satchel.length)}</p>
+      </div>
+      <button type="button" className="btn btn-gold btn-sm" onClick={() => ui.openSatchel()}>{text.satchelOpen}</button>
+    </div>
+  );
+}
+
 function Bag() {
   const { state, store } = useGame();
   const { t } = useI18n();
@@ -337,7 +418,12 @@ function Bag() {
   };
 
   if (items.length === 0) {
-    return <p className="empty-state">{text.emptyBag}</p>;
+    return (
+      <div className="bag">
+        <SatchelBanner />
+        <p className="empty-state">{text.emptyBag}</p>
+      </div>
+    );
   }
 
   // Brom keeps the weapon on his anvil for the night: no other takes its place.
@@ -346,6 +432,7 @@ function Bag() {
   return (
     <div className="bag">
       <PromiseNotice when={anvil} />
+      <SatchelBanner />
       <div className="bag-toolbar">
         <label>
           {text.sortLabel}
@@ -353,6 +440,18 @@ function Bag() {
             <option value="recent">{text.sortRecent}</option>
             <option value="rarity">{text.sortRarity}</option>
             <option value="slot">{text.sortSlot}</option>
+          </select>
+        </label>
+        <label title={text.salvageArrivalHint}>
+          {text.salvageArrival}
+          <select
+            className="input input-sm"
+            value={state.settings.salvageOnArrival}
+            onChange={(event) => store.act({ type: "settings", patch: { salvageOnArrival: event.target.value as Settings["salvageOnArrival"] } })}
+          >
+            <option value="none">{text.salvageArrivalNone}</option>
+            <option value="common">{text.salvageArrivalCommon}</option>
+            <option value="rare">{text.salvageArrivalRare}</option>
           </select>
         </label>
         <div className="bag-bulk">

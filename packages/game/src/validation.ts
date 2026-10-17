@@ -21,7 +21,8 @@ import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SL
 import { CARAVAN_WARES, isoWeek } from "./data/caravan";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFFS, MARKET_BY_ID } from "./data/market";
 import { CRYSTAL_SHARDS_MAX, salvageValue } from "./engine";
-import { LANTERN_CRYSTAL_WAIT, MAX_STAGE, affixValue, altarValue, MAX_TREASURE_CHANCE, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, WOUND_CAP, WOUND_LAST_STAGE, altarMaxLevel, bossHp, crystalEssenceReward, derive, equipmentBonus, equipmentBonusUncapped, essencesForStage, heroCost, memoryStartGold, stageGold, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
+import { LANTERN_CRYSTAL_WAIT, MAX_STAGE, affixValue, altarValue, MAX_TREASURE_CHANCE, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, SATCHEL_SIZE, altarMaxLevel, bossHp, crystalEssenceReward, derive, equipmentBonus, equipmentBonusUncapped, essencesForStage, heroCost, memoryStartGold, relicGoldMultiplier, stageGold, woundCapWith, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
+import { PLACE_BONUS, TRAIT_BY_ID, TRAIT_COUNT, awakenedSpend, memoryReached, relicPlace, remembersBearer, traitMax, traitValue, type PlaceId, type TraitId } from "./data/traits";
 import { maxAffixValue } from "./loot";
 import {
   BESTIARY_BY_ID,
@@ -65,7 +66,7 @@ export interface Violation {
 /** Relative tolerance for floating-point rounding. */
 const EPSILON = 1e-6;
 /** Highest stackable timed damage multiplier (rally × rage × overcharge × a walker's echo × Dawnbreak in a Seam × the Reunion). */
-const MAX_TIMED_DPS = 2 * 2 * 7 * WALKER_DPS * 1.25 * REUNION_DPS;
+const MAX_TIMED_DPS = 2 * 2 * 7 * WALKER_DPS * 1.25 * Math.max(REUNION_DPS, traitMax("homecoming"));
 /** Highest timed gold multiplier (golden rain × elixir). */
 const MAX_TIMED_GOLD = 3 * 2;
 /** Human clicks + frenzy + scroll, with margin. */
@@ -110,7 +111,31 @@ function namedMax(kind: NamedEffect["kind"]): number {
  * Lodestone and a whole Humming Loom at once. A Crystal Storm brings five in one call.
  */
 const HUMMING_LOOM = WEAVE_BY_ID["humming-loom"];
-const MIN_CRYSTAL_SECONDS = 90 * LANTERN_CRYSTAL_WAIT * (1 - namedMax("crystalSooner")) * (1 - HUMMING_LOOM.maxLevel * HUMMING_LOOM.valuePerLevel);
+const MIN_CRYSTAL_SECONDS = 90 * LANTERN_CRYSTAL_WAIT * (1 - namedMax("crystalSooner")) * (1 - HUMMING_LOOM.maxLevel * HUMMING_LOOM.valuePerLevel) * (1 - traitMax("attention"));
+
+/** Every relic a save holds: worn, in the pack, and in the company's satchel. */
+function heldRelics(state: GameState): Item[] {
+  return [...Object.values(state.equipment), ...state.inventory, ...state.satchel].filter((item) => item !== undefined);
+}
+
+/** The strongest value of a trait among the relics these saves hold, or `none`. */
+function heldTrait(states: readonly GameState[], id: TraitId, none: number): number {
+  let best = none;
+  for (const state of states) {
+    for (const item of heldRelics(state)) if (item.traits?.includes(id)) best = Math.max(best, traitValue(id, item.rarity));
+  }
+  return best;
+}
+
+/** A place's bonus at best among the relics these saves hold: its relics in distinct slots, as if all worn. */
+function heldPlace(states: readonly GameState[], place: PlaceId): number {
+  const slots = new Set<ItemSlot>();
+  for (const state of states) for (const item of heldRelics(state)) if (relicPlace(item) === place) slots.add(item.slot);
+  return slots.size >= 4 ? PLACE_BONUS[place][1] : slots.size >= 2 ? PLACE_BONUS[place][0] : 1;
+}
+
+/** Shards of a guardian, multiplied at most: the trait Skyglass and the Deepvaults, at their strongest. */
+const MAX_SHARD_MULTIPLIER = traitMax("skyglass") * PLACE_BONUS.deepvaults[1];
 /** Crystals that can have fallen in so many seconds (each wake of the tab may call one at once). */
 function maxCrystals(seconds: number, wakes: number): number {
   return STORM_CRYSTALS * (Math.max(0, seconds) / MIN_CRYSTAL_SECONDS + wakes + 2);
@@ -169,9 +194,9 @@ function stageKills(from: number, to: number): number {
   return (to - from - bosses) * MONSTERS_PER_STAGE + bosses;
 }
 
-/** Shards a guardian of this depth drops at most. */
-function guardianShards(maxStageEver: number): number {
-  return 1 + Math.floor(maxStageEver / 25) + namedMax("guardianShards");
+/** Shards a guardian of this depth drops at most (`multiplier`: the relics' at most). */
+function guardianShards(maxStageEver: number, multiplier = MAX_SHARD_MULTIPLIER): number {
+  return Math.floor((1 + Math.floor(maxStageEver / 25)) * multiplier) + namedMax("guardianShards");
 }
 /** Shards the forge levels of an item cost at the very least. */
 function forgeSpend(item: Item): number {
@@ -366,15 +391,16 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   verifyFinds(state, state.lifetime.bosses, fail);
   // Bottled hours are bought with shards, and so are the forge levels the relics carry.
   if (state.lifetime.hourglasses * MIN_HOURGLASS_SHARDS > state.lifetime.shardsEarned) fail("hourglasses", "More hourglasses than shards could buy.");
-  const forged = [...Object.values(state.equipment), ...state.inventory].reduce((total, item) => total + (item ? forgeSpend(item) : 0), 0);
+  const forged = heldRelics(state).reduce((total, item) => total + forgeSpend(item) + Math.ceil(awakenedSpend(item) * (1 - namedMax("forgeDiscount"))), 0);
   if (forged + state.lifetime.hourglasses * MIN_HOURGLASS_SHARDS + state.shards > state.lifetime.shardsEarned) fail("forge", "More forge levels than the shards earned could pay.");
   // Golden rats come with one kill in four at most, Seams with one in four hundred.
   if (state.lifetime.treasures > state.lifetime.kills * MAX_TREASURE_CHANCE * 1.2 + 50) fail("kills", "More golden rats than luck allows.");
   if (state.lifetime.seams > (state.lifetime.kills * 4) / SEAM_ODDS + 25) fail("lore", "More Seams than luck allows.");
 
   // Items. Named relics always find room, even in a full pack.
-  const items = [...Object.values(state.equipment), ...state.inventory].filter((item) => item !== undefined);
+  const items = heldRelics(state);
   if (state.inventory.length > INVENTORY_LIMIT + state.inventory.filter((item) => item.named).length) fail("inventory", "Inventory too large.");
+  if (state.satchel.length > SATCHEL_SIZE + traitMax("satchel")) fail("inventory", "Satchel too large.");
   const uids = new Set<string>();
   for (const item of items) {
     if (uids.has(item.uid)) fail("item", "Duplicate item.");
@@ -397,6 +423,12 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
       stats.add(affix.stat);
       if (!le(affix.value, maxAffixValue(affix.stat, item.rarity, item.level))) fail("item", `Affix too strong on item ${item.uid}.`);
     }
+    // What it remembers: traits of its slot, as many as its rarity holds; who carried it, a companion once in the company.
+    const traits = item.traits ?? [];
+    if (traits.length > TRAIT_COUNT[item.rarity] || new Set(traits).size !== traits.length || traits.some((id) => TRAIT_BY_ID[id]?.slot !== item.slot)) fail("item", `Unknown traits on item ${item.uid}.`);
+    if (item.memory !== undefined && (!remembersBearer(item.rarity) || !memoryReached(state, item.memory))) fail("item", `Unknown memory on item ${item.uid}.`);
+    // Awakened in the same place a whole loop down at a time, never deeper than the walker went: its depth bounds its density.
+    if (item.depth !== undefined && (item.depth < item.level || item.depth > state.maxStageEver || (item.depth - item.level) % 50 !== 0)) fail("item", `Relic awakened out of reach: ${item.uid}.`);
   }
   const itemEquipped = Object.entries(state.equipment).every(([slot, item]) => !item || item.slot === slot);
   if (!itemEquipped) fail("item", "Item equipped in the wrong slot.");
@@ -428,7 +460,8 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     const maxDps = (derived.dps * MAX_TIMED_DPS + burstClick) * bossDamage * (isKingStage(lastBoss) ? derived.kingDamage : 1) * derived.baronDamage;
     // ×10 margin: items salvaged since, rounding, chained overcharge crystals…
     // A boss of the present night may have kept its wounds from earlier fights.
-    const wounds = lastBoss <= WOUND_LAST_STAGE && !isKingStage(lastBoss) ? 1 - WOUND_CAP : 1;
+    // Armor that remembers scars lets deeper bosses keep theirs too.
+    const wounds = 1 - woundCapWith(lastBoss, heldTrait([state], "scars", 0));
     if (maxDps * derived.bossTimer * 10 < bossHp(lastBoss, runBits(state)) * wounds) fail("power", `Stage ${lastBoss} boss cannot be beaten with this power.`);
   }
 
@@ -486,7 +519,8 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   if (state.buffs.some((buff) => !isMarketBuff(buff.id) && lasting(buff) > BUFF_MAX_SECONDS + CLOCK_SLACK_SECONDS)) fail("buff", "A boon lasts too long.");
   const bottled = state.buffs.filter((buff) => isMarketBuff(buff.id)).reduce((sum, buff) => sum + lasting(buff), 0);
   if (bottled > (state.lifetime.shardsEarned / MIN_BOON_SHARDS) * BUFF_DURATION_SECONDS + CLOCK_SLACK_SECONDS) fail("buff", "More boon time than shards could buy.");
-  if (trail.wound && (trail.wound.share > WOUND_CAP + EPSILON || trail.wound.stage > WOUND_LAST_STAGE || trail.wound.stage !== state.maxStage || !isBossStage(trail.wound.stage) || lifetime.bossFails === 0)) fail("trail", "Impossible wounds.");
+  // Deeper, only against armor that remembers scars (one the walker holds), and never the King.
+  if (trail.wound && (trail.wound.share > woundCapWith(trail.wound.stage, heldTrait([state], "scars", 0)) + EPSILON || trail.wound.stage !== state.maxStage || !isBossStage(trail.wound.stage) || lifetime.bossFails === 0)) fail("trail", "Impossible wounds.");
 
   const lore = state.lore;
   // One guardian per biome and stratum: a biome's echoes never outnumber its first clears,
@@ -537,7 +571,7 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
     if (!def) fail("named", `Unknown named relic: ${id}.`);
     else if (!namedSourceReached(state, def)) fail("named", `Named relic from a source never reached: ${id}.`);
   }
-  const named = [...Object.values(state.equipment), ...state.inventory].filter((item) => item?.named).map((item) => item!.named);
+  const named = heldRelics(state).filter((item) => item.named).map((item) => item.named);
   if (new Set(named).size !== named.length) fail("named", "Duplicate named relic.");
 
   if (new Set(state.secrets).size !== state.secrets.length) fail("secret", "Secret found twice.");
@@ -671,12 +705,14 @@ function bestGoldPerKill(state: GameState): number {
 function bestGoldPerKillBetween(previous: GameState, next: GameState): number {
   const best: Partial<Record<ItemSlot, number>> = {};
   for (const state of [previous, next]) {
-    for (const item of [...Object.values(state.equipment), ...state.inventory]) {
-      if (item) best[item.slot] = Math.max(best[item.slot] ?? 0, affixValue(item, "gold"));
-    }
+    for (const item of heldRelics(state)) best[item.slot] = Math.max(best[item.slot] ?? 0, affixValue(item, "gold"));
   }
-  const relics = 1 + Object.values(best).reduce((total, value) => total + value, 0);
-  const company = Math.max(...[previous, next].map((state) => derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier / ((1 + equipmentBonus(state, "gold")) * (1 + namedEffect(state, "mirelle")))));
+  // A ring that remembers fortune and the relics of the Hearthfields, the best either save holds.
+  const relics = (1 + Object.values(best).reduce((total, value) => total + value, 0)) * heldTrait([previous, next], "fortune", 1) * heldPlace([previous, next], "hearthfields");
+  const company = Math.max(...[previous, next].map((state) => {
+    const worn = Object.values(state.equipment).filter((item) => item !== undefined);
+    return derive(state, state.lastTickAt, { ignoreTimed: true }).goldMultiplier / ((1 + equipmentBonus(state, "gold")) * (1 + namedEffect(state, "mirelle")) * relicGoldMultiplier(worn));
+  }));
   const found = (kind: NamedEffect["kind"]) => next.named.reduce((total, id) => total + (NAMED_BY_ID[id]?.effect.kind === kind ? NAMED_BY_ID[id].effect.pct : 0), 0);
   return stageGold(Math.max(previous.maxStageEver, next.maxStageEver), lifeBits(next)) * 10 * MAX_TIMED_GOLD * company * relics * (1 + found("mirelle")) * (1 + found("guardianGold"));
 }
@@ -809,10 +845,9 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   const items = b.itemsFound - a.itemsFound;
   if (items > drops + spent / MIN_CHEST_SHARDS + EPSILON) fail("item", "Relics found faster than guardians, Seams and chests give.");
   // A relic is what it was when it dropped: only its forge goes up. Any other is a find.
-  const before = new Map([...Object.values(previous.equipment), ...previous.inventory].filter((item) => item !== undefined).map((item) => [item.uid, item]));
+  const before = new Map(heldRelics(previous).map((item) => [item.uid, item]));
   let fresh = 0;
-  for (const item of [...Object.values(next.equipment), ...next.inventory]) {
-    if (!item) continue;
+  for (const item of heldRelics(next)) {
     const was = before.get(item.uid);
     if (!was) fresh += 1;
     else if (!sameRelic(was, item)) fail("item", `Relic remade: ${item.uid}.`);
@@ -824,8 +859,10 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   // Shards: what the deeds since the last save yield, the salvage of relics found since or
   // already held, and the share of shards spent since that salvage gives back.
   const salvage = salvageShards({ items: Math.max(0, items), legendaries: Math.max(0, legendaries), mythics: Math.max(0, mythics), drops });
-  const held = [...Object.values(previous.equipment), ...previous.inventory].reduce((total, item) => total + (item ? salvageValue(item) : 0), 0);
-  const found = guardians * guardianShards(deepest) + seams + crystals * CRYSTAL_SHARDS_MAX + salvage + held;
+  const held = heldRelics(previous).reduce((total, item) => total + salvageValue(item), 0);
+  // Guardians' shards under the strongest relics either save holds.
+  const shardMultiplier = heldTrait([previous, next], "skyglass", 1) * heldPlace([previous, next], "deepvaults");
+  const found = guardians * guardianShards(deepest, shardMultiplier) + seams + crystals * CRYSTAL_SHARDS_MAX + salvage + held;
   const shardBound = (found + SPENT_RETURN_SHARE * previous.shards) / (1 - SPENT_RETURN_SHARE) + 1;
   if (!le(shardsEarned, shardBound)) fail("shards-earned", "Shards earned too fast.");
   // Bottled hours paid with shards owned or earned since.
@@ -834,9 +871,10 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   return violations;
 }
 
-/** The same relic, at most forged further: what dropped never changes. */
+/** The same relic, at most forged further or awakened deeper: what dropped never changes. */
 function sameRelic(was: Item, now: Item): boolean {
   return was.slot === now.slot && was.rarity === now.rarity && was.level === now.level && was.base === now.base && was.named === now.named && now.forge >= was.forge
+    && (now.depth ?? now.level) >= (was.depth ?? was.level) && was.memory === now.memory && (was.traits ?? []).join() === (now.traits ?? []).join()
     && was.affixes.length === now.affixes.length && was.affixes.every((affix, index) => affix.stat === now.affixes[index].stat && affix.value === now.affixes[index].value);
 }
 

@@ -45,6 +45,8 @@ const COMMANDS: Record<string, z.ZodType> = {
   salvageUpTo: z.object({ type: z.literal("salvageUpTo"), rarity: z.enum(["common", "rare", "epic", "legendary", "mythic"]) }),
   lock: z.object({ type: z.literal("lock"), uid: id }),
   forge: z.object({ type: z.literal("forge"), slot }),
+  awaken: z.object({ type: z.literal("awaken"), uid: id }),
+  openSatchel: z.object({ type: z.literal("openSatchel") }),
   market: z.object({ type: z.literal("market") }),
   offer: z.object({ type: z.literal("offer"), id: z.enum(MARKET_OFFERS.map((offer) => offer.id) as [string, ...string[]]) }),
   caravan: z.object({ type: z.literal("caravan") }),
@@ -67,7 +69,8 @@ const COMMANDS: Record<string, z.ZodType> = {
       buyMode: z.union([z.literal(1), z.literal(10), z.literal(25), z.literal(100), z.literal("max")]),
       offlineSpending: z.boolean(),
       darkNight: z.boolean(),
-      colorblind: z.boolean()
+      colorblind: z.boolean(),
+      salvageOnArrival: z.enum(["none", "common", "rare"])
     }).partial().strict()
   }),
   input: z.object({ type: z.literal("input") }),

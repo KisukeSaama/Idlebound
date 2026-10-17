@@ -6,16 +6,16 @@
  *
  * React drives it with plain method calls; it never re-renders React.
  */
-import type { MonsterState, StrikeStyle } from "@idlebound/game";
+import { RARITIES, RARITY_INFO, type Item, type MonsterState, type StrikeStyle } from "@idlebound/game";
 import { C, RAMPS, rampFor, resolveCreature, SCENE_HEIGHT, type Pal } from "@idlebound/game/art";
 import { airOf, type Atmosphere } from "./atmosphere";
 import { eclipseRing, greyPixels, remembrancePixels, SEAM_MARGIN, seamPixels, seamSpan, unfinishedOrder, unfinishedPixels, unfinishedShare, UNFINISHED_STEPS } from "./events";
 import { companionRamp, drawMotes, drawShot, Particles, SCATTER_LIFE, shotBackAngle, shotDuration, type Mote, type Shot } from "./fx";
 import type { NightGrade } from "./night";
-import { fadeStep, FADE_STEPS, hash2 } from "./pixels";
+import { bayer, createPixels, fadeStep, FADE_STEPS, hash2, setPixel, veil } from "./pixels";
 import { sceneRecipe, type SceneOptions } from "./scene";
-import { creatureSheet, css, flashPixels, sceneSheet, type CreatureSheet, type SceneSheet, type Tone } from "./sprites";
-import { effectCache, pixelRatio, toSurface, whenIdle, type Surface } from "./surface";
+import { creatureSheet, css, flashPixels, relicPixels, sceneSheet, type CreatureSheet, type SceneSheet, type Tone } from "./sprites";
+import { dropCache, effectCache, pixelRatio, toSurface, whenIdle, type Surface } from "./surface";
 
 export interface CssRect {
   x: number;
@@ -78,6 +78,29 @@ const WALKER_BOB = [0, 1, 1, 0];
 const WALKER_BOB_SECONDS = 0.3;
 /** The scene's cadence when nothing moves fast, and always under a window: its veil hides the effects. */
 const CALM_REDRAW_SECONDS = 1 / 12;
+/** A relic thrown out of a slain guardian falls on the road in this long. */
+const DROP_FALL_SECONDS = 0.55;
+/** Then it lies there shining, longer for a rarer one (common, rare, epic, legendary, mythic). */
+const DROP_REST_SECONDS = [0.2, 0.3, 0.6, 1.1, 1.3];
+/** Then it flies to the pack. */
+const DROP_FLY_SECONDS = 0.45;
+/** With reduced motion it only lies on the road, then fades. */
+const DROP_STILL_SECONDS = 0.9;
+
+/** A relic left on the road by a slain guardian, an elite or a Seam. */
+interface Drop {
+  item: Pick<Item, "slot" | "base" | "rarity" | "forge" | "named">;
+  rank: number;
+  ramp: readonly Pal[];
+  born: number;
+  x0: number;
+  y0: number;
+  x1: number;
+  /** Row its top lies at on the road. */
+  rest: number;
+  target: { x: number; y: number } | null;
+  sparked: boolean;
+}
 
 /** A stretch of road to warm ahead: its scene as `setScene` will ask for it, and its creatures. */
 export interface Stretch {
@@ -114,6 +137,7 @@ export class ArenaRenderer {
   private particles = new Particles(7);
   private shots: Shot[] = [];
   private motes: Mote[] = [];
+  private drops: Drop[] = [];
   private flash: { at: number; until: number; color: Pal } | null = null;
   private queen: { sheet: CreatureSheet; at: number } | null = null;
   private knock: { until: number; dx: number } | null = null;
@@ -470,6 +494,133 @@ export class ArenaRenderer {
     this.kick();
   }
 
+  /**
+   * A relic the slain monster left: thrown out of it, it falls on the road in front, lies there
+   * shining for its rarity (rings from epic up, a column of its light for a legend), then flies
+   * to `packAt`, the pack of the rail. With reduced motion it lies there still, then fades.
+   */
+  relic(item: Drop["item"], packAt: { x: number; y: number } | null) {
+    const now = this.now();
+    const rank = RARITIES.indexOf(item.rarity);
+    const dying = this.dying;
+    const floor = this.sceneTop() + (this.scene?.scene.ground ?? SCENE_HEIGHT - 40);
+    const x0 = dying ? dying.x + Math.round(dying.sheet.pixels.w / 2) - 16 : Math.floor(this.width / 2) - 16;
+    const y0 = dying ? dying.y + Math.round(dying.sheet.feet * 0.35) : floor - 60;
+    const side = this.drops.length % 2 === 0 ? 1 : -1;
+    this.drops.push({
+      item,
+      rank,
+      ramp: RAMPS[rampFor(RARITY_INFO[item.rarity].color)],
+      born: now,
+      x0,
+      y0,
+      x1: x0 + side * (14 + rank * 3),
+      rest: floor - 26,
+      target: packAt ? this.toGrid(packAt.x, packAt.y) : null,
+      sparked: false
+    });
+    this.kick();
+  }
+
+  /** The relics on the road, each at its moment. */
+  private drawDrops(now: number) {
+    const ctx = this.ctx;
+    for (let index = this.drops.length - 1; index >= 0; index -= 1) {
+      const drop = this.drops[index];
+      const t = now - drop.born;
+      const key = `${drop.item.slot}:${drop.item.base ?? 0}:${drop.item.rarity}:${drop.item.forge}:${drop.item.named ?? ""}`;
+      const sprite = (step: number) => dropCache.get(`drop:${key}:${step}`, () => toSurface(veil(relicPixels(drop.item.slot, drop.item.base ?? 0, drop.item.rarity, drop.item.forge, drop.item.named), step)));
+      if (this.reducedMotion) {
+        // Still, then gone by eighths of its pixels.
+        if (t >= DROP_STILL_SECONDS) {
+          this.drops.splice(index, 1);
+          continue;
+        }
+        const step = fadeStep(Math.min(1, 2 * (1 - t / DROP_STILL_SECONDS)));
+        if (step > 0) ctx.drawImage(sprite(step), drop.x1, drop.rest);
+        continue;
+      }
+      const rest = DROP_REST_SECONDS[drop.rank] ?? 0.3;
+      const top = drop.ramp[drop.ramp.length - 1];
+      if (t < DROP_FALL_SECONDS) {
+        // Thrown up out of the monster, it comes down in front of where it stood.
+        const p = t / DROP_FALL_SECONDS;
+        const x = Math.round(drop.x0 + (drop.x1 - drop.x0) * p);
+        const y = Math.round(drop.y0 + (drop.rest - drop.y0) * p - Math.sin(Math.PI * p) * 26);
+        ctx.drawImage(sprite(FADE_STEPS), x, y);
+      } else if (t < DROP_FALL_SECONDS + rest) {
+        const a = t - DROP_FALL_SECONDS;
+        const cx = drop.x1 + 16;
+        const cy = drop.rest + 16;
+        if (!drop.sparked) {
+          drop.sparked = true;
+          if (drop.rank >= 1) this.particles.sparks(cx, drop.rest + 28, -Math.PI / 2, 2.4, 4 + drop.rank * 4, css(top), now);
+        }
+        // A legend stands in a column of its own light, dithered at its edges.
+        if (drop.rank >= 3) this.drawColumn(cx, cy, a, rest, drop.ramp);
+        // From epic up, rings of its light go out from it.
+        if (drop.rank >= 2) {
+          this.drawRing(cx, cy, 8 + (a % 0.6) * 40, top, a % 0.6 < 0.3 ? 1 : 2);
+          if (drop.rank >= 3) this.drawRing(cx, cy, 8 + ((a + 0.3) % 0.6) * 40, drop.ramp[Math.max(0, drop.ramp.length - 2)], 2);
+        }
+        const bounce = a < 0.18 ? -Math.round(Math.sin((Math.PI * a) / 0.18) * 4) : 0;
+        ctx.drawImage(sprite(FADE_STEPS), drop.x1, drop.rest + bounce);
+      } else {
+        const q = (t - DROP_FALL_SECONDS - rest) / DROP_FLY_SECONDS;
+        if (q >= 1) {
+          this.drops.splice(index, 1);
+          continue;
+        }
+        // To the pack, faster and faster; it goes by eighths over the last of the way.
+        const target = drop.target ?? { x: drop.x1 + 16, y: -40 };
+        const e = q * q;
+        const x = Math.round(drop.x1 + (target.x - 16 - drop.x1) * e);
+        const y = Math.round(drop.rest + (target.y - 16 - drop.rest) * e - Math.sin(Math.PI * q) * 20);
+        ctx.drawImage(sprite(fadeStep(Math.min(1, (1 - q) / 0.3))), x, y);
+      }
+    }
+  }
+
+  /** A ring of solid pixels one wide around (cx, cy), every other one past its first moment; each drawn once. */
+  private drawRing(cx: number, cy: number, radius: number, pal: Pal, dither: 1 | 2) {
+    const r = Math.round(radius);
+    const surface = dropCache.get(`drop-ring:${r}:${pal}:${dither}`, () => {
+      const size = 2 * r + 3;
+      const pixels = createPixels(size, size);
+      const c = r + 1;
+      for (let y = 0; y < size; y += 1) {
+        for (let x = 0; x < size; x += 1) {
+          if (Math.abs(Math.hypot(x - c, y - c) - r) > 0.55) continue;
+          if (dither === 2 && (x + y) % 2 !== 0) continue;
+          setPixel(pixels, x, y, pal);
+        }
+      }
+      return toSurface(pixels);
+    });
+    this.ctx.drawImage(surface, Math.round(cx) - r - 1, Math.round(cy) - r - 1);
+  }
+
+  /** A column of light up from a legend on the road: white at its heart, its rarity around, dithered at the edge, narrowing as it ends; each width drawn once. */
+  private drawColumn(cx: number, cy: number, age: number, life: number, ramp: readonly Pal[]) {
+    const half = Math.round(Math.max(0, 6 * (1 - Math.max(0, age - life * 0.6) / (life * 0.4))));
+    if (half < 1) return;
+    const height = Math.max(1, Math.round(cy));
+    const top = ramp.length - 1;
+    const surface = dropCache.get(`drop-column:${half}:${height}:${ramp[top]}`, () => {
+      const pixels = createPixels(2 * half + 1, height);
+      for (let x = 0; x <= 2 * half; x += 1) {
+        const d = Math.abs(x - half) / half;
+        for (let y = 0; y < height; y += 1) {
+          // Thinner toward the sky, in the ordered pattern.
+          if (bayer(x, y) > 0.35 + 0.65 * (y / height) * (1 - d * 0.6)) continue;
+          setPixel(pixels, x, y, d < 0.3 ? C.moon : d < 0.65 ? ramp[top] : ramp[Math.max(0, top - 1)]);
+        }
+      }
+      return toSurface(pixels);
+    });
+    this.ctx.drawImage(surface, Math.round(cx) - half, 0);
+  }
+
   /** The held monster comes apart now (its beat is over, or another falls). */
   private release(now: number) {
     const dying = this.dying;
@@ -582,6 +733,7 @@ export class ArenaRenderer {
       (this.flash !== null && now < this.flash.until) ||
       (this.knock !== null && now < this.knock.until) ||
       this.dying !== null ||
+      this.drops.length > 0 ||
       (this.monster !== null && now - this.monster.spawnedAt < SPAWN_SECONDS) ||
       (this.seam !== null && this.seam.closing !== null) ||
       (this.walker !== null && (this.walker.leaving !== null || now - this.walker.at < WALKER_FADE_SECONDS))
@@ -775,6 +927,7 @@ export class ArenaRenderer {
     this.drawSeam(now);
     this.drawWalker(now);
     this.drawMonster(now);
+    this.drawDrops(now);
     this.drawFrame(now);
     this.drawLanterns(now);
     for (let index = this.shots.length - 1; index >= 0; index -= 1) {

@@ -220,7 +220,7 @@ describe("relic density", () => {
   it("refuses a relic from a stratum deeper than the walker ever went", () => {
     const { engine, now } = honestGame(6);
     const honest = structuredClone(engine.state);
-    honest.equipment.weapon = generateItem(seededRng(2), honest.maxStageEver, { slot: "weapon" });
+    honest.equipment.weapon = generateItem(seededRng(2), honest.maxStageEver, { slot: "weapon", rarity: "mythic" });
     honest.lifetime.itemsFound += 1;
     expect(verifyState(honest, now)).toEqual([]);
     // The same relic claimed from the last stratum would multiply damage by its density.

@@ -8,7 +8,7 @@ import { LEGACY_RECOGNITION_TIERS, recognitionTierByRuns } from "./data/lore";
 import { NAMED_BY_ID } from "./data/relics";
 import { crystalEssenceReward } from "./formulas";
 import { emptyFates } from "./fates";
-import { generateItem } from "./loot";
+import { generateItem, rememberRelic } from "./loot";
 import { seededRng } from "./rng";
 import { ALTAR_REWORK_NOTICE, HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 import { pow as dPow } from "./dmath";
@@ -88,6 +88,9 @@ export function migrateState(raw: unknown): unknown {
   merged.fates = { ...emptyFates(), ...(typeof input.fates === "object" && input.fates !== null ? input.fates : {}) };
   // Version 16 takes back the Harvest, the Dawn and the Morning of versions 14 and 15.
   if (version < 16) forgetTheMorning(merged);
+  // Version 17 lets relics remember (traits, the companion who carried them): every relic an
+  // older save holds remembers now, drawn from the relic alone, the same on every device.
+  if (version < 17) rememberRelics(merged);
   merged.version = SAVE_VERSION;
   return merged;
 }
@@ -140,6 +143,25 @@ function forgetTheMorning(merged: Record<string, unknown>) {
   }
   merged.named = named;
   merged.inventory = inventory;
+}
+
+/**
+ * Relics of a save older than version 17: each rare or better remembers its traits, and each
+ * legendary or mythic the companion who carried it, drawn from its own id (`rememberRelic`).
+ */
+function rememberRelics(merged: Record<string, unknown>) {
+  const lifetime = merged.lifetime as Record<string, unknown>;
+  const bestHired = typeof lifetime.bestHired === "number" && Number.isFinite(lifetime.bestHired) ? lifetime.bestHired : 0;
+  const remember = (item: unknown) => {
+    if (!item || typeof item !== "object") return item;
+    const relic = item as Item;
+    if (typeof relic.uid !== "string" || typeof relic.slot !== "string" || typeof relic.rarity !== "string" || relic.traits || relic.memory) return item;
+    return rememberRelic({ ...relic }, seededRng(hashOf(relic.uid)), bestHired);
+  };
+  if (Array.isArray(merged.inventory)) merged.inventory = merged.inventory.map(remember);
+  if (merged.equipment && typeof merged.equipment === "object") {
+    merged.equipment = Object.fromEntries(Object.entries(merged.equipment as Record<string, unknown>).map(([slot, item]) => [slot, remember(item)]));
+  }
 }
 
 /** A string's 32-bit FNV-1a hash. */

@@ -12,6 +12,7 @@ import {
   caravanIconSource,
   creatureSource,
   crystalSource,
+  satchelSource,
   emblemSource,
   marketIconSource,
   portraitSource,
@@ -42,7 +43,8 @@ export type ArtSpec =
   | { kind: "power"; id: SkillId }
   | { kind: "market"; id: MarketOfferId }
   | { kind: "ware"; id: CaravanWareId }
-  | { kind: "crystal" };
+  | { kind: "crystal" }
+  | { kind: "satchel" };
 
 export function artSource(spec: ArtSpec): PixelSource {
   switch (spec.kind) {
@@ -74,6 +76,8 @@ export function artSource(spec: ArtSpec): PixelSource {
       return caravanIconSource(spec.id);
     case "crystal":
       return crystalSource();
+    case "satchel":
+      return satchelSource();
   }
 }
 
