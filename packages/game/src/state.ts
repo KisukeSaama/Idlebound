@@ -1,7 +1,7 @@
 import { emptyFates } from "./fates";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 /**
@@ -73,6 +73,8 @@ export function createInitialState(now = Date.now()): GameState {
     achievements: [],
     equipment: {},
     inventory: [],
+    satchel: [],
+    drought: 0,
     crystal: null,
     nextCrystalAt: now + 75_000,
     run: emptyStats(),
@@ -88,7 +90,8 @@ export function createInitialState(now = Date.now()): GameState {
       buyMode: 1,
       offlineSpending: true,
       darkNight: false,
-      colorblind: false
+      colorblind: false,
+      salvageOnArrival: "none"
     },
     // A new game never needs the notice of the altar rework (save version 4).
     tutorial: { done: [ALTAR_REWORK_NOTICE] },

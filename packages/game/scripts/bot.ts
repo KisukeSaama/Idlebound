@@ -2,12 +2,12 @@
 import { ALTAR_BY_ID } from "../src/data/altars";
 import { WEAVES, weaveCost, type WeaveId } from "../src/data/descent";
 import { CLICK_HERO_ID, HERO_BY_ID, HEROES } from "../src/data/heroes";
-import { relicDensity } from "../src/data/items";
+import { awakenDepth, relicDepth } from "../src/data/traits";
 import { RECOGNITION_HEROES } from "../src/data/lore";
 import { PROMISE_BY_HERO, promiseHolds, promiseOf, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
-import { ESSENCE_DPS_BONUS, altarPrice, damageAt, derive, deriveAt, deriveBase, heroCost, heroCostMultiplier, milestoneMultiplier, promiseWhen, type DeriveBase } from "../src/formulas";
+import { ESSENCE_DPS_BONUS, altarPrice, awakenPrice, damageAt, relicCompanyGain, derive, deriveAt, deriveBase, heroCost, heroCostMultiplier, milestoneMultiplier, promiseWhen, type DeriveBase } from "../src/formulas";
 import { runBits } from "../src/scale";
 import type { AltarId, Derived, GameState, Item } from "../src/types";
 
@@ -151,9 +151,33 @@ const DECIDE_STEPS = Math.round(0.5 / DT);
 const CREEP_STAGES = 3;
 const CREEP_SPANS = 2;
 
-/** What a relic is worth to the bot: its main stat, times its density. */
-function relicWorth(item: Item): number {
-  return (1 + item.affixes[0].value) * relicDensity(item);
+/** Seconds of play between two full weighings of the relics held (the company changes slowly). */
+const RELIC_WEIGH_SECONDS = 120;
+
+/**
+ * The bot's relics: what each is worth to the company (`relicCompanyGain`), weighed again as
+ * the company grows; it wears the best of each slot.
+ */
+function relicKeeper() {
+  const worth = new Map<string, number>();
+  let weighedAt = -Infinity;
+  const weighWith = (engine: GameEngine, now: number) => {
+    const s = engine.state;
+    if (now - weighedAt > RELIC_WEIGH_SECONDS * 1000) {
+      worth.clear();
+      weighedAt = now;
+    }
+    const weigh = (item: Item) => {
+      let value = worth.get(item.uid);
+      if (value === undefined) {
+        value = relicCompanyGain(s, item, now);
+        worth.set(item.uid, value);
+      }
+      return value;
+    };
+    return weigh;
+  };
+  return Object.assign(weighWith, { forget: () => worth.clear() });
 }
 
 function bestHeroPurchase(engine: GameEngine, company: DeriveBase, clicksPerSecond: number, fast = false) {
@@ -205,6 +229,8 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
   let clickDebt = 0;
   let step = 0;
   const endAt = start + seconds * 1000;
+  const relics = relicKeeper();
+  let wornBefore = "";
 
   while (now < endAt) {
     now += DT * 1000;
@@ -238,15 +264,27 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       for (const skill of SKILLS) if (isSkillUnlocked(s, skill.id) && skill.id !== "echo") engine.perform({ type: "skill", id: skill.id }, now);
       // Having promised never to be pushed back, the bot only leads the company into a seam it holds.
       if (!s.autoAdvance && (now - lastProgressAt) % 120_000 < DT * 1000 * DECIDE_STEPS && (!promiseOf(s, "unfailing") || engine.canBeatNextBoss(now))) engine.perform({ type: "auto" }, now);
-      if (s.shards >= 30 && s.inventory.length < 40) engine.perform({ type: "offer", id: "chest" }, now);
+      // The satchel the company kept while the walker was away: opened at once.
+      if (s.satchel.length > 0) engine.perform({ type: "openSatchel" }, now);
+      // What a relic is worth changes with the others worn (places, the Host) and with awakenings.
+      const worn = () => Object.values(s.equipment).map((item) => `${item?.uid}:${item?.depth ?? ""}`).join();
+      if (worn() !== wornBefore) relics.forget();
+      const weigh = relics(engine, now);
       for (const item of [...s.inventory]) {
         const equipped = s.equipment[item.slot];
         // Morgrath's Phylactery halves the click: only a walker who lets go of the sword wears it.
         if (item.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) continue;
         if (equipped?.named === "phylactery" && clicksPerSecond > 0 && options.idleFromStage === undefined) { engine.perform({ type: "equip", uid: item.uid }, now); continue; }
-        if (!equipped || relicWorth(item) > relicWorth(equipped)) engine.perform({ type: "equip", uid: item.uid }, now);
+        if (!equipped || weigh(item) > weigh(equipped)) engine.perform({ type: "equip", uid: item.uid }, now);
       }
+      // Brom brings the worn relics down to the deepest night, the cheapest first, with half the shards held at most.
+      const sleepers = Object.values(s.equipment).filter((item) => item !== undefined && awakenDepth(item, s.maxStageEver) > relicDepth(item));
+      for (const item of sleepers.sort((a, b) => awakenPrice(s, a) - awakenPrice(s, b))) {
+        if (awakenPrice(s, item) <= s.shards / 2) engine.perform({ type: "awaken", uid: item.uid }, now);
+      }
+      if (s.shards >= 30 && s.inventory.length < 40) engine.perform({ type: "offer", id: "chest" }, now);
       engine.perform({ type: "salvageUpTo", rarity: "rare" }, now);
+      wornBefore = worn();
     }
 
     if (s.maxStage > lastMaxStage) {

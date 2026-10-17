@@ -4,6 +4,8 @@ import {
   CHRONICLE_SOURCES,
   CLICK_HERO_ID,
   MARKET_OFFERS,
+  awakenDepth,
+  relicDepth,
   ageForEra,
   ageName,
   canDescend,
@@ -43,16 +45,18 @@ export type RevealId =
   | "shards"
   | "essences"
   | "buyModes"
-  | "autoSpend";
+  | "autoSpend"
+  | "traits"
+  | "awaken";
 
 /** Elements whose first appearance gets a toast; the others only glow as they arrive. */
-export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan", "promise", "altars2", "altars3"];
+export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan", "promise", "altars2", "altars3", "traits", "awaken"];
 
 /**
  * Elements that arrived after walkers were already past their threshold: a game loaded past
  * it is told once too, instead of finding them unannounced.
  */
-export const ANNOUNCED_AT_LOAD: readonly RevealId[] = ["promise"];
+export const ANNOUNCED_AT_LOAD: readonly RevealId[] = ["promise", "traits", "awaken"];
 
 /** Id kept in `state.tutorial.done` once an element was announced (short: the list holds 50). */
 export function revealMark(id: RevealId): string {
@@ -79,6 +83,7 @@ export function reveals(state: GameState): Reveals {
   const shards = life.shardsEarned > 0 || state.shards > 0;
   const reborn = life.ascensions > 0 || state.descents > 0;
   const map = state.maxStageEver >= 2 || announced("map");
+  const held = [...Object.values(state.equipment), ...state.inventory].filter((item) => item !== undefined);
   return {
     map,
     gear: hadGear || announced("gear"),
@@ -102,7 +107,11 @@ export function reveals(state: GameState): Reveals {
     shards,
     essences: state.essences > 0 || reborn,
     buyModes: life.bestLevelSum >= 10 || state.settings.buyMode !== 1 || reborn,
-    autoSpend: companionHired || life.bestHired >= 2 || !state.settings.offlineSpending || reborn
+    autoSpend: companionHired || life.bestHired >= 2 || !state.settings.offlineSpending || reborn,
+    // What relics remember: from the first one that keeps a trait.
+    traits: held.some((item) => (item.traits?.length ?? 0) > 0) || announced("traits"),
+    // Brom's awakening: from the first relic a deeper night can take.
+    awaken: held.some((item) => awakenDepth(item, state.maxStageEver) > relicDepth(item)) || announced("awaken")
   };
 }
 

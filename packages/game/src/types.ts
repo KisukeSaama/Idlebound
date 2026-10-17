@@ -105,6 +105,12 @@ export interface Item {
   locked?: boolean;
   /** Id of a named relic (`data/relics.ts`): its name, legend and unique effect. */
   named?: string;
+  /** What the relic remembers doing (`data/traits.ts`): one trait from rare up, two for a mythic. */
+  traits?: string[];
+  /** The companion who carried it (legendary and mythic): their damage, multiplied while it is worn. */
+  memory?: string;
+  /** The stage it was awakened at (Brom, at the forge): its density, never its place. */
+  depth?: number;
 }
 
 /** A creature of the road. Its look is the art recipe of the same id (`data/art/`). */
@@ -219,6 +225,8 @@ export interface Settings {
   darkNight: boolean;
   /** Colors that eyes blind to red and green still tell apart (rarities, gains and losses). */
   colorblind: boolean;
+  /** Relics found at this rarity or below are salvaged as they arrive (never a named relic). */
+  salvageOnArrival: "none" | "common" | "rare";
 }
 
 export interface TutorialState {
@@ -334,6 +342,10 @@ export interface GameState {
 
   equipment: Partial<Record<ItemSlot, Item>>;
   inventory: Item[];
+  /** The company's satchel: relics the guardians left while the walker was away, kept to be opened. */
+  satchel: Item[];
+  /** Relics dropped on the road since the last epic or better (the road owes one past `DROUGHT_DROPS`). */
+  drought: number;
 
   crystal: Crystal | null;
   nextCrystalAt: number;
@@ -447,6 +459,8 @@ export type GameEvent =
   | { type: "crystalSpawned" }
   | { type: "ascended"; essences: number }
   | { type: "inventoryFull"; item: Item; shards: number }
+  /** A relic brought down to the walker's deepest night. */
+  | { type: "awakened"; item: Item }
   | { type: "hourglass"; kills: number }
   /** A Bestiary entry unlocked its `tier`-th line. */
   | { type: "bestiary"; id: string; tier: number }

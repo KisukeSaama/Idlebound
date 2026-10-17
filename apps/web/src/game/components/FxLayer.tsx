@@ -1,6 +1,6 @@
 "use client";
 
-import { HERO_BY_ID } from "@idlebound/game";
+import { HERO_BY_ID, type Item } from "@idlebound/game";
 import { useEffect, useRef, type RefObject } from "react";
 import { currentMessages } from "@/i18n/client";
 import { useMagnitude, useStoreRef } from "../context";
@@ -162,6 +162,13 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
 
     /** Where the gold motes of a kill fly: the gold counter of the header. */
     const goldCounter = () => sceneCenter(document.querySelector(".resource-gold"));
+    /** Where a relic found on the road flies: the pack of the rail (hidden on small screens: up and away). */
+    const pack = () => sceneCenter(document.querySelector('.nav-button[data-window="inventory"]'));
+    /**
+     * Relics told in this batch of events, waiting for their kill: the engine tells a relic just
+     * before the kill that left it. A chest's or a gift's has no kill after it, and is forgotten.
+     */
+    let found: Item[] = [];
 
     const unsubscribe = store.onFx((event) => {
       const settings = store.state.settings;
@@ -188,9 +195,15 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
         spawn("fx-damage companions", fmtRef.current(event.damage), Math.min(size.width - 60, Math.max(60, x)), y, 1000, currentMessages().hud.fx.companions);
       } else if (event.type === "kill") {
         renderer.current?.kill(goldCounter());
+        for (const item of found) renderer.current?.relic(item, pack());
+        found = [];
         const { x, y } = center();
         spawn(`fx-gold ${event.monster.kind === "treasure" ? "treasure" : ""}`, `+${fmtRef.current(event.gold)}`, x, y + 40, 1100);
         if (event.shards > 0) spawn("fx-shards", currentMessages().hud.fx.shards(event.shards), x + 50, y + 10, 1300);
+      } else if (event.type === "loot") {
+        // A relic from a kill falls on the road; one from a chest or a gift does not.
+        if (found.length === 0) queueMicrotask(() => (found = []));
+        found.push(event.item);
       } else if (event.type === "rout") {
         // A whole stage comes apart at once: its gold rises, and the road says why.
         const { x, y } = center();

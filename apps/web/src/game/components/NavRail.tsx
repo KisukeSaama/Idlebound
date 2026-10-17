@@ -48,6 +48,7 @@ export function NavRail({ active }: { active: WindowId | null }) {
             key={id}
             type="button"
             className={`nav-button ${active === id ? "active" : ""}${reveal ? freshClass(reveal) : ""}`}
+            data-window={id}
             onClick={() => ui.openWindow(id)}
             aria-label={title.label}
             title={id === "hall" ? `${t.hud.nav.hallTitle(title.label, unlockedRatio)}${unread > 0 ? ` · ${t.hud.nav.unread(unread)}` : ""}` : title.label}

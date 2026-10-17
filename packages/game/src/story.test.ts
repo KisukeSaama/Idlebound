@@ -20,6 +20,7 @@ import {
   recognitionTier
 } from "./data/lore";
 import { NAMED_RELICS } from "./data/relics";
+import { PLACE_BONUS } from "./data/traits";
 import { ERA_COUNT, MILESTONES, keystonesFound } from "./data/strata";
 import { GameEngine, STEP_MS, canDescend, descentPreview } from "./engine";
 import { scaleBits } from "./scale";
@@ -721,7 +722,8 @@ describe("named relics", () => {
     state.equipment = { amulet: locket, ring, weapon: blade };
     expect(skillCooldownMultiplier(state)).toBeCloseTo(0.4);
     expect(wandererSkip(state)).toBe(105);
-    expect(derive(state, T0).kingDamage).toBeCloseTo(2);
+    // Oathcutter doubles it, and three relics of the Keep (stage 100) worn together add their half.
+    expect(derive(state, T0).kingDamage).toBeCloseTo(2 * PLACE_BONUS.keep[0]);
   });
 });
 
@@ -741,16 +743,20 @@ describe("save version 8", () => {
     delete legacy.weaves;
     delete legacy.descentMark;
     delete legacy.caravanWeek;
+    // The deeds of the Chronicle's fragments came with version 8.
+    legacy.achievements = (legacy.achievements as string[]).filter((id) => !id.startsWith("fragments-"));
     const lore = legacy.lore as { echoes: object; nightSeconds: number };
     legacy.lore = { echoes: lore.echoes, nightSeconds: lore.nightSeconds, read: 3 };
-    legacy.trail = { wanderers: [], fieldKills: 0 };
+    // Wanderers met this run stay met (once a run, whatever the save's version).
+    const wanderers = (legacy.trail as { wanderers: string[] }).wanderers;
+    legacy.trail = { wanderers, fieldKills: 0 };
     delete (legacy.settings as Record<string, unknown>).darkNight;
     delete (legacy.settings as Record<string, unknown>).colorblind;
     // A setting since removed (the ambient drone) is dropped, not refused.
     (legacy.settings as Record<string, unknown>).ambience = 0.5;
     const migrated = parseState(JSON.parse(JSON.stringify(legacy)));
     expect(migrated.version).toBe(SAVE_VERSION);
-    expect(migrated.trail).toEqual(emptyTrail());
+    expect(migrated.trail).toEqual({ ...emptyTrail(), wanderers });
     expect(migrated.settings).not.toHaveProperty("ambience");
     expect(migrated.settings.colorblind).toBe(false);
     expect(migrated.descents).toBe(0);

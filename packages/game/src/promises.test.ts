@@ -4,6 +4,7 @@ import { chronicleEntries } from "./chronicle";
 import { chronicleText, gameText, promiseText } from "./content";
 import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
 import { HERO_BY_ID } from "./data/heroes";
+import { SLOTS } from "./data/items";
 import { RECOGNITION_HEROES, RECOGNITION_TIERS, promisesAwaited, recognitionNeeds, recognitionRuns, recognitionTier } from "./data/lore";
 import { PROMISES, PROMISE_BY_HERO, PROMISE_DOUBLINGS, hireBarred, promiseDepth, promiseHolds, promisesKept, promisesOpen, standingPromise } from "./data/promises";
 import { GameEngine, canDescend, nextRecruit } from "./engine";
@@ -598,6 +599,8 @@ describe("the Promise: the night it shapes", () => {
   it("asks Oriane's night to go deeper than the last, and Lysandre's to see two Kings fall", () => {
     const state = walker();
     state.ascensions = [{ at: T0 + 3600_000, maxStage: 80, essences: 100 }];
+    // Every slot already worn: a relic the King leaves goes to the pack and leaves the pace alone.
+    for (const slot of SLOTS) state.equipment[slot] = generateItem(seededRng(SLOTS.indexOf(slot)), 1, { slot, rarity: "common" });
     state.maxStage = 70;
     state.stage = 70;
     const engine = duskWith("oriane", state);

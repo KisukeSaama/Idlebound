@@ -7,6 +7,7 @@ import type { AffixStat, AltarId, ItemSlot, Rarity, SkillId } from "../types";
 import type { MarketOfferId } from "../data/market";
 import type { BestiaryPage, SecretId } from "../data/lore";
 import type { NamedEffect } from "../data/relics";
+import type { PlaceId, TraitId } from "../data/traits";
 import type { MilestoneId } from "../data/strata";
 
 /** How an item base noun agrees with its adjectives (only French needs it). */
@@ -137,6 +138,10 @@ export interface GameText {
   relics: Record<string, { name: string; legend: string }>;
   /** The unique effect of a named relic. */
   namedEffects: Record<NamedEffect["kind"], (pct: number) => string>;
+  /** What relics remember: their traits, who carried them, where they come from. */
+  relicTraits: RelicsText["traits"];
+  relicMemory: RelicsText["memory"];
+  relicPlaces: RelicsText["places"];
   /** Secrets: the deed's name, its riddle while hidden, and the line found with it. */
   secrets: Record<SecretId, { name: string; riddle: string; line: LoreLine }>;
   events: Record<EventId, EventText>;
@@ -161,6 +166,15 @@ export interface GameText {
   cutscenes: Record<CutsceneId, CutsceneText>;
   /** Names of the voices that speak without a line of their own: the King, the Stallkeeper, Célestine. */
   speakers: { king: string; stallkeeper: string; ledger: string };
+}
+
+/** What relics remember (BIBLE 11): each trait's name and effect at a value, the memory, the places worn together. */
+export interface RelicsText {
+  traits: Record<TraitId, { name: string; effect: (value: number) => string }>;
+  /** A legendary's or a mythic's memory: the companion who carried it, and their damage multiplier while it is worn. */
+  memory: (hero: string, mult: number) => string;
+  /** A place's relics worn together: the name of the set, and its effect at two and at four. */
+  places: Record<PlaceId, { name: string; two: (value: number) => string; four: (value: number) => string }>;
 }
 
 /** The places of the road and beyond: biome descriptions, echoes, wanderers, special places. */

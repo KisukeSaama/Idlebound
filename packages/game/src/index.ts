@@ -28,6 +28,7 @@ export * from "./data/market";
 export * from "./data/lore";
 export * from "./data/promises";
 export * from "./data/relics";
+export * from "./data/traits";
 export * from "./data/descent";
 export * from "./data/caravan";
 export * from "./data/cutscenes";

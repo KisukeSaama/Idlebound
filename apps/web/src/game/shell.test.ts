@@ -64,7 +64,8 @@ describe("progressive interface", () => {
 
   it("keeps its marks short and few (the save holds 50 tutorial ids of 40 characters)", () => {
     for (const id of ANNOUNCED) expect(revealMark(id).length).toBeLessThanOrEqual(40);
-    expect(ANNOUNCED.length).toBeLessThanOrEqual(10);
+    // With the hints (8), the notices (2) and the Ledger's scenes (15), well under 50.
+    expect(ANNOUNCED.length).toBeLessThanOrEqual(12);
   });
 
   it("wakes the Sanctum's stones in three times, each told once", () => {

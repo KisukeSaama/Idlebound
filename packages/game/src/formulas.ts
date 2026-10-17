@@ -1,13 +1,14 @@
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTAR_BY_ID, altarCost, altarEffect } from "./data/altars";
-import { isBossStage } from "./data/biomes";
+import { isBossStage, isKingStage } from "./data/biomes";
 import { WEAVE_BY_ID, type WeaveId } from "./data/descent";
-import { REMEMBRANCE_FRAGMENTS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WALKER_DPS, remembranceNight } from "./data/events";
+import { REMEMBRANCE_FRAGMENTS, STORM_ODDS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WALKER_DPS, remembranceNight } from "./data/events";
 import { CLICK_HERO_ID, HERO_BY_ID, HEROES, UPGRADE_BY_ID } from "./data/heroes";
-import { EQUIPMENT_CAP, FORGE_STEP, forgeCost, relicDensity } from "./data/items";
+import { EQUIPMENT_CAP, FORGE_STEP, depthScale, forgeCost, relicDensity } from "./data/items";
 import { RECOGNITION_DPS, RECOGNITION_HEROES, bestiaryGoldBonus, recognitionTier } from "./data/lore";
 import { PROMISE_BY_HERO, promiseAtDusk, promiseDepth, promiseDoublings, promiseGrantable, promiseOf } from "./data/promises";
 import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia, wornItems } from "./data/relics";
+import { MEMORY_MULT, PLACE_SPOILS, PLACE_TREASURE, awakenCost, placeBonus, placeCount, wornTrait } from "./data/traits";
 import { DEEP_FROM, lnStageHp } from "./curve";
 import { fromLog, runBits } from "./scale";
 import type { AffixStat, AltarId, BuffId, Derived, GameState, HeroDef, Item } from "./types";
@@ -91,7 +92,67 @@ export function bossHp(stage: number, bits = 0): number {
  * best stage ever, against a company that would unmake one of them in a blink.
  */
 export function routs(state: GameState, stage: number, d: Derived): boolean {
-  return !isBossStage(stage) && stage < state.maxStageEver && stageHp(stage, runBits(state)) <= (d.dps + d.click * d.autoClicksPerSecond) * ROUT_SECONDS;
+  return !isBossStage(stage) && stage < state.maxStageEver && stageHp(stage, runBits(state)) <= (d.dps + d.click * d.autoClicksPerSecond) * routSeconds(state);
+}
+
+/** The Rout's blink: longer with a weapon that remembers routs (the trait Rout). */
+export function routSeconds(state: GameState, worn = wornItems(state)): number {
+  return Math.max(ROUT_SECONDS, wornTrait(worn, "rout"));
+}
+
+/** Relics the company's satchel holds, before the trait Satchel. */
+export const SATCHEL_SIZE = 6;
+/** Relics the company's satchel holds for this walker. */
+export function satchelSize(state: GameState, worn = wornItems(state)): number {
+  return SATCHEL_SIZE + wornTrait(worn, "satchel");
+}
+
+/** A guardian's and an elite's chance to leave a relic, before the trait Spoils and the Deepvaults. */
+export const GUARDIAN_RELIC_CHANCE = 0.4;
+export const ELITE_RELIC_CHANCE = 0.15;
+/** Chance a guardian (or an elite) of the frontier leaves a relic: the trait Spoils and four relics of the Deepvaults add to it, to an elite's half as much. */
+export function relicChance(state: GameState, guardian: boolean, worn = wornItems(state)): number {
+  const added = wornTrait(worn, "spoils") + (placeCount(worn, "deepvaults") >= 4 ? PLACE_SPOILS : 0);
+  return Math.min(1, guardian ? GUARDIAN_RELIC_CHANCE + added : ELITE_RELIC_CHANCE + added / 2);
+}
+
+/** Shards of a guardian, multiplied: the trait Skyglass and the relics of the Deepvaults. */
+export function guardianShardMultiplier(state: GameState, worn = wornItems(state)): number {
+  return wornTrait(worn, "skyglass", 1) * placeBonus(worn, "deepvaults");
+}
+
+/** Shards a guardian of this stage leaves. */
+export function guardianShardsAt(state: GameState, stage: number, worn = wornItems(state)): number {
+  return Math.floor((1 + Math.floor(stage / 25)) * guardianShardMultiplier(state, worn)) + namedEffect(state, "guardianShards", worn);
+}
+
+/** Luck of legendaries and mythics on the road (the trait Star): guardians, elites, Seams and the satchel. */
+export function roadLuck(state: GameState, worn = wornItems(state)): number {
+  return wornTrait(worn, "star", 1);
+}
+
+/**
+ * Share of its HP a guardian or an elite keeps of its wounds: the present night's (up to stage
+ * 44), or, deeper, what the trait Scars holds. The King always heals whole.
+ */
+export function woundCapAt(state: GameState, stage: number, worn = wornItems(state)): number {
+  return woundCapWith(stage, wornTrait(worn, "scars"));
+}
+
+/** The share of its wounds a boss of `stage` keeps against armor of Old Scars worth `scars` (0 without). */
+export function woundCapWith(stage: number, scars: number): number {
+  if (isKingStage(stage)) return 0;
+  return stage <= WOUND_LAST_STAGE ? Math.max(WOUND_CAP, scars) : scars;
+}
+
+/** Chance a wandering crystal is a Crystal Storm (the trait Storm). */
+export function stormChance(state: GameState, worn = wornItems(state)): number {
+  return Math.max(1 / STORM_ODDS, wornTrait(worn, "storm"));
+}
+
+/** The Reunion's company damage (the trait Homecoming). */
+export function reunionDps(state: GameState, worn = wornItems(state)): number {
+  return Math.max(REUNION_DPS, wornTrait(worn, "homecoming"));
 }
 
 /**
@@ -267,7 +328,7 @@ export function essencesForStage(highestCleared: number): number {
 
 export function affixValue(item: Item, stat: AffixStat): number {
   const base = item.affixes.filter((affix) => affix.stat === stat).reduce((total, affix) => total + affix.value, 0);
-  return base * (1 + item.forge * FORGE_STEP);
+  return base * (1 + item.forge * FORGE_STEP) * depthScale(item);
 }
 
 /** The total bonus of the worn relics, before `EQUIPMENT_CAP`. */
@@ -294,15 +355,17 @@ export function equipmentDensity(state: GameState, worn = wornItems(state)): num
 
 /**
  * What a relic is worth to the company as it stands: how many times its damage is multiplied
- * with the relic worn in its slot rather than the slot left empty. Its DPS affix (forged),
- * its density and a named effect on the company's rhythm all count; gold, strikes and damage
- * to guardians are not damage of the company and stay out of it.
+ * with the relic worn in its slot rather than the slot left empty. Its DPS affix (forged and
+ * awakened), its density, its traits and the companion it remembers, the places it completes
+ * with the others worn and a named effect on the company's rhythm all count; gold, strikes and
+ * damage to guardians are not damage of the company and stay out of it.
  */
 export function relicCompanyGain(state: GameState, item: Item, now: number): number {
   const { [item.slot]: _worn, ...others } = state.equipment;
-  const bare = derive({ ...state, equipment: others }, now, { ignoreTimed: true }).dpsMultiplier;
-  const worn = derive({ ...state, equipment: { ...others, [item.slot]: item } }, now, { ignoreTimed: true }).dpsMultiplier;
-  return bare > 0 ? worn / bare : 1;
+  const bare = derive({ ...state, equipment: others }, now, { ignoreTimed: true });
+  const worn = derive({ ...state, equipment: { ...others, [item.slot]: item } }, now, { ignoreTimed: true });
+  if (bare.dps > 0) return worn.dps / bare.dps;
+  return bare.dpsMultiplier > 0 ? worn.dpsMultiplier / bare.dpsMultiplier : 1;
 }
 
 export function achievementBonus(state: GameState): number {
@@ -372,6 +435,8 @@ export function deriveBase(state: GameState, now: number, options: DeriveOptions
     if (tier >= 5) factors.push(1 + RECOGNITION_DPS);
     // Every word kept to a companion doubles their damage for good (the Promise).
     factors.push(dPow(2, promiseDoublings(state, hero.id)));
+    // A relic that remembers who carried it: that companion fights harder while it is worn.
+    for (const item of worn) if (item.memory === hero.id) factors.push(MEMORY_MULT[item.rarity]);
     heroFactors.push(factors);
   }
 
@@ -394,7 +459,12 @@ export function deriveBase(state: GameState, now: number, options: DeriveOptions
   }
 
   // The Briar Mantle, Quietus and Morgrath's Phylactery deepen the company's rhythm.
-  const idleBonus = (altarValue(state, "patience") + idleDps) * (1 + namedEffect(state, "idleBonus", worn)) * (1 + namedEffect(state, "phylactery", worn));
+  // So do a weapon that remembers its rhythm (Rhythm) and the relics of the Wychwood worn together.
+  const idleBonus = (altarValue(state, "patience") + idleDps) * (1 + namedEffect(state, "idleBonus", worn)) * (1 + namedEffect(state, "phylactery", worn))
+    * wornTrait(worn, "rhythm", 1) * placeBonus(worn, "wychwood");
+  // A weapon that remembers the host it led (Host): more for every companion in the company.
+  const host = wornTrait(worn, "host");
+  const hired = host > 0 ? HEROES.reduce((count, hero) => count + (hero.id !== CLICK_HERO_ID && (state.heroLevels[hero.id] ?? 0) > 0 ? 1 : 0), 0) : 0;
   const achievements = achievementBonus(state);
   let dpsMultiplier = globalDps
     * (1 + achievements)
@@ -402,6 +472,8 @@ export function deriveBase(state: GameState, now: number, options: DeriveOptions
     * (1 + altarValue(state, "might"))
     * (1 + equipmentBonus(state, "dps", worn))
     * equipmentDensity(state, worn)
+    * wornTrait(worn, "vanguard", 1)
+    * (1 + host * hired)
     * (1 + state.ritualStacks * 0.05);
   if (timed) {
     if (skillActive(state, "rally", now)) dpsMultiplier *= 2;
@@ -409,7 +481,7 @@ export function deriveBase(state: GameState, now: number, options: DeriveOptions
     if (buffActive(state, "overcharge", now)) dpsMultiplier *= 7;
     // Another walker's echo fights beside the company for a while.
     if (buffActive(state, "walker", now)) dpsMultiplier *= WALKER_DPS;
-    if (buffActive(state, "reunion", now)) dpsMultiplier *= REUNION_DPS;
+    if (buffActive(state, "reunion", now)) dpsMultiplier *= reunionDps(state, worn);
     // Dawnbreak, while a Seam is open.
     if (state.monster?.event === "seam") dpsMultiplier *= 1 + namedEffect(state, "seamDps", worn);
   }
@@ -420,14 +492,16 @@ export function deriveBase(state: GameState, now: number, options: DeriveOptions
   // The Seed of the Old Grove grows with every companion who remembers; the Phylactery takes half.
   const seed = namedEffect(state, "clickPerRemembered", worn);
   const remembered = RECOGNITION_HEROES.filter((hero) => (Object.hasOwn(HERO_BY_ID, hero) ? tiers[HERO_BY_ID[hero].index] : recognitionTier(state, hero)) >= 5).length;
-  const relicClick = (1 + Math.min(GROVE_SEED_MAX, seed * remembered)) * (1 - namedEffect(state, "phylactery", worn));
+  // An amulet that remembers the walker's hand (Edge) sharpens the whole strike.
+  const relicClick = (1 + Math.min(GROVE_SEED_MAX, seed * remembered)) * (1 - namedEffect(state, "phylactery", worn)) * wornTrait(worn, "edge", 1);
 
   critChance += altarValue(state, "precision") + equipmentBonus(state, "critChance", worn);
   if (timed && skillActive(state, "hawkeye", now)) critChance += 0.5;
 
   const critMultiplier = (BASE_CRIT_MULTIPLIER + critAdd) * (1 + altarValue(state, "fate") + equipmentBonus(state, "critDamage", worn));
 
-  let goldMultiplier = (1 + goldPct) * (1 + altarValue(state, "fortune")) * (1 + equipmentBonus(state, "gold", worn)) * (1 + bestiaryGoldBonus(state)) * (1 + namedEffect(state, "mirelle", worn));
+  let goldMultiplier = (1 + goldPct) * (1 + altarValue(state, "fortune")) * (1 + equipmentBonus(state, "gold", worn)) * (1 + bestiaryGoldBonus(state)) * (1 + namedEffect(state, "mirelle", worn))
+    * relicGoldMultiplier(worn);
   if (timed && skillActive(state, "goldrain", now)) goldMultiplier *= 3;
   if (timed && buffActive(state, "fortune", now)) goldMultiplier *= 2;
 
@@ -457,21 +531,21 @@ export function deriveBase(state: GameState, now: number, options: DeriveOptions
       critMultiplier,
       goldMultiplier,
       // Thorvald's bet (his promise): every seam open for a share of its time.
-      bossTimer: (bossTimer + altarValue(state, "time") + namedEffect(state, "bossTimer", worn)) * (promiseOf(state, "seam")?.share ?? 1),
+      bossTimer: (bossTimer + altarValue(state, "time") + namedEffect(state, "bossTimer", worn) + wornTrait(worn, "bulwark") + placeBonus(worn, "mire", 0)) * (promiseOf(state, "seam")?.share ?? 1),
       // The Scales of Aurelion bite deeper into elites and guardians.
       bossDamage: (1 + equipmentBonus(state, "bossDamage", worn)) * (1 + namedEffect(state, "bossDamage", worn)),
       guardianGold: 1 + namedEffect(state, "guardianGold", worn),
-      treasureChance: Math.min(MAX_TREASURE_CHANCE, (treasure + altarValue(state, "treasure") + namedEffect(state, "treasure", worn)) * cheese),
+      treasureChance: Math.min(MAX_TREASURE_CHANCE, (treasure + altarValue(state, "treasure") + namedEffect(state, "treasure", worn) + relicTreasure(worn)) * cheese),
       dpsMultiplier: dpsMultiplier * (1 + idleBonus),
       essenceMultiplier: (1 + altarValue(state, "harvest")) * (1 + equipmentBonus(state, "essence", worn)) * dPow(1 + WEAVE_BY_ID.plenty.valuePerLevel, weaveLevel(state, "plenty")),
       idleBonus,
       clickDpsShare: clickDps,
       autoClicksPerSecond,
-      kingDamage: (1 + namedEffect(state, "kingDamage", worn)) * (1 + regalia),
+      kingDamage: (1 + namedEffect(state, "kingDamage", worn)) * (1 + regalia) * wornTrait(worn, "regicide", 1) * placeBonus(worn, "keep"),
       baronDamage: wearing(state, "mirelle-ring", worn) ? 1 + MIRELLE_BARON_DAMAGE : 1,
       crystalStay: Math.max(13, namedEffect(state, "crystalStay", worn)),
       // The Lantern calls them every 45 to 90 s instead of 90 to 240 s; the Lodestone and the Loom sooner still.
-      crystalWait: (lantern ? LANTERN_CRYSTAL_WAIT : 1) * (1 - namedEffect(state, "crystalSooner", worn)) * (1 - weaveValue(state, "humming-loom")),
+      crystalWait: (lantern ? LANTERN_CRYSTAL_WAIT : 1) * (1 - namedEffect(state, "crystalSooner", worn)) * (1 - weaveValue(state, "humming-loom")) * (1 - wornTrait(worn, "attention")),
       fragmentChance: fragmentMultiplier(state, now)
     }
   };
@@ -592,9 +666,9 @@ export function memoryStartGold(level: number, bits = 0): number {
 
 export const OFFLINE_CAP_SECONDS = OFFLINE_BASE_CAP_HOURS * 3600;
 
-/** A single catch-up's cap for this walker: the Long Thread adds an hour per level. */
+/** A single catch-up's cap for this walker: the Long Thread adds an hour per level, a ring that remembers watching (Vigil) its hours. */
 export function offlineCapSeconds(state: GameState): number {
-  return (OFFLINE_BASE_CAP_HOURS + weaveValue(state, "long-thread")) * 3600;
+  return (OFFLINE_BASE_CAP_HOURS + weaveValue(state, "long-thread") + wornTrait(wornItems(state), "vigil")) * 3600;
 }
 
 /** Shards the forge asks for the next level of an item (the Unfinished Hammer lowers it). */
@@ -602,7 +676,22 @@ export function forgePrice(state: GameState, item: Item): number {
   return Math.ceil(forgeCost(item.rarity, item.forge) * (1 - namedEffect(state, "forgeDiscount")));
 }
 
-/** Power cooldowns: the Altar of Echoes and Eldra's Locket, never below 40% of the base. */
+/** Power cooldowns: the Altar of Echoes, Eldra's Locket and the trait Breath, never below 40% of the base. */
 export function skillCooldownMultiplier(state: GameState): number {
-  return Math.max(COOLDOWN_FLOOR, 1 - altarValue(state, "echoes") - namedEffect(state, "cooldown"));
+  return Math.max(COOLDOWN_FLOOR, 1 - altarValue(state, "echoes") - namedEffect(state, "cooldown") - wornTrait(wornItems(state), "breath"));
+}
+
+/** Shards awakening a relic asks now (the Unfinished Hammer lowers it, as at the forge). */
+export function awakenPrice(state: GameState, item: Item): number {
+  return Math.ceil(awakenCost(item, state.maxStageEver) * (1 - namedEffect(state, "forgeDiscount")));
+}
+
+/** Gold, multiplied by the relics worn: a ring that remembers fortune, the relics of the Hearthfields. */
+export function relicGoldMultiplier(worn: readonly Item[]): number {
+  return wornTrait(worn, "fortune", 1) * placeBonus(worn, "hearthfields");
+}
+
+/** Golden rat chance the relics worn add: an amulet that remembers Pip, four relics of the Hearthfields. */
+export function relicTreasure(worn: readonly Item[]): number {
+  return wornTrait(worn, "pip") + (placeCount(worn, "hearthfields") >= 4 ? PLACE_TREASURE : 0);
 }

@@ -8,6 +8,7 @@ import { PROMISES_TEXT } from "./story/promises";
 import { PLACES_TEXT } from "./story/places";
 import { STRATA_TEXT } from "./story/strata";
 import { SYSTEMS_TEXT } from "./story/systems";
+import { RELICS_TEXT } from "./story/relics";
 import { VOICES_TEXT } from "./story/voices";
 import { roman } from "./roman";
 import type { GameText } from "./types";
@@ -333,6 +334,9 @@ export const en: GameText = {
   promises: PROMISES_TEXT.en,
   relics: SYSTEMS_TEXT.en.relics,
   namedEffects: SYSTEMS_TEXT.en.namedEffects,
+  relicTraits: RELICS_TEXT.en.traits,
+  relicMemory: RELICS_TEXT.en.memory,
+  relicPlaces: RELICS_TEXT.en.places,
   secrets: SYSTEMS_TEXT.en.secrets,
   events: SYSTEMS_TEXT.en.events,
 

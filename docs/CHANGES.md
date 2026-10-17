@@ -16,6 +16,53 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+### New
+
+- Relics remember. From epic up, a relic keeps a trait of its slot, one effect while worn
+  (two for a mythic): 19 in all. The weapon: Vanguard (companion damage), the Host (more for
+  every companion in the company), Rout (a stage already walked falls at once sooner), Steady
+  Rhythm (Patience bonus). The armor: Bulwark (seconds to beat elites and guardians), Old
+  Scars (wounds kept at any depth, never the King), Spoils (more relics from guardians),
+  Skyglass (more shards), Regicide (damage to the King). The amulet: Attention (crystals
+  sooner), Second Breath (powers recharge faster), Keen Edge (strike damage), Pip's Friend
+  (golden rats), Storm Caller (more Crystal Storms). The ring: Fortune (gold), Homecoming (a
+  stronger Reunion), Lucky Star (legendaries and mythics more likely on the road), Deep
+  Satchel, Vigil (a longer absence lived).
+- A legendary or a mythic remembers the companion who carried it: that companion deals ×1.5
+  (legendary) or ×2 (mythic) damage while it is worn.
+- Sets: every relic comes from the place it dropped in (its name says it). Two relics of one
+  place worn together wake a set, four a stronger one: the Plains (gold), the Grove
+  (Patience bonus), the Depths (shards, and relics at four), the Mire (seconds against
+  elites and guardians), the Crown (damage to the King).
+- Awakening, at the forge: Brom brings a relic down to your deepest night, in the same
+  place. It keeps everything it remembers and takes the density of that depth, for shards
+  per stratum. A relic you love is never too old.
+- The company's satchel: while you are away, the guardians and elites the company passes
+  leave their relics as when you are there. The company keeps up to 6 in its satchel and
+  hands it to you at the Reunion. Open it: the relics come out one by one, hidden until you
+  touch them, the rarest last, its light already leaking under the flap.
+- Relics fall on the road: a relic found on a guardian, an elite or a Seam is thrown out of
+  it, falls in front of you, shines for its rarity (rings from epic up, a column of light
+  for a legend) and flies to your pack.
+- The first fall of the King in your walk leaves an epic relic or better.
+- The road owes you a story: after 12 relics of the road without an epic or better, the
+  next one is.
+- Salvage on arrival, in the pack: commons, or commons and rares, turn into shards as they
+  arrive (never a named relic, never into an empty slot).
+
+### Balance
+
+- Density depends on rarity: per stratum below the present night, ×1.02 for a common,
+  ×1.024 rare, ×1.027 epic, ×1.03 legendary, ×1.032 mythic. Before: ×1.03 for every relic.
+- Rare relics have no trait: from epic up, they do.
+- Below the Dawn, a relic's density stops at the sixtieth stratum: an object remembered
+  deeper weighs what one of the First Mark weighs. Before, it kept growing ×1.03 a stratum.
+
+### Fixes
+
+- A guardian replayed below the furthest stage no longer keeps wounds from a failed fight,
+  and wounds left behind on the road heal once the company passes them.
+
 ## v1.2.3
 
 ### Fixes

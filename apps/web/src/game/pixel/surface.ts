@@ -52,6 +52,8 @@ export function lru(limit: number): Lru {
 export const spriteCache = lru(32);
 /** The arena's effects: the Seam's steps, the lantern garlands, the Eclipse's ring. */
 export const effectCache = lru(24);
+/** A relic on the road: its veiled steps, its rings at every radius, its column at every width. */
+export const dropCache = lru(96);
 /**
  * The interface's pixel art (portraits, emblems, relics, icons, the crystal): small and
  * many, kept apart so opening the Bag never evicts a creature sheet.

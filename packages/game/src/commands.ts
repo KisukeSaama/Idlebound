@@ -31,6 +31,8 @@ export type Command =
   | { type: "salvageUpTo"; rarity: Rarity }
   | { type: "lock"; uid: string }
   | { type: "forge"; slot: ItemSlot }
+  | { type: "awaken"; uid: string }
+  | { type: "openSatchel" }
   | { type: "market" }
   | { type: "offer"; id: MarketOfferId }
   | { type: "caravan" }
@@ -53,7 +55,7 @@ export type CommandType = Command["type"];
 
 /** The settings a walker changes from the page: what the server lets a command touch. */
 const SETTING_KEYS: readonly (keyof Settings)[] = [
-  "notation", "sound", "volume", "damageNumbers", "reducedMotion", "confirmAscension", "buyMode", "offlineSpending", "darkNight", "colorblind"
+  "notation", "sound", "volume", "damageNumbers", "reducedMotion", "confirmAscension", "buyMode", "offlineSpending", "darkNight", "colorblind", "salvageOnArrival"
 ];
 
 /** Runs `command` on `engine` at `now` (the time of the last step). Returns what the action returns. */
@@ -82,6 +84,8 @@ export function applyCommand(engine: GameEngine, command: Command, now: number):
     case "salvageUpTo": return engine.salvageUpTo(command.rarity);
     case "lock": return engine.toggleLock(command.uid);
     case "forge": return engine.forge(command.slot, now);
+    case "awaken": return engine.awaken(command.uid, now);
+    case "openSatchel": return engine.openSatchel(now);
     case "market": return engine.visitMarket();
     case "offer": return engine.buyOffer(command.id, now);
     case "caravan": return engine.buyCaravan(now);

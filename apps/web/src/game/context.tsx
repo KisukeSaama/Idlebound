@@ -31,6 +31,8 @@ export interface GameUi {
   playCutscene: (id: CutsceneId) => void;
   /** Buys a chest with `buy` and opens it before the walker's eyes: its relic is shown there, not in a toast. */
   openChest: (chest: ChestId, buy: () => boolean) => boolean;
+  /** Opens the company's satchel before the walker's eyes, relic by relic. */
+  openSatchel: () => void;
   confirm: (options: { title: string; text: string; confirmLabel: string; danger?: boolean }) => Promise<boolean>;
 }
 

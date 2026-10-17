@@ -5172,3 +5172,169 @@ kbd {
   from { opacity: 1; }
   to { opacity: 0; }
 }
+
+/* ------------------------------------------------ what a relic remembers */
+
+/* A trait: its name in the relic's color, then what it does in plain words. */
+.item-affixes li.item-trait {
+  color: var(--text);
+}
+
+.item-affixes li.item-trait strong {
+  color: var(--rarity);
+  font-weight: 750;
+}
+
+/* The companion who carried it. */
+.item-affixes li.item-memory {
+  color: var(--gold-2);
+}
+
+/* Its place, and how many of it are worn. */
+.item-affixes li.item-place {
+  color: var(--faint);
+  font-size: 0.76rem;
+}
+
+.item-affixes li.item-awakened {
+  color: var(--violet-2);
+  font-size: 0.76rem;
+}
+
+.gear-totals .gear-sets-title {
+  margin-top: 12px;
+}
+
+.gear-sets {
+  display: grid;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+}
+
+.gear-sets strong {
+  color: var(--gold-2);
+}
+
+.gear-sets p {
+  margin: 1px 0 0;
+  color: var(--muted);
+}
+
+.gear-totals .set-count {
+  margin-left: 4px;
+  font-size: 0.72rem;
+  color: var(--faint);
+}
+
+/* ------------------------------------------------ the company's satchel */
+
+.satchel-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-color: var(--gold-deep);
+}
+
+.satchel-banner > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.satchel-banner strong {
+  font-family: var(--font-display);
+  color: var(--gold-2);
+}
+
+.satchel-banner p {
+  margin: 2px 0 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .satchel-banner {
+    flex-wrap: wrap;
+  }
+}
+
+.account-satchel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--gold-deep);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+
+.satchel-hint {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  color: var(--gold-2);
+}
+
+/* The relics out of the satchel so far: an empty frame for each still in it, never what it holds. */
+.satchel-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.satchel-thumbs li {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+/* The haul: one column in the middle, whatever the width (the chest's wide layout does not apply). */
+.chest-opening.satchel-summary {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: start;
+}
+
+.chest-opening.satchel-summary .chest-opening-controls {
+  grid-column: 1;
+  grid-row: auto;
+  justify-self: center;
+  width: auto;
+}
+
+.satchel-haul {
+  display: grid;
+  gap: 10px;
+  width: min(420px, 100%);
+  justify-self: center;
+}
+
+.satchel-best {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  color: var(--gold-2);
+}
+
+.satchel-rest {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

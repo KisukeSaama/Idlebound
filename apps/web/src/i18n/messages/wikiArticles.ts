@@ -338,14 +338,14 @@ export const wikiArticles = defineMessages<Articles>({
       ]
     }),
     relics: (f) => ({
-      lead: "Quatre emplacements, cinq raretés, une forge et des éclats pour tout payer : tout ce qu'il faut savoir sur l'équipement.",
+      lead: "Quatre emplacements, cinq raretés, des reliques qui se souviennent, une forge et des éclats pour tout payer : tout ce qu'il faut savoir sur l'équipement.",
       sections: [
         { id: "slots", title: "Les quatre emplacements", blocks: ["Chaque emplacement a une stat principale fixe. Les dégâts contre les boss s'appliquent aux frappes et au DPS des compagnons contre les élites et les gardiens.", { slot: "slots" }] },
         {
           id: "rarities",
           title: "Raretés et bonus",
           blocks: [
-            "Une relique a de 1 à 4 bonus selon sa rareté ; légendaires et mythiques ajoutent un bonus d'essences d'ascension. Sa puissance grandit avec l'étape où elle est tombée.",
+            "Une relique a de 1 à 4 bonus selon sa rareté ; légendaires et mythiques ajoutent un bonus d'essences d'ascension. Sa puissance grandit avec l'étape où elle est tombée. À partir d'épique, elle se souvient aussi d'un **trait** (deux pour une mythique), et une légendaire ou une mythique du **compagnon** qui la portait (voir plus bas).",
             { slot: "rarities" },
             "Les totaux de tes quatre reliques sont plafonnés pour garder l'équilibre :",
             { slot: "caps" }
@@ -355,8 +355,8 @@ export const wikiArticles = defineMessages<Articles>({
           id: "density",
           title: "Densité et « Compagnie ×N »",
           blocks: [
-            "Plus une relique vient d'une strate profonde, plus elle est **dense** : portée, elle multiplie les dégâts de la compagnie (et la part de ta frappe qui en vient) par ×1,03 par strate sous la nuit présente. Quatre reliques de la dernière strate donnent environ ×1 000 ; de la strate 21 (étape 1 000), environ ×11.",
-            "Chaque relique affiche un seul chiffre, **Compagnie ×N** : ce qu'elle multiplie dans les dégâts de ta compagnie par rapport à l'emplacement vide. Le sac compare ce chiffre à la relique portée et trie par lui. L'or, la frappe, les critiques et les dégâts aux gardiens restent listés à part."
+            "Plus une relique vient d'une strate profonde, plus elle est **dense** : portée, elle multiplie les dégâts de la compagnie (et la part de ta frappe qui en vient) à chaque strate sous la nuit présente, d'autant plus que son souvenir est clair : ×1,02 par strate pour une commune, ×1,024 pour une rare, ×1,027 pour une épique, ×1,03 pour une légendaire, ×1,032 pour une mythique, jusqu'à la soixantième strate.",
+            "Chaque relique affiche un seul chiffre, **Compagnie ×N** : ce qu'elle multiplie dans les dégâts de ta compagnie par rapport à l'emplacement vide, traits, mémoire et parures compris. Le sac compare ce chiffre à la relique portée et trie par lui. L'or, la frappe, les critiques et les dégâts aux gardiens restent listés à part."
           ]
         },
         {
@@ -369,9 +369,44 @@ export const wikiArticles = defineMessages<Articles>({
                 "**Élites** : 15 % de chance, et 1 éclat une fois sur trois environ.",
                 "Seul le boss le plus loin de la nuit lâche reliques et éclats : un boss rejoué depuis la carte ne paie que de l'or.",
                 "Les coffres de l'étal, la Brèche, l'Éclipse du roi et les cadeaux des compagnons.",
-                "Une relique tombée va directement dans un emplacement vide."
+                "La première chute du roi de ta marche laisse une relique épique ou mieux.",
+                `La route ne te laisse pas sans histoire : après ${f.drought} reliques de la route sans épique ni mieux, la suivante l'est.`,
+                "Une relique tombée va directement dans un emplacement vide. Sinon, le sac peut **recycler à l'arrivée** les communes, ou les communes et les rares : elles deviennent des éclats sans passer par le sac (jamais une relique nommée)."
               ]
             }
+          ]
+        },
+        {
+          id: "traits",
+          title: "Ce dont elles se souviennent",
+          blocks: [
+            "Une relique épique, légendaire ou mythique se souvient d'un **trait** de son emplacement (deux pour une mythique) : ce qu'elle a fait, et qu'elle refait tant que tu la portes. L'arme porte la force de la compagnie, l'armure tient face aux gardiens, l'amulette donne le rythme de la nuit et de ta main, l'anneau la fortune et l'absence.",
+            { slot: "traits" },
+            "Une légendaire ou une mythique se souvient aussi de **qui la portait** : un compagnon déjà venu dans ta compagnie. Tant que tu la portes, ce compagnon inflige ×1,5 (légendaire) ou ×2 (mythique) dégâts. Une relique qui se souvient de ton compagnon le plus fort vaut de l'or."
+          ]
+        },
+        {
+          id: "sets",
+          title: "Les parures",
+          blocks: [
+            "Chaque relique vient d'un **lieu** : le biome de l'étape où elle est tombée (son nom le dit, « sylvestre », « fangeuse »…). Deux reliques d'un même lieu portées ensemble éveillent une parure ; quatre, une parure plus forte. Le lieu d'une relique ne change jamais, même réveillée.",
+            { slot: "places" }
+          ]
+        },
+        {
+          id: "awaken",
+          title: "Le Réveil",
+          blocks: [
+            "Une relique trouvée tôt n'est pas perdue quand tu descends plus bas : à la forge, Brom la **réveille** à ta nuit la plus profonde, dans le même lieu (la même étape d'une boucle plus profonde). Elle garde ses bonus, ses traits, sa mémoire et sa parure, et prend la densité de cette profondeur ; ses bonus grandissent comme si elle y était tombée.",
+            "Coût, par strate descendue : 20 éclats pour une commune, 60 pour une rare, 160 pour une épique, 500 pour une légendaire, 1 600 pour une mythique (le Marteau inachevé le réduit comme la forge)."
+          ]
+        },
+        {
+          id: "satchel",
+          title: "La besace de la compagnie",
+          blocks: [
+            `Pendant ton absence (page cachée ou jeu fermé), les gardiens et les élites que la compagnie franchit laissent leurs reliques aux chances habituelles. Elle les garde dans sa **besace**, ${f.satchel} au plus (les plus rares d'abord : les autres deviennent des éclats), et te la tend aux Retrouvailles. Ouvre-la : les reliques en sortent une à une, la plus modeste d'abord, la plus rare en dernier.`,
+            "Une besace que tu n'ouvres pas t'attend, dans l'inventaire. Un inventaire plein la fait attendre aussi : rien n'est recyclé sans toi."
           ]
         },
         {
@@ -949,14 +984,14 @@ export const wikiArticles = defineMessages<Articles>({
       ]
     }),
     relics: (f) => ({
-      lead: "Four slots, five rarities, a forge and shards to pay for it all: everything about gear.",
+      lead: "Four slots, five rarities, relics that remember, a forge and shards to pay for it all: everything about gear.",
       sections: [
         { id: "slots", title: "The four slots", blocks: ["Each slot has a fixed main stat. Damage to bosses applies to strikes and to companion DPS against elites and guardians.", { slot: "slots" }] },
         {
           id: "rarities",
           title: "Rarities and bonuses",
           blocks: [
-            "A relic has 1 to 4 bonuses by rarity; legendary and mythic add an ascension essence bonus. Its power grows with the stage it dropped at.",
+            "A relic has 1 to 4 bonuses by rarity; legendary and mythic add an ascension essence bonus. Its power grows with the stage it dropped at. From epic up it also remembers a **trait** (two for a mythic), and a legendary or a mythic the **companion** who carried it (see below).",
             { slot: "rarities" },
             "The totals of your four relics are capped to keep the balance:",
             { slot: "caps" }
@@ -966,8 +1001,8 @@ export const wikiArticles = defineMessages<Articles>({
           id: "density",
           title: "Density and \"Company ×N\"",
           blocks: [
-            "The deeper the stratum a relic comes from, the **denser** it is: worn, it multiplies the company's damage (and your strike's share of it) by ×1.03 per stratum below the present night. Four relics from the last stratum give about ×1,000; from stratum 21 (stage 1,000), about ×11.",
-            "Each relic shows a single figure, **Company ×N**: what it multiplies in your company's damage against the slot left empty. The pack compares it with the relic worn and sorts by it. Gold, strike, crits and damage to guardians stay listed apart."
+            "The deeper the stratum a relic comes from, the **denser** it is: worn, it multiplies the company's damage (and your strike's share of it) for every stratum below the present night, the more so as it is clearly remembered: ×1.02 a stratum for a common, ×1.024 for a rare, ×1.027 for an epic, ×1.03 for a legendary, ×1.032 for a mythic, down to the sixtieth stratum.",
+            "Each relic shows a single figure, **Company ×N**: what it multiplies in your company's damage against the slot left empty, traits, memory and sets included. The pack compares it with the relic worn and sorts by it. Gold, strike, crits and damage to guardians stay listed apart."
           ]
         },
         {
@@ -980,9 +1015,44 @@ export const wikiArticles = defineMessages<Articles>({
                 "**Elites**: 15% chance, and 1 shard about one time in three.",
                 "Only the furthest boss of the night drops relics and shards: a boss replayed from the map pays gold only.",
                 "The stall's chests, the Seam, the King's Eclipse and the companions' gifts.",
-                "A relic dropped goes straight into an empty slot."
+                "The first fall of the King in your walk leaves an epic relic or better.",
+                `The road never leaves you without a story: after ${f.drought} relics of the road without an epic or better, the next one is.`,
+                "A relic dropped goes straight into an empty slot. Otherwise the pack can **salvage on arrival** the commons, or the commons and the rares: they turn into shards without going through the pack (never a named relic)."
               ]
             }
+          ]
+        },
+        {
+          id: "traits",
+          title: "What they remember",
+          blocks: [
+            "An epic, legendary or mythic relic remembers a **trait** of its slot (two for a mythic): what it did, and does again while you wear it. The weapon carries the company's strength, the armor stands against guardians, the amulet sets the rhythm of the night and of your hand, the ring holds fortune and absence.",
+            { slot: "traits" },
+            "A legendary or a mythic also remembers **who carried it**: a companion who once walked in your company. While you wear it, that companion deals ×1.5 (legendary) or ×2 (mythic) damage. A relic that remembers your strongest companion is worth its weight in gold."
+          ]
+        },
+        {
+          id: "sets",
+          title: "Sets",
+          blocks: [
+            "Every relic comes from a **place**: the biome of the stage it dropped at (its name says so, “of the Grove”, “of the Mire”…). Two relics of one place worn together wake a set; four, a stronger one. A relic's place never changes, even awakened.",
+            { slot: "places" }
+          ]
+        },
+        {
+          id: "awaken",
+          title: "Awakening",
+          blocks: [
+            "A relic found early is not lost as you go deeper: at the forge, Brom **awakens** it at your deepest night, in the same place (the same stage of a deeper loop). It keeps its bonuses, traits, memory and set, and takes the density of that depth; its bonuses grow as if it had dropped there.",
+            "Cost, per stratum gone down: 20 shards for a common, 60 for a rare, 160 for an epic, 500 for a legendary, 1,600 for a mythic (the Unfinished Hammer lowers it as at the forge)."
+          ]
+        },
+        {
+          id: "satchel",
+          title: "The company's satchel",
+          blocks: [
+            `While you are away (page hidden or game closed), the guardians and elites the company passes leave their relics at the usual odds. It keeps them in its **satchel**, ${f.satchel} at most (the rarest first: the others turn into shards), and hands it to you at the Reunion. Open it: the relics come out one by one, the humblest first, the rarest last.`,
+            "A satchel you do not open waits for you, in the inventory. A full inventory makes it wait too: nothing is salvaged without you."
           ]
         },
         {

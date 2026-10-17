@@ -1,5 +1,7 @@
 import type { AffixStat, Item, ItemSlot, Rarity } from "../types";
 import { eraForStage } from "./biomes";
+import { ERA_COUNT } from "./strata";
+import { DENSITY_BY_RARITY, relicDepth } from "./traits";
 import { log2 as dLog2, pow as dPow } from "../dmath";
 
 export const SLOTS: ItemSlot[] = ["weapon", "armor", "amulet", "ring"];
@@ -75,6 +77,8 @@ export const EQUIPMENT_CAP: Partial<Record<AffixStat, number>> = {
 };
 
 export const INVENTORY_LIMIT = 48;
+/** Relics of the road without an epic or better, after which the road owes one. */
+export const DROUGHT_DROPS = 12;
 export const FORGE_MAX = 20;
 export const FORGE_STEP = 0.1;
 
@@ -90,17 +94,26 @@ export function levelScale(level: number): number {
 /**
  * Density: older memories are denser, and so are the objects they held. A relic worn
  * multiplies all companion damage (and the strike's share of it) by this much per stratum
- * below the present night it came from. Its stratum is its level's, so it needs no field
- * of its own and the Ledger bounds it with the level (never deeper than the walker went).
+ * below the present night it is remembered in, more for a clearer memory (see
+ * `DENSITY_BY_RARITY`). Its stratum is its depth's (where it dropped, or as deep as it was
+ * awakened), so it needs no field of its own and the Ledger bounds it with the depth.
  */
-export const DENSITY_PER_STRATUM = 0.03;
-
-/** The stratum a relic was remembered in (0: the present night). */
+/**
+ * The stratum a relic is remembered in (0: the present night). Below the Dawn the night is
+ * drawn again from its first stratum: what is remembered there weighs no more than the First
+ * Mark, so density stops at the last of the sixty strata.
+ */
 export function relicStratum(item: Item): number {
-  return eraForStage(item.level);
+  return Math.min(ERA_COUNT - 1, eraForStage(relicDepth(item)));
 }
 
 /** A relic's density: its damage multiplier while worn. */
 export function relicDensity(item: Item): number {
-  return dPow(1 + DENSITY_PER_STRATUM, relicStratum(item));
+  return dPow(1 + DENSITY_BY_RARITY[item.rarity], relicStratum(item));
+}
+
+/** A relic's affixes grow with the depth it is remembered at, as if it had dropped there. */
+export function depthScale(item: Item): number {
+  const depth = relicDepth(item);
+  return depth === item.level ? 1 : levelScale(depth) / levelScale(item.level);
 }

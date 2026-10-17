@@ -7,6 +7,7 @@ import { idleFrames, renderCreature } from "./creature";
 import { renderEvenRat } from "./mask";
 import { CRYSTAL_FRAMES } from "./objects";
 import { hash2, type Pixels } from "./pixels";
+import { satchelIcon } from "./satchel";
 import type { PixelSource } from "./PixelSprite";
 import { structureView } from "./props";
 import { flattenScene, type PlaceId } from "./scene";
@@ -46,6 +47,11 @@ export function emblemSource(heroId: string): PixelSource {
 export function relicSource(item: Pick<Item, "slot" | "base" | "rarity" | "forge" | "named">): PixelSource {
   const base = item.base ?? 0;
   return { key: `relic:${item.slot}:${base}:${item.rarity}:${item.forge}:${item.named ?? ""}`, frames: () => [relicPixels(item.slot, base, item.rarity, item.forge, item.named)] };
+}
+
+/** The company's satchel, closed. */
+export function satchelSource(): PixelSource {
+  return { key: "satchel", frames: () => [stillCache.get("satchel-px", satchelIcon)] };
 }
 
 export function altarIconSource(id: keyof typeof ALTAR_ICONS): PixelSource {
