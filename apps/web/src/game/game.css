@@ -50,8 +50,11 @@ body:has(.game-root) {
 
 /* ====================================================================== header */
 
+/* Three columns, the outer two of one width: the counters stay centered on the whole
+   header, whatever the Ledger's chip says beside them. */
 .game-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr);
   align-items: center;
   gap: 14px;
   padding: 0 12px;
@@ -66,8 +69,11 @@ body:has(.game-root) {
   width: auto;
 }
 
+.game-logo {
+  justify-self: start;
+}
+
 .resource-bar {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,7 +126,7 @@ button.resource:hover .resource-label {
 }
 
 /* Values that change every tick keep a stable width ("6.65Qi" is the longest letter form),
-   so the centered bar does not shift when a digit or a suffix changes. */
+   so the counters after them do not shift when a digit or a suffix changes. */
 .resource-value-fixed {
   display: inline-block;
   min-width: 6.4ch;
@@ -165,6 +171,7 @@ button.resource:hover .resource-label {
   font-weight: 700;
   font-size: 0.92rem;
   max-width: 300px;
+  justify-self: end;
 }
 
 .account-chip:hover {
@@ -2153,7 +2160,42 @@ button.resource:hover .resource-label {
 .gear-slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: var(--relic-card-height);
   gap: 10px;
+}
+
+/* Worn or carried, every relic gets a card of one height, whatever it says: a short relic
+   keeps calm room, a long one scrolls its own lines, and the keys sit on the same floor. */
+.gear-slots,
+.bag-grid {
+  --relic-card-height: 360px;
+}
+
+.gear-slots > .item-card,
+.bag-grid > .item-card {
+  min-height: 0;
+  overflow: hidden;
+  /* The relic's color lights the top of its card, then gives way to the panel. */
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--rarity) 9%, var(--panel-2)), var(--panel-2) 110px);
+}
+
+/* The lines that do not fit fade into the card's floor and scroll inside it. */
+.gear-slots .item-body,
+.bag-grid .item-body {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+}
+
+.gear-slots .item-actions,
+.bag-grid .item-actions {
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
 }
 
 .gear-totals {
@@ -2325,6 +2367,12 @@ button.resource:hover .resource-label {
   display: inline-flex;
 }
 
+.item-body {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
 .item-affixes {
   margin: 0;
   padding: 0;
@@ -2408,14 +2456,19 @@ button.resource:hover .resource-label {
 .bag-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  /* Every row as tall as the tallest relic: salvaging one keeps the next one's buttons under the pointer. */
-  grid-auto-rows: 1fr;
+  grid-auto-rows: var(--relic-card-height);
   gap: 10px;
 }
 
-/* Salvage holds the right edge, whatever the lock button says. */
+/* The bag's keys in one place on every card: equip and lock side by side, salvage under
+   them across the card. Salvaging relic after relic keeps the next one's key under the pointer. */
+.bag-grid .item-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .bag-grid .item-actions .btn-danger {
-  margin-left: auto;
+  grid-column: 1 / -1;
 }
 
 /* ------------------------------------------------ market */
@@ -3923,6 +3976,7 @@ kbd {
     padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
   }
   .game-header {
+    display: flex;
     gap: 8px;
     padding: 0 8px;
   }
@@ -3932,6 +3986,7 @@ kbd {
   /* The purse takes the whole bar: the account lives in the bottom bar, and the strike is
      read on Aldric's row. The chip only comes back to say the Ledger is in trouble. */
   .resource-bar {
+    flex: 1;
     justify-content: flex-start;
     gap: 5px;
   }

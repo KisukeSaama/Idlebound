@@ -56,13 +56,13 @@ export function GameHeader() {
         {shown.essences ? (
           <button type="button" className={`resource resource-essence${freshClass("essences")}`} title={m.essencesTitle} onClick={() => ui.openWindow("ascension")}>
             <EssenceIcon />
-            <span className="resource-value">{fmt(state.essences)}</span>
+            <span className="resource-value resource-value-fixed">{fmt(state.essences)}</span>
           </button>
         ) : null}
         {shown.shards ? (
           <button type="button" className={`resource resource-shard${freshClass("shards")}`} title={m.shardsTitle} onClick={() => ui.openWindow("market")}>
             <ShardIcon />
-            <span className="resource-value">{fmt(state.shards)}</span>
+            <span className="resource-value resource-value-fixed">{fmt(state.shards)}</span>
           </button>
         ) : null}
       </div>

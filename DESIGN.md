@@ -108,8 +108,15 @@ Content colors live with the game data, not in CSS:
   button per view at most. Secondary actions on public pages are underlined links.
 - **Counters** in the game header: fields sunk into the bar (black line, inset shadow): gold
   (largest, Cinzel, a gold thread), DPS, click damage, essences (only once the player has
-  essences or has ascended), shards, then the account chip. Gold, DPS and click keep a fixed
-  minimum width so the header does not jump as numbers grow.
+  essences or has ascended), shards, then the account chip. The counters stay centered on
+  the whole header (logo and account in two columns of one width, so the chip's word never
+  pushes them), and every value keeps a fixed minimum width so the header does not jump as
+  numbers grow.
+- **Relic cards** in the equipment window (worn slots and the bag): one fixed height for
+  every card (360px). The head, the score and the keys keep their place; the lines between
+  them scroll inside the card when a relic says more. The bag's keys sit on a grid (equip and
+  lock side by side, salvage across under them), so salvaging relic after relic keeps the
+  next one's key under the pointer.
 - **Cards** (`.card`): panel background, border, 4px radius, bevel. Item cards, altar
   cards, market offers, achievement tiles.
 - **Item cards** (`.item-tip`, `.skill-tip`, `.talent-tip`): the tooltip of old games, ink
