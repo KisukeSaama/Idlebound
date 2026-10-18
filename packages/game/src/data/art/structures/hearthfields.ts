@@ -14,22 +14,9 @@ export const HEARTHFIELDS_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.3,
     seed: 1101,
     pieces: [
-      // The lean-to over the anvil, on two posts.
-      { beam: [3, 47, 3, 25], width: 2, m: "wood" },
-      { beam: [15, 47, 15, 23], width: 2, m: "wood" },
-      { poly: [0, 25, 18, 19, 19, 22, 1, 28], m: "roof", finish: "thatch", lift: 0.3 },
-      // The smithy: rubble walls, the side turned away in shade, a thatched gable.
-      { block: [16, 23, 25, 24], m: "stone", finish: "rubble" },
-      { block: [41, 25, 7, 22], m: "stone", finish: "rubble", side: "right" },
-      { roof: [12, 8, 38, 16], m: "roof", style: "gable", finish: "thatch" },
-      // The chimney, its cap a course wider, embers above it.
-      { block: [33, 1, 6, 17], m: "stone", finish: "ashlar" },
-      { block: [32, 1, 8, 2], m: "stone", lift: 0.4 },
+      { decor: "brom-forge-painted", at: [0, 46] },
       { decor: "chimney-embers", at: [34, 1] },
-      // The mouth of the forge: a wide arch, the hearth burning deep inside; one window lit.
-      { gap: [19, 30, 14, 17], style: "arch", frame: "stone" },
       { decor: "forge-fire", at: [22, 46] },
-      { gap: [35, 31, 4, 5], style: "window", lit: true, frame: "wood" },
       { decor: "anvil", at: [5, 46], keep: true }
     ]
   },
@@ -41,11 +28,7 @@ export const HEARTHFIELDS_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.3,
     seed: 1102,
     pieces: [
-      { block: [4, 14, 38, 20], m: "wood", finish: "planks" },
-      { roof: [0, 0, 46, 16], m: "roof", style: "gable", finish: "thatch" },
-      { gap: [18, 22, 10, 12], style: "door", frame: "wood" },
-      { gap: [20, 8, 6, 5], style: "window", lit: true },
-      { decor: "haystack", at: [38, 33] }
+      { decor: "hearth-barn-painted", at: [0, 33] }
     ]
   },
   "hearth-chapel": {
@@ -55,18 +38,154 @@ export const HEARTHFIELDS_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.4,
     seed: 1103,
     pieces: [
-      { block: [4, 24, 22, 20], m: "stone", finish: "ashlar" },
-      { roof: [2, 14, 26, 12], m: "roof", style: "gable", finish: "shingle" },
-      { block: [11, 4, 8, 12], m: "stone", finish: "ashlar" },
-      { roof: [10, 0, 10, 6], m: "roof", style: "spire" },
-      { gap: [13, 7, 4, 5], style: "arch" },
-      { gap: [12, 32, 6, 12], style: "door" },
-      { gap: [6, 28, 3, 5], style: "slit" }
+      { decor: "hearth-chapel-painted", at: [0, 43] }
     ]
   }
 };
 
 export const HEARTHFIELDS_DECOR: Record<string, DecorGrid> = {
+  // hearth-chapel, painted then traced.
+  "hearth-chapel-painted": {
+    rows: [
+      ".............ee",
+      "............eeff",
+      "............eeff",
+      "..........aeeeffff",
+      ".........aaaeeefffee",
+      "........aaaaaeefffee",
+      "........aaddddddddcc",
+      ".........addddddcdcb",
+      ".........aaddddcccbb",
+      ".........aaaddddccbb",
+      ".........aaaddddbcbb",
+      ".........aaadddcbcbb",
+      ".........aaaccccbcbb",
+      ".........abaaaaabcbb",
+      ".........abbbbbbbcca",
+      ".........abbaaabbcba",
+      "..........bfffffffb",
+      ".........aafffffffff",
+      ".......ggafffffffffffe",
+      "......ggggeeeefffffffee",
+      ".....gg*gffgeffffffffeee",
+      "....ggggffgggfffeefffffee",
+      "...eggefffgeeeefffffffffee",
+      "..ggeeeegggeeeffeffffeefeee",
+      ".gggggeegggfefefeefffeeeeeeg",
+      "eggggeeedfffffeffffffeeffeegg",
+      ".gffddddddddddddddddddddddffg",
+      "..fdddcccddddddddddddddddddf",
+      "..cccddddccccbbccccccdddddc",
+      "..bbbdddcbbaaaaccbbbccccdcc",
+      "..aaadddcbbaaaaacbbccbbbdcb",
+      "..aaadddcaaabbbbcbbbbbbbbbb",
+      "..baadddccccdddddcccccccbbb",
+      "..ccbbaabbbddddddccccccccbb",
+      "..cbaaaaacbddddddbbbbbcccab",
+      "..cbaaabbcbddddddbccccddcab",
+      "..ccbaabbcbddddddbbbbccccbb",
+      "..bbbbbbbbbddddddcbbbccccbb",
+      "..bbbccddbbddddddccccccccbb",
+      "..bbbaacbbbddddddbbccccccbb",
+      "..bbbbbcbbbddddddccccccccbb",
+      "..cccccdcbbddddddccccccdcbb",
+      "..cdddddcccdddddddcddccddcb",
+      "...ccddccccddddddccccddddc"
+    ],
+    legend: { a: ["stone", 3], b: ["stone", 2], c: ["stone", 1], d: ["stone", 0], e: ["roof", 1], f: ["roof", 0], g: ["roof", 2], "*": "glow" }
+  },
+  // hearth-barn, painted then traced.
+  "hearth-barn-painted": {
+    rows: [
+      "",
+      "......................de",
+      "....................dddeed",
+      "...................dddddddd.........ee",
+      ".................dddddddddddd.......ee",
+      "................dddddddddddddd......eee",
+      "..............ddddddddddddddddde....eee",
+      ".............ddddddeeddddddddddee..feee",
+      "...........dddddddeedddddddddddeeeefeeef",
+      "..........dddddddeeeddddeeddddddeeefffff",
+      ".........ddddddeeeeedeeeeedddddddeefffff",
+      ".......dddddddddddddddeeeeeeedddddeeffff",
+      "......dddddddddddddeeefffeeeeeddddddeffffff",
+      "....ddddddddddddddeeff**ffeeeeddddddeeeffff",
+      "...dddddddeeeeeedeeef****feefeeededdddeeeeff",
+      ".ddddddeeeeeeffeeeeefffffffefffeeeedeeeeeeff",
+      "ddddbbcccccebaaccaaaa****ffaaaaaaaacccccccdde",
+      "dddbbbbbbbbbbbbbbbccaaaaacccaacccbbbbbbbbbcdee",
+      "...bbbbbbbbbbbbbcbbbcccccbbbbcbbbbbbbbbbbbcc",
+      "....bbbbbbbbbbbbccaaaaaaaaccccbbbbbbbbbbbbc",
+      "....bbbbbccbccaaaaaaaaaaaaaaaacccbbbbbbbba",
+      "....bbbcbccccccaaaaaaaaaaaaaaaaccccbbbbbba",
+      "....bbbccccaacaaaaaaaaaaaacccaaacccccbccbb",
+      "....bccbbbbbbccbaccccccccccccacbcbbbbbbbba",
+      "....bccbbbbbbccbaaabbbbbbbbccacbcbbbbbbbca",
+      "....bccbbccbcccbaaabbbbbbbbccacbcbbbcbbbca",
+      "....bccbbccbcccbaabbbbbbbbbbcacbccbbccbbca",
+      "....bccbbbcbcccbaabbbbbbbbbccacbccbbcbbbca",
+      "....bccbbbcbbccbaacbbbbccccccccbccbbcbbbcca",
+      "....bbcbbbbbbccbaacbbbcccccccccbcbbbcbbbceaa",
+      "...cbbbbbbbbbccbcabbbcccccbccccbbbbbbbbeeedde",
+      "...cbbbbbbbbbbcbcabbbbcccbbcccbbbbbbbbbeedddff",
+      "...cbbbbbcbbbbccccbbbbbbbbbcccccbbbbbbdeeddddf",
+      "....bbbbbccbbbbbcccbcccccccbbbcbbbbbbbddddddd"
+    ],
+    legend: { a: ["wood", 2], b: ["wood", 0], c: ["wood", 1], d: ["roof", 0], e: ["roof", 1], f: ["roof", 2], "*": "glow" }
+  },
+  // brom-forge, painted then traced.
+  "brom-forge-painted": {
+    rows: [
+      "...................................hh",
+      ".................................iihhhh",
+      "................................jihhhhhg",
+      "................................jjjjjjjg",
+      "................................jggjjjj",
+      "................................hhhjggg",
+      "................................ghhgggi",
+      "................................ghhgggi",
+      "..............................deeiigihi",
+      ".............................ddeeihhihi",
+      "............................ddeeehhhhii",
+      "..........................dddeeeehhghhi",
+      ".........................dddeeeeehhgiii",
+      "........................ddeeeddeehhgiii",
+      ".......................dddeeeeeeeiihhhhh",
+      ".....................ddddddeddddeehhgghee",
+      "....................ddddddddddddeehhhhheed",
+      "...................ffffdddddddddddedeeeeedd",
+      ".................ffddddeefdfddffeeedeeeddeed",
+      "...............dfffffffffffffffffddddddeeeedd",
+      "............ffddfffffffffffffdffffdddffedddddd",
+      ".........dffdddffffffffffffffdffffdddfffdfddddd",
+      ".....fffddffffddffddddfffffdddddddddddffdfddddee",
+      "...fffffffddfaaajjjjjjjjjjjjjjjjjgjjjjjjjeeeeeeee",
+      ".ffffffffeeeeaaajjjjjjjjjjjjjjjjjgjjjjjjjjjjjjj",
+      "eefffdddeeee...ajjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj",
+      "eeaaeeeee......ajjjjjjjjjjjjjjgjjjjjgjgggggjjji",
+      ".ebaae.........ajjjgggggihhhhhgggghggjjgghhhgii",
+      "..bcaa.........aajjghhggiihihhhiighiicggghhhggi",
+      "..ccaa.........aajghhhiiiihiihiihhgccccggihhggi",
+      "...aaa.........ahgghhhiijjjjjjiihhcccccciiihhhi",
+      "...aaa.........ahggghhhjjjjjjjjihicbbbbbiigggii",
+      "...aaa.........ahggghhjjjjjjjjjjiicccccbhggggii",
+      "...aaa.........ahghihjjjjjjjjjjjgibb*bbbhhhihii",
+      "...cca.........ahghiijjjjjjjjjjjgibb*bbbihiihhi",
+      "...ccc.........ahhhhhjjjjjjjgjjjjiibbbbiihhiggh",
+      "...ccc.........chhhhigjjjjgigjjjhighhhggjiihghh",
+      "...ccc.........chghhigjjjjgiiijjhigjjjjjjhhhhgi",
+      "...cac....aa...hhgghhgjgggiiiigjhigjghhhhhghggi",
+      "...cac....aa...chhhiihjgggi*iiggiihhgiiihgggggh",
+      "...cac...aaaa.achhghihgggiio*hhgiihgghhhgghhggh",
+      "...caa.ccaaaaaaaggghihggii*i**hgiihgghhgggghggg",
+      "...caaaaaaaaaaaaggghiigjhhhiiiigiihgghhgjgggjgh",
+      "...aaaaaaaaaaaaaggjgiijjjhhhjjjjiiggghjjjgjjjjh",
+      "...aaa..aaaaa..ajgjgggjjjjjjjjjjgggjjjjjggjjjjhh",
+      "...aaa..aaaaaa.ajjjjjihhhhjjjhhhgjjjjjjjjgggggghh"
+    ],
+    legend: { a: ["wood", 0], b: ["wood", 2], c: ["wood", 1], d: ["roof", 1], e: ["roof", 0], f: ["roof", 2], g: ["stone", 1], h: ["stone", 2], i: ["stone", 3], j: ["stone", 0], "*": "glow", o: "core" }
+  },
   // The forge's hearth: flames standing out of the coals under a hood of stone, breathing.
   "forge-fire": {
     rows: ["..*..*..", ".*c**c*.", "*cccccc*"],

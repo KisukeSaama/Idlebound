@@ -1,6 +1,51 @@
 import type { ItemSlot } from "../../types";
+import { SPLINTER_OF_SKY } from "./grids/relics/splinter-of-sky";
+import { BRIAR_MANTLE } from "./grids/relics/briar-mantle";
+import { ASH_VESTMENT } from "./grids/relics/ash-vestment";
+import { MANTLE_OF_THE_LAST_COURT } from "./grids/relics/mantle-of-the-last-court";
+import { GROVE_SEED } from "./grids/relics/grove-seed";
+import { PHYLACTERY } from "./grids/relics/phylactery";
+import { LAST_DECREE } from "./grids/relics/last-decree";
+import { SIGNET_OF_ORVANE } from "./grids/relics/signet-of-orvane";
+import { RAT_RING } from "./grids/relics/rat-ring";
+import { LODESTONE_BAND } from "./grids/relics/lodestone-band";
+import { MIRELLE_RING } from "./grids/relics/mirelle-ring";
+import { STALLKEEPER_BAND } from "./grids/relics/stallkeeper-band";
+import { SECOND_MORNING } from "./grids/relics/second-morning";
+import { OATHCUTTER } from "./grids/relics/oathcutter";
+import { MOSSHIDE } from "./grids/relics/mosshide";
+import { SINGING_STONE } from "./grids/relics/singing-stone";
+import { THOUSANDTH_ARROW } from "./grids/relics/thousandth-arrow";
+import { QUIETUS } from "./grids/relics/quietus";
+import { UNFINISHED_HAMMER } from "./grids/relics/unfinished-hammer";
+import { DAWNBREAK } from "./grids/relics/dawnbreak";
+import { HOLLOW_PLATE } from "./grids/relics/hollow-plate";
+import { AURELION_SCALES } from "./grids/relics/aurelion-scales";
+import { ELDRA_LOCKET } from "./grids/relics/eldra-locket";
+import { ORIANE_EAR } from "./grids/relics/oriane-ear";
+import { CROWN } from "./grids/relics/crown";
+import { BLADE_GRIDS } from "./grids/relics/bases/blade";
+import { AXE_GRIDS } from "./grids/relics/bases/axe";
+import { SWORD_GRIDS } from "./grids/relics/bases/sword";
+import { HAMMER_GRIDS } from "./grids/relics/bases/hammer";
+import { BOW_GRIDS } from "./grids/relics/bases/bow";
+import { SPEAR_GRIDS } from "./grids/relics/bases/spear";
+import { SCYTHE_GRIDS } from "./grids/relics/bases/scythe";
+import { CUIRASS_GRIDS } from "./grids/relics/bases/cuirass";
+import { HAUBERK_GRIDS } from "./grids/relics/bases/hauberk";
+import { CLOAK_GRIDS } from "./grids/relics/bases/cloak";
+import { PLATE_GRIDS } from "./grids/relics/bases/plate";
+import { BRIGANDINE_GRIDS } from "./grids/relics/bases/brigandine";
+import { AMULET_GRIDS } from "./grids/relics/bases/amulet";
+import { TALISMAN_GRIDS } from "./grids/relics/bases/talisman";
+import { PENDANT_GRIDS } from "./grids/relics/bases/pendant";
+import { MEDALLION_GRIDS } from "./grids/relics/bases/medallion";
+import { RING_GRIDS } from "./grids/relics/bases/ring";
+import { SEAL_GRIDS } from "./grids/relics/bases/seal";
+import { SIGNET_GRIDS } from "./grids/relics/bases/signet";
+import { BAND_GRIDS } from "./grids/relics/bases/band";
 import { C, type Material, type MaterialId } from "./palette";
-import type { Shape, ShapeFlags } from "./types";
+import type { GridInk, Shape, ShapeFlags } from "./types";
 
 /**
  * Relic icons (BIBLE 18.8), drawn at 32 × 32 in the 64-unit design space (2 units a pixel).
@@ -17,8 +62,21 @@ export type RelicPart = Shape & {
   to?: number;
 };
 
+/**
+ * A relic painted then traced, one character per pixel, `.` empty: the legend maps a key to
+ * a step of a material slot (`rarity` and `gem` take the rarity's ramp) or to a fixed color,
+ * glowing when it gives light. Centered on the icon; drawn instead of the parts.
+ */
+export interface RelicGrid {
+  rows: readonly string[];
+  legend: Readonly<Record<string, GridInk>>;
+}
+
 export interface RelicRecipe {
   parts: readonly RelicPart[];
+  grid?: RelicGrid;
+  /** A base painted then traced once per rarity, common to mythic: drawn instead of the parts. */
+  grids?: readonly RelicGrid[];
   /** Where the forge's runes are engraved: x1, y1, x2, y2 in design units. */
   runes: readonly [number, number, number, number];
 }
@@ -129,6 +187,7 @@ const line = (t1: number, t2: number, s = 0): [number, number, number, number] =
 
 /** A short single-edged blade that grows into a great cleaver. */
 const blade: RelicRecipe = {
+  grids: BLADE_GRIDS,
   runes: line(20, 40, -1),
   parts: [
     // Common: a plain seax, a wooden grip, no guard, two chips and a spot of rust.
@@ -187,6 +246,7 @@ const blade: RelicRecipe = {
 
 /** A woodsman's axe that grows into a crescent double-bit. */
 const axe: RelicRecipe = {
+  grids: AXE_GRIDS,
   runes: line(8, 44),
   parts: [
     // Common: a plain haft, a small iron wedge, a chip and rust.
@@ -242,6 +302,7 @@ const axe: RelicRecipe = {
 
 /** A soldier's sword that grows into a Sky-Glass blade. */
 const sword: RelicRecipe = {
+  grids: SWORD_GRIDS,
   runes: line(22, 50, -2.2),
   parts: [
     // Common: a plain blade, a straight iron bar, a leather grip, a chip in the edge.
@@ -295,6 +356,7 @@ const sword: RelicRecipe = {
 
 /** A mallet that grows into a war hammer, then a great maul. */
 const hammer: RelicRecipe = {
+  grids: HAMMER_GRIDS,
   runes: line(8, 40),
   parts: [
     // Common: a plain haft and a square iron head, dented, rusted.
@@ -350,6 +412,7 @@ const hammer: RelicRecipe = {
 
 /** A stick bow that grows into a great recurve, an arrow on its string. */
 const bow: RelicRecipe = {
+  grids: BOW_GRIDS,
   runes: [36, 20, 36, 44],
   parts: [
     // Common: a bent stick and a string.
@@ -422,6 +485,7 @@ const bow: RelicRecipe = {
 
 /** A shepherd's pike that grows into a winged partisan. */
 const spear: RelicRecipe = {
+  grids: SPEAR_GRIDS,
   runes: line(14, 44),
   parts: [
     // Common: a long plain shaft, a small leaf of iron tied on with cord.
@@ -475,6 +539,7 @@ const spear: RelicRecipe = {
 
 /** A field scythe that grows into a great reaper's crescent. */
 const scythe: RelicRecipe = {
+  grids: SCYTHE_GRIDS,
   runes: [22, 58, 34, 14],
   parts: [
     // Common: a plain snath, a small rusted blade.
@@ -527,6 +592,7 @@ const scythe: RelicRecipe = {
 
 /** Boiled leather that grows into a breastplate of Sky-Glass. */
 const cuirass: RelicRecipe = {
+  grids: CUIRASS_GRIDS,
   runes: [32, 22, 32, 50],
   parts: [
     // Common: boiled leather, a seam down the middle, a scratch, plain straps.
@@ -586,6 +652,7 @@ const cuirass: RelicRecipe = {
 
 /** A short shirt of iron rings that grows into a long coat of glass links. */
 const hauberk: RelicRecipe = {
+  grids: HAUBERK_GRIDS,
   runes: [32, 24, 32, 48],
   parts: [
     // Common: a short mail shirt, short sleeves, a ragged hem.
@@ -632,6 +699,7 @@ const hauberk: RelicRecipe = {
 
 /** A sack thrown over the shoulders that grows into a cloak of night. */
 const cloak: RelicRecipe = {
+  grids: CLOAK_GRIDS,
   runes: [32, 22, 32, 52],
   parts: [
     // Common: sackcloth, a torn hem, a wooden toggle.
@@ -684,6 +752,7 @@ const cloak: RelicRecipe = {
 
 /** A dented iron shell that grows into a knight's full plate. */
 const plate: RelicRecipe = {
+  grids: PLATE_GRIDS,
   runes: [32, 20, 32, 42],
   parts: [
     // Common: plain iron, small round shoulders, a dent.
@@ -746,6 +815,7 @@ const plate: RelicRecipe = {
 
 /** A studded jerkin that grows into a coat whose rivets are stars. */
 const brigandine: RelicRecipe = {
+  grids: BRIGANDINE_GRIDS,
   runes: [22, 24, 22, 48],
   parts: [
     // Common: sackcloth, a few iron rivets, a sagging hem.
@@ -794,6 +864,7 @@ const brigandine: RelicRecipe = {
 
 /** A disc on a cord that grows into an orb of living light. */
 const amulet: RelicRecipe = {
+  grids: AMULET_GRIDS,
   runes: [19, 12, 28, 32],
   parts: [
     // Common: a leather cord, a plain iron disc with a hole.
@@ -832,6 +903,7 @@ const amulet: RelicRecipe = {
 
 /** A carved bone on a cord that grows into a talisman of Sky-Glass. */
 const talisman: RelicRecipe = {
+  grids: TALISMAN_GRIDS,
   runes: [32, 34, 32, 52],
   parts: [
     // Common: a cord, a plain bone token, one notch.
@@ -874,6 +946,7 @@ const talisman: RelicRecipe = {
 
 /** A stone drop on a cord that grows into a tear of pure light. */
 const pendant: RelicRecipe = {
+  grids: PENDANT_GRIDS,
   runes: [19, 12, 29, 30],
   parts: [
     // Common: a cord, a plain grey drop of stone.
@@ -914,6 +987,7 @@ const pendant: RelicRecipe = {
 
 /** A stamped iron disc that grows into a sun, then a star of light. */
 const medallion: RelicRecipe = {
+  grids: MEDALLION_GRIDS,
   runes: [22, 44, 42, 44],
   parts: [
     // Common: a cord, a plain iron disc, a cross stamped in it.
@@ -953,6 +1027,7 @@ const medallion: RelicRecipe = {
 
 /** An iron band that grows into a ring of glass holding a star. */
 const ring: RelicRecipe = {
+  grids: RING_GRIDS,
   runes: [20, 50, 44, 50],
   parts: [
     // Common: a plain iron band, a little bent.
@@ -991,6 +1066,7 @@ const ring: RelicRecipe = {
 
 /** An iron ring with a flat face that grows into a crested seal. */
 const seal: RelicRecipe = {
+  grids: SEAL_GRIDS,
   runes: [22, 20, 42, 20],
   parts: [
     // Common: an iron band and a plain square face, scratched.
@@ -1032,6 +1108,7 @@ const seal: RelicRecipe = {
 
 /** A thick iron ring with an oval face that grows into a lord's signet. */
 const signet: RelicRecipe = {
+  grids: SIGNET_GRIDS,
   runes: [22, 24, 42, 24],
   parts: [
     // Common: a thick iron band, a plain oval face.
@@ -1071,6 +1148,7 @@ const signet: RelicRecipe = {
 
 /** A wide iron band that grows into a crown-like band of light. */
 const band: RelicRecipe = {
+  grids: BAND_GRIDS,
   runes: [18, 50, 46, 50],
   parts: [
     // Common: a wide plain band, dented.
@@ -1121,386 +1199,153 @@ export const NAMED_RELIC_SHAPES: Record<string, RelicRecipe> = {
   // A long arrow, fletched in the rarity's color, a notch cut in its shaft for every night.
   "thousandth-arrow": {
     runes: [14, 52, 40, 26],
-    parts: [
-      { c: [8, 58, 50, 16, 1.6, 1.6], m: "grip" },
-      { p: [46, 12, 60, 4, 54, 18], m: "blade" },
-      { p: [8, 58, 4, 46, 14, 50], m: "rarity" },
-      { p: [8, 58, 20, 60, 16, 50], m: "rarity", lift: -1 },
-      { r: [26, 38, 2, 2], m: "notch" },
-      { r: [32, 32, 2, 2], m: "notch" },
-      { e: [53, 11, 2.4, 2.4], m: "gold", glow: true }
-    ]
+    parts: [],
+    grid: THOUSANDTH_ARROW
   },
   // The Alpha's winter coat: a hide, moss growing along its back.
   mosshide: {
     runes: [32, 20, 32, 50],
-    parts: [
-      { p: [16, 8, 48, 8, 58, 30, 52, 58, 40, 50, 32, 60, 24, 50, 12, 58, 6, 30], m: "fur" },
-      { e: [32, 12, 12, 5], m: "moss" },
-      { e: [22, 22, 5, 3], m: "moss", lift: -1 },
-      { e: [44, 26, 4, 3], m: "moss", lift: -1 },
-      { r: [14, 8, 36, 3], m: "rarity" },
-      { e: [32, 10, 3, 3], m: "gold", glow: true }
-    ]
+    parts: [],
+    grid: MOSSHIDE
   },
   // A smith's hammer, its head still glowing from the forge, a new mark on its cheek.
   "unfinished-hammer": {
     runes: [14, 55, 30, 32],
-    parts: [
-      { c: [12, 58, 34, 26, 2.8, 2.6], m: "grip" },
-      { p: [20, 16, 40, 4, 58, 22, 38, 36], m: "blade" },
-      { p: [44, 12, 50, 8, 56, 20, 50, 24], m: "ember", glow: true },
-      { e: [34, 22, 3, 3], m: "rarity", glow: true },
-      { r: [30, 34, 8, 3], m: "gold" }
-    ]
+    parts: [],
+    grid: UNFINISHED_HAMMER
   },
   // Kaelen's sword, snapped on the throne steps: the stump, a splinter, and the point
   // lying apart, still turned up the stairs.
   oathcutter: {
     runes: [24, 40, 38, 27],
-    parts: [
-      { p: [21, 37, 35, 23, 36.5, 27, 39.5, 25.5, 41, 29, 27, 43], m: "blade" },
-      { p: [40, 22, 43, 20, 44, 23], m: "blade", lift: 1 },
-      { p: [45, 16, 57, 4, 61, 2, 59, 7, 48, 20, 47.5, 16.5], m: "blade" },
-      { c: [14, 34, 28, 48, 2.6, 2.6], m: "gold" },
-      { c: [17, 45, 10, 52, 2.4, 2.4], m: "grip" },
-      { e: [8, 55, 3.4, 3.4], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: OATHCUTTER
   },
   // A long scythe of bone, its dark blade clean along the edge: it has never been swung.
   quietus: {
     runes: [22, 54, 33, 18],
-    parts: [
-      { c: [20, 60, 36, 8, 2, 2], m: "bone" },
-      { p: [37, 6, 24, 3, 12, 7, 5, 16, 2, 32, 8, 20, 16, 13, 26, 11, 37, 12], m: "dark" },
-      { c: [3, 29, 8, 20, 1, 1], m: "blade", lift: 1 },
-      { c: [8, 20, 16, 13, 1, 1], m: "blade", lift: 1 },
-      { c: [16, 13, 27, 11, 1, 1], m: "blade", lift: 1 },
-      { r: [22, 40, 8, 4], m: "rarity" },
-      { e: [36, 9, 3, 3], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: QUIETUS
   },
   // A blade cut from the Sky-Glass, stars in it, and deep inside a small warm lamp.
   "splinter-of-sky": {
     runes: [28, 42, 50, 16],
-    parts: [
-      { p: [20, 40, 30, 26, 40, 20, 50, 8, 62, 2, 56, 16, 46, 24, 42, 34, 26, 46], m: "sky" },
-      { c: [25, 42, 58, 5, 0.7, 0.7], m: "glass" },
-      px(23, 7, "star", { glow: true }),
-      px(17, 12, "star", { glow: true }),
-      { e: [41, 25, 2, 2], m: "ember", glow: true },
-      { c: [14, 36, 28, 50, 2.2, 2.2], m: "dark" },
-      { c: [18, 46, 10, 54, 2.4, 2.4], m: "rarity" },
-      { e: [8, 56, 3, 3], m: "glass" }
-    ]
+    parts: [],
+    grid: SPLINTER_OF_SKY
   },
   // A broad blade the color of morning, a small sun for its guard.
   dawnbreak: {
     runes: [25, 39, 52, 12],
-    parts: [
-      { p: [19, 37, 50, 6, 60, 4, 58, 14, 27, 45], m: "dawn" },
-      { c: [26, 38, 53, 11, 0.8, 0.8], m: "dawn", lift: 1 },
-      { c: [13, 33, 31, 51, 2.6, 2.6], m: "gold" },
-      { e: [22, 42, 4, 4], m: "ember", glow: true },
-      { c: [17, 47, 10, 54, 2.4, 2.4], m: "grip" },
-      { e: [8, 57, 3.2, 3.2], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: DAWNBREAK
   },
   // An empty breastplate: through its collar, only the dark it walked here with.
   "hollow-plate": {
     runes: [32, 24, 32, 44],
-    parts: [
-      { e: [32, 14, 15, 6], m: "blade", lift: -1 },
-      { p: [12, 14, 52, 14, 54, 28, 48, 48, 16, 48, 10, 28], m: "blade" },
-      { r: [16, 47, 32, 5], m: "lame" },
-      { r: [18, 52, 28, 5], m: "lame" },
-      { e: [32, 17, 11, 5.5], m: "void" },
-      { e: [10, 25, 3.5, 7], m: "void" },
-      { e: [54, 25, 3.5, 7], m: "void" },
-      { c: [32, 26, 32, 44, 1.2, 1.2], m: "blade", lift: 1 },
-      { r: [16, 38, 32, 4], m: "rarity" }
-    ]
+    parts: [],
+    grid: HOLLOW_PLATE
   },
   // A mantle of green briars, woven across with thorned stems, a rose for its clasp.
   "briar-mantle": {
     runes: [32, 22, 32, 50],
-    parts: [
-      { p: [20, 8, 44, 8, 56, 54, 50, 50, 44, 58, 38, 52, 32, 60, 26, 52, 20, 58, 14, 50, 8, 54], m: "briar" },
-      { c: [18, 18, 46, 52, 1.5, 1.5], m: "thorn" },
-      { c: [46, 18, 18, 52, 1.5, 1.5], m: "thorn" },
-      { p: [15, 24, 8, 23, 14, 29], m: "thorn" },
-      { p: [49, 24, 56, 23, 50, 29], m: "thorn" },
-      { p: [11, 40, 3, 41, 10, 45], m: "thorn" },
-      { p: [53, 40, 61, 41, 54, 45], m: "thorn" },
-      { p: [30, 36, 32, 30, 34, 36], m: "thorn" },
-      { e: [25, 13, 3, 2], m: "leaf" },
-      { e: [39, 13, 3, 2], m: "leaf" },
-      { e: [32, 12, 4.5, 4.5], m: "rarity" },
-      { e: [32, 12, 2, 2], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: BRIAR_MANTLE
   },
   // A cuirass of shed gold scales, row over row, a red heart-scale at the throat.
   "aurelion-scales": {
     runes: [32, 26, 32, 50],
-    parts: [
-      { p: [14, 12, 50, 12, 52, 26, 46, 54, 18, 54, 12, 26], m: "scale", lift: -2 },
-      { e: [20, 50, 6.5, 6], m: "scale", lift: -2 }, { e: [20, 49, 5, 4.5], m: "scale" },
-      { e: [32, 50, 6.5, 6], m: "scale", lift: -2 }, { e: [32, 49, 5, 4.5], m: "scale" },
-      { e: [44, 50, 6.5, 6], m: "scale", lift: -2 }, { e: [44, 49, 5, 4.5], m: "scale" },
-      { e: [14, 43, 6.5, 6], m: "scale", lift: -2 }, { e: [14, 42, 5, 4.5], m: "scale" },
-      { e: [26, 43, 6.5, 6], m: "scale", lift: -2 }, { e: [26, 42, 5, 4.5], m: "scale" },
-      { e: [38, 43, 6.5, 6], m: "scale", lift: -2 }, { e: [38, 42, 5, 4.5], m: "scale" },
-      { e: [50, 43, 6.5, 6], m: "scale", lift: -2 }, { e: [50, 42, 5, 4.5], m: "scale" },
-      { e: [20, 36, 6.5, 6], m: "scale", lift: -2 }, { e: [20, 35, 5, 4.5], m: "scale" },
-      { e: [32, 36, 6.5, 6], m: "scale", lift: -2 }, { e: [32, 35, 5, 4.5], m: "scale" },
-      { e: [44, 36, 6.5, 6], m: "scale", lift: -2 }, { e: [44, 35, 5, 4.5], m: "scale" },
-      { e: [14, 29, 6.5, 6], m: "scale", lift: -2 }, { e: [14, 28, 5, 4.5], m: "scale" },
-      { e: [26, 29, 6.5, 6], m: "scale", lift: -2 }, { e: [26, 28, 5, 4.5], m: "scale" },
-      { e: [38, 29, 6.5, 6], m: "scale", lift: -2 }, { e: [38, 28, 5, 4.5], m: "scale" },
-      { e: [50, 29, 6.5, 6], m: "scale", lift: -2 }, { e: [50, 28, 5, 4.5], m: "scale" },
-      { e: [20, 22, 6.5, 6], m: "scale", lift: -2 }, { e: [20, 21, 5, 4.5], m: "scale" },
-      { e: [32, 22, 6.5, 6], m: "scale", lift: -2 }, { e: [32, 21, 5, 4.5], m: "scale" },
-      { e: [44, 22, 6.5, 6], m: "scale", lift: -2 }, { e: [44, 21, 5, 4.5], m: "scale" },
-      { p: [0, 0, 64, 0, 64, 26, 52, 26, 50, 12, 14, 12, 12, 26, 0, 26], m: "scale", cut: true },
-      { p: [0, 26, 12, 26, 18, 56, 0, 64], m: "scale", cut: true },
-      { p: [64, 26, 52, 26, 46, 56, 64, 64], m: "scale", cut: true },
-      { r: [0, 56, 64, 8], m: "scale", cut: true },
-      { e: [32, 10, 9, 6], m: "scale", cut: true },
-      { e: [32, 19, 2.8, 2.8], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: AURELION_SCALES
   },
   // An ash-grey robe, its hem and cuffs still burning.
   "ash-vestment": {
     runes: [32, 22, 32, 50],
-    parts: [
-      { p: [22, 8, 42, 8, 60, 30, 52, 34, 46, 26, 52, 58, 12, 58, 18, 26, 12, 34, 4, 30], m: "ash", lift: 1 },
-      { p: [26, 8, 38, 8, 32, 20], m: "ash", lift: -2 },
-      { r: [18, 30, 28, 4], m: "rarity" },
-      { c: [32, 34, 30, 50, 0.8, 0.8], m: "ash", lift: -1 },
-      { p: [12, 54, 52, 54, 53, 58, 11, 58], m: "ember", glow: true },
-      { p: [4, 30, 12, 34, 10, 36, 3, 32], m: "ember", glow: true },
-      { p: [60, 30, 52, 34, 54, 36, 61, 32], m: "ember", glow: true }
-    ]
+    parts: [],
+    grid: ASH_VESTMENT
   },
   // A royal mantle with an ermine collar, its purple gone the grey of old ash.
   "mantle-of-the-last-court": {
     runes: [32, 24, 32, 54],
-    parts: [
-      { p: [16, 12, 48, 12, 60, 58, 40, 56, 32, 60, 24, 56, 4, 58], m: "court" },
-      { p: [26, 18, 38, 18, 42, 56, 32, 60, 22, 56], m: "court", lift: -2 },
-      { c: [26, 18, 21, 55, 2.4, 2.8], m: "ermine" },
-      { c: [38, 18, 43, 55, 2.4, 2.8], m: "ermine" },
-      { e: [32, 14, 18, 6], m: "ermine" },
-      { c: [12, 30, 8, 54, 0.8, 0.8], m: "court", lift: -1 },
-      { c: [52, 30, 56, 54, 0.8, 0.8], m: "court", lift: -1 },
-      px(9, 7, "spot"),
-      px(21, 7, "spot"),
-      px(11, 17, "spot"),
-      px(21, 21, "spot"),
-      { e: [32, 18, 4, 4], m: "gold" },
-      { e: [32, 18, 2, 2], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: MANTLE_OF_THE_LAST_COURT
   },
   // An hourglass the size of a tear. The sand has gathered at the top, and more rises.
   "eldra-locket": {
     runes: [22.5, 26, 22.5, 54],
-    parts: [
-      { c: [14, 4, 28, 16, 1.2, 1.2], m: "gold" },
-      { c: [50, 4, 36, 16, 1.2, 1.2], m: "gold" },
-      { r: [20, 19, 24, 5], m: "gold" },
-      { r: [20, 55, 24, 5], m: "gold" },
-      { r: [21, 23, 3, 33], m: "gold", lift: -1 },
-      { r: [40, 23, 3, 33], m: "gold", lift: -1 },
-      { p: [25, 24, 39, 24, 39, 30, 33, 39, 39, 48, 39, 55, 25, 55, 25, 48, 31, 39, 25, 30], m: "glass" },
-      { p: [25, 24, 39, 24, 39, 29, 32, 34, 25, 29], m: "sand", glow: true },
-      px(16, 19, "sand", { glow: true }, 1, 4),
-      px(15, 25, "sand", { glow: true }),
-      { e: [32, 17, 2.6, 2.6], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: ELDRA_LOCKET
   },
   // A rough grey stone on a cord, humming: a vein of light, and the air rings around it.
   "singing-stone": {
     runes: [30, 32, 34, 54],
-    parts: [
-      { c: [16, 4, 28, 26, 1.2, 1.2], m: "grip" },
-      { c: [48, 4, 36, 26, 1.2, 1.2], m: "grip" },
-      { p: [24, 28, 38, 24, 46, 34, 44, 52, 30, 58, 18, 46, 20, 34], m: "stone", lift: 1 },
-      px(12, 16, "rarity", { glow: true }),
-      px(13, 17, "rarity", { glow: true }, 3, 1),
-      px(16, 19, "rarity", { glow: true }, 1, 3),
-      px(17, 21, "rarity", { glow: true }),
-      px(19, 23, "rarity", { glow: true }, 1, 3),
-      { c: [12, 34, 9, 41, 1, 1], m: "rarity", glow: true },
-      { c: [9, 41, 12, 48, 1, 1], m: "rarity", glow: true },
-      { c: [52, 34, 55, 41, 1, 1], m: "rarity", glow: true },
-      { c: [55, 41, 52, 48, 1, 1], m: "rarity", glow: true },
-      { c: [5, 29, 2, 41, 1, 1], m: "rarity", glow: true },
-      { c: [2, 41, 5, 53, 1, 1], m: "rarity", glow: true },
-      { c: [59, 29, 62, 41, 1, 1], m: "rarity", glow: true },
-      { c: [62, 41, 59, 53, 1, 1], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: SINGING_STONE
   },
   // A spiral shell of pale stone on a cord, its mouth faintly lit.
   "oriane-ear": {
     runes: [20, 46, 40, 46],
-    parts: [
-      { c: [16, 4, 28, 24, 1.2, 1.2], m: "grip" },
-      { c: [48, 4, 36, 24, 1.2, 1.2], m: "grip" },
-      { e: [30, 42, 17, 15], m: "shell", lift: 1 },
-      { c: [30, 40, 35, 40, 1, 1], m: "shell", lift: -2 },
-      { c: [35, 40, 34, 46, 1, 1], m: "shell", lift: -2 },
-      { c: [34, 46, 26, 47, 1, 1], m: "shell", lift: -2 },
-      { c: [26, 47, 22, 39, 1, 1], m: "shell", lift: -2 },
-      { c: [22, 39, 28, 32, 1, 1], m: "shell", lift: -2 },
-      { c: [28, 32, 40, 33, 1, 1], m: "shell", lift: -2 },
-      { c: [40, 33, 44, 42, 1, 1], m: "shell", lift: -2 },
-      { p: [45, 38, 52, 32, 54, 50, 46, 56, 44, 48], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: ORIANE_EAR
   },
   // The mother-tree's last seed, split by a green light, a leaf at its tip.
   "grove-seed": {
     runes: [24, 36, 24, 52],
-    parts: [
-      { c: [16, 4, 28, 20, 1.2, 1.2], m: "moss" },
-      { c: [48, 4, 36, 20, 1.2, 1.2], m: "moss" },
-      { e: [32, 21, 3, 3], m: "rarity" },
-      { p: [32, 22, 40, 30, 46, 42, 44, 52, 36, 59, 28, 59, 20, 52, 18, 42, 24, 30], m: "husk" },
-      { p: [32, 30, 37, 42, 35, 54, 32, 57, 29, 54, 27, 42], m: "sprout", glow: true },
-      { p: [34, 24, 44, 16, 48, 20, 40, 27], m: "leaf" }
-    ]
+    parts: [],
+    grid: GROVE_SEED
   },
   // A dark reliquary on a chain; behind its glass, what he keeps of his life.
   phylactery: {
     runes: [25, 30, 25, 48],
-    parts: [
-      { c: [14, 4, 28, 18, 1.4, 1.4], m: "dark" },
-      { c: [50, 4, 36, 18, 1.4, 1.4], m: "dark" },
-      { p: [26, 18, 38, 18, 42, 24, 22, 24], m: "bone" },
-      { p: [22, 24, 42, 24, 46, 34, 42, 52, 22, 52, 18, 34], m: "dark" },
-      { e: [32, 38, 7, 10], m: "soul", glow: true },
-      { p: [22, 52, 42, 52, 36, 60, 28, 60], m: "bone" },
-      { e: [32, 56, 2.6, 2.6], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: PHYLACTERY
   },
   // A rolled scroll, tied, its wax seal unbroken.
   "last-decree": {
     runes: [16, 40, 44, 16],
-    parts: [
-      { c: [12, 44, 48, 12, 8, 8], m: "paper" },
-      { e: [48, 12, 5, 7], m: "paper", lift: -1 },
-      { e: [48, 12, 2, 3], m: "notch" },
-      { c: [24, 22, 38, 38, 1.2, 1.2], m: "string" },
-      { e: [30, 34, 8, 8], m: "rarity" },
-      { e: [30, 34, 4, 4], m: "rarity", lift: -1 },
-      { p: [26, 40, 24, 50, 30, 46], m: "rarity", lift: -1 },
-      { p: [34, 40, 38, 50, 32, 46], m: "rarity", lift: -1 }
-    ]
+    parts: [],
+    grid: LAST_DECREE
   },
   // The King's seal ring: a crown, and under it a letter worn almost away.
   "signet-of-orvane": {
     runes: [22, 54, 42, 54],
-    parts: [
-      { e: [32, 46, 14, 13], m: "gold" },
-      { e: [32, 46, 8, 7], m: "gold", cut: true },
-      { e: [32, 24, 17, 14], m: "gold" },
-      { e: [32, 24, 12.5, 10.5], m: "rarity" },
-      px(13, 8, "gold", { lift: 1 }),
-      px(15, 8, "gold", { lift: 1 }, 2, 1),
-      px(18, 8, "gold", { lift: 1 }),
-      px(13, 9, "gold", { lift: 1 }, 6, 2),
-      px(15, 12, "gold", { lift: -1 }, 2, 1),
-      px(14, 13, "gold", { lift: -1 }),
-      px(17, 13, "gold", { lift: -1 }),
-      px(14, 14, "gold", { lift: -1 }, 4, 1),
-      px(14, 15, "gold", { lift: -1 }),
-      px(17, 15, "gold", { lift: -1 })
-    ]
+    parts: [],
+    grid: SIGNET_OF_ORVANE
   },
   // A tiny gold ring, a bite taken out of it.
   "rat-ring": {
     runes: [22, 48, 42, 48],
-    parts: [
-      { e: [32, 40, 13, 13], m: "gold" },
-      { e: [32, 40, 7.5, 7.5], m: "gold", cut: true },
-      { e: [45, 30, 4.5, 4.5], m: "gold", cut: true },
-      { e: [47, 37, 3.5, 3.5], m: "gold", cut: true },
-      { e: [23, 29, 2.8, 2.8], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: RAT_RING
   },
   // An iron band set with the shard he buried; the eye in it has closed.
   "lodestone-band": {
     runes: [22, 52, 42, 52],
-    parts: [
-      { e: [32, 44, 15, 13], m: "dark" },
-      { e: [32, 44, 9, 7], m: "dark", cut: true },
-      { r: [17, 26, 5, 8], m: "rarity" },
-      { r: [42, 26, 5, 8], m: "rarity" },
-      { p: [32, 6, 47, 22, 32, 38, 17, 22], m: "glass" },
-      px(13, 11, "notch"),
-      px(18, 11, "notch"),
-      px(14, 12, "notch", {}, 4, 1),
-      px(15, 13, "notch", {}, 2, 1)
-    ]
+    parts: [],
+    grid: LODESTONE_BAND
   },
   // A plain wedding band, tilted to show the letters engraved inside.
   "mirelle-ring": {
     runes: [14, 44, 50, 44],
-    parts: [
-      { e: [32, 38, 23, 16], m: "gold" },
-      { e: [32, 35, 18, 10], m: "inner" },
-      { e: [32, 39.5, 15, 7], m: "gold", cut: true },
-      px(10, 13, "gold", { lift: -2 }),
-      px(13, 13, "gold", { lift: -2 }),
-      px(18, 13, "gold", { lift: -2 }),
-      px(21, 13, "gold", { lift: -2 }),
-      { e: [32, 52, 3, 2.4], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: MIRELLE_RING
   },
   // A brass token with a hole in it, threaded on a plain band.
   "stallkeeper-band": {
     runes: [24, 54, 40, 54],
-    parts: [
-      { e: [32, 46, 13, 13], m: "gold" },
-      { e: [32, 47, 9, 9], m: "gold", lift: -1 },
-      { e: [32, 40, 4.5, 4], m: "gold", cut: true },
-      { e: [32, 22, 12, 14], m: "blade" },
-      { e: [32, 22, 7, 9], m: "blade", cut: true },
-      { e: [32, 49, 3, 3], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: STALLKEEPER_BAND
   },
   // A wide band with two suns engraved: one shines, one is scratched out.
   "second-morning": {
     runes: [14, 46, 50, 46],
-    parts: [
-      { e: [32, 36, 23, 21], m: "dark", lift: 1 },
-      { e: [32, 41, 13, 11], m: "dark", cut: true },
-      px(9, 10, "ember", { glow: true }, 3, 3),
-      px(10, 8, "ember", { glow: true }),
-      px(7, 11, "ember", { glow: true }),
-      px(13, 11, "ember", { glow: true }),
-      px(20, 10, "dark", { lift: -1 }, 3, 3),
-      px(21, 8, "dark", { lift: -1 }),
-      px(18, 11, "dark", { lift: -1 }),
-      px(24, 11, "dark", { lift: -1 }),
-      { c: [37, 15, 51, 29, 0.9, 0.9], m: "string", lift: 1 },
-      { c: [51, 15, 37, 29, 0.9, 0.9], m: "string", lift: 1 },
-      { e: [32, 55, 3, 2.4], m: "rarity", glow: true }
-    ]
+    parts: [],
+    grid: SECOND_MORNING
   },
   // The Crown of Orvane, whose points outnumber the gems left in it.
   crown: {
     runes: [14, 46, 50, 46],
-    parts: [
-      { p: [10, 44, 10, 20, 20, 32, 26, 14, 32, 26, 38, 14, 44, 32, 54, 20, 54, 44], m: "dim" },
-      { r: [8, 42, 48, 10], m: "dim", lift: -1 },
-      { e: [26, 14, 2.6, 2.6], m: "dim" },
-      { e: [38, 14, 2.6, 2.6], m: "dim" },
-      { e: [10, 20, 2.6, 2.6], m: "dim" },
-      { e: [54, 20, 2.6, 2.6], m: "dim" },
-      { e: [32, 47, 3.4, 3], m: "void" },
-      { e: [18, 47, 2.4, 2.4], m: "void" },
-      { e: [46, 47, 2.6, 2.6], m: "garnet" }
-    ]
+    parts: [],
+    grid: CROWN
   }
 };
 

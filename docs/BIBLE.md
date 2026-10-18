@@ -1618,7 +1618,9 @@ wait in the Chronicle.
 > at most, 24 with a creature). The Hearthfields'
 > creatures (8.1) and the named relics of the Hearthfields have shipped too. Every creature
 > of the road was then redrawn by hand in the look of the painted originals: dark masses
-> in clusters, texture, a moonlit rim, glowing eyes (section 8).
+> in clusters, texture, a moonlit rim, glowing eyes (section 8). Then every creature and
+> King's form drawn without a painted original was painted in the hand of the originals
+> and traced again, so the whole bestiary shares one look (DESIGN.md, Imagery).
 > Then shipped too: the King's twelve forms (8.7) and every other creature of section 8,
 > the Sanctum, Loom and Dawn scenes, the "Keep the Kingdom's sky" setting, the masks of all
 > the named relics and the Crown, and the Age marks of Ages II to XII, redrawn with solid

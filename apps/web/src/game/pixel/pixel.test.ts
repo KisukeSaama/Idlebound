@@ -1,5 +1,5 @@
 import { ALTARS, BESTIARY, BIOMES, CARAVAN_WARES, HEROES, MARKET_OFFERS, NAMED_RELICS, RARITIES, SKILLS, SLOTS, SLOT_BASE_COUNT, TREASURE_MONSTER } from "@idlebound/game";
-import { ALTAR_ICONS, ARENA_ROWS, C, CARAVAN_ICONS, CREATURE_HEIGHTS, DECOR, LOW_BODY_LENGTH, NAMED_RELIC_SHAPES, CREATURE_RECIPES, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLab, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, SCENE_FLOOR, STRUCTURES, resolveCreature } from "@idlebound/game/art";
+import { ALTAR_ICONS, ARENA_ROWS, C, CARAVAN_ICONS, CREATURE_HEIGHTS, DECOR, LOW_BODY_LENGTH, NAMED_RELIC_SHAPES, CREATURE_RECIPES, RELIC_MATERIALS, RELIC_TIERS, EMBLEMS, MARKET_ICONS, MATERIALS, ORVANE_64, PORTRAITS, palLab, palLuma, POWER_ICONS, RELIC_SHAPES, SCENES, SCENE_FLOOR, STRUCTURES, resolveCreature } from "@idlebound/game/art";
 import { describe, expect, it } from "vitest";
 import { renderCreature } from "./creature";
 import { AGE_COUNT, ERAS_PER_AGE, ageOf } from "./eras";
@@ -9,6 +9,7 @@ import { bounds, EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pi
 import { awakenedRecipe, PORTRAIT_SIZE, renderPortrait } from "./portrait";
 import { gradeForNight } from "./night";
 import { structureView } from "./props";
+import { LANDMARKS } from "./backdrop";
 import { compositeLayers, flattenScene, MAX_SCENE_COLORS, PLACE_IDS, renderScene, type Scene } from "./scene";
 import { eclipsePixels, eclipseRing, GREY_TABLE, GREYS, greyPixels, greyScene, lanternPlaces, remembrancePixels, seamPixels, unfinishedOrder, unfinishedPixels, unfinishedShare } from "./events";
 import { placeFrames } from "./stage";
@@ -100,8 +101,8 @@ describe("pixel art recipes", () => {
     };
     for (const [family, recipes] of Object.entries(families)) {
       const masks = recipes.map((recipe) => {
-        expect(recipe.rows).toHaveLength(16);
-        for (const row of recipe.rows) expect(row).toHaveLength(16);
+        expect(recipe.rows).toHaveLength(32);
+        for (const row of recipe.rows) expect(row).toHaveLength(32);
         const pixels = renderIcon(recipe);
         expect([...pixels.alpha].every((alpha, at) => pixels.idx[at] === EMPTY || alpha === 255)).toBe(true);
         expect(colors(pixels)).toBeGreaterThanOrEqual(4);
@@ -550,6 +551,41 @@ describe("pixel generator", () => {
         const shapes = RARITIES.map((rarity) => silhouette(renderRelic(slot, base, rarity)));
         expect(new Set(shapes).size, `${slot} ${base}`).toBe(RARITIES.length);
       }
+    }
+  });
+
+  it("draws every traced relic inside its icon: one grid per rarity for a base, every key known", () => {
+    // A slot of a relic grid is a matter of the relics, a role of the rarity tiers, or the rarity's own light.
+    const slots = new Set([...Object.keys(RELIC_MATERIALS), ...RELIC_TIERS.flatMap((tier) => Object.keys(tier)), "rarity", "gem", "light"]);
+    const check = (grid: { rows: readonly string[]; legend: Readonly<Record<string, { m: string } | { pal: number }>> }, label: string) => {
+      expect(grid.rows.length, label).toBeLessThanOrEqual(RELIC_SIZE);
+      for (const row of grid.rows) {
+        expect(row.length, label).toBeLessThanOrEqual(RELIC_SIZE);
+        for (const key of row) if (key !== ".") expect(grid.legend[key], `${label} key ${key}`).toBeDefined();
+      }
+      for (const ink of Object.values(grid.legend)) if ("m" in ink) expect(slots.has(ink.m), `${label} slot ${ink.m}`).toBe(true);
+    };
+    for (const slot of SLOTS) {
+      RELIC_SHAPES[slot].forEach((recipe, base) => {
+        expect(recipe.grids, `${slot} ${base}`).toHaveLength(RARITIES.length);
+        recipe.grids!.forEach((grid, tier) => check(grid, `${slot} ${base} ${RARITIES[tier]}`));
+      });
+    }
+    for (const [id, recipe] of Object.entries(NAMED_RELIC_SHAPES)) {
+      expect(recipe.grid, id).toBeDefined();
+      check(recipe.grid!, id);
+    }
+  });
+
+  it("draws every decor and every far landmark with known keys, the landmarks small and lit", () => {
+    for (const [id, grid] of Object.entries(DECOR)) {
+      for (const row of grid.rows) for (const key of row) if (key !== ".") expect(grid.legend[key], `${id} key ${key}`).toBeDefined();
+    }
+    for (const [kind, rows] of Object.entries(LANDMARKS)) {
+      expect(rows.length, kind).toBeLessThanOrEqual(40);
+      for (const row of rows) expect(row, kind).toMatch(/^[#o.]*$/);
+      expect(Math.max(...rows.map((row) => row.length)), kind).toBeLessThanOrEqual(40);
+      expect(rows.join("").includes("o"), `${kind} lit`).toBe(true);
     }
   });
 

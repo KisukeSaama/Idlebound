@@ -18,37 +18,7 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.55,
     seed: 4105,
     pieces: [
-      // Stilts, leaning, braced.
-      { beam: [5, 38, 4, 61], width: 2, m: "wood", finish: "bark" },
-      { beam: [13, 39, 13, 61], width: 2, m: "wood", finish: "bark", lift: -0.3 },
-      { beam: [22, 39, 23, 61], width: 2, m: "wood", finish: "bark" },
-      { beam: [31, 38, 33, 61], width: 2, m: "wood", finish: "bark", lift: -0.3 },
-      { beam: [39, 38, 41, 60], width: 2, m: "wood", finish: "bark" },
-      { beam: [5, 42, 14, 54], width: 1, m: "wood", lift: -0.4 },
-      { beam: [32, 42, 23, 55], width: 1, m: "wood", lift: -0.6 },
-      // The platform and its porch.
-      { poly: [1, 37, 42, 36, 42, 39, 1, 41], m: "wood", finish: "boards" },
-      // The walls, leaning to the left a little: the front, and the side turned away.
-      { poly: [4, 18, 27, 16, 28, 37, 5, 38], m: "wood", finish: "planks" },
-      { poly: [27, 16, 35, 18, 35, 36, 28, 37], m: "wood", finish: "planks", side: "right" },
-      { beam: [5, 19, 5, 38], width: 1, m: "wood", lift: 0.3 },
-      { beam: [27, 17, 28, 37], width: 1, m: "wood", lift: 0.3 },
-      // The damp climbing the planks from the water.
-      { poly: [5, 32, 28, 31, 28, 37, 5, 38], m: "wood", finish: "planks", lift: -0.45 },
-      // The thatch, sagging in the middle, a patch of boards nailed over a hole.
-      { roof: [0, 3, 39, 16], m: "roof", style: "gable", finish: "thatch" },
-      { cut: [15, 3, 19, 6, 23, 3, 20, 2, 18, 2] },
-      { poly: [7, 14, 13, 13, 13, 16, 8, 17], m: "wood", finish: "boards", lift: -0.2 },
-      // The crooked stovepipe.
-      { beam: [30, 12, 31, 4], width: 2, m: "metal" },
-      { beam: [31, 4, 33, 1], width: 2, m: "metal" },
-      // The door, the window and its shutter.
-      { gap: [8, 28, 6, 10], style: "door", frame: "wood" },
-      { gap: [16, 21, 6, 5], style: "window", lit: true, frame: "wood" },
-      { block: [14, 21, 2, 6], m: "wood", finish: "planks", lift: 0.2 },
-      // The porch: a rail, and the lantern.
-      { beam: [35, 31, 42, 30], width: 1, m: "wood" },
-      { beam: [42, 36, 42, 30], width: 1, m: "wood" },
+      { decor: "mire-alchemist-painted", at: [0, 60] },
       { decor: "lantern", at: [37, 38], keep: true }
     ]
   },
@@ -60,11 +30,7 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.5,
     seed: 4106,
     pieces: [
-      { block: [4, 16, 30, 8], m: "stone", finish: "rubble" },
-      { roof: [0, 4, 38, 14], m: "roof", style: "gable", finish: "thatch" },
-      { cut: [10, 6, 16, 4, 20, 9, 14, 11] },
-      { block: [28, 0, 5, 10], m: "stone", finish: "ashlar" },
-      { gap: [8, 18, 5, 4], style: "window", lit: true }
+      { decor: "mire-drowned-cottage-painted", at: [0, 23] }
     ]
   },
   // Middle distance: the roof of a great barn, the water up to its ridge.
@@ -75,10 +41,7 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.4,
     seed: 4107,
     pieces: [
-      { roof: [0, 2, 60, 18], m: "roof", style: "gable", finish: "shingle" },
-      { cut: [34, 4, 44, 12, 40, 14, 32, 8] },
-      { beam: [30, 1, 30, 6], width: 2, m: "wood" },
-      { beam: [26, 3, 34, 2], width: 1, m: "wood" }
+      { decor: "mire-sunk-barn-painted", at: [0, 19] }
     ]
   },
   // Middle distance: the drowned road's posts, walking off into the fog.
@@ -89,13 +52,7 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.3,
     seed: 4108,
     pieces: [
-      { beam: [4, 22, 5, 2], width: 3, m: "wood" },
-      { beam: [22, 22, 22, 6], width: 3, m: "wood" },
-      { beam: [38, 22, 39, 9], width: 2, m: "wood" },
-      { beam: [52, 22, 51, 12], width: 2, m: "wood" },
-      { beam: [64, 22, 64, 15], width: 2, m: "wood" },
-      { beam: [5, 8, 22, 10], width: 1, m: "wood", sag: -2 },
-      { beam: [22, 10, 38, 13], width: 1, m: "wood", sag: -2 }
+      { decor: "mire-posts-painted", at: [0, 21] }
     ]
   },
   "mire-stilt-hut": {
@@ -105,20 +62,7 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.4,
     seed: 4101,
     pieces: [
-      { beam: [8, 34, 6, 58], width: 3, m: "wood" },
-      { beam: [20, 34, 20, 58], width: 3, m: "wood", lift: -0.3 },
-      { beam: [32, 33, 34, 58], width: 3, m: "wood" },
-      { beam: [42, 33, 45, 56], width: 3, m: "wood", lift: -0.3 },
-      { poly: [4, 11, 36, 8, 38, 30, 6, 32], m: "wood", finish: "planks" },
-      { poly: [36, 8, 43, 11, 44, 29, 38, 30], m: "wood", finish: "planks", side: "right" },
-      { roof: [1, 0, 42, 13], m: "roof", style: "gable", finish: "thatch" },
-      { poly: [38, 1, 46, 10, 44, 12, 36, 6], m: "roof", finish: "thatch", side: "right" },
-      { poly: [1, 31, 46, 29, 46, 34, 1, 37], m: "wood", finish: "boards" },
-      { gap: [10, 18, 7, 13], style: "door", frame: "wood" },
-      { gap: [23, 15, 8, 7], style: "window", lit: true, frame: "wood" },
-      { decor: "mire-bottles", at: [23, 21] },
-      { decor: "mire-ladder", at: [38, 56] },
-      { block: [4, 26, 5, 4], m: "rock", finish: "rubble" }
+      { decor: "mire-stilt-hut-painted", at: [0, 57] }
     ]
   },
   "mire-sluice": {
@@ -128,13 +72,7 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.55,
     seed: 4102,
     pieces: [
-      { block: [2, 8, 10, 32], m: "stone", finish: "ashlar" },
-      { block: [30, 8, 10, 32], m: "stone", finish: "ashlar", side: "right" },
-      { block: [0, 5, 42, 4], m: "wood", finish: "boards" },
-      { block: [12, 14, 18, 18], m: "wood", finish: "planks", lift: -0.2 },
-      { gap: [12, 32, 18, 5], style: "slit" },
-      { beam: [21, 6, 21, 14], width: 1, m: "metal" },
-      { decor: "mire-wheel", at: [17, 5] }
+      { decor: "mire-sluice-painted", at: [0, 39] }
     ]
   },
   "mire-jetty": {
@@ -144,12 +82,7 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.3,
     seed: 4103,
     pieces: [
-      { beam: [4, 6, 4, 18], width: 3, m: "wood" },
-      { beam: [20, 6, 20, 18], width: 3, m: "wood", lift: -0.3 },
-      { beam: [36, 5, 37, 18], width: 3, m: "wood" },
-      { poly: [0, 6, 44, 4, 44, 8, 0, 10], m: "wood", finish: "boards" },
-      { beam: [48, 3, 50, 18], width: 3, m: "wood", lift: -0.4 },
-      { decor: "mire-boat", at: [42, 17] }
+      { decor: "mire-jetty-painted", at: [0, 17] }
     ]
   },
   "mire-lantern-post": {
@@ -159,14 +92,342 @@ export const MIRE_STRUCTURES: Record<string, StructureRecipe> = {
     growth: 0.3,
     seed: 4104,
     pieces: [
-      { beam: [6, 42, 7, 3], width: 3, m: "wood" },
-      { beam: [6, 5, 16, 6], width: 2, m: "wood" },
+      { decor: "mire-lantern-post-painted", at: [1, 41] },
       { decor: "lantern", at: [11, 13], keep: true }
     ]
   }
 };
 
 export const MIRE_DECOR: Record<string, DecorGrid> = {
+  // mire-jetty, painted then traced.
+  "mire-jetty-painted": {
+    rows: [
+      "",
+      "...............................................cb",
+      "..............................................ccbb",
+      ".................................aaaaaccaccc..ddabb",
+      "...bb......bbbbbbabbbbbbbaaaaacccccccbaaacccd.ddacc",
+      "bbbbbbbbbbbbabbbbabbbbbbaaaaabbbcdbbbbaccdccd.aaccc",
+      "bbbbbbbbaaaaabbbbbbbbbbbaccadbbbbdbbbbccddddd.ddccc",
+      "bbbbbbbbbaaacbbbbbbbbbbbccdadddbbbbbbccdd*d*o.*oco*",
+      "bbbbbbbbaaaacbbbbbbbbbbbaddcdddbbbbbbccd****..o****",
+      "bbbbabbbaaaaaaaaabbbbbbaaddccddbb.bdddc.......bb***",
+      "bbbbaabbbaa......bbbaab...........cdddc.......dddddd",
+      ".bbbccb..........aaaaab...........ccddc........ddcdd",
+      ".bbbbbb..........aaaabb...........cccaa...dd...ddccc",
+      ".bbbbbb..........aaabbb...........ccccc..cccd..ddddd..aa",
+      ".bbbbbb..........bbacca...........ccccc..dddddccaaaaabbbb",
+      ".bbbbbb..........bbbbba...........aaaaa...cccaaaabbaabbbbb",
+      ".bbaaab..........bbbbbb...........abbbb....caaaaaaaaaaaaaa",
+      "..bbdd............aaaa.............aaa.......aaaaaaaaaaa"
+    ],
+    legend: { a: ["wood", 1], b: ["wood", 0], c: ["wood", 2], d: ["wood", 3], "*": "glow", o: "core" }
+  },
+  // mire-stilt-hut, painted then traced.
+  "mire-stilt-hut-painted": {
+    rows: [
+      ".....................eeff",
+      "....................effgg",
+      ".................eeeeeffgffg.........gge",
+      "................ffffeffffffgf.......egggg",
+      "..............eeffeeeffffffffff.....effhhh",
+      "............eeefffeeefffffffffffe...ffffhhh",
+      "...........eggffeeeefgffffffffffgg..fffffgh",
+      ".........eeffeeeeeeefggfffffffffggfffffffghh",
+      ".......eeeeeeeeeeeeefggffffffffffghheeefffhhh",
+      "......eeeeeeeeeeeeeeffgffffgffgggffgggeeefffhhh",
+      "....eeeeeeeeeeeeeeeefffffgfgggggggffffgggffhhhhh",
+      "...feeefffffeefegeeffgggggggghhggggfffffgbbgggh",
+      ".ffeeeffgggfggfgggchhhhhhhhhhhhhhhhfffggggggghh",
+      "eeeeaaaabbbabbbbbbchddddddddddddddccbbbbbbbbgh",
+      ".eeaaaaaaabaaaabbaabcbbddccccccccddbaaabbbbcch",
+      "..caaaaababaaaabbbbbcccdddddddddccdbbbbbbbbcbb",
+      "..caaaaabababbbbbbcbcdcd*d*ddddddcdbbbbbbbbcb",
+      "..c.aaaabbbbbbbbbbcbcddd**o***dddcdbcbbbbbbcc",
+      "....aaaabbbbaaaabbcccddd**odd*dddddccbbbbbbcc",
+      "....aaaabbbaaaaabccccdd***oddo*ddddcdcbbcbbcc",
+      "....aababbaaaaaaacccddd***odoo***ddddccbcbbcd",
+      "....aabbbcaaaaaaabccddd***o*oo***ddddccbccccdd",
+      "....aabbbcaaaaaaabccddd*dd****dddddddccbcbccdd",
+      "....aabbbcaaaaaaabccddddddddddddcddcdccbcbccdd",
+      "....aabbbcaaaaaaabcccdddddddcccccddcdccbccccd",
+      "....abbbbcaaaaaaabcccdddcddccccccccbbcbbbbccd",
+      "...eebhhggaaaaaaabbdcccccddccccccccbbcbbbbccdc",
+      "...eeehhggaaaaaaabbdcccccccccccccbdbbbbbbbccdc",
+      "...eeeehgbaaaaaaabbccccbcccccccbcbdbbbbbbbccccc",
+      "...eeeeeebaaaaaaaabddcbbbcbbbbbbbcdccccccbbbccdd",
+      ".aaffeaaabaaaaaaabbdddccccccbcccccccddddccccbbcd",
+      "aaaccbbbbbbbbbbccbbccddddddddddddddcccbbbbbbbbcd",
+      "aaabbbbbbbbbbbbcbbcccddddddccbbbbbbbcbbbbbbbbbbd",
+      "aaaabbbbbbbbbbbbbbbcbbbbbbbbbbbbbbbbbbbbbbbbbbcd",
+      "aabbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaabaaabaabcbc",
+      "aaabbbbbbbaaaabbaaaaabbaaaa.b.aaabaacaaaaaabc",
+      ".aaaaaaaaa.....b.aaaaab........abbaacaaaaabbd",
+      "..c..aaaaa.......aaaaab........abbbb.aaabbbbd",
+      "..c..aaaaa.......aabbab........abbbb.aaaaabbd",
+      ".....aaaba.......aabbaa........abbba.aabaabbd",
+      ".....aabba.......aabbbb........abbba.aabbbbbdd",
+      ".....aabba.......aaabbb........abbbb.babaabbbd",
+      ".....aaaba.......aaabbb........abbbb.babaabbbd",
+      ".....aaabb.......aaabbb........bbbbb.aabbbbbbd",
+      ".....aabbb.......aaabcb........bbbcb.aabaabbbd",
+      "....bbaabb.......aabbcb.........bccc..abaabbcd",
+      "....bbaab........aabbbb.........bccbb.ababbbcd",
+      "....ababb........aaabbb.........bcbbb.abaabbbcc",
+      "....aaaab........aaabbb.........bbbbb.abaababbdd",
+      "....aaaab........aaabbb.........bbbbb.abaababbcd",
+      "....aaaab........aaabbb.........abbbb.abaababbcd",
+      "....aaabb........aaabbb.........abbbb.abaababbcd",
+      "....aabba........aabbbb.........abbbb.ababaabbcd",
+      "....abbba........aabbbb.........abbbb.abbbaabbbd",
+      "....abbba........aaabbb.........abbbb.ababaabbbd",
+      "....aabba........aaabbb.........abbbb.aaaaaaabbd",
+      "....aabb.........aaabbb.........aabbb.aaaaaaabbb",
+      ".....abb..........aabbb..........abb"
+    ],
+    legend: { a: ["wood", 0], b: ["wood", 1], c: ["wood", 2], d: ["wood", 3], e: ["rock", 0], f: ["rock", 1], g: ["rock", 2], h: ["rock", 3], "*": "glow", o: "core" }
+  },
+  // mire-sluice, painted then traced.
+  "mire-sluice-painted": {
+    rows: [
+      "....................ii",
+      "..................iiiiii",
+      ".................iiiiiiii",
+      ".................ii.iiiii",
+      ".................efiiee.ee",
+      ".................effieeee",
+      ".................eeeieeee.....g",
+      "...eeeeeeeeeeeeeggeeiiifgggggggeeffggge",
+      "...bbbbbbbbbeeeeggggiiifgggeeggaabaabbbe",
+      "...bbbbbbbbbaeeggggkiiiggggeeaaaabbabbbd",
+      "...bbbbbbbbaaaggggkkjikllfggcaaaaababbbd",
+      "....bbbbbbbbaaaggkkkjkkllfggcabbbbccbbc",
+      "....bbbbaaaaaag.eek.*ol..ggg.ddccbbccc",
+      ".....bbbbbaaagg.eee.hhl..ff..ddaaabccc",
+      ".....abaaaddfff.ee.......ff..hdddacaac",
+      ".....abaacddfhfeeeeffhhfhfggehdddccaac",
+      ".....abaacddfheeeeeffhhfhfggehddcccdaa",
+      ".....bbbbaadffeeggfhfhhhhhgggddccaadac",
+      ".....baaaaddfhfeggfhhhhhhhggghdddcddac",
+      ".....aaaadddfhfeggfhhhhhhhggghdddccdaa",
+      ".....aaaacddfhfegghhfhhfhhggghdddccdac.a",
+      ".....bbaacccggeegghhfhhfhfgfggdaaaadac.c",
+      ".....aacccddghfefgfhfhffhfgfghddddddbcca",
+      ".....abbccddghfgfgffgffgffgfghdddddbbbb",
+      ".....bbbccddggggfgffgffgffegggdaaaabbbb.c",
+      ".....aaaccddfffegggfggfgfgegggdddcccaca.c",
+      "..b..aaaccddfffeggggegggggeggfdddccaacacc",
+      "..bb.aaaaccdfffegeggegggggeeefdddcaaacbcc",
+      "..bb.baaaaaafggegeggeggeggeeeedbbaabbbba",
+      ".b.b.baaaaccgggegegeeggegeeeeedccccaabba",
+      "..bbbbaaccccgggeeeeeeeeeeeeeegdccccaaabb",
+      "..bbbbabaaaaaeeeeeeeeeeeeeeeegcaaaabaacc.a",
+      "...bbbabbacccceeeeeeeeeeeeeeedcccabbddbcc",
+      "...bbbaabaacccceeeeeeeeeeeeebdcccabadabaa",
+      "..bbbbbabbaaccabeeeeeeeeeeebbdccccaaaabaa",
+      ".bbbbbbabbbbaaabbeeeeeeeeebbbbaaccaababbba",
+      ".bbbbbccbbbbacaabbeeeeeeeeaaaabbcccbbabbbc",
+      "..bbbbbaabaaccccdddgg..eccaaaaccaaabbbbb",
+      ".......a...aa.cdddd..........a....a"
+    ],
+    legend: { a: ["stone", 1], b: ["stone", 0], c: ["stone", 2], d: ["stone", 3], e: ["wood", 0], f: ["wood", 2], g: ["wood", 1], h: ["wood", 3], i: ["metal", 0], j: ["metal", 1], k: ["metal", 2], l: ["metal", 3], "*": "glow", o: "core" }
+  },
+  // mire-lantern-post, painted then traced.
+  "mire-lantern-post-painted": {
+    rows: [
+      "...bb",
+      "..abbb",
+      ".aabaaab",
+      ".aabaabbbbbbbbb",
+      ".aabbaaabbbbbbba",
+      ".aabaaaaabaabbaa",
+      ".aabaabbbbaabbb",
+      ".babbbb.babbaa",
+      "bbbbbc.bbaccbbb",
+      "bbbbcc.bbdd*bcc",
+      "bbbbcc.bc*oo*dc",
+      "bbbbcd.cc*ooodd",
+      ".aabcd..ddd*ddd",
+      ".aaccd..ddcccc",
+      ".aaccd....ccc",
+      "baacdd",
+      "baacdd",
+      ".aaad*",
+      ".aacd*",
+      ".abcd*",
+      ".abcdd",
+      "aaacdd",
+      "aaacddd",
+      "aaabdd",
+      ".aabcd",
+      ".aabcdd",
+      ".aabbb",
+      ".aabbb",
+      ".abbbb",
+      ".abbbb",
+      ".abbbbb",
+      ".aabbb",
+      "aaabab",
+      "aaabab",
+      "aaaaaa",
+      "aaaaaa",
+      "aaaaaa",
+      "aaaaaaa",
+      "aaaaaaa",
+      "aaaaaaa",
+      "aaaaaaa",
+      "aaaaaaa"
+    ],
+    legend: { a: ["wood", 0], b: ["wood", 1], c: ["wood", 2], d: ["wood", 3], "*": "glow", o: "core" }
+  },
+  // mire-alchemist, painted then traced.
+  "mire-alchemist-painted": {
+    rows: [
+      "..............................iij",
+      ".............................iijjj",
+      ".............................iiiii",
+      "......................e......iiii",
+      ".....................fff.....iiii",
+      "..................ffffffg....iijj",
+      "..............f.ffffffgeff...ijj",
+      ".............ffffffeeggeffg.fijj",
+      "............fffeeeeeeggefffffijj",
+      "...........afeeeeeeeggeffffffijj",
+      "..........aaaeeeeeeghgefffffffgg",
+      ".........aaaaeeeeeeghgeeefffefgg",
+      "........aaaaaffeffeghfggggffeeegh",
+      ".......faaffeeeeeehggffhhhhgggeghh",
+      "......fffeeeeeeeehhgffffhhhhgggghhh",
+      ".....affeeeeeeeehhhgeeffhhhhhghhhhhh",
+      "....aaaaaaaaabbbbbbbbbbaahdddcccccbhh",
+      "...aaabbaabbaabbbbbcbbbaaaccccccccbbhh",
+      "..aaaaaaaaaaaaaaaabccbbbaaaaaaabbbabbh",
+      "..aaaaaaaaaaaaaaabbccbbbbaaaaaaaaaab.h",
+      ".....aaaaaaaaaaaabbccbbbbbbbbaaaaaa",
+      ".....aaaaaaaaaaaabcccbbbbbbbbbbbbaa",
+      ".....aaaaaaaaaaaabcccbbccdbbbbbbbac",
+      "......aaaaaaaaaaabcccbbdddbccbbbbbc",
+      "......aaaaaaabaaabcccbbdddbccbbbcbc",
+      "......aaaaaaabaaabccccb*dddcccbbcbc",
+      "......aaaaaaaaaaabccccbddddcddccccc",
+      "......aaaaaaaaaaabcdcbbddcccddcddccccccc",
+      "......aaaaaaaaaaabdddcbcdddddddddccccbbb",
+      "......aaaaaaaaaaabddccccccdcccdd*dd...bb",
+      "......aaaaaaaaaaaaddccdddddddddd***.kkll",
+      "......aaaaaaaaaaaad*cc*ddddddddd***.oo*l",
+      "......aaaaaaaaaaaad**o*dddddcccddd*.*l*k",
+      "....aaaaaaaaaaaaaacc*dddcccccccccd*ddllk",
+      "....aaaaaaaaaaaaaaccddccccccccccccddccbb",
+      "....aaaaaaaaaaaaaaaabbaaaaababbaaaaaaaa",
+      "....aaaaa..aaaa.aaaaaaaaa..babb...aaaaa",
+      "a....aaaa..aaa..baaaaaaaa...abb..aaaabb",
+      "aa....aaaa.aaa..baba.aaaa...abb.abb.abb.c",
+      "bb....aaaa..aaa..abb.aaaa...abbcbb..abb.c",
+      ".bb...aaaaaaaaadaacc.aaaa.d.bbcbbdd.bbcccc",
+      "bbbd.aaadaaaaaadcacddaaaadddbbcbcdddcbbdcc",
+      "bacddaaadcaaaacdcacddaaabdddbbbccdddcabdcc",
+      "bacccaaadccaaacdcacddaaabddbbabccccccabccc",
+      "babbcaaadccaaaadbacddaaabdbbaacccccccabccc",
+      "babbcaaadddcaaadbaccdaaaabbccabccccccaabbc",
+      "aabbaaaabcdcaaaaaacccaaaabcddabcdccccaaabb",
+      "aabbbaaabccaaaaaaacccaaaabcddabbdddccaaabb",
+      "aabbbaaacccaaabbaacccaaaaddddaabddddaaaabb",
+      "aaabaaaacccaaabdaaaccaaaaaddaaaaddddbaaaab",
+      "bcabaaaaacdaaabdaaaacaaaabbbaaabbdddbabbaa",
+      "bcabcaaaaddbaaabaaaabbbbbccddccbddddaabaaa",
+      "bbaacbbacddbbbbbabbccbccbbcddcbbbdddaaabaa",
+      "bbaaabbacddbccbbccccdbbbcdccdbcaaddddaabac",
+      "aabaaaabbaaacccccccddbbbcddbbbccaaaddaaaac",
+      "aabaaaabbaabbbddcccddbbbcdddbabccaabbaaaaa",
+      "aaaaaaabaabbaaddcbdddbbbbbbbaabcccaaaaaaaa",
+      "aaaaaaaaaaaaaccccbdddbbccccccccccbbaaaaaaa"
+    ],
+    legend: { a: ["wood", 0], b: ["wood", 1], c: ["wood", 2], d: ["wood", 3], e: ["roof", 1], f: ["roof", 0], g: ["roof", 2], h: ["roof", 3], i: ["metal", 0], j: ["metal", 1], k: ["metal", 2], l: ["metal", 3], "*": "glow", o: "core" }
+  },
+  // mire-drowned-cottage, painted then traced.
+  "mire-drowned-cottage-painted": {
+    rows: [
+      "...........................aaaaaaa",
+      "...........................aaaaaba",
+      "...........................aaaabba",
+      "..................ee.......abbbbba",
+      ".................eeeee.....abaaaba",
+      "................eeeeeee....aababba",
+      ".................ffggeee...aabaabb",
+      "..................fhhffggg.acbbbbb",
+      "...........hh.....hhhhhhgggacbbbba",
+      ".........gghhh.eeeehhhhhhffgcbbbba",
+      "........ggghheeegggehhfffffghaaaa",
+      ".......eehhheeeegggeeffffffhhha",
+      ".....eeffhhhhhhhhhhhhfefffhhhhhee",
+      "....egfffeeehhhhheehhfeefffffhhhee",
+      "...eegfffeeeeeffhheeehheeffffffffff",
+      ".eeffffhhehhheeffhhhheeeeeefhhhhfffgg",
+      "eeffffeehhhhhhhfeffhhheeheeeffffffffff",
+      "effffaehhffffffdeefgghhhheeeeffffffffff",
+      "ffffaaabhfffffddddddddbbaaaaaaabbbhhhf",
+      "...aaabbbgggddccddccddbaaaaaaaaaaaa",
+      "...aaabbbggddddcbbbcdddbaaaaaaaaaaa",
+      "...cbbbbd**ccccc*o**d*dbaaaaaaaaaaa",
+      "...cbbbddcccc**cccc*c**daaaaabbbaaa",
+      "....bddddc*ccccccccccc*daaaaabbbbb"
+    ],
+    legend: { a: ["stone", 0], b: ["stone", 1], c: ["stone", 3], d: ["stone", 2], e: ["roof", 0], f: ["roof", 2], g: ["roof", 3], h: ["roof", 1], "*": "glow", o: "core" }
+  },
+  // mire-posts, painted then traced.
+  "mire-posts-painted": {
+    rows: [
+      "....aa",
+      "...aaaa",
+      "..aaaaa",
+      "..aaaaa",
+      "..aaaaa..............aa",
+      "..aaaaa..aabba......ccaa",
+      "..aaaaaaaaabbaaooc.cccaaa",
+      "..aaaaaaaaaaboooocccoooaa.............*o",
+      "..aaaaaaa.....ooocooooodaaabdaaa.....*oo*",
+      "..ccdaa...........occoodaaabdoaoaaa..*oo*",
+      "..cddda............oooocaaabbaaoaoaaa***c.........ca",
+      "..cdbdc............ooooca.......oaoooc**c........ccaa",
+      "..ccbdc............ccccoa..........oocccc........cccc",
+      "..cdbdc............ccccca...........ocdcd........cccc..........bd",
+      "..ddbdc............ccccca............cddd........cccc.........bbdd",
+      "..ababb............ccccca............cdd.........ccdc.........bbdb",
+      "..ababb............ccccda...........ccdd.........cddd.........bbdb",
+      "..aaabb............ddddda...........cddd..........dddd........bbbb",
+      "..aaabb............ddddaa...........ddcc..........dddd........bbba",
+      "..aaabb............ddddaa...........dddd..........dddb........bbba",
+      "..aaaaa............dddaaa...........****..........dbbb........bbaa",
+      "...aaa..............aaaa.............**............aa..........aa"
+    ],
+    legend: { a: ["wood", 0], b: ["wood", 1], c: ["wood", 3], d: ["wood", 2], "*": "glow", o: "core" }
+  },
+  // mire-sunk-barn, painted then traced.
+  "mire-sunk-barn-painted": {
+    rows: [
+      "............................eeee",
+      "..........................fgggeeee",
+      ".........................ffggggeeee",
+      ".........................bdddffaaa",
+      ".......................bbbcddggaaaa.a",
+      "......................bbccccffgdda.aaa",
+      "....................bbcccaccbfgaaa..aaaa",
+      "..................ccbccaaaacbbaaa....aaaaa",
+      ".................bbbbcacccbccbccad....aaaaa",
+      "...............ccbbccaabbbbaaccccdd.....aaaaa",
+      ".............aaccbcccaabbbbaacacccddd....aaaaaa",
+      "............aaabbcccaaabbbbaaaaacbbddd....aaaaaa",
+      "..........daaaccbccaaacccaaadadaccbcdda..ddaaaaaaa",
+      "........bbaaabbbccaaaaaaaddadddaacbccdadddddaaaaaaaa",
+      ".......bddaabbbccaaacaaadddadddaaacacccddaaaaaaaaaaaa",
+      ".....bbaaabbbbccaaaacaadddddddddddcaaaccdddddddaaaaaaaa",
+      "...bbbbaccbbbccaaaaacaadaddddddddaaddcccdddddddaaaaaaaaaaa",
+      "..bbbbbabbbccccccccacccaaadddddddddddcccadcddbbcccbbccccccc",
+      "bbbbbbbdaabbccaaaaccccbbbbbbbbbddddddaaaddcbabbcbbbbcbbbcccc",
+      "bbbbbbbddabbcccccaaddbbbbbbbbbbddd**ddd*ddbbabbcbbbbbccccccc"
+    ],
+    legend: { a: ["roof", 2], b: ["roof", 0], c: ["roof", 1], d: ["roof", 3], e: ["wood", 0], f: ["wood", 2], g: ["wood", 3], h: ["wood", 1], "*": "glow" }
+  },
   // The ladder from the porch down into the water.
   "mire-ladder": {
     rows: ["w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "wWWw", "w..w", "w..w", "w..w", "w..w"],

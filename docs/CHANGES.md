@@ -18,6 +18,25 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ### New
 
+- The bestiary redrawn: every creature of the road that had no painted portrait (the Carrion
+  Crow, the Hollow Scarecrow, the Lantern Moth, the Dusk Hare, the Last Reaper, the Lost
+  Shepherd, Pip, and every creature of the Wychwood, the Deepvaults, the Mire and the Keep
+  drawn since), the event creatures (the Lantern Queen, the Seam Warden, the Echo of a
+  Walker, the Stray Armor) and the King's later forms are painted again in the hand of the
+  first creatures, then traced into the world's pixels: the same fur, feathers, stone and
+  cloth as the Field Rat, the same moonlit rim and glowing eyes. Each keeps its place, its
+  rank, its size class and its story.
+- The rest of the world repainted the same way: every companion portrait and Aldric in every
+  pose (on guard, the stride, the lunge); every building, ruin and far silhouette of the five
+  biomes and the Sanctum's standing stones and altars, still crumbling and overgrown Age after
+  Age; every relic, base and named, rarity by rarity; the in-world icons of the altars, powers,
+  stall and Caravan (now 32 pixels, twice as fine); the chests and the satchel; the scarecrow
+  of the fields and the giant's skull of the Elder World.
+
+## v1.3.0
+
+### New
+
 - Relics remember. From epic up, a relic keeps a trait of its slot, one effect while worn
   (two for a mythic): 19 in all. The weapon: Vanguard (companion damage), the Host (more for
   every companion in the company), Rout (a stage already walked falls at once sooner), Steady
