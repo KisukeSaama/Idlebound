@@ -177,30 +177,32 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
           </span>
         ) : null}
       </p>
-      <ul className="item-affixes">
-        {item.affixes.map((affix, index) => (
-          <li key={affix.stat} className={index === 0 ? "main" : ""}>{formatAffix(affix.stat, affixValue(item, affix.stat), locale)}</li>
-        ))}
-        {density > 1 ? <li className="density" title={t.windows.gear.densityTitle(relicStratum(item))}>{t.windows.gear.density(mult(density))}</li> : null}
-        {named ? <li className="named-effect">{g.namedEffects[named.effect.kind](named.effect.pct)}</li> : null}
-        {(item.traits ?? []).map((id) => {
-          const trait = g.relicTraits[id as TraitId];
-          return trait ? (
-            <li key={id} className="item-trait" title={t.windows.gear.traitTitle}>
-              <strong>{trait.name}</strong> {trait.effect(traitValue(id as TraitId, item.rarity))}
-            </li>
-          ) : null;
-        })}
-        {item.memory && g.heroes[item.memory] ? <li className="item-memory" title={t.windows.gear.memoryTitle}>{g.relicMemory(g.heroes[item.memory].name, MEMORY_MULT[item.rarity])}</li> : null}
-        <li className="item-place" title={t.windows.gear.placeTitle}>{(wearing ? t.windows.gear.place : t.windows.gear.placeIf)(g.relicPlaces[place].name, together)}</li>
-        {relicDepth(item) > item.level ? <li className="item-awakened">{t.windows.gear.awakened(fmt(relicDepth(item)))}</li> : null}
-      </ul>
-      {legend ? <p className="item-legend">{legend.legend}</p> : null}
-      {delta !== null ? (
-        <p className={`item-delta ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
-          {delta > 0 ? "▲" : delta < 0 ? "▼" : "="} {formatAffix(main.stat, Math.abs(delta), locale).replace("+", "")} {t.windows.gear.versusEquipped}
-        </p>
-      ) : null}
+      <div className="item-body">
+        <ul className="item-affixes">
+          {item.affixes.map((affix, index) => (
+            <li key={affix.stat} className={index === 0 ? "main" : ""}>{formatAffix(affix.stat, affixValue(item, affix.stat), locale)}</li>
+          ))}
+          {density > 1 ? <li className="density" title={t.windows.gear.densityTitle(relicStratum(item))}>{t.windows.gear.density(mult(density))}</li> : null}
+          {named ? <li className="named-effect">{g.namedEffects[named.effect.kind](named.effect.pct)}</li> : null}
+          {(item.traits ?? []).map((id) => {
+            const trait = g.relicTraits[id as TraitId];
+            return trait ? (
+              <li key={id} className="item-trait" title={t.windows.gear.traitTitle}>
+                <strong>{trait.name}</strong> {trait.effect(traitValue(id as TraitId, item.rarity))}
+              </li>
+            ) : null;
+          })}
+          {item.memory && g.heroes[item.memory] ? <li className="item-memory" title={t.windows.gear.memoryTitle}>{g.relicMemory(g.heroes[item.memory].name, MEMORY_MULT[item.rarity])}</li> : null}
+          <li className="item-place" title={t.windows.gear.placeTitle}>{(wearing ? t.windows.gear.place : t.windows.gear.placeIf)(g.relicPlaces[place].name, together)}</li>
+          {relicDepth(item) > item.level ? <li className="item-awakened">{t.windows.gear.awakened(fmt(relicDepth(item)))}</li> : null}
+        </ul>
+        {legend ? <p className="item-legend">{legend.legend}</p> : null}
+        {delta !== null ? (
+          <p className={`item-delta ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`}>
+            {delta > 0 ? "▲" : delta < 0 ? "▼" : "="} {formatAffix(main.stat, Math.abs(delta), locale).replace("+", "")} {t.windows.gear.versusEquipped}
+          </p>
+        ) : null}
+      </div>
       {children ? <div className="item-actions">{children}</div> : null}
     </article>
   );

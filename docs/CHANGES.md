@@ -16,6 +16,18 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+### Fixes
+
+- Relic cards: every card of the bag and of the worn slots now has one height, whatever the
+  relic says. The relic's color lights its top, and a long relic scrolls its own lines. In
+  the bag, Equip and Lock sit side by side with Salvage across under them, on every card:
+  salvaging relic after relic keeps the next one's button under the pointer. Before, the
+  cards changed height as relics left the bag.
+- Header: the counters stay centered and still as the road goes on. Essences and shards keep
+  their width like gold, and the account's warning no longer pushes the counters aside.
+
+## v2.0.0
+
 ### New
 
 - The bestiary redrawn: every creature of the road that had no painted portrait (the Carrion
