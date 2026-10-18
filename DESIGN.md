@@ -527,19 +527,25 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   shadow. The look is the painted originals' brought to pixels: dark masses in clusters of
   hue-shifted color, texture (fur, feathers, grain, cloth), a moonlit rim on the edges
   facing the light, glowing eyes in shadow, violet corruption where the Remnant is
-  wearing through. Creatures that had a painted portrait keep its design and mood (the
-  Field Rat, the Jumpy Boar, the Moss Alpha, the Shade Wolf, the Briar Witch, the Heart of
-  the Old Grove, the Blind Crawler, the Echo Bat, the Stone Devourer, the Bog Remnant, the
-  Baron of Rot, the Fallen King); the others were drawn for the story. Sizes follow
+  wearing through. Every creature is traced from a painting: the first twelve from
+  their original portraits (the Field Rat, the Jumpy Boar, the Moss Alpha, the Shade Wolf,
+  the Briar Witch, the Heart of the Old Grove, the Blind Crawler, the Echo Bat, the Stone
+  Devourer, the Bog Remnant, the Baron of Rot, the Fallen King), every other one and the
+  King's forms from a painting made in the same hand, the Field Rat's portrait given as the
+  reference of style, its description from its grid. The painting is cut out, reduced by
+  area to the creature's size, its colors matched to the ramps of its materials, then the
+  eyes, lights and twitch placed by hand. The abstract figures of the late road (the King's
+  Name, the Sketched King, the Hollow Crown, the Blank King, the Quiet, the Dawn) stay drawn
+  pixel by pixel, their look being the point. Sizes follow
   rank (`CREATURE_HEIGHTS`): the creature is what the walker strikes, so it stays the
   subject of the arena, measured against the 140 rows of a scene above its ground line
   (`ARENA_ROWS`). A normal creature's body stands at least 63 rows tall (45%), an elite 84
   (60%), a guardian 105 (75%), the King's forms about 125 (90%); each rank stops where the
   next begins, so in every biome the creatures stand under their elite (about 92 rows),
   the elite under its guardian (106 to 111) and the guardian under the King. Inside a rank
-  the order is the world's: Pip (36 × 39) under the Field Rat (91 × 63), the rat under the
+  the order is the world's: Pip (35 × 39) under the Field Rat (91 × 63), the rat under the
   Jumpy Boar (92 × 75), a bird under anything the size of a person (about 80). A body
-  lying low is measured along its length instead, at least 88 (the Rot Toad 92 × 51, the
+  lying low is measured along its length instead, at least 88 (the Rot Toad 88 × 66, the
   Last Hound, the Whisper Bramble). A test keeps every grid at its rank's share. A creature
   that changes size is drawn again on a grid of the new size, never scaled: every pixel of
   a creature is the size of a pixel of its scene. Each keeps to 12 colors, 24 with its
@@ -581,7 +587,7 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
     (mountains and hills whose faces turned to the moon are a step lighter down from the
     ridge, a tree line of firs, crowns and poplars, a canopy of round crowns with leaves lit
     in clusters, cliffs, dead trees, reeds, walls and towers); shafts of moonlight through
-    the Wychwood's leaves; the landmark where the road leads, one window or flame lit (the
+    the Wychwood's leaves; the landmark where the road leads (a painted silhouette, traced), one window or flame lit (the
     Keep seen from the fields, the great tree, a gate of light, Osric's leaning manor, the
     throne tower); far buildings in silhouette, their windows still lit.
   - **Middle**: trunks and pillars left apart around a clearing where the guardian stands;
@@ -632,6 +638,10 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   and the jetty with its half-sunk boat, the Keep's broken colonnade, headless stone
   wardens, braziers of violet fire and fallen drums, Brom's forge at the crossroads. The
   places stand back: no building is drawn at the size of the creatures in front of it.
+  Each building is then painted over its own pieces (the generated painting follows the
+  rendered recipe) and traced into a detail grid in the scene's ramps, the material of
+  each pixel taken from the recipe; the builder still wears it down Age after Age (its top
+  falling, moss, ivy, ash), and its moving details (flames, lanterns, the owl) stay on top.
   Each biome's own building is small, high in the picture (its foot nearer the horizon
   than the walker) and laid on the scene's air like the rest of the middle distance, under
   the smallest creature of its biome: Brom's forge (50 × 47: the hearth burning deep in
@@ -654,8 +664,8 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   props sway on two frames, lights blink on and off over the scene (fireflies, wisps,
   runes, embers). With reduced motion, everything holds its first frame.
 
-  **The Hearthfields** keep their hand-drawn detail: the scarecrow drawn pixel by pixel as
-  a character mask (a letter per material, lit or in shade, its lights), its head
+  **The Hearthfields** keep their detail: the scarecrow painted and traced into a
+  character mask (a letter per material, lit or in shade, its lights), its head
   turning; the farm's graves, stooks and fence painted in their own colors, each material
   a lit color and a shade, the moon rimming their tops and lit side in pale lilac; grass
   tuft by tuft (three hand-drawn variants per size, mirrored at random); the horizon high
@@ -702,12 +712,11 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   single point of light and a line). Below the Dawn the night is drawn again from the
   present night's look (`drawnEra`: era mod 60), the sky dark once more: the scenes, the
   creatures and the map show the stratum drawn, the numbers stay those of the true depth.
-- **Companions** (`grids/companions/`): 64 × 64 busts made like the creatures: painted at a
-  higher resolution (volumes lit by the moon from the top left, strands of hair, folds of
-  cloth, grain of leather), traced into pixel clusters, then the eyes, mouths and small
-  details placed by hand. Every human face stands on the same construction (eye line, nose
-  base, mouth and chin on fixed lines, both eyes the same size) so no face turns into a
-  caricature; age, jaw, gaze and expression make the person. Three-quarters toward the
+- **Companions** (`grids/companions/`): 64 × 64 busts made like the creatures: a generated
+  painting of the bust (moonlit volumes, strands of hair, folds of cloth, grain of leather),
+  cropped to the head and shoulders and traced into pixel clusters in the ramps of the
+  portrait's own slots (skin, hair, cloth, the companion's color), so the face keeps its
+  painted proportions and every companion its colors. Three-quarters toward the
   monsters, desaturated and moonlit, deep shadows, 12 colors, the night ink outline. Each
   carries a signature of its dossier (Maëlle's copper braid and bow, Nyx's hood holding only
   sky and stars, the Nameless's helm with a void for a visor, Biscuit's pale eyes over Vorn's
@@ -718,7 +727,8 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   sound and language. 12 × 12 emblems (hand-authored masks) replace the old Unicode glyphs,
   before each name in the companions panel.
 - **Relics** (`relics.ts`, `objects.ts`): 32 × 32 icons. Each of the 20 base shapes of
-  `SLOT_BASE_COUNT` is one object drawn five times, its parts gated by rarity, so rarity
+  `SLOT_BASE_COUNT` is one object painted five times and traced (`grids/relics/bases/`), one
+  grid per rarity in the matters of that rarity, so rarity
   reads from silhouette, matter and light before color: common is short, plain and worn
   (dull iron, old leather and wood, a chip, a spot of rust); rare gains fittings (a brass
   guard, straps, a set stone); epic is blued steel, engraved, silver-rimmed and gem-set;
@@ -731,15 +741,15 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   engraves a rune of fire every five levels along each relic's rune line (1 to 4 runes,
   and at +20 a seam of fire joining five), and the interface writes the exact level as a
   Cinzel "+7" badge on the icon's corner (gold-filled at +20); relic icons in item cards
-  are shown at twice their pixels. Named relics have their own recipe
-  (`NAMED_RELIC_SHAPES`) with the same light; the Crown is dull gold, its sockets empty,
+  are shown at twice their pixels. Named relics have their own painted and
+  traced grid (`grids/relics/`) with the same light; the Crown is dull gold, its sockets empty,
   no light and no halo. A relic from below the present night lists its **Density**
   ("Density: damage ×1.35", pale violet `--violet-2`, after the affixes; its tooltip names
   the stratum it was remembered in), and the equipment totals add a Density row once one
   is worn; a relic of the present night shows neither.
-- **In-world icons**: 16 × 16 pixel icons for the 13 altars, the 7 powers, the 6 stall
+- **In-world icons**: 32 × 32 pixel icons for the 13 altars, the 7 powers, the 6 stall
   offers and the 8 Caravan wares, for places of the world (the landing page uses some),
-  drawn by hand one character per pixel (`ICON_INK`), outlined by the generator. Each tells
+  painted then traced one character per pixel (`ICON_INK`), outlined by the generator. Each tells
   its thing: the altars after their legend (the Anvil's fist on its block, the Sword-Mother's
   blade in a rock, a coin with a bite out of it, an hourglass-shaped cairn, a sundial, a
   menhir with five glowing notches, an arrowhead set in stone, a rat-sized chest on a slab

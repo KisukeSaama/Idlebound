@@ -100,8 +100,8 @@ describe("pixel art recipes", () => {
     };
     for (const [family, recipes] of Object.entries(families)) {
       const masks = recipes.map((recipe) => {
-        expect(recipe.rows).toHaveLength(16);
-        for (const row of recipe.rows) expect(row).toHaveLength(16);
+        expect(recipe.rows).toHaveLength(32);
+        for (const row of recipe.rows) expect(row).toHaveLength(32);
         const pixels = renderIcon(recipe);
         expect([...pixels.alpha].every((alpha, at) => pixels.idx[at] === EMPTY || alpha === 255)).toBe(true);
         expect(colors(pixels)).toBeGreaterThanOrEqual(4);

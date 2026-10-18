@@ -19,11 +19,12 @@ import {
   type Material,
   type MaterialId,
   type Pal,
+  type RelicGrid,
   type RelicRecipe,
   type Shape
 } from "@idlebound/game/art";
 import { paintMask } from "./mask";
-import { applyColors, EMPTY, reduceColors, type Pixels } from "./pixels";
+import { applyColors, createPixels, EMPTY, reduceColors, type Pixels } from "./pixels";
 import { moveShape, rasterize, type Placed } from "./raster";
 import { darker, materialOf, outline, shade } from "./shade";
 
@@ -60,15 +61,44 @@ export function renderRelic(slot: ItemSlot, base: number, rarity: Rarity, forge 
   materials.gem = { ramp: accent, texture: "smooth" };
   materials.light = { ramp: accent, texture: "smooth" };
   const options = { materials, seed: base + 1 };
-  const raster = rasterize(placed, RELIC_SIZE);
-  const pixels = shade(raster, placed, options);
-  rimLight(pixels, raster.owner, placed, options);
+  let pixels: Pixels;
+  const grid = recipe.grids?.[tier] ?? recipe.grid;
+  if (grid) pixels = paintGrid(grid, options);
+  else {
+    const raster = rasterize(placed, RELIC_SIZE);
+    pixels = shade(raster, placed, options);
+    rimLight(pixels, raster.owner, placed, options);
+  }
   engraveRunes(pixels, recipe.runes, forge);
   const lined = outline(pixels);
   if (tier >= 3 && named !== "crown") halo(lined, accent, tier);
   // Every pixel solid: the relic is either there or not.
   for (let at = 0; at < lined.idx.length; at += 1) if (lined.idx[at] !== EMPTY) lined.alpha[at] = 255;
   return applyColors(lined, reduceColors(lined));
+}
+
+/** A traced relic, centered on the icon: each key in the ramp of its slot, or its own lit color. */
+function paintGrid(grid: RelicGrid, options: { materials: Readonly<Record<string, MaterialId | Material>>; seed: number }): Pixels {
+  const pixels = createPixels(RELIC_SIZE, RELIC_SIZE);
+  const width = Math.max(...grid.rows.map((row) => row.length));
+  const left = Math.floor((RELIC_SIZE - width) / 2);
+  const top = Math.floor((RELIC_SIZE - grid.rows.length) / 2);
+  grid.rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x += 1) {
+      const ink = grid.legend[row[x]];
+      if (!ink) continue;
+      const at = (top + y) * RELIC_SIZE + left + x;
+      if ("pal" in ink) {
+        pixels.idx[at] = ink.pal;
+        pixels.emit[at] = ink.glow ? 1 : 0;
+      } else {
+        const ramp = materialOf(ink.m, options).ramp;
+        pixels.idx[at] = ramp[Math.min(ramp.length - 1, ink.step)];
+      }
+      pixels.alpha[at] = 255;
+    }
+  });
+  return pixels;
 }
 
 const snapped = new Map<Shape, Shape>();

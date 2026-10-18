@@ -46,6 +46,293 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    slug: "patch-notes-2-0",
+    date: "2026-10-19",
+    kind: "patch",
+    version: "v2.0",
+    cover: { biome: "green-plains", creature: "carrion-crow" },
+    fr: {
+      title: "Notes de mise à jour 2.0",
+      summary: "Tout le monde porte enfin la même main : créatures, compagnons, lieux et reliques, tout est repeint dans le trait du Rat des champs.",
+      body: [
+        { kind: "p", text: "Bonsoir, marcheuse, marcheur. Les premières créatures de la route, le Rat des champs, le Sanglier, le Loup d'ombre, sont nées de vraies peintures. Les suivantes ont été dessinées sans, et ça se voyait : à côté du Rat, beaucoup semblaient venir d'un autre monde. La 2.0 répare ça. Les créatures d'abord, puis les compagnons, les lieux et les objets ont été repeints dans la même main que les premières, puis remis en pixels, pour que toute la nuit se ressemble enfin." },
+        { kind: "h2", text: "Nouveau" },
+        {
+          kind: "entry",
+          name: "Le bestiaire",
+          tag: "changed",
+          context: "Une créature, c'est ce que tu frappes toute la nuit. Elle mérite d'être aussi belle que la première que tu as croisée.",
+          changes: [
+            { label: "Les Plaines verdoyantes", text: "le Corbeau charognard, l'Épouvantail creux, la Phalène-lanterne, le Lièvre du crépuscule, le Dernier Faucheur, le Berger égaré et le Rat doré, repeints" },
+            { label: "Les quatre autres lieux", text: "toutes les créatures qui n'avaient pas de portrait peint, repeintes" },
+            { label: "Les créatures des averses et des rencontres", text: "repeintes aussi" },
+            { label: "Ce qui change", text: "la même fourrure, les mêmes plumes, la même pierre que le Rat des champs, le même liseré de lune, les mêmes yeux qui brillent dans l'ombre" },
+            { label: "Ce qui ne change pas", text: "chaque créature garde sa place sur la route, son rang, sa taille et son histoire" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "creature", id: "carrion-crow" }, scene: { kind: "scene", biome: "green-plains" }, label: "Corbeau charognard" },
+            { spec: { kind: "creature", id: "lantern-moth" }, scene: { kind: "scene", biome: "green-plains" }, label: "Phalène-lanterne" },
+            { spec: { kind: "creature", id: "mourning-owl" }, scene: { kind: "scene", biome: "dark-forest" }, label: "Chouette endeuillée" }
+          ],
+          caption: "Trois des créatures repeintes, chacune chez elle."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/crow-before.png",
+          after: "/news/2-0/crow-after.png",
+          alt: { before: "Le Corbeau charognard avant : une silhouette sombre et lisse, couchée sur une gerbe", after: "Le Corbeau charognard après : ailes levées, plumes en lambeaux, bec gris ouvert sur la gerbe dorée" },
+          caption: "Le Corbeau charognard : fais glisser pour le voir avant et après."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/toad-before.png",
+          after: "/news/2-0/toad-after.png",
+          alt: { before: "Le Crapaud putride avant : une masse verte aplatie dans la vase", after: "Le Crapaud putride après : un crapaud énorme dressé sur ses pattes palmées, ses verrues crevées de violet" },
+          caption: "Le Crapaud putride, dans le marais."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/page-before.png",
+          after: "/news/2-0/page-after.png",
+          alt: { before: "Le Page creux avant : une livrée rouge sous une flamme violette", after: "Le Page creux après : un page en livrée rouge et or, le visage creux, la lettre tendue" },
+          caption: "Le Page creux, dans le donjon."
+        },
+        { kind: "h2", text: "Tout le reste du monde" },
+        {
+          kind: "entry",
+          name: "La compagnie",
+          tag: "changed",
+          context: "Ceux qui marchent avec toi méritent d'avoir un vrai visage.",
+          changes: [
+            { label: "Les portraits", text: "chaque compagnon repeint, visage, regard et costume, dans ses propres couleurs" },
+            { label: "Aldric", text: "repeint dans chaque pose : en garde, en marche, à la fente" }
+          ]
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/maelle-before.png",
+          after: "/news/2-0/maelle-after.png",
+          alt: { before: "Le portrait de Maëlle avant : un visage simple aux traits dessinés", after: "Le portrait de Maëlle après : capuche verte, tresse cuivrée, sourire en coin" },
+          caption: "Maëlle, avant et après."
+        },
+        {
+          kind: "entry",
+          name: "Les lieux",
+          tag: "changed",
+          context: "La route traverse des endroits qui ont une histoire. Ils devaient en avoir l'air.",
+          changes: [
+            { label: "Bâtiments et ruines", text: "la forge de Brom, la cabane de l'arbre, les chevalements des mines, la maison sur pilotis, la porterie du donjon et tout le reste, repeints" },
+            { label: "Au fil des Âges", text: "ils s'effondrent toujours, et le lierre et la mousse les gagnent comme avant" },
+            { label: "Au loin", text: "les silhouettes vers lesquelles mène la route, repeintes" },
+            { label: "Le Sanctuaire du Crépuscule", text: "ses menhirs et ses treize autels, repeints" }
+          ]
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/forge-before.png",
+          after: "/news/2-0/forge-after.png",
+          alt: { before: "La forge de Brom avant : des murs lisses, un toit uni", after: "La forge de Brom après : chaume moussu, pierres taillées, le foyer qui rougeoie" },
+          caption: "La forge de Brom, au carrefour des plaines."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/keep-before.png",
+          after: "/news/2-0/keep-after.png",
+          alt: { before: "Les ruines du donjon avant : des murs à plat", after: "Les ruines du donjon après : pierre taillée, lierre, fenêtres violettes" },
+          caption: "Les ruines du donjon d'Orvane."
+        },
+        {
+          kind: "entry",
+          name: "Les objets",
+          tag: "changed",
+          context: "Une relique que tu gardes des heures doit être belle à regarder.",
+          changes: [
+            { label: "Les reliques", text: "chaque relique repeinte, de la commune ébréchée à la mythique de verre céleste, et chaque relique nommée" },
+            { label: "Les icônes", text: "autels, pouvoirs, étal et Roulotte repeints, et deux fois plus fins" },
+            { label: "Les coffres et la besace", text: "repeints" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "common" }, label: "Commune" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "rare" }, label: "Rare" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "epic" }, label: "Épique" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "legendary" }, label: "Légendaire" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "mythic" }, label: "Mythique" }
+          ],
+          caption: "Une même épée, de commune à mythique."
+        },
+        {
+          kind: "spoiler",
+          label: "Les formes du roi",
+          body: [
+            {
+              kind: "entry",
+              name: "Le roi, plus loin sur la route",
+              tag: "changed",
+              context: "Celui qui t'attend au bout de chaque Âge devait être le plus soigné de tous.",
+              changes: [{ label: "Ses formes des Âges suivants", text: "repeintes dans la même main que le Roi déchu" }]
+            },
+            {
+              kind: "figure",
+              art: [
+                { spec: { kind: "creature", id: "titan-king", animated: false }, scene: { kind: "scene", biome: "fallen-king-ruins" }, label: "Le Roi-Titan" },
+                { spec: { kind: "creature", id: "hallowed-king", animated: false }, scene: { kind: "scene", biome: "fallen-king-ruins" }, label: "Le Roi consacré" }
+              ],
+              caption: "Deux de ses formes."
+            }
+          ]
+        },
+        { kind: "p", text: "Merci de marcher avec nous. Va revoir tes vieilles connaissances : elles ont changé de visage, pas de caractère. Bonne route." }
+      ],
+      link: { route: "play", label: "Reprendre la route" }
+    },
+    en: {
+      title: "Patch notes 2.0",
+      summary: "The whole world finally shares one hand: creatures, companions, places and relics, all repainted in the Field Rat's line.",
+      body: [
+        { kind: "p", text: "Good evening, walker. The first creatures of the road, the Field Rat, the Boar, the Shade Wolf, were born from real paintings. Those that came after were drawn without one, and it showed: next to the Rat, many seemed to come from another world. 2.0 mends that. The creatures first, then the companions, the places and the objects have been repainted in the same hand as the first ones, then set back into pixels, so the whole night finally looks like one world." },
+        { kind: "h2", text: "New" },
+        {
+          kind: "entry",
+          name: "The bestiary",
+          tag: "changed",
+          context: "A creature is what you strike all night long. It deserves to look as good as the first one you ever met.",
+          changes: [
+            { label: "The Verdant Plains", text: "the Carrion Crow, the Hollow Scarecrow, the Lantern Moth, the Dusk Hare, the Last Reaper, the Lost Shepherd and the Golden Rat, repainted" },
+            { label: "The four other places", text: "every creature that had no painted portrait, repainted" },
+            { label: "The creatures of storms and encounters", text: "repainted as well" },
+            { label: "What changes", text: "the same fur, feathers and stone as the Field Rat, the same moonlit rim, the same eyes glowing in the dark" },
+            { label: "What stays", text: "every creature keeps its place on the road, its rank, its size and its story" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "creature", id: "carrion-crow" }, scene: { kind: "scene", biome: "green-plains" }, label: "Carrion Crow" },
+            { spec: { kind: "creature", id: "lantern-moth" }, scene: { kind: "scene", biome: "green-plains" }, label: "Lantern Moth" },
+            { spec: { kind: "creature", id: "mourning-owl" }, scene: { kind: "scene", biome: "dark-forest" }, label: "Mourning Owl" }
+          ],
+          caption: "Three of the repainted creatures, each at home."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/crow-before.png",
+          after: "/news/2-0/crow-after.png",
+          alt: { before: "The Carrion Crow before: a smooth dark shape lying over a sheaf", after: "The Carrion Crow after: wings raised, ragged feathers, grey beak open over the golden sheaf" },
+          caption: "The Carrion Crow: slide to see it before and after."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/toad-before.png",
+          after: "/news/2-0/toad-after.png",
+          alt: { before: "The Rot Toad before: a flat green mass in the mud", after: "The Rot Toad after: a huge toad raised on webbed hands, its warts burst violet" },
+          caption: "The Rot Toad, in the mire."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/page-before.png",
+          after: "/news/2-0/page-after.png",
+          alt: { before: "The Hollow Page before: a red livery under a violet flame", after: "The Hollow Page after: a page in red and gold livery, its face hollow, its letter held out" },
+          caption: "The Hollow Page, in the Keep."
+        },
+        { kind: "h2", text: "The rest of the world" },
+        {
+          kind: "entry",
+          name: "The company",
+          tag: "changed",
+          context: "Those who walk with you deserve a real face.",
+          changes: [
+            { label: "Portraits", text: "every companion repainted, face, gaze and garb, in their own colors" },
+            { label: "Aldric", text: "repainted in every pose: on guard, walking, lunging" }
+          ]
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/maelle-before.png",
+          after: "/news/2-0/maelle-after.png",
+          alt: { before: "Maëlle's portrait before: a plain face with drawn features", after: "Maëlle's portrait after: green hood, copper braid, a crooked smile" },
+          caption: "Maëlle, before and after."
+        },
+        {
+          kind: "entry",
+          name: "The places",
+          tag: "changed",
+          context: "The road crosses places with a story. They had to look like it.",
+          changes: [
+            { label: "Buildings and ruins", text: "Brom's forge, the tree-house, the mine head-frames, the house on stilts, the Keep's gatehouse and all the rest, repainted" },
+            { label: "Through the Ages", text: "they still crumble, and ivy and moss still take them as before" },
+            { label: "In the distance", text: "the silhouettes the road leads to, repainted" },
+            { label: "The Sanctum of Dusk", text: "its standing stones and thirteen altars, repainted" }
+          ]
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/forge-before.png",
+          after: "/news/2-0/forge-after.png",
+          alt: { before: "Brom's forge before: smooth walls, a plain roof", after: "Brom's forge after: mossy thatch, dressed stone, the hearth glowing" },
+          caption: "Brom's forge, at the crossroads of the plains."
+        },
+        {
+          kind: "compare",
+          before: "/news/2-0/keep-before.png",
+          after: "/news/2-0/keep-after.png",
+          alt: { before: "The Keep's ruins before: flat walls", after: "The Keep's ruins after: dressed stone, ivy, violet windows" },
+          caption: "The ruins of Orvane Keep."
+        },
+        {
+          kind: "entry",
+          name: "The objects",
+          tag: "changed",
+          context: "A relic you keep for hours should be a pleasure to look at.",
+          changes: [
+            { label: "Relics", text: "every relic repainted, from the chipped common to the mythic of sky-glass, and every named relic" },
+            { label: "Icons", text: "altars, powers, the stall and the Caravan repainted, and twice as fine" },
+            { label: "Chests and the satchel", text: "repainted" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "common" }, label: "Common" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "rare" }, label: "Rare" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "epic" }, label: "Epic" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "legendary" }, label: "Legendary" },
+            { spec: { kind: "relic", slot: "weapon", base: 2, rarity: "mythic" }, label: "Mythic" }
+          ],
+          caption: "One sword, from common to mythic."
+        },
+        {
+          kind: "spoiler",
+          label: "The King's forms",
+          body: [
+            {
+              kind: "entry",
+              name: "The King, further down the road",
+              tag: "changed",
+              context: "The one who waits at the end of every Age had to be the most carefully drawn of all.",
+              changes: [{ label: "His forms of the later Ages", text: "repainted in the same hand as the Fallen King" }]
+            },
+            {
+              kind: "figure",
+              art: [
+                { spec: { kind: "creature", id: "titan-king", animated: false }, scene: { kind: "scene", biome: "fallen-king-ruins" }, label: "The Titan King" },
+                { spec: { kind: "creature", id: "hallowed-king", animated: false }, scene: { kind: "scene", biome: "fallen-king-ruins" }, label: "The Hallowed King" }
+              ],
+              caption: "Two of his forms."
+            }
+          ]
+        },
+        { kind: "p", text: "Thank you for walking with us. Go and see your old acquaintances: they have changed faces, not tempers. Safe travels." }
+      ],
+      link: { route: "play", label: "Back on the road" }
+    }
+  },
+  {
     slug: "patch-notes-1-3",
     date: "2026-10-17",
     kind: "patch",

@@ -2,9 +2,9 @@
 
 exports[`a chest opened at the stall > matches the recorded snapshots of the opening 1`] = `
 {
-  "chest epic": "b8e5c64a 7940f08e 51a7a0d9 6fdb35d0 34ad89aa 1f8be63f 90f0da49 bd8317f3 646593ba 5e329dc5",
-  "chest mythic": "b8e5c64a 7940f08e 51a7a0d9 6fdb35d0 83977fa8 aeb7fe68 9cebdf90 7be1f1b9 9ca94cc9 1adcbf95 65abbc4e 9529062e",
-  "great-chest epic": "a4e65277 8b6a7e43 0d359d3d 15b49dfc 21d99adf 81518332 5e7b628e 466de346",
-  "great-chest mythic": "a4e65277 8b6a7e43 2b83a759 4d68e0bb 0f1c8d3b 443d6e07 79c49165 345f796f e0e8c9d2 efc90728",
+  "chest epic": "04114939 468e338d f685094e 361ca875 59fee48c 007faf4e c3509ea5 76c1b178 07efd386 faec3d1a",
+  "chest mythic": "04114939 468e338d f685094e 361ca875 95216a57 42f2d2c7 5ad0d680 0bb1cef4 f3b4eca5 85c6decc 536f3766 215a63e9",
+  "great-chest epic": "f557365c d93d42a4 b859573d a9318e66 a93c8d1d dd364105 19de1fca feee470a",
+  "great-chest mythic": "f557365c d93d42a4 8ad19e06 3a11b3f4 b5e7056b 7653b7cb 0af4ad45 1d2049ea c0175ec5 1de6c180",
 }
 `;

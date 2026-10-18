@@ -113,33 +113,39 @@ function blur(out: Pixels, rings = 2) {
 // ------------------------------------------------------------------ II: the Elder World
 
 /**
- * The skull of something that lived before there was a here, lying on its jaw, drawn by
- * hand: `a` bone in the moonlight, `b` bone, `c` bone in shade, `d` its hollows.
+ * The skull of something that lived before there was a here, lying on its jaw, painted
+ * then traced: `a` bone in the moonlight, `b` bone, `c` bone in shade, `d` its hollows.
  */
 const SKULL: readonly string[] = [
-  "aa",
-  ".ab",
-  ".abb",
-  "..abb",
-  "...abb",
-  "...abbb.......aaaaaaa",
-  "....abbb...aaabbbbbbbaa",
-  "....cbbbbaabbbbbbbbbbbbaa",
-  ".....cbbbbbbbbbbbbbbbbbbbaaa",
-  "......cbbbbbbbbbbbbbbbddddbbaaaaa",
-  ".......bbbbbbbbbbbbbbddddddbbbbbbaaaaaaa",
-  ".......bbbbbbbbbbbbbbddddddbbbbbbbbbbbbbaaaaaaa",
-  "......bbbbbbbbbbbbbbbbddddbbbbbbbbbbbbbbbbbbbbbaaaa",
-  "......bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbddbbaa",
-  "......cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba",
-  "......cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  "......ccbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccccccccc",
-  ".......ccbbbbbbbbbbbbbbbbbbbca..a..a..a..a..a..a..a.a",
-  ".......cccbbbbbbbbbbbbbbbbbb..a..a..a..a..a..a..a",
-  "........cccbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  ".........ccccbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
-  "..........cccccccbbbbbbbbbbbbbbbbbbbbbbbbbbbcccc",
-  "...........ccccccccccccccccccccccccccccccccccc"
+  "....c",
+  "....c",
+  ".",
+  "...............c",
+  ".....c.........c",
+  ".....c..............aaaaaa",
+  "......b........aaaaaaaaaaaa",
+  "......cbc......aaaabbaaaaaa",
+  ".......cccbb.baaaaabccbaa",
+  ".........cccbbaabbbbccbaacccbbb",
+  "..........ccccbbbbbcccabdddddcbaa.aa",
+  "...........cccbbbbbbcbbddddddcbaa..bcc",
+  "...........dcbbbbbbbcacdddddddbbaa...c",
+  "...........ccbbbbbbbcacdddddddbbbaaa",
+  "..........cccbbbbbcccbbdddddddabbbaaab",
+  "..........cbcbbbbbccdbbbddddcbbcaaaaabd",
+  "..........cbbcccccbbabbaaaaabccdaabaaabccc",
+  "..........ccbcbbabbbbbaaaabccbbbaabaaaaaabbbcca",
+  "..........cccccbbcdddccbbbcccbbbbaaaaaaaaaaacddbaa",
+  "............ccccdcdddcddcddcccbbabaaaaaaaaaabbccbaabb",
+  "............cccddccccccdddddccbbbbbbbaabbbabbbbbbbbbbc",
+  ".............ccccdcbcccdddc..cccbcbbbabbbbabbcccccccbbc",
+  "................ccdccbbcdcddccccdccccccccccccccbccccccc",
+  ".................cdcbbbbcbbbcccccccccbbbbbbbccccc",
+  "...............dddd.bbbbbabbbbbcccccbbcbccbb",
+  ".....................bbabababacbabbccbdcbcbc",
+  ".....................bbbbbbaaabbabbbbbcccdcd",
+  ".........................cccbbbbbb.bbbbccccc",
+  "...............................cc..b..bbccc"
 ];
 
 /**
