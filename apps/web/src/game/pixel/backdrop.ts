@@ -382,7 +382,7 @@ export function paintShafts(recipe: SceneRecipe): Pixels | null {
  * traced, one character per pixel: `#` the place, `o` its lights, `.` the sky. The last row
  * stands on the landmark's base.
  */
-const LANDMARKS: Record<LandmarkKind, readonly string[]> = {
+export const LANDMARKS: Record<LandmarkKind, readonly string[]> = {
   keep: [
     "..................#",
     "..................#",
@@ -432,7 +432,7 @@ const LANDMARKS: Record<LandmarkKind, readonly string[]> = {
     "................####",
     "................#####",
     "................#####",
-    "...............######",
+    "...............##oo##",
     "...............#######",
     ".............##########",
     "####################################"
