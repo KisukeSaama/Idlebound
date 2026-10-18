@@ -16,6 +16,8 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+## v2.0.0
+
 ### New
 
 - The bestiary redrawn: every creature of the road that had no painted portrait (the Carrion
