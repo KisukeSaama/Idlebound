@@ -1026,6 +1026,7 @@ button.resource:hover .resource-label {
 
 .talent-tip em {
   font-style: normal;
+  font-family: var(--font-body);
   color: var(--violet-2);
   font-weight: 700;
 }
@@ -2356,6 +2357,7 @@ button.resource:hover .resource-label {
   margin: 0;
   font-size: 0.76rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -2792,6 +2794,7 @@ button.resource:hover .resource-label {
   margin: 4px 0 0;
   font-size: 0.8rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -2827,6 +2830,7 @@ button.resource:hover .resource-label {
   margin: 0;
   font-size: 0.88rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.5;
   color: var(--text);
 }
@@ -3785,6 +3789,7 @@ kbd {
 
 .tip-again {
   font-style: normal;
+  font-family: var(--font-body);
   font-weight: 700;
   color: var(--gold-2);
 }
@@ -4518,6 +4523,7 @@ kbd {
   max-width: 60ch;
   font-size: 0.82rem;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--text);
   text-shadow: 0 1px 6px rgba(11, 10, 20, 0.95);
 }
@@ -4548,6 +4554,7 @@ kbd {
   margin: 0;
   font-size: 0.8rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--text);
 }
@@ -4558,6 +4565,7 @@ kbd {
   margin-top: 3px;
   font-size: 0.72rem;
   font-style: normal;
+  font-family: var(--font-body);
   color: var(--faint);
 }
 
@@ -4641,6 +4649,7 @@ kbd {
   margin: 0 0 14px;
   font-size: 0.82rem;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--faint);
 }
 
@@ -4681,6 +4690,7 @@ kbd {
 .crown-hover {
   font-size: 0.8rem;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--violet-2);
   opacity: 0;
   transition: opacity 300ms ease;
@@ -4841,6 +4851,7 @@ kbd {
 /* What stays after an absence: the opening line's band, paler, and six seconds long. */
 .scene-dream {
   font-style: italic;
+  font-family: var(--font-italic);
   font-weight: 500;
   color: var(--violet-2);
   animation-duration: 6s;
@@ -4980,6 +4991,7 @@ kbd {
 .promise-none {
   margin: 0;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--muted);
 }
 
@@ -5067,6 +5079,7 @@ kbd {
   margin: 4px 0;
   font-size: 0.88rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--text);
 }

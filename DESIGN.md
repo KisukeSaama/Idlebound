@@ -68,8 +68,11 @@ Content colors live with the game data, not in CSS:
 
 - **Display: Cinzel** (600, 700, 800) self-hosted via `next/font/local` (`src/fonts`, OFL), variable
   `--font-display`. Headings, the gold counter, big numbers, window titles. Serif, engraved, fantasy.
-- **Body: Alegreya Sans** (400, 500, 700, 800, italic) self-hosted via `next/font/local`, variable
+- **Body: Alegreya Sans** (400, 500, 700, 800) self-hosted via `next/font/local`, variable
   `--font-body`. Everything else: a humanist sans with calligraphic roots, very readable.
+  Its italics are a family of their own (`--font-body-italic`, never preloaded: a page loads
+  them when it shows them); italic text names `--font-italic` (the italics, then the body),
+  and `em`, `i` and `cite` take it by default.
   Base 16px, line-height 1.5. Labels are sentence case, never tracked capitals (Cinzel is
   the only face in capitals, by design).
   The two variables are set by `next/font` on `<html>` only: `globals.css` never redefines

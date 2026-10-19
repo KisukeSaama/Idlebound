@@ -37,6 +37,8 @@
   --bevel: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
   /* --font-display (Cinzel) and --font-body (Alegreya Sans) come from next/font on <html> ([locale]/layout.tsx): defined here too, they would name families that do not exist. */
+  /* Italic text names the italic family first: its faces live apart, never preloaded. */
+  --font-italic: var(--font-body-italic), var(--font-body), sans-serif;
   color-scheme: dark;
   /*
    * Screens today run from phones to 4K: past a laptop's size the whole interface grows, laid
@@ -829,4 +831,10 @@ button {
   display: grid;
   place-items: center;
   margin: 2rem auto 1rem;
+}
+
+/* Emphasis and citations take the italic family (lore lines, quotes); an override back to
+   upright text names the body family again. */
+:where(em, i, cite) {
+  font-family: var(--font-italic);
 }
