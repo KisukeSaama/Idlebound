@@ -134,8 +134,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       TZ: Europe/Paris
     volumes:
-      # Bind mount per environment: state visible on the host for backups, dev and prod kept
-      # apart. The CI creates the folder before Compose.
+      # Bind mount per environment, dev and prod kept apart. The CI creates the folder before
+      # Compose. Backups are dumps taken by the `backup` service, never a copy of this folder.
       - ${DATA_DIR}/${DEPLOY_ENV}/postgres:/var/lib/postgresql/data
     networks:
       - application
@@ -149,6 +149,70 @@ services:
     cpus: 2
     security_opt:
       - no-new-privileges:true
+
+  # A dump a day, kept 14 days on the host (deploy/backup.sh, restore in deploy/README.md).
+  # The CI runs the same script once before every deployment.
+  backup:
+    image: postgres:17-alpine
+    logging: *logging
+    entrypoint: ["sh", "/scripts/backup.sh"]
+    environment:
+      PGHOST: postgres
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_KEEP_DAYS: "14"
+      TZ: Europe/Paris
+    volumes:
+      - ./backup.sh:/scripts/backup.sh:ro
+      - ${DATA_DIR}/${DEPLOY_ENV}/backups:/backups
+    networks:
+      - application
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 1
+    security_opt:
+      - no-new-privileges:true
+
+  # Off the host: copies the dumps to BACKUP_REMOTE, an rclone remote written inline
+  # (`:s3,provider=Other,endpoint=…,access_key_id=…,secret_access_key=…:bucket/idlebound`),
+  # every six hours, and forgets there what is older than 30 days. Started only when the
+  # CI sets IDLEBOUND_BACKUP_REMOTE (Compose profile "offsite").
+  offsite:
+    image: rclone/rclone:1.69
+    profiles: ["offsite"]
+    logging: *logging
+    entrypoint:
+      - sh
+      - -c
+      - |
+        while true; do
+          rclone copy /backups "$$BACKUP_REMOTE" --include 'idlebound-*.dump' --max-age 2d \
+            && rclone delete "$$BACKUP_REMOTE" --min-age 30d \
+            || echo "offsite: copy failed" >&2
+          sleep 21600
+        done
+    environment:
+      BACKUP_REMOTE: ${BACKUP_REMOTE:-}
+      TZ: Europe/Paris
+    volumes:
+      - ${DATA_DIR}/${DEPLOY_ENV}/backups:/backups:ro
+    networks:
+      - egress
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.5
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /config
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
 networks:
   application:

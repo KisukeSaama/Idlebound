@@ -17,6 +17,9 @@
 #                                 it, links are written to the API log, addresses are not
 #                                 confirmed and inactive accounts are never purged
 #   IDLEBOUND_MAIL_FROM           optional — sender of those e-mails
+#   IDLEBOUND_BACKUP_REMOTE       optional — rclone remote, written inline, where the daily
+#                                 database dumps are copied off the host (deploy/README.md);
+#                                 without it, the dumps stay on the host only
 
 image: docker:29
 
@@ -110,6 +113,7 @@ variables:
         mkdir -p "${target}"
         cp deploy/compose.yml "${target}/compose.yml"
         cp deploy/paths.env "${target}/paths.env"
+        cp deploy/backup.sh "${target}/backup.sh"
         # app.env carries credentials, so it is written with a restrictive umask and
         # tightened again on the host below.
         (umask 077; printf '%s\n' \
@@ -123,6 +127,7 @@ variables:
           "SITE_INDEXABLE=${indexable}" \
           "SMTP_URL=${IDLEBOUND_SMTP_URL:-}" \
           "MAIL_FROM=${IDLEBOUND_MAIL_FROM:-Idlebound <no-reply@kisukesaama.com>}" \
+          "BACKUP_REMOTE=${IDLEBOUND_BACKUP_REMOTE:-}" \
           > "${target}/app.env")
       }
 
@@ -145,22 +150,25 @@ variables:
             case "$DATA_REL" in ""|/*|*..*) exit 1 ;; esac
             host_target="/host-home/$TARGET_REL"
             host_data="/host-home/$DATA_REL/$DEPLOY_ENV"
-            # One mkdir per bind-mounted data directory in compose.yml (only postgres).
-            mkdir -p "$host_target" "$host_data/postgres"
+            # One mkdir per bind-mounted data directory in compose.yml.
+            mkdir -p "$host_target" "$host_data/postgres" "$host_data/backups"
             tar -C "$host_target" -xf -
             chmod 750 "$host_target" "$host_data" "$host_data/postgres"
-            chmod 640 "$host_target/compose.yml" "$host_target/paths.env"
+            chmod 700 "$host_data/backups"
+            chmod 640 "$host_target/compose.yml" "$host_target/paths.env" "$host_target/backup.sh"
             chmod 600 "$host_target/app.env"
             # web and api are read_only and write only to tmpfs: no chown needed.
           '
       }
 
       validate_paths
-      mkdir -p "${TARGET_DIR}" "${ENV_DATA_DIR}/postgres"
+      mkdir -p "${TARGET_DIR}" "${ENV_DATA_DIR}/postgres" "${ENV_DATA_DIR}/backups"
       write_runtime_files "${TARGET_DIR}"
       stage_on_host "${TARGET_DIR}"
     - echo "${CI_REGISTRY_PASSWORD:-${CI_JOB_TOKEN}}" | docker login --username "${CI_REGISTRY_USER:-gitlab-ci-token}" --password-stdin "${CI_REGISTRY}"
     - |
+      # The off-site copy of the backups runs only when a remote is configured.
+      if [[ -n "${IDLEBOUND_BACKUP_REMOTE:-}" ]]; then export COMPOSE_PROFILES=offsite; fi
       compose() {
         docker compose -p "${APP_SUBDOMAIN}-${DEPLOY_ENV}" \
           --env-file paths.env --env-file app.env -f compose.yml "$@"
@@ -171,6 +179,11 @@ variables:
       # Print it here or every failure costs a trip to the server.
       deploy() {
         compose pull
+        # A dump before every rollout: the API runs its migrations as it starts, and some
+        # drop columns. Skipped on the first deployment, when no database runs yet.
+        if [[ -n "$(compose ps --status running -q postgres 2>/dev/null)" ]]; then
+          compose run --rm --no-deps backup once predeploy
+        fi
         compose up -d --remove-orphans && return 0
         echo "Deployment failed. Container state and recent logs follow." >&2
         compose ps -a >&2 || true

@@ -1250,6 +1250,9 @@ language.
   `noindex`.
 - Hosted on the owner's platform (Traefik, GitLab CI). Production:
   `https://idlebound.kisukesaama.com`, development: `https://idlebound-d.kisukesaama.com`.
+- The database is dumped every day (14 days kept on the host, copied off it when a remote is
+  configured) and before every deployment. Operations, restoring and rolling back:
+  [deploy/README.md](deploy/README.md).
 
 ## Non-goals
 
