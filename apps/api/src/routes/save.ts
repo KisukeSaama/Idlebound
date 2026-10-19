@@ -7,7 +7,7 @@ import { db } from "../db/client";
 import { guestSaves, leaderboard, pendingSeeds, saveRejections, saves, type Branch, type Chain } from "../db/schema";
 import { env } from "../env";
 import { fateWindow, newSecret } from "../lib/fates";
-import { accountOwner, consumePending, decodeJournal, findPending, guestOwner, pendingSeed, recordPresence, report } from "../lib/replays";
+import { accountOwner, consumePending, decodeJournal, findPending, guestOwner, pendingSeed, recordPresence, report, tally } from "../lib/replays";
 import { runReplay } from "../replay/pool";
 import type { ReplayVerdict } from "../replay/check";
 import { forgetGuest, guestId, keepGuest, newGuest, renewGuest, visitDue } from "../lib/guest";
@@ -344,6 +344,7 @@ async function settle(
   }
 
   const { verdict, problem, earlier } = measured;
+  tally(problem ?? verdict?.outcome ?? "none", now);
   const ignored = (verdict?.ignored ?? 0) + (journal && journal !== "invalid" ? journal.dropped : 0);
   if (problem || verdict?.outcome === "diverged" || ignored > 0 || (verdict?.stray ?? 0) > 0) {
     await report(tx, ledger.who, problem ?? verdict!.outcome, {

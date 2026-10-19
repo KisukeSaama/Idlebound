@@ -1012,7 +1012,10 @@ same replays, for a person to review the boards; nothing is ever refused or hidd
   skipped, kept 90 days, 30 per game and hour). `REPLAY_MODE=enforce`: the replayed game is
   the one kept and ranked, the page adopts it (the save's answer carries it, and the page
   replays what the walker did since on top of it); a save without a journal the server can
-  replay is refused (`journal`).
+  replay is refused (`journal`). The deployment runs `enforce` on dev and `shadow` on
+  production until the replays say production can decide too: every replay is counted by what
+  it found (`replay_tally`, by day, 90 days), and `review --replays` gives the share of saves
+  enforce would keep, correct or refuse, and the paths that diverge most (deploy/README.md).
 - A journal sent in parts (back from an outage) is held, part after part, to the time since
   the save before the first part, as one save would be; one that builds on an earlier
   revision, to the time since that revision.

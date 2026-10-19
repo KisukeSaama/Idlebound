@@ -105,6 +105,8 @@ services:
       SMTP_URL: ${SMTP_URL:-}
       MAIL_FROM: ${MAIL_FROM:-Idlebound <no-reply@kisukesaama.com>}
       TZ: Europe/Paris
+      # enforce: the replayed game is the one kept; shadow: it is only compared and reported.
+      REPLAY_MODE: ${REPLAY_MODE:-shadow}
       # Set, not derived from the host's cores: a replay takes about 9 ms (PRODUCT.md), two
       # threads keep up with thousands of walkers.
       REPLAY_WORKERS: "2"

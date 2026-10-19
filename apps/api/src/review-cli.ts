@@ -6,6 +6,8 @@
 //   review --show <username>     puts it back
 //   review --snapshots <username>             the account's daily snapshots (30 days)
 //   review --restore <username> --day <date>  puts that day's snapshot back as the account's game
+//   review --replays [--days 7]   what the replays found: the share of saves enforce mode
+//                                 would keep, correct or refuse, and where games diverge
 //
 // La Veille (crystals) is reviewed first: it is the board presence weighs on most.
 import { usernameKey } from "@idlebound/game";
@@ -13,6 +15,7 @@ import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { db, sql } from "./db/client";
 import { leaderboard, presenceDays, users } from "./db/schema";
 import { presenceScore } from "./lib/presence";
+import { replaySummary } from "./lib/replay-review";
 import { listSnapshots, restoreSnapshot } from "./lib/snapshots";
 import { BOARDS, type BoardId } from "./routes/leaderboard";
 
@@ -96,6 +99,19 @@ async function restore(username: string, day: string | undefined) {
   console.log(`${user.username}: the game of ${day} (best stage ${restored.maxStage}) is back as revision ${restored.revision}. Open pages will be asked to choose.`);
 }
 
+async function replays() {
+  const days = Number(option("days") ?? 7);
+  const summary = await replaySummary(days);
+  console.log(`Replays over ${days} days: ${summary.total}.`);
+  if (summary.total === 0) return;
+  console.table(summary.outcomes.map((row) => ({ found: row.outcome, saves: row.count, share: percent(row.share) })));
+  console.log(`Enforced, these saves would be kept as sent: ${percent(summary.kept)}, corrected to the replayed game: ${percent(summary.corrected)}, refused: ${percent(summary.refused)}.`);
+  if (summary.paths.length > 0) {
+    console.log("Where diverging games differ most often (reports, one per game and path):");
+    console.table(summary.paths);
+  }
+}
+
 const hide = option("hide");
 const show = option("show");
 const listed = option("snapshots");
@@ -108,7 +124,9 @@ const task = hide
       ? snapshots(listed)
       : restored
         ? restore(restored, option("day"))
-        : review();
+        : process.argv.includes("--replays")
+          ? replays()
+          : review();
 task
   .catch((error) => {
     console.error(error);

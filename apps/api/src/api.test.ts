@@ -1172,6 +1172,12 @@ suite("API (real Postgres)", () => {
       expect(row).toEqual({ seed: true, runtime: true, parent: String(saved.json.revision) });
       const reports = await sql`select outcome from replay_reports where user_id = ${userId}`;
       expect(reports).toEqual([]);
+      // Every replay is counted by what it found, for the share `review --replays` reads.
+      const { flushTally } = await import("./lib/replays");
+      const { replaySummary } = await import("./lib/replay-review");
+      await flushTally();
+      const summary = await replaySummary(1);
+      expect(summary.outcomes.find((row) => row.outcome === "match")?.count).toBeGreaterThanOrEqual(2);
       // What the replay saw of the walker's presence is kept, outside the save.
       const [presence] = await sql`select acts, crystals_seen from presence_days where user_id = ${userId}`;
       expect(presence).toBeDefined();

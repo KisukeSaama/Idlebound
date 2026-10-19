@@ -59,6 +59,22 @@ anyone else's, from the `api` container (`compose exec api sh`):
 - `node review.js --restore <username> --day YYYY-MM-DD`: that day's game becomes the
   account's, as a new revision; open pages are asked to choose.
 
+## The replay
+
+The API replays every save's journal (PRODUCT.md, Anti-cheat). `REPLAY_MODE` says what it does
+with the result: `enforce` keeps the replayed game and refuses a save it cannot replay;
+`shadow` keeps the save as the page sent it and only reports. The deployment sets `enforce` on
+dev and `shadow` on production; the CI variable `IDLEBOUND_REPLAY_MODE` overrides it.
+
+Before production goes to `enforce`, read what the replays found there, from the `api`
+container (`compose exec api sh`): `node review.js --replays --days 7`. It gives the share of
+saves enforce would keep as sent, correct to the replayed game, and refuse (by cause:
+`no-journal` from pages older than the journal, `no-base`, `journal-invalid`, `busy`…), and
+the paths where diverging games differ most often. Go to `enforce` once the refused share is
+near zero for a week (a refused save is a walker who loses play) and the corrected share comes
+from the paths of a cheat, not from a game the engine replays differently (a bug to fix
+first).
+
 ## Rolling back
 
 Every build pushes its images twice: under the branch (`main`, `develop`) and under the

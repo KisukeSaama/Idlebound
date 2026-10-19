@@ -212,6 +212,17 @@ export const replayReports = pgTable("replay_reports", {
 }, (table) => [index("replay_reports_user_idx").on(table.userId), index("replay_reports_created_idx").on(table.createdAt)]);
 
 /**
+ * Every replay a day, by what it found ("match", "diverged", a problem): the share of saves
+ * the replay would correct or refuse once enforced, beside the reports that say why (see
+ * `review --replays`). Kept 90 days, like the reports.
+ */
+export const replayTally = pgTable("replay_tally", {
+  day: date("day", { mode: "string" }).notNull(),
+  outcome: text("outcome").notNull(),
+  count: integer("count").notNull().default(0)
+}, (table) => [primaryKey({ columns: [table.day, table.outcome] })]);
+
+/**
  * What the replays saw of an account's presence, a row per day (kept 90 days), outside its
  * clicks: crystals that appeared and were caught and how fast, powers used as they came back,
  * ascensions, and the longest stretch of such acts without a 20-minute pause. Never in the

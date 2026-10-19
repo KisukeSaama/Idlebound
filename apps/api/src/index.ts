@@ -3,6 +3,7 @@ import { createApp } from "./app";
 import { sql } from "./db/client";
 import { env } from "./env";
 import { checkMailTransport } from "./lib/mail";
+import { flushTally } from "./lib/replays";
 import { purgeExpired } from "./lib/session";
 import { runMigrations } from "./migrate";
 
@@ -23,7 +24,9 @@ purge.unref();
 function shutdown(signal: string) {
   console.log(`[api] ${signal} received, shutting down…`);
   server.close(() => {
-    sql.end({ timeout: 5 }).finally(() => process.exit(0));
+    flushTally()
+      .catch((error) => console.error("[api] replay tally", error))
+      .finally(() => sql.end({ timeout: 5 }).finally(() => process.exit(0)));
   });
   setTimeout(() => process.exit(1), 10_000).unref();
 }

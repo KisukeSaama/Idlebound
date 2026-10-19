@@ -17,6 +17,8 @@
 #                                 it, links are written to the API log, addresses are not
 #                                 confirmed and inactive accounts are never purged
 #   IDLEBOUND_MAIL_FROM           optional — sender of those e-mails
+#   IDLEBOUND_REPLAY_MODE         optional — shadow or enforce; enforce on dev, shadow on
+#                                 production by default (deploy/README.md, "The replay")
 #   IDLEBOUND_BACKUP_REMOTE       optional — rclone remote, written inline, where the daily
 #                                 database dumps are copied off the host (deploy/README.md);
 #                                 without it, the dumps stay on the host only
@@ -124,6 +126,15 @@ variables:
         # Only production is indexed by search engines; dev answers noindex.
         local indexable=false
         if [[ "${DEPLOY_ENV}" == "prod" ]]; then indexable=true; fi
+        # The replay decides on dev; on production it only reports until the reports say it
+        # can decide there too (deploy/README.md, "The replay"). IDLEBOUND_REPLAY_MODE overrides.
+        local replay_mode=shadow
+        if [[ "${DEPLOY_ENV}" == "dev" ]]; then replay_mode=enforce; fi
+        replay_mode="${IDLEBOUND_REPLAY_MODE:-${replay_mode}}"
+        case "${replay_mode}" in
+          shadow|enforce) ;;
+          *) echo "IDLEBOUND_REPLAY_MODE must be shadow or enforce." >&2; exit 1 ;;
+        esac
 
         mkdir -p "${target}"
         cp deploy/compose.yml "${target}/compose.yml"
@@ -143,6 +154,7 @@ variables:
           "SMTP_URL=${IDLEBOUND_SMTP_URL:-}" \
           "MAIL_FROM=${IDLEBOUND_MAIL_FROM:-Idlebound <no-reply@kisukesaama.com>}" \
           "BACKUP_REMOTE=${IDLEBOUND_BACKUP_REMOTE:-}" \
+          "REPLAY_MODE=${replay_mode}" \
           > "${target}/app.env")
       }
 
