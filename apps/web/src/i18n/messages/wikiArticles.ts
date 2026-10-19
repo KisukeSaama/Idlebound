@@ -34,8 +34,8 @@ export const wikiArticles = defineMessages<Articles>({
             {
               steps: [
                 "Frappe le monstre (souris, toucher, ou Entrée/Espace quand la scène a le focus). Chaque monstre vaincu donne de l'or.",
-                "Monte le niveau d'**Aldric** deux ou trois fois : ses niveaux augmentent tes dégâts de frappe. Au niveau 10, son premier talent double ta frappe et débloque la **Frénésie** (touche 1).",
-                `Puis garde ton or : à ${f.maelleCost} pièces, recrute **Maëlle**. C'est ta première compagne : elle frappe toute seule, chaque seconde.`,
+                "Monte le niveau d'**Aldric** deux fois : ses niveaux augmentent tes dégâts de frappe. Au niveau 10, son premier talent double ta frappe et débloque la **Frénésie** (touche 1).",
+                `Puis garde ton or : à ${f.maelleCost} pièces, recrute **Maëlle**. C'est ta première compagne : elle frappe toute seule, chaque seconde.`,
                 "Recrute ensuite chaque compagnon dès qu'il apparaît (le suivant se dévoile quand le précédent a rejoint la compagnie), et monte leurs niveaux. Vise les paliers 10 et 25 : chacun double leurs dégâts.",
                 "Avance d'étape en étape. L'Auto est activé par défaut : dès que tu as vaincu 10 monstres, tu passes à l'étape suivante."
               ]
@@ -49,7 +49,7 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             `À l'étape 5, une **élite** (6 fois les PV d'un monstre normal). À l'étape 10, le **gardien** du biome (10 fois les PV). Tu as ${f.bossTimer} secondes pour le vaincre.`,
             "Si le temps s'écoule, tu recules d'une étape et l'Auto se met en pause : c'est le mode **Rester**. Tu continues de gagner de l'or sur l'étape d'avant. Renforce tes compagnons, puis appuie sur **Auto** pour retenter.",
-            `Bonne nouvelle : jusqu'à l'étape ${f.woundLastStage}, un boss **garde ses blessures**. Les dégâts que tu lui as faits restent sur lui (jusqu'à ${f.woundCapPct} % de ses PV) quand tu reviens. Insiste, il finit par tomber. Ta première nuit, la porte du Donjon et le Roi gardent aussi les leurs (le Roi jusqu'à ${f.firstKingWoundPct} % de ses PV).`,
+            `Bonne nouvelle : jusqu'à l'étape ${f.woundLastStage}, un boss **garde ses blessures**. Les dégâts que tu lui as faits restent sur lui (jusqu'à ${f.woundCapPct} % de ses PV) quand tu reviens. Insiste, il finit par tomber. Ta première nuit, la porte du Donjon et le Roi gardent aussi les leurs (le Roi jusqu'à ${f.firstKingWoundPct} % de ses PV).`,
             { tip: "Lance tes pouvoirs juste au début d'un combat de boss, pas avant : leurs 30 secondes couvrent alors tout le chronomètre." }
           ]
         },
@@ -154,7 +154,7 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             `Chaque étape compte ${f.monstersPerStage} monstres. Vaincs-les pour passer à la suivante. Toutes les 5 étapes, un boss t'attend avec un chronomètre de ${f.bossTimer} s :`,
             { slot: "stageKinds" },
-            `Si le chronomètre s'écoule, tu recules d'une étape et l'Auto se met en pause (mode **Rester**). Jusqu'à l'étape ${f.woundLastStage}, élites et gardiens **gardent leurs blessures** (jusqu'à ${f.woundCapPct} % de leurs PV) : chaque tentative compte. La porte du Donjon (étape 45) et le Roi gardent aussi les leurs ta première nuit, le Roi jusqu'à ${f.firstKingWoundPct} % de ses PV ; ensuite, comme les strates plus profondes, ils guérissent entièrement.`,
+            `Si le chronomètre s'écoule, tu recules d'une étape et l'Auto se met en pause (mode **Rester**). Jusqu'à l'étape ${f.woundLastStage}, élites et gardiens **gardent leurs blessures** (jusqu'à ${f.woundCapPct} % de leurs PV) : chaque tentative compte. La porte du Donjon (étape 45) et le Roi gardent aussi les leurs ta première nuit, le Roi jusqu'à ${f.firstKingWoundPct} % de ses PV ; ensuite, comme les strates plus profondes, ils guérissent entièrement.`,
             "La carte permet de revenir sur n'importe quelle étape déjà franchie. Un boss rejoué depuis la carte ne paie que de l'or : seul le boss le plus loin de la nuit lâche reliques et éclats."
           ]
         },
@@ -688,7 +688,7 @@ export const wikiArticles = defineMessages<Articles>({
             {
               steps: [
                 "Strike the monster (mouse, touch, or Enter/Space when the scene has focus). Every monster beaten gives gold.",
-                "Level **Aldric** two or three times: his levels raise your strike damage. At level 10, his first talent doubles your strike and unlocks **Frenzy** (key 1).",
+                "Level **Aldric** twice: his levels raise your strike damage. At level 10, his first talent doubles your strike and unlocks **Frenzy** (key 1).",
                 `Then keep your gold: at ${f.maelleCost} coins, hire **Maëlle**. She is your first companion: she strikes on her own, every second.`,
                 "Then hire each companion as soon as they appear (the next shows once the one before joined), and level them. Aim for levels 10 and 25: each doubles their damage.",
                 "Push on stage after stage. Auto is on by default: once you beat 10 monsters, you move to the next stage."
