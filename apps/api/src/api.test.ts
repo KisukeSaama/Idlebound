@@ -1178,6 +1178,55 @@ suite("API (real Postgres)", () => {
       }
     }, 60_000);
 
+    it("keeps an honest game as sent once enforced, and refuses what it cannot replay", async () => {
+      const { env } = await import("./env");
+      env.REPLAY_MODE = "enforce";
+      try {
+        const { client, userId } = await signedUp("10.0.2.20", "Enf");
+        const { page } = await begun(client);
+        page.play(60);
+        const first = page.outgoing();
+        const saved = await client.call("PUT", "/save", { state: first.state, baseRevision: null, journal: first.journal });
+        expect(saved.status, JSON.stringify(saved.json)).toBe(200);
+        // The replay landed on the game sent: nothing to correct.
+        expect(saved.json.replay).toBeUndefined();
+        page.kept(saved.json.revision, saved.json.fates);
+
+        page.play(30);
+        const honest = page.outgoing();
+        // A journal the server cannot read, and one that builds on a revision it never kept.
+        const unreadable = await client.call("PUT", "/save", { state: honest.state, baseRevision: saved.json.revision, journal: "not-a-gzip" });
+        expect(unreadable.status).toBe(422);
+        expect(codes(unreadable)).toContain("journal");
+        const elsewhere = await client.call("PUT", "/save", { state: honest.state, baseRevision: saved.json.revision, journal: { ...honest.journal, base: { ...honest.journal.base, revision: 99 } } });
+        expect(elsewhere.status).toBe(422);
+        expect(codes(elsewhere)).toContain("journal");
+        // Nothing was kept from the refused saves; the honest one still lands.
+        const kept = await client.call("PUT", "/save", { state: honest.state, baseRevision: saved.json.revision, journal: honest.journal });
+        expect(kept.status, JSON.stringify(kept.json)).toBe(200);
+        expect(kept.json.replay).toBeUndefined();
+        const [row] = await sql`select revision, (state->>'gold')::float as gold from saves where user_id = ${userId}`;
+        expect(row).toEqual({ revision: 2, gold: honest.state.gold });
+        const problems = await sql`select outcome from replay_reports where user_id = ${userId} order by id`;
+        expect(problems.map((report) => report.outcome)).toEqual(["journal-invalid", "no-base"]);
+
+        // A guest's game goes through the same replay.
+        const guest = new Client("10.0.2.21");
+        const started = await begun(guest, true);
+        started.page.play(45);
+        const sent = started.page.outgoing();
+        const forged = structuredClone(sent.state);
+        forged.gold += 30;
+        forged.lifetime.goldEarned += 30;
+        forged.run.goldEarned += 30;
+        const guestSaved = await guest.call("PUT", "/save/guest", { state: forged, baseRevision: null, journal: sent.journal });
+        expect(guestSaved.status, JSON.stringify(guestSaved.json)).toBe(200);
+        expect(guestSaved.json.replay.state.gold).toBe(sent.state.gold);
+      } finally {
+        env.REPLAY_MODE = "shadow";
+      }
+    }, 60_000);
+
     it("gives a guest one seed per cookie, and keeps the game under that cookie", async () => {
       const guest = new Client("10.0.2.3");
       const { page, fresh } = await begun(guest, true);

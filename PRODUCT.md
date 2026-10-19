@@ -991,7 +991,12 @@ same replays, for a person to review the boards; nothing is ever refused or hidd
 - A journal holds at most ten minutes of live play (6,000 steps; catch-ups count for
   nothing) and 60,000 entries, 4 MB unpacked; past that it is not replayed. Replays run in
   worker threads (`REPLAY_WORKERS`, the cores but one, four at most; two in the deployment, which
-  shares its host), stopped after 5 s.
+  shares its host), stopped after 5 s. A replay never holds a row lock nor a database
+  connection: the save's rows are read without a lock, the journal replayed, then the rows read
+  again under the lock and the save written; when they moved meanwhile (another save of the
+  same game, another page taking it), it is measured again (three times at most, then a
+  conflict). At most 16 replays wait per worker: past that, or after 5 s waiting, a replay is
+  "busy" (enforced, the save is asked again 5 s later). The API keeps 20 database connections.
   Measured: 9 ms of CPU for 30 s of play at 10 clicks per second (stages 1000, 2800 and
   9950 alike), about 0.3 core for a thousand walkers saving every 30 s; a full journal of ten
   minutes in about 0.2 s. A journal weighs about 0.5 KB gzipped for 30 s of play, 4 KB for
