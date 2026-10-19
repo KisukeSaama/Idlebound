@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { renderCreature } from "./creature";
 import { AGE_COUNT, ERAS_PER_AGE, ageOf } from "./eras";
 import { renderEmblem } from "./mask";
-import { forgeRunes, RELIC_SIZE, renderCrystal, renderIcon, renderRelic } from "./objects";
+import { CRYSTAL_LIT_H, CRYSTAL_LIT_W, forgeRunes, RELIC_SIZE, renderCrystal, renderCrystalLit, renderIcon, renderRelic } from "./objects";
 import { bounds, EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pixels";
 import { awakenedRecipe, PORTRAIT_SIZE, renderPortrait } from "./portrait";
 import { gradeForNight } from "./night";
@@ -657,8 +657,29 @@ describe("pixel generator", () => {
     for (const [id, icon] of Object.entries(MARKET_ICONS)) snapshot[`market ${id}`] = hash(renderIcon(icon));
     for (const [id, icon] of Object.entries(CARAVAN_ICONS)) snapshot[`ware ${id}`] = hash(renderIcon(icon));
     snapshot.crystal = [0, 1, 2].map((frame) => hash(renderCrystal(frame))).join(" ");
+    snapshot["crystal lit"] = [false, true].flatMap((storm) => [0, 1, 2].map((frame) => hash(renderCrystalLit(frame, storm)))).join(" ");
     expect(snapshot).toMatchSnapshot();
   }, 60_000);
+});
+
+describe("the wandering crystal", () => {
+  it("draws its light in the world's pixels: opaque dotted rings, a few colors, the crystal whole inside", () => {
+    for (const storm of [false, true]) {
+      for (let frame = 0; frame < 3; frame += 1) {
+        const lit = renderCrystalLit(frame, storm);
+        expect([lit.w, lit.h]).toEqual([CRYSTAL_LIT_W, CRYSTAL_LIT_H]);
+        expect([...lit.idx].every((pal, at) => pal === EMPTY || lit.alpha[at] === 255)).toBe(true);
+        const colors = new Set([...lit.idx].filter((pal) => pal !== EMPTY));
+        expect(colors.size).toBeGreaterThanOrEqual(4);
+        expect(colors.size).toBeLessThanOrEqual(12);
+        const crystal = renderCrystal(frame);
+        const drawn = (pixels: Pixels) => [...pixels.idx].filter((pal) => pal !== EMPTY).length;
+        expect(drawn(lit)).toBeGreaterThan(drawn(crystal));
+        expect(hash(renderCrystalLit(frame, storm))).toBe(hash(lit));
+      }
+    }
+    expect(hash(renderCrystalLit(0, true))).not.toBe(hash(renderCrystalLit(0, false)));
+  });
 });
 
 describe("events of the Long Night in the arena", () => {

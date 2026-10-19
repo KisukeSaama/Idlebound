@@ -25,7 +25,7 @@ import type { Messages } from "@/i18n/messages";
 import { useFormat, useGame, useMagnitude, useReveals } from "../context";
 import { GoldIcon, Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
-import { awakenedSeed, emblemSource, evenRatSource, portraitSource } from "../pixel/sources";
+import { awakenedSeed, emblemSource, evenRatSource, portraitSource, starfieldSource } from "../pixel/sources";
 import { describeEffect, describePromise } from "../text";
 import { useTouchArm } from "../touchArm";
 import { promiseStatus, type PromiseStatus } from "../windows/PromiseTab";
@@ -382,8 +382,8 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
         aria-hidden="true"
         onPointerDown={onPortrait ? () => onPortrait(hero.id) : undefined}
       >
-        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size="parent" nearest /></span>
-        {starfield ? <span className="medallion-stars" /> : null}
+        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed, fading ? "grey" : hired ? undefined : "faded")} size="parent" nearest /></span>
+        {starfield ? <span className="medallion-stars"><PixelSprite source={starfieldSource()} size="parent" cover /></span> : null}
         {even ? <PixelSprite source={evenRatSource()} scale={1} className="medallion-rat" /> : null}
         {promise ? <span className="medallion-promise"><Picto name={promise === "broken" ? "frayed" : "knot"} size={14} /></span> : null}
         {hired ? <span className="hero-level">{level}</span> : null}

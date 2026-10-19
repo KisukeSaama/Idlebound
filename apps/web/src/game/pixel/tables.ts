@@ -3,6 +3,7 @@
  * Each table maps a palette index to the nearest entry of a transformed color.
  */
 import { ORVANE_64, palRgb, type Pal } from "@idlebound/game/art";
+import { clonePixels, EMPTY, type Pixels } from "./pixels";
 
 export function paletteMap(transform: (r: number, g: number, b: number) => [number, number, number]): Pal[] {
   return ORVANE_64.map((_, index) => {
@@ -29,6 +30,27 @@ export const GREY_TABLE = paletteMap((r, g, b) => {
   const luma = (r * 299 + g * 587 + b * 114) / 1000;
   return [luma * 0.95, luma * 0.92, luma * 1.08];
 });
+/** A face not in the company tonight: most of its color drained, a step darker. */
+export const FADED_TABLE = paletteMap((r, g, b) => {
+  const luma = (r * 299 + g * 587 + b * 114) / 1000;
+  return [(r * 0.3 + luma * 0.7) * 0.8, (g * 0.3 + luma * 0.7) * 0.8, (b * 0.3 + luma * 0.7) * 0.8];
+});
+/** A face gone grey, a step darker. */
+export const ASHEN_TABLE = paletteMap((r, g, b) => {
+  const luma = ((r * 299 + g * 587 + b * 114) / 1000) * 0.8;
+  return [luma, luma, luma * 1.04];
+});
+
+export type PortraitShade = "faded" | "grey";
+
+/** `source` recolored through the shade's table: the same pixels, every one still in the palette. */
+export function shadePixels(source: Pixels, shade: PortraitShade): Pixels {
+  const table = shade === "faded" ? FADED_TABLE : ASHEN_TABLE;
+  const out = clonePixels(source);
+  for (let at = 0; at < out.idx.length; at += 1) if (out.idx[at] !== EMPTY) out.idx[at] = table[out.idx[at]];
+  return out;
+}
+
 /** Gilded highlights of the Hallowed. */
 export const GILDED_TABLE = paletteMap((r, g, b) => [r * 1.1 + 30, g * 0.95 + 20, b * 0.45]);
 

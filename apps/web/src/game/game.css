@@ -670,58 +670,39 @@ button.resource:hover .resource-label {
 
 /* ------------------------------------------------ wandering crystal */
 
+/*
+ * The crystal and its light are one sprite of the world (pixel/objects.ts): no blur, no
+ * glow, no tilt. It floats by whole art pixels (--crystal-px, the sprite's scale), its box
+ * placed on whole CSS pixels by CrystalView, and blinks out whole as it fades.
+ */
 .crystal {
+  --crystal-px: 3px;
   position: absolute;
   z-index: 6;
-  width: 70px;
-  height: 77px;
+  width: 108px;
+  height: 108px;
+  margin: -54px 0 0 -54px;
   padding: 0;
   border: 0;
   background: none;
-  transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
-  animation: crystal-float 3s ease-in-out infinite, crystal-in 400ms ease-out;
-  filter: drop-shadow(0 0 16px rgba(195, 139, 255, 0.9));
+  animation: crystal-float 2.4s steps(1, end) infinite;
   cursor: pointer;
 }
 
-.crystal .pixel-sprite {
-  animation: crystal-shine 1.2s ease-in-out infinite;
-}
-
-.crystal::after {
-  content: "";
-  position: absolute;
-  inset: -30%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(195, 139, 255, 0.35), transparent 65%);
-  z-index: -1;
-}
-
-.crystal.storm {
-  filter: drop-shadow(0 0 16px rgba(255, 226, 154, 0.9));
-}
-
 .crystal.fading {
-  animation: crystal-float 3s ease-in-out infinite, crystal-blink 0.4s steps(2) infinite;
+  animation: crystal-float 2.4s steps(1, end) infinite, crystal-blink 0.4s steps(1, end) infinite;
 }
 
 @keyframes crystal-float {
-  0%, 100% { transform: translate(-50%, -50%) rotate(-6deg); }
-  50% { transform: translate(-50%, -62%) rotate(6deg); }
-}
-
-@keyframes crystal-in {
-  from { opacity: 0; scale: 0.3; }
-}
-
-@keyframes crystal-shine {
-  50% { filter: brightness(1.45); }
+  0%, 100% { translate: 0 0; }
+  25%, 75% { translate: 0 calc(-1 * var(--crystal-px)); }
+  50% { translate: 0 calc(-2 * var(--crystal-px)); }
 }
 
 @keyframes crystal-blink {
-  50% { opacity: 0.45; }
+  50% { visibility: hidden; }
 }
 
 /* ------------------------------------------------ tutorial */
@@ -1276,18 +1257,15 @@ button.resource:hover .resource-label {
   background: var(--bg-2);
 }
 
-/* The walker gave all of themselves away: Aldric's face and name go grey, until an essence is held again. */
-.hero-row.is-fading .medallion-clip {
-  filter: grayscale(1) brightness(0.8);
-}
-
+/* The walker gave all of themselves away: Aldric's face (drawn grey, HeroPanel) and name go grey, until an essence is held again. */
 .hero-row.is-fading .hero-name {
   color: var(--faint);
   letter-spacing: 0.08em;
 }
 
+/* A companion not yet hired: the face is drawn faded (HeroPanel), the frame dims with it. */
 .hero-row.unhired .hero-medallion {
-  filter: grayscale(0.7) brightness(0.8);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-deep) 50%, #000), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 /* The portrait's frame: the world object frame, its thread in the companion's color. */
@@ -2103,19 +2081,24 @@ button.resource:hover .resource-label {
   background: linear-gradient(180deg, transparent 30%, rgba(6, 5, 12, 0.95) 85%);
 }
 
+/* Sprites centered on whole pixels: the anchor is rounded down (round() where the browser has
+   it), and a sprite's width is a whole scale of an even grid, so its half is whole too. */
 .map-scene {
   position: absolute;
   left: 50%;
+  left: round(down, 50%, 1px);
   top: 50%;
+  top: round(down, 50%, 1px);
   translate: -50% -50%;
 }
 
 .map-boss {
   position: absolute;
   top: 14%;
+  top: round(down, 14%, 1px);
   left: 50%;
-  transform: translateX(-50%);
-  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.6));
+  left: round(down, 50%, 1px);
+  translate: -50% 0;
 }
 
 .map-card-body {
@@ -4029,8 +4012,10 @@ kbd {
     display: none;
   }
   .crystal {
-    width: 56px;
-    height: 62px;
+    --crystal-px: 2px;
+    width: 72px;
+    height: 72px;
+    margin: -36px 0 0 -36px;
   }
   .hero-panel-head {
     padding: 8px 10px;
@@ -4504,6 +4489,7 @@ kbd {
 .place-art {
   position: absolute;
   left: 50%;
+  left: round(down, 50%, 1px);
   bottom: 0;
   translate: -50% 0;
   image-rendering: pixelated;
@@ -4925,25 +4911,13 @@ kbd {
   pointer-events: none;
 }
 
+/* The night is a sprite of the world (pixel/objects.ts), shown whole while it lasts. */
 .medallion-stars {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 30% 28%, #fff 0 1px, transparent 1.5px),
-    radial-gradient(circle at 68% 40%, #e6d0ff 0 1px, transparent 1.5px),
-    radial-gradient(circle at 44% 70%, #fff 0 1.2px, transparent 1.7px),
-    radial-gradient(circle at 76% 72%, #c9d8ff 0 0.8px, transparent 1.3px),
-    radial-gradient(circle at 22% 58%, #ffe9a8 0 0.8px, transparent 1.3px),
-    radial-gradient(circle at 55% 18%, #fff 0 0.8px, transparent 1.3px),
-    radial-gradient(circle at 50% 50%, #1b1640, #07060f 75%);
-  animation: medallion-stars 1s ease-out forwards;
+  overflow: hidden;
+  border-radius: inherit;
   pointer-events: none;
-}
-
-@keyframes medallion-stars {
-  0% { opacity: 0; }
-  20%, 70% { opacity: 1; }
-  100% { opacity: 0; }
 }
 
 /* The Promise: a knot on the medallion of the companion who holds the walker's word for the
@@ -4977,12 +4951,7 @@ kbd {
 
 /* Not hired (left behind, or still to come): the portrait dims, the knot stays lit. */
 .hero-row.unhired.has-promise .hero-medallion {
-  filter: none;
-}
-
-.hero-row.unhired.has-promise .medallion-clip,
-.party-member.is-absent .medallion-clip {
-  filter: grayscale(0.7) brightness(0.8);
+  box-shadow: 0 0 0 1px var(--gold-deep), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .hero-promise {

@@ -774,7 +774,19 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   keeps any two outlines at least 12 pixels apart. The interface keeps its SVG `Picto`s,
   one of its own for each power, offer and ware (a test keeps the names distinct); the
   workshop shows each pixel icon beside its picto.
-- **Crystal**: a 16 × 24 faceted gem whose three facets catch the light in turn.
+- **Crystal**: a 16 × 24 faceted gem whose three facets catch the light in turn. On the road
+  it falls inside its own light (`renderCrystalLit`, 32 × 36): three dotted rings, sparser
+  outward, in the essence ramp (gold for a storm crystal), breathing a pixel out on one frame
+  in three. No CSS glow, blur or tilt: it floats by whole art pixels, its box placed on whole
+  CSS pixels, and blinks out whole before it goes.
+- **Faces in shade**: a companion not yet hired, or away from the company tonight, is drawn
+  through a faded table (most of its color drained, a step darker); Aldric's face, once the
+  walker gave all of themselves away, through a grey one (`shadePixels`). Both stay inside
+  the palette; no CSS filter touches a sprite. Nyx's medallion, when her face is found (the
+  Faceless), opens on a 24 × 24 night of the generator: dithered rings of sky and six stars,
+  two twinkling into a cross.
+- **Centering**: sprites centered in a box anchor on a rounded-down pixel (`round()`), so a
+  sprite never sits on half a pixel.
 
 **Rendering.** Buffers are palette indices; they become canvases once and stay in small LRU
 caches kept apart (32 creature sheets, 24 arena effects, 112 interface sprites, 64 interface
@@ -1045,8 +1057,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%. The panel keeps the
   monster just slain (its name, `0 / max`, an empty bar) until the next arrives, and each
   monster's ghost bar starts full, so one struck down in a single blow still reads and drains.
-- Crystals float, turn their facets to the light and blink before expiring; affordable talents pulse; the urgent
-  badge pops.
+- Crystals float by whole pixels, turn their facets to the light and blink before expiring;
+  affordable talents pulse; the urgent badge hops three times when it lights.
 - Durations are short (120 ms for UI feedback, under 1 s for effects). Motion never blocks
   input.
 - **Reduced motion**: honoured from `prefers-reduced-motion` and from the in-game

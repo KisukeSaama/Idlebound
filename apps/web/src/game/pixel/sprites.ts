@@ -7,7 +7,7 @@ import type { ItemSlot, Rarity } from "@idlebound/game";
 import { palLab, palRgb, type IconRecipe, type Pal } from "@idlebound/game/art";
 import { idleFrames, renderCreature } from "./creature";
 import { renderEmblem } from "./mask";
-import { renderCrystal, renderIcon, renderRelic } from "./objects";
+import { renderCrystal, renderCrystalLit, renderIcon, renderRelic } from "./objects";
 import { clonePixels, createPixels, EMPTY, FADE_STEPS, veil, type Pixels } from "./pixels";
 import { renderPortrait, awakenedRecipe } from "./portrait";
 import { eclipsePixels, greyPixels, greyScene } from "./events";
@@ -187,6 +187,7 @@ export const relicPixels = (slot: ItemSlot, base: number, rarity: Rarity, forge:
   uiCache.get(`relic-px:${slot}:${base}:${rarity}:${forge}:${named ?? ""}`, () => renderRelic(slot, base, rarity, forge, named));
 export const iconPixels = (key: string, recipe: IconRecipe): Pixels => uiCache.get(`icon-px:${key}`, () => renderIcon(recipe));
 export const crystalPixels = (frame: number): Pixels => uiCache.get(`crystal-px:${frame}`, () => renderCrystal(frame));
+export const crystalLitPixels = (frame: number, storm: boolean): Pixels => uiCache.get(`crystal-lit:${frame}:${storm}`, () => renderCrystalLit(frame, storm));
 
 /** CSS color of a palette entry. */
 export function css(pal: Pal, alpha = 1): string {
