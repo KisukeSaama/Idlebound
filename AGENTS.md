@@ -22,10 +22,14 @@ swings single seeds by ±50 stages):
 | Milestone       | Target      |
 | --------------- | ----------- |
 | Stage 10        | about 2 min |
-| Stage 50        | 1.5 to 2 h  |
-| First ascension | about 3 h   |
-| Stage 100       | 4 to 6 h    |
+| Stage 50        | 1 h 15 to 2 h |
+| First ascension | 2 to 3 h    |
+| Stage 100       | 3 to 5 h    |
 | The deep road   | at least 5 stages a day at stage 10,000, the active bot (BIBLE 24) |
+
+The first night was shortened on purpose in 2.1 (the first King keeps his wounds, the audit
+of 2026-10-19 found a first ascension near 3 h too long for a newcomer): the bot's stage 50,
+first ascension and stage 100 moved earlier, and their targets with them.
 
 And for the walker who is not a bot (`realistic.ts`: 2 strikes a second, naive purchases, a
 first hour then four 15-minute sessions a day, the tab open between them, closed at night;
