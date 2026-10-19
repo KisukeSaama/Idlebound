@@ -61,12 +61,12 @@ const en: SystemsText = {
     kingDamage: (pct) => `+${p(pct)}% damage to the King (every 50th stage)`,
     guardianShards: (pct) => `+${pct} ${sEn(pct, "shard")} on every guardian kill`,
     seamDps: (pct) => `Companions deal +${p(pct)}% damage while a Seam is open`,
-    bossTimer: (pct) => `+${pct} s to beat elites and guardians`,
+    bossTimer: (pct) => `+${pct} s to beat elites and guardians`,
     idleBonus: (pct) => `+${p(pct)}% to the Patience bonus (your company's lasting damage bonus)`,
     bossDamage: (pct) => `+${p(pct)}% damage to elites and guardians`,
-    rainSeconds: (pct) => `Golden Rain lasts ${pct} s instead of ${RAIN_SECONDS} s`,
+    rainSeconds: (pct) => `Golden Rain lasts ${pct} s instead of ${RAIN_SECONDS} s`,
     cooldown: (pct) => `Powers recharge ${p(pct)}% faster (with the Altar of Echoes, ${COOLDOWN_CAP}% at most)`,
-    crystalStay: (pct) => `Wandering crystals stay ${pct} s instead of 13 s`,
+    crystalStay: (pct) => `Wandering crystals stay ${pct} s instead of 13 s`,
     fragments: (pct) => `+${p(pct)}% chance of a Chronicle fragment from guardians`,
     clickPerRemembered: (pct) => `+${p(pct)}% strike damage per companion who fully remembers you (at most +${p(GROVE_SEED_MAX)}%)`,
     phylactery: (pct) => `+${p(pct)}% to the Patience bonus, but -${p(pct)}% strike damage`,
@@ -202,17 +202,17 @@ const en: SystemsText = {
     },
     seam: {
       name: "The Seam",
-      text: `A Seam opens: beat its Warden in ${SEAM_SECONDS} s for elite gold, a fragment, maybe a relic.`,
+      text: `A Seam opens: beat its Warden in ${SEAM_SECONDS} s for elite gold, a fragment, maybe a relic.`,
       line: { by: "The Ledger", text: "A crack in the night, thin as a hair, and something pale behind it. The walker leaned on it until it closed." }
     },
     wager: {
       name: "Pip's Wager",
-      text: `Pip dares you: strike ${WAGER_CLICKS} times in ${WAGER_SECONDS} s to win a purse of gold!`,
+      text: `Pip dares you: strike ${WAGER_CLICKS} times in ${WAGER_SECONDS} s to win a purse of gold!`,
       line: { by: "Thorvald", text: "He bet me a mountain once. I'm paying it back one rat at a time. Don't tell him I said rat." }
     },
     walker: {
       name: "Echo of a Walker",
-      text: `Another walker's echo joins you: companions deal +${WALKER_BONUS}% damage for ${WALKER_SECONDS} s.`,
+      text: `Another walker's echo joins you: companions deal +${WALKER_BONUS}% damage for ${WALKER_SECONDS} s.`,
       line: { by: "The Ledger", text: "Two walkers' roads touched. For a few breaths the Ledger had to write two names on one line." }
     },
     caravan: {
@@ -222,7 +222,7 @@ const en: SystemsText = {
     },
     quiet: {
       name: "The Quiet",
-      text: `The Quiet comes, a Remnant without color. Beat it in ${QUIET_SECONDS} s for a fragment.`,
+      text: `The Quiet comes, a Remnant without color. Beat it in ${QUIET_SECONDS} s for a fragment.`,
       line: { by: "The Ledger", text: "No color, no sound, no weight. When it came apart, the grass where it stood had turned white." }
     },
     stray: {
@@ -237,7 +237,7 @@ const en: SystemsText = {
     },
     tide: {
       name: "The Slow Tide",
-      text: `You were away a long while: a wandering crystal comes in ${TIDE_CRYSTAL_SECONDS} s.`,
+      text: `You were away a long while: a wandering crystal comes in ${TIDE_CRYSTAL_SECONDS} s.`,
       line: { by: "The Ledger", text: "The walker came back from far away. For a while the light was slow, like water finding its level." }
     },
     remembrance: {
@@ -282,7 +282,7 @@ const en: SystemsText = {
   weaves: {
     plenty: { name: "Warp of Plenty", description: "Each level multiplies the essences you gain at every ascension by 1.25 (level 2: ×1.56)." },
     "dusk-knot": { name: "Knot of Dusk", description: "The Altar of the Wanderer can rise 10 levels higher per level, so your companions walk more stages for you." },
-    "long-thread": { name: "The Long Thread", description: "While you are away, the company keeps walking 1 h longer per level (8 h at the start)." },
+    "long-thread": { name: "The Long Thread", description: "While you are away, the company keeps walking 1 h longer per level (8 h at the start)." },
     "humming-loom": { name: "Humming Loom", description: "Wandering crystals come 10% sooner per level." },
     kinship: { name: "Kinship", description: "Companions remember you sooner: each tier of Recognition needs one night fewer per level." },
     "remembered-stones": { name: "Remembered Stones", description: "When you Descend, you keep 5% of each altar's levels per level (rounded down)." },
@@ -292,10 +292,10 @@ const en: SystemsText = {
   caravan: {
     token: { name: "The Stallkeeper's Token", description: "A named ring: -10% shard prices at the market and the Caravan. Sold only once, ever." },
     "sealed-coffer": { name: "Sealed Coffer", description: "A relic, legendary or better. The seal is not the Stallkeeper's." },
-    "bottled-night": { name: "Bottled Night", description: "Instantly earn 2 h of gold at your company's current rate." },
-    "pips-cheese": { name: "Pip's Cheese", description: `Golden rats come twice as often for ${BUFF_MINUTES} min (within their cap).` },
-    "moth-lantern": { name: "Moth Lantern", description: `A wandering crystal every 45 to 90 s for ${BUFF_MINUTES} min.` },
-    "ember-draught": { name: "Ember Draught", description: "A Rage Potion and a Fortune Elixir at once, 10 min each." },
+    "bottled-night": { name: "Bottled Night", description: "Instantly earn 2 h of gold at your company's current rate." },
+    "pips-cheese": { name: "Pip's Cheese", description: `Golden rats come twice as often for ${BUFF_MINUTES} min (within their cap).` },
+    "moth-lantern": { name: "Moth Lantern", description: `A wandering crystal every 45 to 90 s for ${BUFF_MINUTES} min.` },
+    "ember-draught": { name: "Ember Draught", description: "A Rage Potion and a Fortune Elixir at once, 10 min each." },
     "eldra-thread": { name: "Eldra's Thread", description: "Every power is ready again at once." },
     "three-chests": { name: "Three Crates from the Road", description: "Three relic chests, found along the road, somewhere, some night." }
   },
@@ -311,64 +311,64 @@ const fr: SystemsText = {
   relics: {
     oathcutter: { name: "Tranche-Serment", legend: "L'épée de Kaelen. Il l'a brisée sur les marches du trône, la nuit où il a failli envers le Roi. Depuis, elle essaie de remonter l'escalier." },
     "thousandth-arrow": { name: "La Millième Flèche", legend: "Maëlle a empenné cette flèche le soir où elle a perdu le compte des soirs vécus. Elle n'a jamais manqué sa cible, et ça l'agace." },
-    quietus: { name: "Quiétus", legend: "La faux de Morgrath. Il ne s'en est jamais servi : il dit qu'elle est gardée pour un seul coup, la nuit où le noir finira enfin." },
+    quietus: { name: "Quiétus", legend: "La faux de Morgrath. Il ne s'en est jamais servi : il dit qu'elle est gardée pour un seul coup, la nuit où le noir finira enfin." },
     "unfinished-hammer": { name: "Le Marteau inachevé", legend: "Brom forgeait ce marteau chaque nuit pour le Roi, qui n'est jamais venu le chercher. Il l'a enfin achevé, et te l'a donné." },
-    "splinter-of-sky": { name: "Éclat de voûte", legend: "Une lame taillée dans la Voûte de verre, le ciel fêlé d'Orvane. Brom refuse de l'affûter : il dit que le fil appartient déjà au ciel." },
-    dawnbreak: { name: "Point-du-jour", legend: "Trouvée à l'Aube, tout au bout de la Longue Nuit. Elle est tiède au toucher, comme une fenêtre au soleil du matin : la seule chose tiède de toute la nuit." },
+    "splinter-of-sky": { name: "Éclat de voûte", legend: "Une lame taillée dans la Voûte de verre, le ciel fêlé d'Orvane. Brom refuse de l'affûter : il dit que le fil appartient déjà au ciel." },
+    dawnbreak: { name: "Point-du-jour", legend: "Trouvée à l'Aube, tout au bout de la Longue Nuit. Elle est tiède au toucher, comme une fenêtre au soleil du matin : la seule chose tiède de toute la nuit." },
     "hollow-plate": { name: "Le Harnois creux", legend: "L'armure vide qui marchait seule sur la route. Elle se laisse porter pour l'instant, et repartira de même quand tu en auras fini avec elle." },
     mosshide: { name: "Peau-de-mousse", legend: "Le manteau d'hiver de l'Alpha moussu, le vieux sanglier que Maëlle chasse depuis toujours. Encore chaud, et la mousse y pousse toujours." },
     "briar-mantle": { name: "Manteau de ronces", legend: "L'arbre-mère de la Forêt sombre a tissé ce manteau pour le premier hiver de Séraphine, son élève. Il se souvient encore d'avoir été un cadeau." },
     "aurelion-scales": { name: "Écailles d'Aurelion", legend: "Aurelion a perdu ces écailles il y a très longtemps, dans la strate de la Guivre, d'où viennent les dragons. Il te les prête, et aimerait les récupérer un jour." },
     "ash-vestment": { name: "Robe des cendres", legend: "La robe du premier Moine des braises. Quand le culte du Bûcher a brûlé les vieilles forêts, il est entré dans le feu pour en ressortir avec une seule flamme." },
     "mantle-of-the-last-court": { name: "Manteau de la dernière cour", legend: "Porté par la cour du Roi, le dernier jour. Il était pourpre, alors. La couleur s'est effacée, et la cour avec." },
-    "eldra-locket": { name: "Médaillon d'Eldra", legend: "Le cadeau d'Eldra : un sablier gros comme une larme, dont le sable tombe vers le haut. Le temps ne coule pas pareil pour celle qui le tisse." },
+    "eldra-locket": { name: "Médaillon d'Eldra", legend: "Le cadeau d'Eldra : un sablier gros comme une larme, dont le sable tombe vers le haut. Le temps ne coule pas pareil pour celle qui le tisse." },
     "singing-stone": { name: "La Pierre qui chante", legend: "Une pierre de la Géode chantante. Elle fredonne dès qu'on la regarde, et près de toi, elle ne s'arrête plus." },
-    "oriane-ear": { name: "L'Oreille d'Oriane", legend: "Le cadeau d'Oriane : un coquillage de pierre pâle. Colle-le à ton oreille et tu entends, tout bas, ce que la nuit dira demain." },
-    "grove-seed": { name: "Graine du vieux bosquet", legend: "Le cadeau de Séraphine : la dernière graine de l'arbre-mère qu'elle t'aide à abattre chaque nuit. Elle ne germera pas tant que dure la nuit. Elle attend le matin." },
+    "oriane-ear": { name: "L'Oreille d'Oriane", legend: "Le cadeau d'Oriane : un coquillage de pierre pâle. Colle-le à ton oreille et tu entends, tout bas, ce que la nuit dira demain." },
+    "grove-seed": { name: "Graine du vieux bosquet", legend: "Le cadeau de Séraphine : la dernière graine de l'arbre-mère qu'elle t'aide à abattre chaque nuit. Elle ne germera pas tant que dure la nuit. Elle attend le matin." },
     phylactery: { name: "Phylactère de Morgrath", legend: "Morgrath garde sa vie dans ce bocal. Il dit que c'est l'endroit le plus sûr du monde, puisque personne n'en voudrait." },
     "last-decree": { name: "Le Dernier Décret", legend: "Le dernier décret du Roi, toujours scellé. Il a ordonné que personne ne le lise jamais, et personne ne l'a lu." },
     "signet-of-orvane": { name: "Sceau d'Orvane", legend: "L'anneau-sceau du Roi déchu. Il imprime une couronne et, dessous, une lettre si usée qu'on devine à peine un A." },
     "rat-ring": { name: "L'Anneau du rat", legend: "Un minuscule anneau d'or, mordillé. Messire Pip, le rat doré, l'a laissé tomber exprès. Pip fait tout exprès." },
-    "lodestone-band": { name: "Aimantite de Garrick", legend: "Le cadeau de Garrick : l'éclat d'étoile où il a vu un jour un visage étrange, serti dans un anneau. Il jure que le visage a fermé les yeux, depuis." },
-    "mirelle-ring": { name: "L'Alliance de Mirelle", legend: "L'alliance de Mirelle, gravée O. et M. : Osric et Mirelle. Son mari est devenu le Baron de la pourriture. Elle te la donne pour qu'elle serve à quelqu'un." },
-    "stallkeeper-band": { name: "Jeton du Comptoir", legend: "Un jeton de laiton percé, vendu une seule fois par le Comptoir. Il a dit : tu sauras quand le rendre." },
+    "lodestone-band": { name: "Aimantite de Garrick", legend: "Le cadeau de Garrick : l'éclat d'étoile où il a vu un jour un visage étrange, serti dans un anneau. Il jure que le visage a fermé les yeux, depuis." },
+    "mirelle-ring": { name: "L'Alliance de Mirelle", legend: "L'alliance de Mirelle, gravée O. et M. : Osric et Mirelle. Son mari est devenu le Baron de la pourriture. Elle te la donne pour qu'elle serve à quelqu'un." },
+    "stallkeeper-band": { name: "Jeton du Comptoir", legend: "Un jeton de laiton percé, vendu une seule fois par le Comptoir. Il a dit : tu sauras quand le rendre." },
     "second-morning": { name: "Anneau du second matin", legend: "Trouvé dans la strate de l'Aurore. Deux soleils sont gravés sur l'anneau, et l'un d'eux a été rayé. Personne en Orvane ne se souvient d'un second soleil." }
   },
   namedEffects: {
-    critChance: (pct) => `+${Math.round(pct * 100)} % de chances que tes frappes soient critiques (dans le plafond des reliques)`,
-    guardianGold: (pct) => `+${Math.round(pct * 100)} % d'or sur les gardiens de biome`,
-    forgeDiscount: (pct) => `La forge coûte ${Math.round(pct * 100)} % d'éclats en moins`,
-    kingDamage: (pct) => `+${p(pct)} % de dégâts contre le Roi (toutes les 50 étapes)`,
+    critChance: (pct) => `+${Math.round(pct * 100)} % de chances que tes frappes soient critiques (dans le plafond des reliques)`,
+    guardianGold: (pct) => `+${Math.round(pct * 100)} % d'or sur les gardiens de biome`,
+    forgeDiscount: (pct) => `La forge coûte ${Math.round(pct * 100)} % d'éclats en moins`,
+    kingDamage: (pct) => `+${p(pct)} % de dégâts contre le Roi (toutes les 50 étapes)`,
     guardianShards: (pct) => `+${pct} ${sFr(pct, "éclat")} à chaque gardien vaincu`,
-    seamDps: (pct) => `Tes compagnons infligent +${p(pct)} % de dégâts tant qu'une Brèche est ouverte`,
-    bossTimer: (pct) => `+${pct} s pour abattre les élites et les gardiens`,
-    idleBonus: (pct) => `+${p(pct)} % au bonus de Patience (le bonus de dégâts permanent de ta compagnie)`,
-    bossDamage: (pct) => `+${p(pct)} % de dégâts contre les élites et les gardiens`,
-    rainSeconds: (pct) => `La Pluie d'or dure ${pct} s au lieu de ${RAIN_SECONDS} s`,
-    cooldown: (pct) => `Les pouvoirs se rechargent ${p(pct)} % plus vite (avec l'Autel des échos, ${COOLDOWN_CAP} % au plus)`,
-    crystalStay: (pct) => `Les cristaux errants restent ${pct} s au lieu de 13 s`,
-    fragments: (pct) => `+${p(pct)} % de chances de fragment de la Chronique sur les gardiens`,
-    clickPerRemembered: (pct) => `+${p(pct)} % de dégâts de frappe par compagnon qui se souvient pleinement de toi (+${p(GROVE_SEED_MAX)} % au plus)`,
-    phylactery: (pct) => `+${p(pct)} % au bonus de Patience, mais -${p(pct)} % de dégâts de frappe`,
-    treasure: (pct) => `+${p(pct)} % de chances de croiser un rat doré (dans la limite de leur plafond)`,
-    crystalSooner: (pct) => `Les cristaux errants viennent ${p(pct)} % plus tôt`,
-    mirelle: (pct) => `+${p(pct)} % d'or, +${p(MIRELLE_BARON_DAMAGE)} % de dégâts contre le Baron de la pourriture`,
-    marketDiscount: (pct) => `-${p(pct)} % sur les prix en éclats du marché et de la Roulotte`,
+    seamDps: (pct) => `Tes compagnons infligent +${p(pct)} % de dégâts tant qu'une Brèche est ouverte`,
+    bossTimer: (pct) => `+${pct} s pour abattre les élites et les gardiens`,
+    idleBonus: (pct) => `+${p(pct)} % au bonus de Patience (le bonus de dégâts permanent de ta compagnie)`,
+    bossDamage: (pct) => `+${p(pct)} % de dégâts contre les élites et les gardiens`,
+    rainSeconds: (pct) => `La Pluie d'or dure ${pct} s au lieu de ${RAIN_SECONDS} s`,
+    cooldown: (pct) => `Les pouvoirs se rechargent ${p(pct)} % plus vite (avec l'Autel des échos, ${COOLDOWN_CAP} % au plus)`,
+    crystalStay: (pct) => `Les cristaux errants restent ${pct} s au lieu de 13 s`,
+    fragments: (pct) => `+${p(pct)} % de chances de fragment de la Chronique sur les gardiens`,
+    clickPerRemembered: (pct) => `+${p(pct)} % de dégâts de frappe par compagnon qui se souvient pleinement de toi (+${p(GROVE_SEED_MAX)} % au plus)`,
+    phylactery: (pct) => `+${p(pct)} % au bonus de Patience, mais -${p(pct)} % de dégâts de frappe`,
+    treasure: (pct) => `+${p(pct)} % de chances de croiser un rat doré (dans la limite de leur plafond)`,
+    crystalSooner: (pct) => `Les cristaux errants viennent ${p(pct)} % plus tôt`,
+    mirelle: (pct) => `+${p(pct)} % d'or, +${p(MIRELLE_BARON_DAMAGE)} % de dégâts contre le Baron de la pourriture`,
+    marketDiscount: (pct) => `-${p(pct)} % sur les prix en éclats du marché et de la Roulotte`,
     wandererStages: (pct) => `L'Autel du voyageur parcourt ${pct} étapes de plus pour toi (dans ses plafonds)`,
-    regalia: () => `L'un des trois Regalia d'Orvane : porte les trois pour +${REGALIA_BONUS} % de dégâts contre le Roi`
+    regalia: () => `L'un des trois Regalia d'Orvane : porte les trois pour +${REGALIA_BONUS} % de dégâts contre le Roi`
   },
   altarLegends: {
     might: { by: "L'Enclume", text: "Élevé par un marcheur qu'on appelait l'Enclume. Il a offert à cette pierre chaque visage aimé et n'a gardé que la force de ses poings. Elle la prête à ta compagnie." },
-    blade: { by: "La Mère-des-Épées", text: "Élevé par la Mère-des-Épées, qui a appris à Kaelen à se battre. Sa dernière leçon y est gravée : une lame est une question qu'on pose au monde, très vite." },
-    fortune: { by: "Inconnu", text: "Personne ne sait qui l'a élevé. La pierre est tiède, et de toutes petites traces de dents bordent sa base : on a vu Messire Pip, le rat doré, rôder autour." },
+    blade: { by: "La Mère-des-Épées", text: "Élevé par la Mère-des-Épées, qui a appris à Kaelen à se battre. Sa dernière leçon y est gravée : une lame est une question qu'on pose au monde, très vite." },
+    fortune: { by: "Inconnu", text: "Personne ne sait qui l'a élevé. La pierre est tiède, et de toutes petites traces de dents bordent sa base : on a vu Messire Pip, le rat doré, rôder autour." },
     patience: { by: "La Légion silencieuse", text: "Les morts de Morgrath, la Légion silencieuse, l'ont taillé à mains nues pendant des nuits sans nombre. Les morts sont patients, et ils ont appris la patience à la pierre." },
     time: { by: "Eldra", text: "Eldra, la Tisseuse du temps, veille sur cette pierre mais jure ne pas l'avoir bâtie. D'après elle, la pierre s'est bâtie toute seule, plus tard, puis est revenue ici." },
-    fate: { by: "La mère d'Oriane", text: "La mère d'Oriane, une voyante aveugle, y a taillé cinq encoches, pas une de plus : elle disait que le destin se laisse pousser cinq fois, jamais six." },
+    fate: { by: "La mère d'Oriane", text: "La mère d'Oriane, une voyante aveugle, y a taillé cinq encoches, pas une de plus : elle disait que le destin se laisse pousser cinq fois, jamais six." },
     precision: { by: "Le grand-père d'Ysolde", text: "Le grand-père d'Ysolde, archer de la Forêt sombre, a serti dans cette pierre sa dernière pointe de flèche. Elle vise toujours le point faible de ce qui se dresse devant toi." },
-    treasure: { by: "Thorvald", text: "Thorvald l'a élevé pour payer une dette envers Messire Pip, le rat doré. On y lit : POUR PIP. NOUS SOMMES QUITTES. Quelqu'un a rayé QUITTES." },
-    bargain: { by: "Le Comptoir", text: "Le Comptoir l'a élevé, et y a gravé pourquoi : les compagnons demandent moins d'or au marcheur dont ils se souviennent presque." },
+    treasure: { by: "Thorvald", text: "Thorvald l'a élevé pour payer une dette envers Messire Pip, le rat doré. On y lit : POUR PIP. NOUS SOMMES QUITTES. Quelqu'un a rayé QUITTES." },
+    bargain: { by: "Le Comptoir", text: "Le Comptoir l'a élevé, et y a gravé pourquoi : les compagnons demandent moins d'or au marcheur dont ils se souviennent presque." },
     echoes: { by: "Oriane", text: "Oriane, l'Oracle d'écho, l'a élevé. Parle près de lui et il répond un instant avant que tu aies fini. Tes pouvoirs apprennent à revenir en avance, de la même façon." },
-    harvest: { by: "Le premier Moine des braises", text: "Le premier Moine des braises l'a élevé. Il enseignait que chaque essence a sa balle, comme le grain : cet autel garde la balle et te rend plus de graine." },
+    harvest: { by: "Le premier Moine des braises", text: "Le premier Moine des braises l'a élevé. Il enseignait que chaque essence a sa balle, comme le grain : cet autel garde la balle et te rend plus de graine." },
     wanderer: { by: "Le Sans-Nom, avant", text: "Élevé par un marcheur qui avait marché tant de nuits que ses compagnons connaissaient par cœur le début de la route, et la parcouraient avant lui. La pierre a gardé l'habitude." },
     memory: { by: "Inconnu", text: "Personne ne se souvient de l'avoir élevé. Chaque nuit, une bourse de vieil or est enfouie à son pied, prête pour toi au crépuscule. Tu ne te souviens jamais de l'enterrer. Tu le fais toujours." }
   },
@@ -401,7 +401,7 @@ const fr: SystemsText = {
     "thousandth-notch": {
       name: "La millième encoche",
       riddle: "Compte avec la chasseresse.",
-      line: { by: "Le Grand Livre", text: "Le poteau de Maëlle : mille encoches, de sa main et d'une autre. La dernière est fraîche. Le couteau est le tien." }
+      line: { by: "Le Grand Livre", text: "Le poteau de Maëlle : mille encoches, de sa main et d'une autre. La dernière est fraîche. Le couteau est le tien." }
     },
     "same-road": {
       name: "Même route",
@@ -436,7 +436,7 @@ const fr: SystemsText = {
     listening: {
       name: "À l'écoute des échos",
       riddle: "Tiens-toi immobile là où vivent les échos.",
-      line: { by: "Oriane", text: "Les chauves-souris se taisent. Maintenant tu l'entends aussi : la nuit qui se redit, tout bas." }
+      line: { by: "Oriane", text: "Les chauves-souris se taisent. Maintenant tu l'entends aussi : la nuit qui se redit, tout bas." }
     },
     "good-boy": {
       name: "Brave bête",
@@ -446,12 +446,12 @@ const fr: SystemsText = {
     "till-death": {
       name: "Jusqu'à la mort",
       riddle: "Porte l'anneau jusqu'au marais.",
-      line: { by: "Le Baron de la pourriture", text: "Cet anneau. M. ? Mirelle, c'est toi ?" }
+      line: { by: "Le Baron de la pourriture", text: "Cet anneau. M. ? Mirelle, c'est toi ?" }
     },
     "last-blow": {
       name: "Le dernier coup",
       riddle: "Laisse le chevalier finir ce qu'il a fui.",
-      line: { by: "Kaelen", text: "J'ai enfin monté l'escalier. Il a levé les yeux et m'a dit : tu es en retard. Il souriait." }
+      line: { by: "Kaelen", text: "J'ai enfin monté l'escalier. Il a levé les yeux et m'a dit : tu es en retard. Il souriait." }
     },
     "it-wears-you": {
       name: "C'est elle qui te porte",
@@ -477,52 +477,52 @@ const fr: SystemsText = {
   events: {
     storm: {
       name: "Averse de cristaux",
-      text: `La Reine-lanterne traverse le ciel : ${STORM_CRYSTALS} cristaux tombent tour à tour. Attrape-les !`,
+      text: `La Reine-lanterne traverse le ciel : ${STORM_CRYSTALS} cristaux tombent tour à tour. Attrape-les !`,
       line: { by: "Le Grand Livre", text: "Le ciel a laissé tomber une poignée de lumière. Les phalènes se sont levées pour l'attraper, et leur reine avec elles." }
     },
     seam: {
       name: "La Brèche",
-      text: `Une Brèche s'ouvre : abats son Gardien en ${SEAM_SECONDS} s. Or, fragment, et parfois une relique.`,
+      text: `Une Brèche s'ouvre : abats son Gardien en ${SEAM_SECONDS} s. Or, fragment, et parfois une relique.`,
       line: { by: "Le Grand Livre", text: "Une fissure dans la nuit, fine comme un cheveu, et du pâle derrière. Le marcheur a pesé dessus jusqu'à ce qu'elle se referme." }
     },
     wager: {
       name: "Le Pari de Pip",
-      text: `Messire Pip te défie : frappe ${WAGER_CLICKS} fois en ${WAGER_SECONDS} s pour gagner une bourse d'or !`,
+      text: `Messire Pip te défie : frappe ${WAGER_CLICKS} fois en ${WAGER_SECONDS} s pour gagner une bourse d'or !`,
       line: { by: "Thorvald", text: "Il m'a parié une montagne, un jour. Je la rembourse un rat à la fois. Ne lui répète pas le mot rat." }
     },
     walker: {
       name: "Écho d'un marcheur",
-      text: `L'écho d'un autre marcheur t'aide : tes compagnons font +${WALKER_BONUS} % de dégâts pendant ${WALKER_SECONDS} s.`,
+      text: `L'écho d'un autre marcheur t'aide : tes compagnons font +${WALKER_BONUS} % de dégâts pendant ${WALKER_SECONDS} s.`,
       line: { by: "Le Grand Livre", text: "Les routes de deux marcheurs se sont touchées. L'espace de quelques souffles, le Grand Livre a dû écrire deux noms sur une même ligne." }
     },
     caravan: {
       name: "La Roulotte",
-      text: "La Roulotte est là : une marchandise rare cette semaine, à payer en éclats au marché.",
-      line: { by: "Le Comptoir", text: "Entre deux nuits, il y a une route aussi. Personne n'y passe à part moi : les prix sont donc honnêtes." }
+      text: "La Roulotte est là : une marchandise rare cette semaine, à payer en éclats au marché.",
+      line: { by: "Le Comptoir", text: "Entre deux nuits, il y a une route aussi. Personne n'y passe à part moi : les prix sont donc honnêtes." }
     },
     quiet: {
       name: "Le Silence",
-      text: `Le Silence arrive, un Vestige sans couleur. Abats-le en ${QUIET_SECONDS} s pour un fragment.`,
+      text: `Le Silence arrive, un Vestige sans couleur. Abats-le en ${QUIET_SECONDS} s pour un fragment.`,
       line: { by: "Le Grand Livre", text: "Ni couleur, ni bruit, ni poids. Quand il s'est défait, l'herbe à sa place était devenue blanche." }
     },
     stray: {
       name: "L'Armure errante",
-      text: "Une armure vide marche sur la route. Abats-la à temps : la première te laisse son harnois.",
+      text: "Une armure vide marche sur la route. Abats-la à temps : la première te laisse son harnois.",
       line: { by: "Le Sans-Nom", text: "À moi. Peut-être." }
     },
     eclipse: {
       name: "L'Éclipse du Roi",
-      text: "Le Roi se lève dans l'ombre avec 50 % de vie en plus. Il laisse toujours une relique.",
+      text: "Le Roi se lève dans l'ombre avec 50 % de vie en plus. Il laisse toujours une relique.",
       line: { by: "Le Roi", text: "Ce soir, le noir pèse sur moi aussi. Frappe fort. Je ne t'en voudrai pas." }
     },
     tide: {
       name: "La Marée lente",
-      text: `Tu reviens de loin : un cristal errant arrive dans ${TIDE_CRYSTAL_SECONDS} s.`,
+      text: `Tu reviens de loin : un cristal errant arrive dans ${TIDE_CRYSTAL_SECONDS} s.`,
       line: { by: "Le Grand Livre", text: "Le marcheur est revenu de loin. Un moment, la lumière est restée lente, comme l'eau qui cherche son niveau." }
     },
     remembrance: {
       name: "Nuit du souvenir",
-      text: `Des lanternes tout le long de la route ce soir : fragments ${REMEMBRANCE_FRAGMENTS} fois plus fréquents.`,
+      text: `Des lanternes tout le long de la route ce soir : fragments ${REMEMBRANCE_FRAGMENTS} fois plus fréquents.`,
       line: { by: "Le Grand Livre", text: "Des lanternes sur chaque borne, allumées par personne. La nuit se fait une fête, et te garde une place." }
     },
     migration: {
@@ -532,7 +532,7 @@ const fr: SystemsText = {
     },
     unfinished: {
       name: "L'Inachevé",
-      text: "Un Vestige à moitié dessiné. Tes frappes le complètent ; abattu, il laisse un fragment.",
+      text: "Un Vestige à moitié dessiné. Tes frappes le complètent ; abattu, il laisse un fragment.",
       line: { by: "Le Grand Livre", text: "Il est arrivé en simple contour, un œil manquant. Chaque coup le complétait un peu, comme si quelqu'un vérifiait." }
     }
   },
@@ -560,22 +560,22 @@ const fr: SystemsText = {
     named: (t) => (t === 1 ? "Trouve une relique nommée." : `Trouve ${t} reliques nommées.`)
   },
   weaves: {
-    plenty: { name: "Chaîne d'abondance", description: "Chaque niveau multiplie par 1,25 les essences gagnées à chaque ascension (niveau 2 : ×1,56)." },
-    "dusk-knot": { name: "Nœud du crépuscule", description: "L'Autel du voyageur peut monter de 10 niveaux de plus par niveau : tes compagnons parcourent plus d'étapes pour toi." },
-    "long-thread": { name: "Le Long Fil", description: "Pendant ton absence, la compagnie marche 1 h de plus par niveau (8 h au départ)." },
-    "humming-loom": { name: "Métier bourdonnant", description: "Les cristaux errants viennent 10 % plus tôt par niveau." },
-    kinship: { name: "Parenté", description: "Tes compagnons se souviennent de toi plus vite : chaque palier de Reconnaissance demande une nuit de moins par niveau." },
-    "remembered-stones": { name: "Pierres mémoires", description: "Quand tu descends, tu gardes 5 % des niveaux de chaque autel par niveau (arrondi à l'inférieur)." },
-    "frayed-edge": { name: "Lisière effilochée", description: "Les fragments de la Chronique viennent 20 % plus souvent par niveau." },
-    "seventh-night": { name: "La Septième Nuit", description: "Débloque le septième pouvoir, Détisser : franchis l'étape où tu te trouves." }
+    plenty: { name: "Chaîne d'abondance", description: "Chaque niveau multiplie par 1,25 les essences gagnées à chaque ascension (niveau 2 : ×1,56)." },
+    "dusk-knot": { name: "Nœud du crépuscule", description: "L'Autel du voyageur peut monter de 10 niveaux de plus par niveau : tes compagnons parcourent plus d'étapes pour toi." },
+    "long-thread": { name: "Le Long Fil", description: "Pendant ton absence, la compagnie marche 1 h de plus par niveau (8 h au départ)." },
+    "humming-loom": { name: "Métier bourdonnant", description: "Les cristaux errants viennent 10 % plus tôt par niveau." },
+    kinship: { name: "Parenté", description: "Tes compagnons se souviennent de toi plus vite : chaque palier de Reconnaissance demande une nuit de moins par niveau." },
+    "remembered-stones": { name: "Pierres mémoires", description: "Quand tu descends, tu gardes 5 % des niveaux de chaque autel par niveau (arrondi à l'inférieur)." },
+    "frayed-edge": { name: "Lisière effilochée", description: "Les fragments de la Chronique viennent 20 % plus souvent par niveau." },
+    "seventh-night": { name: "La Septième Nuit", description: "Débloque le septième pouvoir, Détisser : franchis l'étape où tu te trouves." }
   },
   caravan: {
-    token: { name: "Jeton du Comptoir", description: "Un anneau nommé : -10 % sur les prix en éclats du marché et de la Roulotte. Vendu une seule fois." },
+    token: { name: "Jeton du Comptoir", description: "Un anneau nommé : -10 % sur les prix en éclats du marché et de la Roulotte. Vendu une seule fois." },
     "sealed-coffer": { name: "Coffre scellé", description: "Une relique, légendaire ou mieux. Le sceau n'est pas celui du Comptoir." },
-    "bottled-night": { name: "Nuit en bouteille", description: "Gagne aussitôt 2 h d'or au rythme actuel de ta compagnie." },
-    "pips-cheese": { name: "Fromage de Pip", description: `Les rats dorés viennent deux fois plus souvent pendant ${BUFF_MINUTES} min (dans la limite de leur plafond).` },
-    "moth-lantern": { name: "Lanterne aux phalènes", description: `Un cristal errant toutes les 45 à 90 s pendant ${BUFF_MINUTES} min.` },
-    "ember-draught": { name: "Breuvage de braise", description: "Une Potion de rage et un Élixir de fortune d'un coup, 10 min chacun." },
+    "bottled-night": { name: "Nuit en bouteille", description: "Gagne aussitôt 2 h d'or au rythme actuel de ta compagnie." },
+    "pips-cheese": { name: "Fromage de Pip", description: `Les rats dorés viennent deux fois plus souvent pendant ${BUFF_MINUTES} min (dans la limite de leur plafond).` },
+    "moth-lantern": { name: "Lanterne aux phalènes", description: `Un cristal errant toutes les 45 à 90 s pendant ${BUFF_MINUTES} min.` },
+    "ember-draught": { name: "Breuvage de braise", description: "Une Potion de rage et un Élixir de fortune d'un coup, 10 min chacun." },
     "eldra-thread": { name: "Fil d'Eldra", description: "Tous tes pouvoirs sont aussitôt de nouveau prêts." },
     "three-chests": { name: "Trois caisses de la route", description: "Trois coffres de relique, trouvés sur la route, quelque part, une nuit." }
   },

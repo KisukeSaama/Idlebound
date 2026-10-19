@@ -103,7 +103,7 @@ export const CUTSCENES_TEXT: Record<Locale, Record<CutsceneId, CutsceneText>> = 
       lines: [
         "Première nuit. Le marcheur monta au sommet du donjon et fit face au Roi déchu.",
         VOICES_TEXT.fr.kingWords[0],
-        "Quand il tomba, la nuit se défit en lumières violettes : des essences, le souvenir de tout ce que le marcheur avait vécu.",
+        "Quand il tomba, la nuit se défit en lumières violettes : des essences, le souvenir de tout ce que le marcheur avait vécu.",
         "Le marcheur s'éveilla au Sanctuaire du Crépuscule, une colline de treize pierres dressée entre deux nuits.",
         "Le crépuscule, encore. La nuit reprend au premier champ, et au bout, le Roi attendra."
       ]
@@ -112,7 +112,7 @@ export const CUTSCENES_TEXT: Record<Locale, Record<CutsceneId, CutsceneText>> = 
       name: "Presque",
       lines: [
         "Le crépuscule, encore. À chaque crépuscule, la compagnie oublie. Sur la route, personne ne connaissait le marcheur.",
-        "Encore toi ? Non. Je m'en souviendrais. Pas vrai ?",
+        "Encore toi ? Non. Je m'en souviendrais. Pas vrai ?",
         "Jusqu'au premier piquet de clôture, Maëlle ne cessa de se retourner. Elle s'en souvenait presque."
       ]
     },

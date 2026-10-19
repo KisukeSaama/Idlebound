@@ -89,8 +89,8 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         "Back again. Good. The sun won't open its own door."
       ],
       nameless: [
-        "...",
-        "...",
+        "…",
+        "…",
         "Keep some."
       ],
       eldra: [
@@ -114,9 +114,9 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         "Aldric. Climb on, if you like. The view has missed you."
       ],
       awakened: [
-        "...",
-        "...",
-        "..."
+        "…",
+        "…",
+        "…"
       ]
     },
     lessons: {
@@ -132,67 +132,67 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
   fr: {
     memories: {
       vorn: [
-        { by: "Vorn", text: "Biscuit, la chose sans forme de la meute de Vorn, gronde contre toi. Les loups s'écartent de lui, pas de toi. « Il ne gronde jamais, dit Vorn. Il te connaît. »" },
-        { by: "Vorn", text: "Biscuit t'ignore toute la nuit, avec un soin remarquable. Vorn est content. « C'est sa façon de dire qu'il pense à toi. »" },
-        { by: "Vorn", text: "Biscuit se couche en travers de tes pieds, et tes bottes pâlissent là où il les touche. « Bouge pas, chuchote Vorn. Il te choisit. Les choses s'effacent, près de lui. »" },
-        { by: "Vorn", text: "« J'ai trouvé Biscuit dans le Néant, là où un tiers du pays a disparu. C'est un bout de ce qui l'a pris : le Matin, d'après Morgrath. Il remuait la queue, je l'ai gardé. »" },
+        { by: "Vorn", text: "Biscuit, la chose sans forme de la meute de Vorn, gronde contre toi. Les loups s'écartent de lui, pas de toi. « Il ne gronde jamais, dit Vorn. Il te connaît. »" },
+        { by: "Vorn", text: "Biscuit t'ignore toute la nuit, avec un soin remarquable. Vorn est content. « C'est sa façon de dire qu'il pense à toi. »" },
+        { by: "Vorn", text: "Biscuit se couche en travers de tes pieds, et tes bottes pâlissent là où il les touche. « Bouge pas, chuchote Vorn. Il te choisit. Les choses s'effacent, près de lui. »" },
+        { by: "Vorn", text: "« J'ai trouvé Biscuit dans le Néant, là où un tiers du pays a disparu. C'est un bout de ce qui l'a pris : le Matin, d'après Morgrath. Il remuait la queue, je l'ai gardé. »" },
         { by: "Vorn", text: "Vorn te dit le vrai nom de Biscuit. Ce n'est pas un mot. C'est un petit silence, le même que celui qui a avalé un tiers d'Orvane. Biscuit remue la queue." }
       ],
       lysandre: [
-        { by: "Lysandre", text: "Tu n'as rien dit, et Lysandre te corrige quand même. « Une strate, pas un strate. Tu le pensais de travers. »" },
-        { by: "Lysandre", text: "Il déroule sa carte des strates, les couches plus anciennes de la nuit sous la route. « Écho, Cendre, Néant, Astral, Primordial. Tout est de moi. Admire. »" },
-        { by: "Lysandre", text: "Sa carte finit sur un mot : FOND. Dans la marge, le sort qui a tissé la Longue Nuit, recopié à l'envers. « Lu jusqu'au bout, il se défait. Chut. »" },
-        { by: "Lysandre", text: "Il déchire la carte en plein milieu du mot FOND. « Le sol continue sous le Primordial. Je me suis trompé sur le fond du monde. C'est d'une impolitesse. »" },
-        { by: "Lysandre", text: "« Je me suis trompé. C'est la plus belle chose qui me soit arrivée en mille nuits. Il reste tant de choses à lire. »" }
+        { by: "Lysandre", text: "Tu n'as rien dit, et Lysandre te corrige quand même. « Une strate, pas un strate. Tu le pensais de travers. »" },
+        { by: "Lysandre", text: "Il déroule sa carte des strates, les couches plus anciennes de la nuit sous la route. « Écho, Cendre, Néant, Astral, Primordial. Tout est de moi. Admire. »" },
+        { by: "Lysandre", text: "Sa carte finit sur un mot : FOND. Dans la marge, le sort qui a tissé la Longue Nuit, recopié à l'envers. « Lu jusqu'au bout, il se défait. Chut. »" },
+        { by: "Lysandre", text: "Il déchire la carte en plein milieu du mot FOND. « Le sol continue sous le Primordial. Je me suis trompé sur le fond du monde. C'est d'une impolitesse. »" },
+        { by: "Lysandre", text: "« Je me suis trompé. C'est la plus belle chose qui me soit arrivée en mille nuits. Il reste tant de choses à lire. »" }
       ],
       ashka: [
-        { by: "Ashka", text: "Ashka te barre la route de son bâton. « Tu te bats pour quoi ? Réfléchis d'abord. Presque tout le monde se trompe. »" },
-        { by: "Ashka", text: "Elle rit de ta réponse. « Faire durer la nuit ? Le Roi a enfermé le soleil dehors, et toi, tu gardes sa porte. Du mauvais côté. »" },
-        { by: "Ashka", text: "Elle se tourne vers là où le soleil devrait se lever. « Il y avait un soleil, avant la Longue Nuit. Mon ordre, le Bûcher, a brûlé les forêts pour le rappeler. Il viendra. »" },
-        { by: "Ashka", text: "« Mon frère, Frère Cendre, garde une petite flamme dans un bocal et appelle ça la foi. Moi, je voulais tout le feu. Alors je l'ai quitté pour le Bûcher. »" },
-        { by: "Ashka", text: "« Si tu atteins l'Aube un jour, au fond de la nuit, ouvre-la pour moi. Je crois que c'est un soleil. Si je me trompe, j'aimerais quand même le voir. »" }
+        { by: "Ashka", text: "Ashka te barre la route de son bâton. « Tu te bats pour quoi ? Réfléchis d'abord. Presque tout le monde se trompe. »" },
+        { by: "Ashka", text: "Elle rit de ta réponse. « Faire durer la nuit ? Le Roi a enfermé le soleil dehors, et toi, tu gardes sa porte. Du mauvais côté. »" },
+        { by: "Ashka", text: "Elle se tourne vers là où le soleil devrait se lever. « Il y avait un soleil, avant la Longue Nuit. Mon ordre, le Bûcher, a brûlé les forêts pour le rappeler. Il viendra. »" },
+        { by: "Ashka", text: "« Mon frère, Frère Cendre, garde une petite flamme dans un bocal et appelle ça la foi. Moi, je voulais tout le feu. Alors je l'ai quitté pour le Bûcher. »" },
+        { by: "Ashka", text: "« Si tu atteins l'Aube un jour, au fond de la nuit, ouvre-la pour moi. Je crois que c'est un soleil. Si je me trompe, j'aimerais quand même le voir. »" }
       ],
       nameless: [
         { by: "Le Sans-Nom", text: "Le Sans-Nom, le chevalier dont on dit l'armure vide, s'incline devant toi comme les chevaliers devant les rois d'autrefois. Son armure ne fait aucun bruit." },
         { by: "Le Sans-Nom", text: "Il ne marche plus derrière toi. Il marche à ta hauteur, exactement de ton pas, comme s'il avait pris cette route de la même façon, autrefois." },
-        { by: "Le Sans-Nom", text: "Il parle pour la première fois, les yeux sur tes essences, les souvenirs que tu portes. « Combien ? »" },
-        { by: "Le Sans-Nom", text: "Il referme tes doigts sur tes dernières essences. « Gardes-en. » Il a donné tous ses souvenirs aux autels. Ce qui reste de lui marche encore." },
-        { by: "Le Sans-Nom", text: "Il ôte son heaume. Dedans, rien, et gravé dans l'acier le seul mot qu'il a gardé : Aldric. C'était un marcheur comme toi. Il a donné tout le reste." }
+        { by: "Le Sans-Nom", text: "Il parle pour la première fois, les yeux sur tes essences, les souvenirs que tu portes. « Combien ? »" },
+        { by: "Le Sans-Nom", text: "Il referme tes doigts sur tes dernières essences. « Gardes-en. » Il a donné tous ses souvenirs aux autels. Ce qui reste de lui marche encore." },
+        { by: "Le Sans-Nom", text: "Il ôte son heaume. Dedans, rien, et gravé dans l'acier le seul mot qu'il a gardé : Aldric. C'était un marcheur comme toi. Il a donné tout le reste." }
       ],
       eldra: [
-        { by: "Eldra", text: "Eldra, la Tisseuse du temps, tire un fil qui dépasse de ta manche. « Le tien. Chaque nuit est un fil, et le tien est très long. Je le reconnaîtrais entre tous. »" },
-        { by: "Eldra", text: "Ta cape est déchirée à l'épaule. Elle la reprise d'un fil de lumière pas tout à fait assorti, et le coupe avec les dents. « Voilà. Ça tiendra cette nuit. »" },
-        { by: "Eldra", text: "Elle ne dit jamais « le Roi ». Elle dit « lui », et ses mains cessent de tisser le temps que dure le mot. Elle connaissait Aldemar avant la Longue Nuit." },
-        { by: "Eldra", text: "« J'ai tissé cette nuit. Le Roi me l'a demandé, pour garder le Matin hors d'Orvane. Je suis désolée de ce qu'elle te coûte. » La navette repart. « Pas de l'avoir faite. »" },
-        { by: "Eldra", text: "Elle te montre son métier, plus haut que le donjon. « Quand la nuit est assez profonde, je la retisse, un fil plus bas. Ça te coûte tes pierres, et ça en vaut la peine. »" }
+        { by: "Eldra", text: "Eldra, la Tisseuse du temps, tire un fil qui dépasse de ta manche. « Le tien. Chaque nuit est un fil, et le tien est très long. Je le reconnaîtrais entre tous. »" },
+        { by: "Eldra", text: "Ta cape est déchirée à l'épaule. Elle la reprise d'un fil de lumière pas tout à fait assorti, et le coupe avec les dents. « Voilà. Ça tiendra cette nuit. »" },
+        { by: "Eldra", text: "Elle ne dit jamais « le Roi ». Elle dit « lui », et ses mains cessent de tisser le temps que dure le mot. Elle connaissait Aldemar avant la Longue Nuit." },
+        { by: "Eldra", text: "« J'ai tissé cette nuit. Le Roi me l'a demandé, pour garder le Matin hors d'Orvane. Je suis désolée de ce qu'elle te coûte. » La navette repart. « Pas de l'avoir faite. »" },
+        { by: "Eldra", text: "Elle te montre son métier, plus haut que le donjon. « Quand la nuit est assez profonde, je la retisse, un fil plus bas. Ça te coûte tes pierres, et ça en vaut la peine. »" }
       ],
       morgrath: [
-        { by: "Morgrath", text: "« Toi. L'épée sans conversation. Tâche de ne pas mourir avant que j'aie fini de te mépriser. »" },
-        { by: "Morgrath", text: "« Aldric. Oui, je l'ai retenu. On aime savoir précisément qui l'on insulte. »" },
-        { by: "Morgrath", text: "« Je suis l'intendant de la mort. Chaque âme d'Orvane a droit à une fin et à un matin, et le Roi a fait tisser cette nuit pour garder les deux dehors. Voilà pourquoi je le hais. »" },
-        { by: "Morgrath", text: "Il regarde longtemps la Voûte de verre. « C'est beau. La nuit. Ne le répète pas. J'ai une réputation. »" },
-        { by: "Morgrath", text: "« Quand ça finira, et ça finira, je serai là pour te raccompagner. Poliment. »" }
+        { by: "Morgrath", text: "« Toi. L'épée sans conversation. Tâche de ne pas mourir avant que j'aie fini de te mépriser. »" },
+        { by: "Morgrath", text: "« Aldric. Oui, je l'ai retenu. On aime savoir précisément qui l'on insulte. »" },
+        { by: "Morgrath", text: "« Je suis l'intendant de la mort. Chaque âme d'Orvane a droit à une fin et à un matin, et le Roi a fait tisser cette nuit pour garder les deux dehors. Voilà pourquoi je le hais. »" },
+        { by: "Morgrath", text: "Il regarde longtemps la Voûte de verre. « C'est beau. La nuit. Ne le répète pas. J'ai une réputation. »" },
+        { by: "Morgrath", text: "« Quand ça finira, et ça finira, je serai là pour te raccompagner. Poliment. »" }
       ],
       celestine: [
-        { by: "Célestine", text: "Célestine fredonne pendant que les essences s'assemblent. Il y a un mot dans son air : ton nom. « la lumière me l'a dit. elle connaît tous ceux qui la portent. »" },
-        { by: "Célestine", text: "Elle fredonne ton nom avant que tu arrives. « oh. c'est toi. les cristaux le fredonnent quand tu es près. je croyais que c'était juste un air. »" },
-        { by: "Célestine", text: "« écoute. les cristaux ne tombent que si quelqu'un regarde la nuit. qu'on détourne les yeux, et ils s'arrêtent. ils aiment qu'on les regarde. »" },
-        { by: "Célestine", text: "Elle montre la Voûte. « quelqu'un, là-haut, nous regarde. pas toi. quelqu'un de bien plus grand, au-dessus du ciel. les cristaux tombent quand il regarde. c'est doux. »" },
-        { by: "Célestine", text: "Elle chante une berceuse qu'elle n'a jamais apprise : « chut, la lampe est allumée, le monde peut attendre. » « ça vient d'au-dessus du ciel. quelqu'un la chante à quelqu'un. »" }
+        { by: "Célestine", text: "Célestine fredonne pendant que les essences s'assemblent. Il y a un mot dans son air : ton nom. « la lumière me l'a dit. elle connaît tous ceux qui la portent. »" },
+        { by: "Célestine", text: "Elle fredonne ton nom avant que tu arrives. « oh. c'est toi. les cristaux le fredonnent quand tu es près. je croyais que c'était juste un air. »" },
+        { by: "Célestine", text: "« écoute. les cristaux ne tombent que si quelqu'un regarde la nuit. qu'on détourne les yeux, et ils s'arrêtent. ils aiment qu'on les regarde. »" },
+        { by: "Célestine", text: "Elle montre la Voûte. « quelqu'un, là-haut, nous regarde. pas toi. quelqu'un de bien plus grand, au-dessus du ciel. les cristaux tombent quand il regarde. c'est doux. »" },
+        { by: "Célestine", text: "Elle chante une berceuse qu'elle n'a jamais apprise : « chut, la lampe est allumée, le monde peut attendre. » « ça vient d'au-dessus du ciel. quelqu'un la chante à quelqu'un. »" }
       ],
       aurelion: [
-        { by: "Aurelion", text: "Aurelion baisse la tête jusqu'à ce qu'un œil d'or remplisse la route. « Petite chose. Tu marches comme si le sol te devait quelque chose. J'approuve. »" },
-        { by: "Aurelion", text: "« Aldric. » Il le prononce comme on pose une coupe de verre très fin. « Un petit nom. Il porte loin. »" },
-        { by: "Aurelion", text: "« Avant ton royaume, il y a eu d'autres mondes. Je les ai survolés, et ils ont pris fin. Le tien n'est pas le premier pour qui quelqu'un laisse une lampe allumée. »" },
-        { by: "Aurelion", text: "« J'ai vu une Aube, une fois, sur le monde d'avant celui-ci. Elle était calme et douce, et après, il ne restait rien. C'est ce que ton Roi garde dehors. »" },
-        { by: "Aurelion", text: "« J'ai choisi ton camp parce que tu reviens toujours. Le dernier monde n'avait personne qui revenait. »" }
+        { by: "Aurelion", text: "Aurelion baisse la tête jusqu'à ce qu'un œil d'or remplisse la route. « Petite chose. Tu marches comme si le sol te devait quelque chose. J'approuve. »" },
+        { by: "Aurelion", text: "« Aldric. » Il le prononce comme on pose une coupe de verre très fin. « Un petit nom. Il porte loin. »" },
+        { by: "Aurelion", text: "« Avant ton royaume, il y a eu d'autres mondes. Je les ai survolés, et ils ont pris fin. Le tien n'est pas le premier pour qui quelqu'un laisse une lampe allumée. »" },
+        { by: "Aurelion", text: "« J'ai vu une Aube, une fois, sur le monde d'avant celui-ci. Elle était calme et douce, et après, il ne restait rien. C'est ce que ton Roi garde dehors. »" },
+        { by: "Aurelion", text: "« J'ai choisi ton camp parce que tu reviens toujours. Le dernier monde n'avait personne qui revenait. »" }
       ],
       awakened: [
         { by: "L'Éveillé", text: "De l'autre côté du feu, l'Éveillé se tient exactement comme toi. Tu changes d'appui, lui aussi, au même instant. Il t'imite." },
         { by: "L'Éveillé", text: "Tu essuies ta lame sur ta manche. De l'autre côté de la route, l'Éveillé essuie une main vide de la même façon. Chacun de tes gestes, il le refait." },
         { by: "L'Éveillé", text: "Les lèvres de l'Éveillé bougent un souffle avant que tu parles, et forment tes mots. Il sait ce que tu vas faire avant toi." },
         { by: "L'Éveillé", text: "Un soir, tu tires l'épée, et l'Éveillé ne la tire pas. Pour la première fois, il cesse de t'imiter, et attend de voir ce que tu fais sans lui." },
-        { by: "L'Éveillé", text: "L'Éveillé parle pour la première et la seule fois, le regard passant droit à travers toi, comme vers quelqu'un derrière tes yeux : « Bonjour. »" }
+        { by: "L'Éveillé", text: "L'Éveillé parle pour la première et la seule fois, le regard passant droit à travers toi, comme vers quelqu'un derrière tes yeux : « Bonjour. »" }
       ]
     },
     hireLines: {
@@ -203,17 +203,17 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
       ],
       lysandre: [
         "Fascinant. Ne bouge pas, je vais y mettre le feu.",
-        "Je t'ai déjà fait la leçon ? Tu hoches la tête aux bons endroits.",
+        "Je t'ai déjà fait la leçon ? Tu hoches la tête aux bons endroits.",
         "Ah, te voilà. Assieds-toi. Je me suis trompé sur plein de choses nouvelles."
       ],
       ashka: [
         "Tout finit par brûler. Moi, je suis juste ponctuelle.",
-        "Toi. Je t'ai déjà mis le feu, non ? Tu n'avais pas l'air d'en vouloir.",
+        "Toi. Je t'ai déjà mis le feu, non ? Tu n'avais pas l'air d'en vouloir.",
         "Te revoilà. Tant mieux. Le soleil n'ouvrira pas la porte tout seul."
       ],
       nameless: [
-        "...",
-        "...",
+        "…",
+        "…",
         "Gardes-en."
       ],
       eldra: [
@@ -222,13 +222,13 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         "Assieds-toi. Attention aux bouts qui dépassent. Certains sont à toi."
       ],
       morgrath: [
-        "La vie est surfaite. Je suis bien placé pour le savoir : j'ai essayé les deux.",
-        "On se connaît ? Je me souviendrais d'avoir méprisé quelque chose d'aussi têtu.",
+        "La vie est surfaite. Je suis bien placé pour le savoir : j'ai essayé les deux.",
+        "On se connaît ? Je me souviendrais d'avoir méprisé quelque chose d'aussi têtu.",
         "Encore là, Aldric. Bien. Il faut quelqu'un pour te regarder faire correctement."
       ],
       celestine: [
         "chut. écoute. la lumière fredonne.",
-        "oh ! ta chanson. je connais ta chanson. non ?",
+        "oh ! ta chanson. je connais ta chanson. non ?",
         "te voilà. les cristaux t'ont fredonné tout le crépuscule."
       ],
       aurelion: [
@@ -237,13 +237,13 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         "Aldric. Monte, si tu veux. La vue s'ennuyait de toi."
       ],
       awakened: [
-        "...",
-        "...",
-        "..."
+        "…",
+        "…",
+        "…"
       ]
     },
     lessons: {
-      "aldric-10": { by: "La Mère-des-Épées", text: "Tiens l'épée comme un oiseau : assez fort pour qu'il ne s'envole pas, assez doucement pour qu'il respire." },
+      "aldric-10": { by: "La Mère-des-Épées", text: "Tiens l'épée comme un oiseau : assez fort pour qu'il ne s'envole pas, assez doucement pour qu'il respire." },
       "aldric-25": { by: "Brom", text: "Une bonne lame chante longtemps après le coup. Écoute-la. Elle te dit où aller ensuite." },
       "aldric-50": { by: "La Mère-des-Épées", text: "Chaque Vestige a une couture, comme un manteau cousu trop vite. Ne coupe pas le manteau. Coupe le fil." },
       "aldric-75": { by: "Kaelen", text: "Une frappe héroïque, c'est une frappe ordinaire devant laquelle on n'a pas fui." },

@@ -23,8 +23,8 @@ export const wikiArticles = defineMessages<Articles>({
           title: "L'idée en une minute",
           blocks: [
             "Tu es **Aldric**, un marcheur pris dans la Longue Nuit. Devant toi, une route de monstres, les **Vestiges**. Tu les frappes, ils lâchent de l'or. Avec cet or, tu recrutes des **compagnons** qui frappent à ta place, sans jamais s'arrêter, même quand tu fais autre chose.",
-            `La route est faite d'**étapes** : ${f.monstersPerStage} monstres à vaincre par étape, et un boss toutes les 5 étapes. Au bout de l'étape 50 attend le **Roi déchu**. Quand il tombe, tu peux faire ton **ascension** : tout recommencer depuis l'étape 1, mais avec des **essences** qui rendent chaque nuit suivante plus forte.`,
-            "C'est tout le cœur du jeu : frapper, recruter, avancer, recommencer plus fort. Le reste (reliques, autels, promesses, Descente) vient s'y ajouter petit à petit, quand tu en as besoin. L'interface ne montre d'ailleurs chaque chose qu'au moment où tu peux t'en servir."
+            `La route est faite d'**étapes** : ${f.monstersPerStage} monstres à vaincre par étape, et un boss toutes les 5 étapes. Au bout de l'étape 50 attend le **Roi déchu**. Quand il tombe, tu peux faire ton **ascension** : tout recommencer depuis l'étape 1, mais avec des **essences** qui rendent chaque nuit suivante plus forte.`,
+            "C'est tout le cœur du jeu : frapper, recruter, avancer, recommencer plus fort. Le reste (reliques, autels, promesses, Descente) vient s'y ajouter petit à petit, quand tu en as besoin. L'interface ne montre d'ailleurs chaque chose qu'au moment où tu peux t'en servir."
           ]
         },
         {
@@ -34,10 +34,10 @@ export const wikiArticles = defineMessages<Articles>({
             {
               steps: [
                 "Frappe le monstre (souris, toucher, ou Entrée/Espace quand la scène a le focus). Chaque monstre vaincu donne de l'or.",
-                "Monte le niveau d'**Aldric** quelques fois : ses niveaux augmentent tes dégâts de frappe. Au niveau 10, son premier talent double ta frappe et débloque la **Frénésie** (touche 1).",
-                "Dès que tu as 50 pièces d'or, recrute **Maëlle**. C'est ta première compagne : elle frappe toute seule, chaque seconde.",
-                "Recrute ensuite chaque compagnon dès qu'il apparaît (le suivant se dévoile quand le précédent a rejoint la compagnie), et monte leurs niveaux. Vise les paliers 10 et 25 : chacun double leurs dégâts.",
-                "Avance d'étape en étape. L'Auto est activé par défaut : dès que tu as vaincu 10 monstres, tu passes à l'étape suivante."
+                "Monte le niveau d'**Aldric** quelques fois : ses niveaux augmentent tes dégâts de frappe. Au niveau 10, son premier talent double ta frappe et débloque la **Frénésie** (touche 1).",
+                "Dès que tu as 50 pièces d'or, recrute **Maëlle**. C'est ta première compagne : elle frappe toute seule, chaque seconde.",
+                "Recrute ensuite chaque compagnon dès qu'il apparaît (le suivant se dévoile quand le précédent a rejoint la compagnie), et monte leurs niveaux. Vise les paliers 10 et 25 : chacun double leurs dégâts.",
+                "Avance d'étape en étape. L'Auto est activé par défaut : dès que tu as vaincu 10 monstres, tu passes à l'étape suivante."
               ]
             },
             { tip: "Le bouton **×1 / ×10 / ×25 / ×100 / Max** en haut du panneau des compagnons achète plusieurs niveaux d'un coup. **Max** est presque toujours le bon choix au début." }
@@ -48,48 +48,48 @@ export const wikiArticles = defineMessages<Articles>({
           title: "Ton premier boss",
           blocks: [
             `À l'étape 5, une **élite** (6 fois les PV d'un monstre normal). À l'étape 10, le **gardien** du biome (10 fois les PV). Tu as ${f.bossTimer} secondes pour le vaincre.`,
-            "Si le temps s'écoule, tu recules d'une étape et l'Auto se met en pause : c'est le mode **Rester**. Tu continues de gagner de l'or sur l'étape d'avant. Renforce tes compagnons, puis appuie sur **Auto** pour retenter.",
-            `Bonne nouvelle : jusqu'à l'étape ${f.woundLastStage}, un boss **garde ses blessures**. Les dégâts que tu lui as faits restent sur lui (jusqu'à ${f.woundCapPct} % de ses PV) quand tu reviens. Insiste, il finit par tomber.`,
-            { tip: "Lance tes pouvoirs juste au début d'un combat de boss, pas avant : leurs 30 secondes couvrent alors tout le chronomètre." }
+            "Si le temps s'écoule, tu recules d'une étape et l'Auto se met en pause : c'est le mode **Rester**. Tu continues de gagner de l'or sur l'étape d'avant. Renforce tes compagnons, puis appuie sur **Auto** pour retenter.",
+            `Bonne nouvelle : jusqu'à l'étape ${f.woundLastStage}, un boss **garde ses blessures**. Les dégâts que tu lui as faits restent sur lui (jusqu'à ${f.woundCapPct} % de ses PV) quand tu reviens. Insiste, il finit par tomber.`,
+            { tip: "Lance tes pouvoirs juste au début d'un combat de boss, pas avant : leurs 30 secondes couvrent alors tout le chronomètre." }
           ]
         },
         {
           id: "first-hour",
           title: "La première heure",
           blocks: [
-            "Les étapes se suivent par biomes de 10 : les Plaines verdoyantes (1 à 10), la Forêt sombre (11 à 20), les Cavernes oubliées (21 à 30), le Marais corrompu (31 à 40) et les Ruines du Roi déchu (41 à 50).",
+            "Les étapes se suivent par biomes de 10 : les Plaines verdoyantes (1 à 10), la Forêt sombre (11 à 20), les Cavernes oubliées (21 à 30), le Marais corrompu (31 à 40) et les Ruines du Roi déchu (41 à 50).",
             {
               list: [
-                "**Les cristaux errants** apparaissent de temps en temps sur la scène, environ toutes les 1,5 à 4 minutes. Attrape-les : or, dégâts ×7, frappe ×10, éclats. Ils ne restent que 13 secondes.",
-                `**Le rat doré** (${f.treasurePct} % des monstres) vaut 10 fois l'or d'un monstre normal.`,
-                "**Les reliques** tombent des gardiens (40 %, garanti la première fois) et des élites (15 %). Une relique trouvée va directement dans un emplacement vide.",
+                "**Les cristaux errants** apparaissent de temps en temps sur la scène, environ toutes les 1,5 à 4 minutes. Attrape-les : or, dégâts ×7, frappe ×10, éclats. Ils ne restent que 13 secondes.",
+                `**Le rat doré** (${f.treasurePct} % des monstres) vaut 10 fois l'or d'un monstre normal.`,
+                "**Les reliques** tombent des gardiens (40 %, garanti la première fois) et des élites (15 %). Une relique trouvée va directement dans un emplacement vide.",
                 "**Les pouvoirs** se débloquent au niveau 25 de Maëlle, Ysolde, Frère Cendre, Nyx et Garrick. Utilise-les dès qu'ils sont prêts."
               ]
             },
-            "Au fil de la première heure, tes frappes comptent de moins en moins face à ta compagnie. C'est voulu : plus tard, ce sont les compagnons qui portent la nuit. Tu n'as jamais besoin de frapper frénétiquement."
+            "Au fil de la première heure, tes frappes comptent de moins en moins face à ta compagnie. C'est voulu : plus tard, ce sont les compagnons qui portent la nuit. Tu n'as jamais besoin de frapper frénétiquement."
           ]
         },
         {
           id: "first-ascension",
-          title: "Ta première ascension (vers 3 h de jeu)",
+          title: "Ta première ascension (vers 3 h de jeu)",
           blocks: [
-            `Le Roi déchu garde l'étape 50. Une fois qu'il est tombé (étape ${f.ascensionStage} atteinte), le **Sanctuaire du Crépuscule** s'ouvre : c'est l'ascension.`,
+            `Le Roi déchu garde l'étape 50. Une fois qu'il est tombé (étape ${f.ascensionStage} atteinte), le **Sanctuaire du Crépuscule** s'ouvre : c'est l'ascension.`,
             "Tu recommences à l'étape 1. Tu perds ton or, les niveaux et talents de tes compagnons, et ta progression d'étapes. Tu gardes tes essences, tes autels, tes reliques, tes éclats, tes hauts faits et tes records.",
-            `Chaque essence gardée en main donne **+${f.essenceDpsPct} % de DPS**. Tu peux aussi les offrir aux **autels**, pour des bonus permanents. La règle d'or : garde à peu près la moitié de tes essences en main, et offre l'autre moitié.`,
-            "Ne te presse pas : avance un peu au-delà de l'étape 50 pour récolter plus d'essences (la première ascension en paie 65 à l'étape 60, 71 une fois l'étape 60 franchie). Mais n'attends pas des heures devant un mur : l'ascension est faite pour être répétée. Quand ta progression s'arrête, fais-la.",
-            { warn: "Ne dépense jamais toutes tes essences aux autels : une essence offerte perd ses +10 % de DPS. Un autel ne vaut le coup que s'il rapporte plus que ce qu'il coûte en essences gardées." }
+            `Chaque essence gardée en main donne **+${f.essenceDpsPct} % de DPS**. Tu peux aussi les offrir aux **autels**, pour des bonus permanents. La règle d'or : garde à peu près la moitié de tes essences en main, et offre l'autre moitié.`,
+            "Ne te presse pas : avance un peu au-delà de l'étape 50 pour récolter plus d'essences (la première ascension en paie 65 à l'étape 60, 71 une fois l'étape 60 franchie). Mais n'attends pas des heures devant un mur : l'ascension est faite pour être répétée. Quand ta progression s'arrête, fais-la.",
+            { warn: "Ne dépense jamais toutes tes essences aux autels : une essence offerte perd ses +10 % de DPS. Un autel ne vaut le coup que s'il rapporte plus que ce qu'il coûte en essences gardées." }
           ]
         },
         {
           id: "after",
-          title: "Et ensuite ?",
+          title: "Et ensuite ?",
           blocks: [
             {
               list: [
                 "Chaque nuit va plus loin que la précédente. Toutes les 50 étapes commence une nouvelle **strate**, aux monstres plus coriaces et à l'apparence transformée. Il y en a 60, regroupées en 12 Âges.",
-                "Vers la quatrième nuit, un compagnon qui commence à se souvenir de toi te demandera ta **parole** pour la nuit : c'est [la Promesse](promise). Tiens-la, et ses dégâts doublent pour toujours.",
+                "Vers la quatrième nuit, un compagnon qui commence à se souvenir de toi te demandera ta **parole** pour la nuit : c'est [la Promesse](promise). Tiens-la, et ses dégâts doublent pour toujours.",
                 "Avec les éclats gagnés sur les gardiens, [forge tes reliques](relics#forge) et passe à l'[étal du Comptoir](relics#market).",
-                "Laisse la page ouverte quand tu travailles : ta compagnie avance seule, et même jeu fermé, elle rattrape jusqu'à 8 heures. Voir [Jouer en arrière-plan](idle).",
+                "Laisse la page ouverte quand tu travailles : ta compagnie avance seule, et même jeu fermé, elle rattrape jusqu'à 8 heures. Voir [Jouer en arrière-plan](idle).",
                 `Très loin, à l'étape ${fr(f.descentStage)}, s'ouvre [la Descente](descent), la seconde renaissance.`
               ]
             }
@@ -100,30 +100,30 @@ export const wikiArticles = defineMessages<Articles>({
     faq: () => ({
       lead: "Les questions qu'on se pose tous les premiers jours, et les réponses courtes.",
       sections: [
-        { id: "free", title: "Faut-il frapper sans arrêt ?", blocks: ["Non. Tes frappes portent le tout début de chaque nuit, puis tes compagnons prennent le relais. Ils frappent même quand la page est en arrière-plan. Ta présence ajoute ce que seule une main peut faire : attraper les cristaux, lancer les pouvoirs, faire l'ascension, gérer l'équipement."] },
-        { id: "who-to-level", title: "Quel compagnon monter en priorité ?", blocks: ["Le plus récent, presque toujours : chaque compagnon fait bien plus de dégâts que le précédent. Monte-le jusqu'à son prochain palier (10, 25, 50, 100, 150, puis tous les 25 niveaux à partir de 200), achète le talent, et recommence. Un compagnon arrêté entre deux paliers gaspille de l'or.", { tip: "Le bouton **Max** montre combien de niveaux tu peux t'offrir. Viser le palier suivant vaut presque toujours mieux que saupoudrer." }] },
-        { id: "stuck", title: "Je suis bloqué devant un boss, que faire ?", blocks: [{ list: ["Laisse le mode **Rester** tourner un moment : tu gagnes de l'or sur l'étape d'avant et tes compagnons montent.", "Lance tes pouvoirs au début du combat (Cri de ralliement surtout).", "Jusqu'à l'étape 44, chaque tentative laisse des blessures au boss : réessaie.", "Après la première ascension : si un mur ne cède pas en 20 minutes, fais ton ascension. C'est plus rapide que d'insister."] }] },
-        { id: "when-ascend", title: "Quand faire mon ascension ?", blocks: ["Quand ta progression s'arrête. Faire ton ascension quelques minutes après ta dernière nouvelle étape mène bien plus loin qu'attendre une heure devant un mur. Les essences augmentent avec l'étape la plus lointaine franchie, mais moins vite que les PV des monstres : pousser un peu paie, camper des heures non."] },
-        { id: "which-altar", title: "Quels autels acheter ?", blocks: ["Ceux qui suivent ton style. Si tu laisses surtout tourner le jeu, l'**Autel de la patience** est le meilleur. Si tes frappes font l'essentiel de tes dégâts, l'**Autel de la lame**. Entre les deux, **puissance** et **fortune**. Ensuite, les autels plafonnés (temps, trésor, marchandage…) s'ouvrent à la troisième puis à la cinquième nuit. Et garde toujours environ la moitié de tes essences en main. Détails dans [Ascension et autels](ascension#strategy)."] },
-        { id: "relic-choice", title: "Quelle relique porter ?", blocks: ["Regarde le chiffre **Compagnie ×N** de chaque relique : c'est ce qu'elle multiplie dans les dégâts de ta compagnie, comparé à l'emplacement vide. Plus il est grand, mieux c'est. Les reliques trouvées dans les strates profondes ont de la **Densité** : chaque strate sous la nuit présente ajoute ×1,03 aux dégâts de la compagnie."] },
-        { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20) et à acheter au marché du Comptoir : coffres, potions, sabliers. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
-        { id: "lost", title: "Vais-je perdre ma partie ?", blocks: ["Non. Elle est gardée sur le serveur, même sans compte : ton navigateur la retrouve pendant 30 jours après ta dernière visite. Crée un compte pour la garder pour toujours et sur tous tes appareils. Voir [Compte et partie gardée](account)."] },
-        { id: "cheat", title: "Peut-on tricher ?", blocks: ["Le serveur rejoue chaque partie envoyée avec le même moteur que le jeu. Une partie qui n'a pas pu se jouer honnêtement est refusée, et le classement ne montre que des parties vérifiées."] },
-        { id: "mistakes", title: "Les erreurs de débutant", blocks: [{ list: ["Dépenser toutes ses essences aux autels.", "Camper des heures devant un mur au lieu de faire son ascension.", "Laisser un compagnon juste sous un palier (niveau 24, 49, 99…).", "Oublier d'acheter les talents : ils doublent ou quadruplent les dégâts.", "Garder des reliques communes au lieu de les recycler en éclats.", "Ignorer les cristaux : une surcharge ×7 ou une frappe ×10 au bon moment fait tomber un boss."] }] }
+        { id: "free", title: "Faut-il frapper sans arrêt ?", blocks: ["Non. Tes frappes portent le tout début de chaque nuit, puis tes compagnons prennent le relais. Ils frappent même quand la page est en arrière-plan. Ta présence ajoute ce que seule une main peut faire : attraper les cristaux, lancer les pouvoirs, faire l'ascension, gérer l'équipement."] },
+        { id: "who-to-level", title: "Quel compagnon monter en priorité ?", blocks: ["Le plus récent, presque toujours : chaque compagnon fait bien plus de dégâts que le précédent. Monte-le jusqu'à son prochain palier (10, 25, 50, 100, 150, puis tous les 25 niveaux à partir de 200), achète le talent, et recommence. Un compagnon arrêté entre deux paliers gaspille de l'or.", { tip: "Le bouton **Max** montre combien de niveaux tu peux t'offrir. Viser le palier suivant vaut presque toujours mieux que saupoudrer." }] },
+        { id: "stuck", title: "Je suis bloqué devant un boss, que faire ?", blocks: [{ list: ["Laisse le mode **Rester** tourner un moment : tu gagnes de l'or sur l'étape d'avant et tes compagnons montent.", "Lance tes pouvoirs au début du combat (Cri de ralliement surtout).", "Jusqu'à l'étape 44, chaque tentative laisse des blessures au boss : réessaie.", "Après la première ascension : si un mur ne cède pas en 20 minutes, fais ton ascension. C'est plus rapide que d'insister."] }] },
+        { id: "when-ascend", title: "Quand faire mon ascension ?", blocks: ["Quand ta progression s'arrête. Faire ton ascension quelques minutes après ta dernière nouvelle étape mène bien plus loin qu'attendre une heure devant un mur. Les essences augmentent avec l'étape la plus lointaine franchie, mais moins vite que les PV des monstres : pousser un peu paie, camper des heures non."] },
+        { id: "which-altar", title: "Quels autels acheter ?", blocks: ["Ceux qui suivent ton style. Si tu laisses surtout tourner le jeu, l'**Autel de la patience** est le meilleur. Si tes frappes font l'essentiel de tes dégâts, l'**Autel de la lame**. Entre les deux, **puissance** et **fortune**. Ensuite, les autels plafonnés (temps, trésor, marchandage…) s'ouvrent à la troisième puis à la cinquième nuit. Et garde toujours environ la moitié de tes essences en main. Détails dans [Ascension et autels](ascension#strategy)."] },
+        { id: "relic-choice", title: "Quelle relique porter ?", blocks: ["Regarde le chiffre **Compagnie ×N** de chaque relique : c'est ce qu'elle multiplie dans les dégâts de ta compagnie, comparé à l'emplacement vide. Plus il est grand, mieux c'est. Les reliques trouvées dans les strates profondes ont de la **Densité** : chaque strate sous la nuit présente ajoute ×1,03 aux dégâts de la compagnie."] },
+        { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20) et à acheter au marché du Comptoir : coffres, potions, sabliers. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
+        { id: "lost", title: "Vais-je perdre ma partie ?", blocks: ["Non. Elle est gardée sur le serveur, même sans compte : ton navigateur la retrouve pendant 30 jours après ta dernière visite. Crée un compte pour la garder pour toujours et sur tous tes appareils. Voir [Compte et partie gardée](account)."] },
+        { id: "cheat", title: "Peut-on tricher ?", blocks: ["Le serveur rejoue chaque partie envoyée avec le même moteur que le jeu. Une partie qui n'a pas pu se jouer honnêtement est refusée, et le classement ne montre que des parties vérifiées."] },
+        { id: "mistakes", title: "Les erreurs de débutant", blocks: [{ list: ["Dépenser toutes ses essences aux autels.", "Camper des heures devant un mur au lieu de faire son ascension.", "Laisser un compagnon juste sous un palier (niveau 24, 49, 99…).", "Oublier d'acheter les talents : ils doublent ou quadruplent les dégâts.", "Garder des reliques communes au lieu de les recycler en éclats.", "Ignorer les cristaux : une surcharge ×7 ou une frappe ×10 au bon moment fait tomber un boss."] }] }
       ]
     }),
     calculator: (f) => ({
-      lead: "Entre une étape, aussi profonde que tu veux : le calculateur te dit ce qui t'y attend, avec les formules du jeu lui-même.",
+      lead: "Entre une étape, aussi profonde que tu veux : le calculateur te dit ce qui t'y attend, avec les formules du jeu lui-même.",
       sections: [
         { id: "tool", title: "Le calculateur", blocks: [{ slot: "calculator" }] },
         {
           id: "formulas",
           title: "Comment c'est calculé",
           blocks: [
-            "Les **PV** suivent une courbe en trois segments : très raide au début, puis ×1,15 par étape, puis ×1,18 par étape. L'élite (toutes les 5 étapes) a 6 fois les PV d'un Vestige, le gardien (toutes les 10 étapes) 10 fois.",
+            "Les **PV** suivent une courbe en trois segments : très raide au début, puis ×1,15 par étape, puis ×1,18 par étape. L'élite (toutes les 5 étapes) a 6 fois les PV d'un Vestige, le gardien (toutes les 10 étapes) 10 fois.",
             "L'**or** d'un monstre vaut 1/30 de ses PV (le double à l'étape 1, l'écart se résorbant jusqu'à l'étape 10). Tes bonus d'or (Autel de fortune, talents, reliques, Bestiaire) s'y ajoutent.",
-            "Les **essences** d'une ascension dépendent de l'étape la plus lointaine franchie pendant la nuit : 20 × 1,075 par étape au-delà de 50, jusqu'à l'étape 140, puis +2 % par étape, plus 3 par étape au-delà de 50. L'Autel de la récolte, la Chaîne d'abondance et certaines reliques les multiplient.",
-            `Les **fils** de la Descente : 2 à l'étape 1 000, deux fois plus à chaque Âge (250 étapes), 32 à l'étape ${fr(f.descentStage)}.`
+            "Les **essences** d'une ascension dépendent de l'étape la plus lointaine franchie pendant la nuit : 20 × 1,075 par étape au-delà de 50, jusqu'à l'étape 140, puis +2 % par étape, plus 3 par étape au-delà de 50. L'Autel de la récolte, la Chaîne d'abondance et certaines reliques les multiplient.",
+            `Les **fils** de la Descente : 2 à l'étape 1 000, deux fois plus à chaque Âge (250 étapes), 32 à l'étape ${fr(f.descentStage)}.`
           ]
         }
       ]
@@ -135,16 +135,16 @@ export const wikiArticles = defineMessages<Articles>({
           id: "strikes",
           title: "Frappes et coups critiques",
           blocks: [
-            `Chaque frappe inflige tes **dégâts de frappe** au monstre. Un **coup critique** multiplie ces dégâts par ${f.crit} (les talents du niveau 50 de Nyx et Lysandre ajoutent +3 et +5 à ce multiplicateur, l'Autel du destin +20 % par niveau). Les coups critiques ne concernent que les frappes, jamais les compagnons.`,
-            "Tes dégâts de frappe = les dégâts propres d'Aldric (ses niveaux, ses talents, tes reliques de frappe, la moitié du bonus des hauts faits) + une **part du DPS de ta compagnie** (1 %, 1 % et 0,4 % avec les talents d'Aldric aux niveaux 25, 100 et 200), le tout multiplié par l'Autel de la lame.",
-            "Les dégâts propres d'Aldric s'effacent après les premières étapes : plus tard, une frappe vaut surtout sa part du DPS, multipliée par les critiques et la Lame."
+            `Chaque frappe inflige tes **dégâts de frappe** au monstre. Un **coup critique** multiplie ces dégâts par ${f.crit} (les talents du niveau 50 de Nyx et Lysandre ajoutent +3 et +5 à ce multiplicateur, l'Autel du destin +20 % par niveau). Les coups critiques ne concernent que les frappes, jamais les compagnons.`,
+            "Tes dégâts de frappe = les dégâts propres d'Aldric (ses niveaux, ses talents, tes reliques de frappe, la moitié du bonus des hauts faits) + une **part du DPS de ta compagnie** (1 %, 1 % et 0,4 % avec les talents d'Aldric aux niveaux 25, 100 et 200), le tout multiplié par l'Autel de la lame.",
+            "Les dégâts propres d'Aldric s'effacent après les premières étapes : plus tard, une frappe vaut surtout sa part du DPS, multipliée par les critiques et la Lame."
           ]
         },
         {
           id: "patience",
           title: "Le bonus de Patience",
           blocks: [
-            "Tes compagnons frappent plus fort grâce au **bonus de Patience**, toujours actif, que tu sois là ou non. La Veille de la sentinelle (Kaelen niveau 50, +50 %), la Légion silencieuse (Morgrath niveau 50, +100 %) et l'Autel de la patience s'additionnent ; le Manteau de ronces, Quiétus et le Phylactère de Morgrath multiplient le total.",
+            "Tes compagnons frappent plus fort grâce au **bonus de Patience**, toujours actif, que tu sois là ou non. La Veille de la sentinelle (Kaelen niveau 50, +50 %), la Légion silencieuse (Morgrath niveau 50, +100 %) et l'Autel de la patience s'additionnent ; le Manteau de ronces, Quiétus et le Phylactère de Morgrath multiplient le total.",
             "Tes frappes s'ajoutent par-dessus, quel que soit ton rythme. Une puce sur la scène affiche le bonus."
           ]
         },
@@ -152,41 +152,41 @@ export const wikiArticles = defineMessages<Articles>({
           id: "stages",
           title: "Étapes, élites et gardiens",
           blocks: [
-            `Chaque étape compte ${f.monstersPerStage} monstres. Vaincs-les pour passer à la suivante. Toutes les 5 étapes, un boss t'attend avec un chronomètre de ${f.bossTimer} s :`,
+            `Chaque étape compte ${f.monstersPerStage} monstres. Vaincs-les pour passer à la suivante. Toutes les 5 étapes, un boss t'attend avec un chronomètre de ${f.bossTimer} s :`,
             { slot: "stageKinds" },
-            `Si le chronomètre s'écoule, tu recules d'une étape et l'Auto se met en pause (mode **Rester**). Jusqu'à l'étape ${f.woundLastStage}, élites et gardiens **gardent leurs blessures** (jusqu'à ${f.woundCapPct} % de leurs PV) : chaque tentative compte. La porte du Donjon (étape 45), le Roi et les strates plus profondes guérissent entièrement.`,
-            "La carte permet de revenir sur n'importe quelle étape déjà franchie. Un boss rejoué depuis la carte ne paie que de l'or : seul le boss le plus loin de la nuit lâche reliques et éclats."
+            `Si le chronomètre s'écoule, tu recules d'une étape et l'Auto se met en pause (mode **Rester**). Jusqu'à l'étape ${f.woundLastStage}, élites et gardiens **gardent leurs blessures** (jusqu'à ${f.woundCapPct} % de leurs PV) : chaque tentative compte. La porte du Donjon (étape 45), le Roi et les strates plus profondes guérissent entièrement.`,
+            "La carte permet de revenir sur n'importe quelle étape déjà franchie. Un boss rejoué depuis la carte ne paie que de l'or : seul le boss le plus loin de la nuit lâche reliques et éclats."
           ]
         },
         {
           id: "rout",
           title: "La Débandade",
           blocks: [
-            "Sur une étape en dessous de ton record (donc jamais pendant la toute première nuit), quand ta compagnie abattrait un monstre en moins de 0,1 s, toute l'étape tombe d'un coup : ses victoires restantes, leur or (avec la part d'un rat doré) et le Bestiaire. Puis l'étape suivante, au rythme d'une étape toutes les 0,25 s. Les élites et les gardiens, eux, se combattent toujours.",
-            "C'est ce qui rend chaque nuit rapide à remonter : tu repasses en quelques secondes ce qui t'a coûté des heures."
+            "Sur une étape en dessous de ton record (donc jamais pendant la toute première nuit), quand ta compagnie abattrait un monstre en moins de 0,1 s, toute l'étape tombe d'un coup : ses victoires restantes, leur or (avec la part d'un rat doré) et le Bestiaire. Puis l'étape suivante, au rythme d'une étape toutes les 0,25 s. Les élites et les gardiens, eux, se combattent toujours.",
+            "C'est ce qui rend chaque nuit rapide à remonter : tu repasses en quelques secondes ce qui t'a coûté des heures."
           ]
         },
         {
           id: "curve",
           title: "La courbe des PV",
-          blocks: ["Les PV augmentent bien plus vite que tout le reste : c'est ce qui finit par t'arrêter, et ce que l'ascension est faite pour franchir. Quelques repères (sans aucun bonus) :", { slot: "curve" }, "Pour une étape précise, utilise le [calculateur](calculator)."]
+          blocks: ["Les PV augmentent bien plus vite que tout le reste : c'est ce qui finit par t'arrêter, et ce que l'ascension est faite pour franchir. Quelques repères (sans aucun bonus) :", { slot: "curve" }, "Pour une étape précise, utilise le [calculateur](calculator)."]
         },
         {
           id: "golden-rat",
           title: "Le rat doré",
           blocks: [
-            `Sur les étapes normales, ${f.treasurePct} % des monstres sont un **rat doré**, Messire Pip, qui vaut 10 fois l'or. L'Autel du trésor (+0,5 % par niveau), le talent de Garrick, l'Anneau du rat et le Fromage de Pip augmentent la chance, plafonnée à ${f.treasureMaxPct} %.`,
-            "Un rat doré sur dix s'arrête et te lance un défi : c'est [le Pari de Pip](events)."
+            `Sur les étapes normales, ${f.treasurePct} % des monstres sont un **rat doré**, Messire Pip, qui vaut 10 fois l'or. L'Autel du trésor (+0,5 % par niveau), le talent de Garrick, l'Anneau du rat et le Fromage de Pip augmentent la chance, plafonnée à ${f.treasureMaxPct} %.`,
+            "Un rat doré sur dix s'arrête et te lance un défi : c'est [le Pari de Pip](events)."
           ]
         },
         {
           id: "crystals",
           title: "Les cristaux errants",
           blocks: [
-            "Tant que le jeu est visible, un cristal apparaît toutes les 90 à 240 s (le premier d'une nouvelle partie au bout de 75 s) et reste 13 s. Attrape-le pour l'une de ces récompenses :",
+            "Tant que le jeu est visible, un cristal apparaît toutes les 90 à 240 s (le premier d'une nouvelle partie au bout de 75 s) et reste 13 s. Attrape-le pour l'une de ces récompenses :",
             { slot: "crystals" },
-            "Un cristal sur 20 est une **Averse de cristaux** : la Reine-lanterne traverse le ciel et cinq cristaux tombent tour à tour, 3 s chacun. La Pierre qui chante les fait rester 18 s ; l'Aimantite de Garrick, le Métier bourdonnant et la Lanterne aux phalènes les font venir plus vite.",
-            { tip: "Garde la surcharge (DPS ×7) ou la frappe ×10 pour un boss : attrape le cristal pendant le combat, pas avant." }
+            "Un cristal sur 20 est une **Averse de cristaux** : la Reine-lanterne traverse le ciel et cinq cristaux tombent tour à tour, 3 s chacun. La Pierre qui chante les fait rester 18 s ; l'Aimantite de Garrick, le Métier bourdonnant et la Lanterne aux phalènes les font venir plus vite.",
+            { tip: "Garde la surcharge (DPS ×7) ou la frappe ×10 pour un boss : attrape le cristal pendant le combat, pas avant." }
           ]
         }
       ]
@@ -194,27 +194,27 @@ export const wikiArticles = defineMessages<Articles>({
     companions: (f) => ({
       lead: `${f.companions} compagnons, plus Aldric, qui est toi. Chacun frappe plus fort que le précédent, coûte bien plus cher, et apporte un talent unique au niveau 50.`,
       sections: [
-        { id: "roster", title: "La compagnie au complet", blocks: ["Chaque compagnon se dévoile quand le précédent a rejoint la compagnie. Touche un nom pour sa fiche complète : talents, pouvoir, promesse et souvenirs.", { slot: "roster" }] },
+        { id: "roster", title: "La compagnie au complet", blocks: ["Chaque compagnon se dévoile quand le précédent a rejoint la compagnie. Touche un nom pour sa fiche complète : talents, pouvoir, promesse et souvenirs.", { slot: "roster" }] },
         {
           id: "levels",
           title: "Niveaux, talents et paliers",
           blocks: [
-            "Chaque niveau coûte 7 % de plus que le précédent (10 % pour Aldric). Les **talents** se débloquent aux niveaux 10, 25, 50, 100 et 150 et s'achètent avec de l'or :",
-            { list: ["Niveaux 10 et 25 : dégâts du compagnon ×2.", "Niveau 50 : un talent unique (or, frappe, critiques, chronomètre, trésor, dégâts de toute la compagnie ou bonus de Patience).", "Niveaux 100 et 150 : dégâts du compagnon ×4.", "Puis tous les 25 niveaux à partir de 200 : dégâts ×3,5, automatiquement."] },
+            "Chaque niveau coûte 7 % de plus que le précédent (10 % pour Aldric). Les **talents** se débloquent aux niveaux 10, 25, 50, 100 et 150 et s'achètent avec de l'or :",
+            { list: ["Niveaux 10 et 25 : dégâts du compagnon ×2.", "Niveau 50 : un talent unique (or, frappe, critiques, chronomètre, trésor, dégâts de toute la compagnie ou bonus de Patience).", "Niveaux 100 et 150 : dégâts du compagnon ×4.", "Puis tous les 25 niveaux à partir de 200 : dégâts ×3,5, automatiquement."] },
             "Le coût d'un talent est le coût de base du compagnon multiplié par 20, 100, 800, 25 000 puis 2 500 000.",
-            { tip: "Un compagnon s'achète par paliers : monte-le jusqu'au prochain talent, achète le talent, passe au suivant. C'est exactement ce que fait le pilote automatique quand tu es absent." }
+            { tip: "Un compagnon s'achète par paliers : monte-le jusqu'au prochain talent, achète le talent, passe au suivant. C'est exactement ce que fait le pilote automatique quand tu es absent." }
           ]
         },
-        { id: "aldric", title: "Aldric, ta frappe", blocks: ["Aldric ne fait pas de DPS : ses niveaux et ses talents renforcent ta frappe.", { slot: "aldric" }] },
+        { id: "aldric", title: "Aldric, ta frappe", blocks: ["Aldric ne fait pas de DPS : ses niveaux et ses talents renforcent ta frappe.", { slot: "aldric" }] },
         {
           id: "recognition",
           title: "La Reconnaissance",
           blocks: [
-            `Chaque nuit, tes compagnons te rencontrent en inconnus. Mais une nuit où un compagnon atteint le niveau 100 compte pour sa **Reconnaissance**. Aux paliers ${f.recognitionTiers} nuits, il se souvient un peu plus de toi : un souvenir dans la Chronique, un anneau d'or sur son médaillon. Les deux derniers paliers demandent aussi une [promesse](promise) tenue.`,
-            "Au palier 5, il fait **+10 % de dégâts**, et huit d'entre eux t'offrent une relique nommée. Voir [Chronique et Reconnaissance](chronicle#recognition)."
+            `Chaque nuit, tes compagnons te rencontrent en inconnus. Mais une nuit où un compagnon atteint le niveau 100 compte pour sa **Reconnaissance**. Aux paliers ${f.recognitionTiers} nuits, il se souvient un peu plus de toi : un souvenir dans la Chronique, un anneau d'or sur son médaillon. Les deux derniers paliers demandent aussi une [promesse](promise) tenue.`,
+            "Au palier 5, il fait **+10 % de dégâts**, et huit d'entre eux t'offrent une relique nommée. Voir [Chronique et Reconnaissance](chronicle#recognition)."
           ]
         },
-        { id: "bulk", title: "Achat en masse", blocks: ["En haut du panneau des compagnons : ×1, ×10, ×25, ×100 ou Max. Le panneau montre la compagnie entière ; la scène montre les 5 plus forts (3 sur téléphone), dont les tirs volent vers le monstre chaque seconde."] }
+        { id: "bulk", title: "Achat en masse", blocks: ["En haut du panneau des compagnons : ×1, ×10, ×25, ×100 ou Max. Le panneau montre la compagnie entière ; la scène montre les 5 plus forts (3 sur téléphone), dont les tirs volent vers le monstre chaque seconde."] }
       ]
     }),
     powers: () => ({
@@ -224,7 +224,7 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "cooldowns",
           title: "Recharges",
-          blocks: ["L'Autel des échos (-5 % par niveau) et le Médaillon d'Eldra (-10 %) raccourcissent toutes les recharges ensemble, jamais en dessous de 40 % de leur durée de base. La Robe des cendres fait durer la Pluie d'or 45 s."]
+          blocks: ["L'Autel des échos (-5 % par niveau) et le Médaillon d'Eldra (-10 %) raccourcissent toutes les recharges ensemble, jamais en dessous de 40 % de leur durée de base. La Robe des cendres fait durer la Pluie d'or 45 s."]
         },
         {
           id: "use",
@@ -232,11 +232,11 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             {
               list: [
-                "**Contre un boss** : Cri de ralliement (compagnie ×2), Frénésie et Œil de faucon au début du chronomètre.",
-                "**Pour l'or** : Pluie d'or (×3) juste avant une série de monstres, idéalement avec un Élixir de fortune et un cristal d'or.",
-                "**Rituel de résonance** : à lancer à chaque recharge, sans réfléchir. Ses +5 % s'empilent jusqu'à la prochaine ascension.",
-                "**Écho temporel** : juste après ton pouvoir le plus long (Rituel ou Pluie d'or), pour le relancer aussitôt.",
-                "**Détisser** passe l'étape en cours (jamais celle d'un boss) : utile pour sauter un monstre trop lent en fin de route."
+                "**Contre un boss** : Cri de ralliement (compagnie ×2), Frénésie et Œil de faucon au début du chronomètre.",
+                "**Pour l'or** : Pluie d'or (×3) juste avant une série de monstres, idéalement avec un Élixir de fortune et un cristal d'or.",
+                "**Rituel de résonance** : à lancer à chaque recharge, sans réfléchir. Ses +5 % s'empilent jusqu'à la prochaine ascension.",
+                "**Écho temporel** : juste après ton pouvoir le plus long (Rituel ou Pluie d'or), pour le relancer aussitôt.",
+                "**Détisser** passe l'étape en cours (jamais celle d'un boss) : utile pour sauter un monstre trop lent en fin de route."
               ]
             }
           ]
@@ -244,49 +244,49 @@ export const wikiArticles = defineMessages<Articles>({
       ]
     }),
     ascension: (f) => ({
-      lead: "Recommencer pour aller plus loin : l'ascension échange ta nuit contre des essences, qui rendent toutes les suivantes plus fortes.",
+      lead: "Recommencer pour aller plus loin : l'ascension échange ta nuit contre des essences, qui rendent toutes les suivantes plus fortes.",
       sections: [
         {
           id: "how",
           title: "Faire son ascension",
           blocks: [
             `L'ascension s'ouvre quand le Roi déchu est tombé (étape ${f.ascensionStage} atteinte), au **Sanctuaire du Crépuscule**. Tu repars de l'étape 1 (ou plus loin, avec l'Autel du voyageur).`,
-            { list: ["**Remis à zéro** : or, niveaux et talents des compagnons, étape, pouvoirs, statistiques de la nuit.", "**Gardé** : essences, autels, reliques, éclats, hauts faits, statistiques à vie, potions et surcharges en cours."] }
+            { list: ["**Remis à zéro** : or, niveaux et talents des compagnons, étape, pouvoirs, statistiques de la nuit.", "**Gardé** : essences, autels, reliques, éclats, hauts faits, statistiques à vie, potions et surcharges en cours."] }
           ]
         },
         {
           id: "essences",
           title: "Les essences",
           blocks: [
-            `Les essences gagnées dépendent de l'étape la plus lointaine franchie pendant la nuit. Chaque essence gardée en main donne **+${f.essenceDpsPct} % de DPS**. Quelques repères :`,
+            `Les essences gagnées dépendent de l'étape la plus lointaine franchie pendant la nuit. Chaque essence gardée en main donne **+${f.essenceDpsPct} % de DPS**. Quelques repères :`,
             { slot: "essences" },
-            "La croissance est volontairement plus lente que celle des PV : pousser quelques étapes de plus paie, camper des heures devant un mur ne paie pas. Le plus rapide : faire ton ascension peu après l'arrêt de ta progression."
+            "La croissance est volontairement plus lente que celle des PV : pousser quelques étapes de plus paie, camper des heures devant un mur ne paie pas. Le plus rapide : faire ton ascension peu après l'arrêt de ta progression."
           ]
         },
         {
           id: "altars",
           title: "Les 13 autels",
           blocks: [
-            "Les essences s'offrent aussi aux autels, pour des bonus permanents. Chaque niveau coûte `base × croissance^niveau` essences. Le Sanctuaire s'éveille en trois temps : les quatre autels sans plafond dès la première nuit, temps, trésor et marchandage à la troisième, les six autres à la cinquième.",
+            "Les essences s'offrent aussi aux autels, pour des bonus permanents. Chaque niveau coûte `base × croissance^niveau` essences. Le Sanctuaire s'éveille en trois temps : les quatre autels sans plafond dès la première nuit, temps, trésor et marchandage à la troisième, les six autres à la cinquième.",
             { slot: "altars" },
-            "À partir du niveau 5, chaque autel raconte qui l'a élevé : une ligne de la Chronique."
+            "À partir du niveau 5, chaque autel raconte qui l'a élevé : une ligne de la Chronique."
           ]
         },
         {
           id: "strategy",
-          title: "Garder ou offrir ?",
+          title: "Garder ou offrir ?",
           blocks: [
-            "C'est la vraie décision du jeu. Les quatre autels sans plafond multiplient leur effet à chaque niveau, mais leur prix grimpe de façon exponentielle, et chaque essence offerte perd ses +10 % de DPS.",
+            "C'est la vraie décision du jeu. Les quatre autels sans plafond multiplient leur effet à chaque niveau, mais leur prix grimpe de façon exponentielle, et chaque essence offerte perd ses +10 % de DPS.",
             {
               list: [
                 "Garde environ **la moitié** de tes essences en main, à tous les stades du jeu.",
-                "Ta compagnie porte tes dégâts (tu laisses tourner) : l'**Autel de la patience**, qui vaut environ un cinquième de plus par essence que la puissance.",
-                "Tes frappes mènent : l'**Autel de la lame**.",
-                "Dans les deux cas : **puissance** et **fortune** ensuite, chacune sur sa propre échelle de prix.",
-                "L'**Autel de la récolte** (+10 % d'essences par niveau, 5 niveaux) quand un niveau rapporte plus aux nuits suivantes que les essences gardées."
+                "Ta compagnie porte tes dégâts (tu laisses tourner) : l'**Autel de la patience**, qui vaut environ un cinquième de plus par essence que la puissance.",
+                "Tes frappes mènent : l'**Autel de la lame**.",
+                "Dans les deux cas : **puissance** et **fortune** ensuite, chacune sur sa propre échelle de prix.",
+                "L'**Autel de la récolte** (+10 % d'essences par niveau, 5 niveaux) quand un niveau rapporte plus aux nuits suivantes que les essences gardées."
               ]
             },
-            { warn: "Tout offrir fait perdre bien plus qu'on ne le croit : chaque essence gardée vaut +10 % de DPS, et chaque niveau d'autel coûte plus cher que le précédent. Garde toujours une bonne part de tes essences en main, et ne garde pas tout non plus : les deux extrêmes avancent bien moins loin qu'un partage réfléchi." }
+            { warn: "Tout offrir fait perdre bien plus qu'on ne le croit : chaque essence gardée vaut +10 % de DPS, et chaque niveau d'autel coûte plus cher que le précédent. Garde toujours une bonne part de tes essences en main, et ne garde pas tout non plus : les deux extrêmes avancent bien moins loin qu'un partage réfléchi." }
           ]
         },
         {
@@ -305,10 +305,10 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             {
               list: [
-                "Un compagnon ne demande ta parole qu'à partir de la **Reconnaissance 2** (trois nuits passées ensemble) : la première demande arrive donc vers la quatrième nuit.",
-                "Elle se donne au Sanctuaire, page Promesse : tout de suite si la nuit commence à peine (personne recruté, aucune étape franchie, rien de ce qu'elle interdit déjà fait), sinon pour le prochain crépuscule.",
+                "Un compagnon ne demande ta parole qu'à partir de la **Reconnaissance 2** (trois nuits passées ensemble) : la première demande arrive donc vers la quatrième nuit.",
+                "Elle se donne au Sanctuaire, page Promesse : tout de suite si la nuit commence à peine (personne recruté, aucune étape franchie, rien de ce qu'elle interdit déjà fait), sinon pour le prochain crépuscule.",
                 "**Une parole par nuit**, sans pouvoir en changer. Jamais au même compagnon deux nuits de suite.",
-                "Un compagnon ne demande que des nuits que tu as déjà marchées : tant que les étapes nécessaires (son Roi, son gardien) dépassent ton record, il n'est pas dans la liste."
+                "Un compagnon ne demande que des nuits que tu as déjà marchées : tant que les étapes nécessaires (son Roi, son gardien) dépassent ton record, il n'est pas dans la liste."
               ]
             }
           ]
@@ -316,7 +316,7 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "held",
           title: "Tenue par la nuit elle-même",
-          blocks: ["Tant que la parole tient, ce qu'elle interdit est refusé (le recrutement, la frappe, le pouvoir, l'achat) et un message dit pourquoi. Le pilote automatique et les rattrapages la respectent aussi : toute promesse peut se tenir sans être là. Seul toi peux la rompre, exprès (une touche confirmée au Sanctuaire) ou en appelant le crépuscule trop tôt."]
+          blocks: ["Tant que la parole tient, ce qu'elle interdit est refusé (le recrutement, la frappe, le pouvoir, l'achat) et un message dit pourquoi. Le pilote automatique et les rattrapages la respectent aussi : toute promesse peut se tenir sans être là. Seul toi peux la rompre, exprès (une touche confirmée au Sanctuaire) ou en appelant le crépuscule trop tôt."]
         },
         {
           id: "kept",
@@ -327,36 +327,36 @@ export const wikiArticles = defineMessages<Articles>({
               list: [
                 "**Chaque parole tenue double les dégâts** de ce compagnon, pour toujours, jusqu'à cinq paroles (×32). Après ses cinq, il ne demande plus rien.",
                 "Ses mots rejoignent la Chronique la première fois.",
-                "La nuit compte **2 nuits** de Reconnaissance pour lui (au lieu d'une) s'il a atteint le niveau 100 et que ses souvenirs attendaient encore une parole (deux par compagnon : une pour le 4e souvenir, une pour le 5e)."
+                "La nuit compte **2 nuits** de Reconnaissance pour lui (au lieu d'une) s'il a atteint le niveau 100 et que ses souvenirs attendaient encore une parole (deux par compagnon : une pour le 4e souvenir, une pour le 5e)."
               ]
             },
-            "**Rompue**, rien n'est perdu : plus rien n'est interdit, la parole ne double rien, la nuit compte comme une autre, et son médaillon garde un nœud défait jusqu'au crépuscule."
+            "**Rompue**, rien n'est perdu : plus rien n'est interdit, la parole ne double rien, la nuit compte comme une autre, et son médaillon garde un nœud défait jusqu'au crépuscule."
           ]
         },
         { id: "list", title: "Ce que chacun demande", blocks: [{ slot: "promises" }] },
-        { id: "tips", title: "Conseils", blocks: [{ list: ["Commence par les promesses qui ne te coûtent rien selon ton style : Ysolde (aucune frappe) si tu laisses tourner, Nyx (aucun pouvoir) une nuit où tu seras absent, Célestine (aucun cristal) la nuit.", "Les demandes « sans X » sont faciles : il suffit de ne pas recruter un compagnon, ceux d'après rejoignent quand même.", "Oriane et Lysandre demandent d'aller loin : garde-les pour une nuit où tu sais pousser.", "Le classement **Parole tenue** compte toutes les promesses tenues de ta partie."] }] }
+        { id: "tips", title: "Conseils", blocks: [{ list: ["Commence par les promesses qui ne te coûtent rien selon ton style : Ysolde (aucune frappe) si tu laisses tourner, Nyx (aucun pouvoir) une nuit où tu seras absent, Célestine (aucun cristal) la nuit.", "Les demandes « sans X » sont faciles : il suffit de ne pas recruter un compagnon, ceux d'après rejoignent quand même.", "Oriane et Lysandre demandent d'aller loin : garde-les pour une nuit où tu sais pousser.", "Le classement **Parole tenue** compte toutes les promesses tenues de ta partie."] }] }
       ]
     }),
     relics: (f) => ({
-      lead: "Quatre emplacements, cinq raretés, des reliques qui se souviennent, une forge et des éclats pour tout payer : tout ce qu'il faut savoir sur l'équipement.",
+      lead: "Quatre emplacements, cinq raretés, des reliques qui se souviennent, une forge et des éclats pour tout payer : tout ce qu'il faut savoir sur l'équipement.",
       sections: [
         { id: "slots", title: "Les quatre emplacements", blocks: ["Chaque emplacement a une stat principale fixe. Les dégâts contre les boss s'appliquent aux frappes et au DPS des compagnons contre les élites et les gardiens.", { slot: "slots" }] },
         {
           id: "rarities",
           title: "Raretés et bonus",
           blocks: [
-            "Une relique a de 1 à 4 bonus selon sa rareté ; légendaires et mythiques ajoutent un bonus d'essences d'ascension. Sa puissance grandit avec l'étape où elle est tombée. À partir d'épique, elle se souvient aussi d'un **trait** (deux pour une mythique), et une légendaire ou une mythique du **compagnon** qui la portait (voir plus bas).",
+            "Une relique a de 1 à 4 bonus selon sa rareté ; légendaires et mythiques ajoutent un bonus d'essences d'ascension. Sa puissance grandit avec l'étape où elle est tombée. À partir d'épique, elle se souvient aussi d'un **trait** (deux pour une mythique), et une légendaire ou une mythique du **compagnon** qui la portait (voir plus bas).",
             { slot: "rarities" },
-            "Les totaux de tes quatre reliques sont plafonnés pour garder l'équilibre :",
+            "Les totaux de tes quatre reliques sont plafonnés pour garder l'équilibre :",
             { slot: "caps" }
           ]
         },
         {
           id: "density",
-          title: "Densité et « Compagnie ×N »",
+          title: "Densité et « Compagnie ×N »",
           blocks: [
-            "Plus une relique vient d'une strate profonde, plus elle est **dense** : portée, elle multiplie les dégâts de la compagnie (et la part de ta frappe qui en vient) à chaque strate sous la nuit présente, d'autant plus que son souvenir est clair : ×1,02 par strate pour une commune, ×1,024 pour une rare, ×1,027 pour une épique, ×1,03 pour une légendaire, ×1,032 pour une mythique, jusqu'à la soixantième strate.",
-            "Chaque relique affiche un seul chiffre, **Compagnie ×N** : ce qu'elle multiplie dans les dégâts de ta compagnie par rapport à l'emplacement vide, traits, mémoire et parures compris. Le sac compare ce chiffre à la relique portée et trie par lui. L'or, la frappe, les critiques et les dégâts aux gardiens restent listés à part."
+            "Plus une relique vient d'une strate profonde, plus elle est **dense** : portée, elle multiplie les dégâts de la compagnie (et la part de ta frappe qui en vient) à chaque strate sous la nuit présente, d'autant plus que son souvenir est clair : ×1,02 par strate pour une commune, ×1,024 pour une rare, ×1,027 pour une épique, ×1,03 pour une légendaire, ×1,032 pour une mythique, jusqu'à la soixantième strate.",
+            "Chaque relique affiche un seul chiffre, **Compagnie ×N** : ce qu'elle multiplie dans les dégâts de ta compagnie par rapport à l'emplacement vide, traits, mémoire et parures compris. Le sac compare ce chiffre à la relique portée et trie par lui. L'or, la frappe, les critiques et les dégâts aux gardiens restent listés à part."
           ]
         },
         {
@@ -365,13 +365,13 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             {
               list: [
-                "**Gardiens** : 40 % de chance (garanti au premier passage), et `1 + étape/25` éclats.",
-                "**Élites** : 15 % de chance, et 1 éclat une fois sur trois environ.",
-                "Seul le boss le plus loin de la nuit lâche reliques et éclats : un boss rejoué depuis la carte ne paie que de l'or.",
+                "**Gardiens** : 40 % de chance (garanti au premier passage), et `1 + étape/25` éclats.",
+                "**Élites** : 15 % de chance, et 1 éclat une fois sur trois environ.",
+                "Seul le boss le plus loin de la nuit lâche reliques et éclats : un boss rejoué depuis la carte ne paie que de l'or.",
                 "Les coffres du marché, la Brèche, l'Éclipse du Roi et les cadeaux des compagnons.",
                 "La première chute du Roi de ta marche laisse une relique épique ou mieux.",
-                `La route ne te laisse pas sans histoire : après ${f.drought} reliques de la route sans épique ni mieux, la suivante l'est.`,
-                "Une relique tombée va directement dans un emplacement vide. Sinon, le sac peut **recycler à l'arrivée** les communes, ou les communes et les rares : elles deviennent des éclats sans passer par le sac (jamais une relique nommée)."
+                `La route ne te laisse pas sans histoire : après ${f.drought} reliques de la route sans épique ni mieux, la suivante l'est.`,
+                "Une relique tombée va directement dans un emplacement vide. Sinon, le sac peut **recycler à l'arrivée** les communes, ou les communes et les rares : elles deviennent des éclats sans passer par le sac (jamais une relique nommée)."
               ]
             }
           ]
@@ -380,16 +380,16 @@ export const wikiArticles = defineMessages<Articles>({
           id: "traits",
           title: "Ce dont elles se souviennent",
           blocks: [
-            "Une relique épique, légendaire ou mythique se souvient d'un **trait** de son emplacement (deux pour une mythique) : ce qu'elle a fait, et qu'elle refait tant que tu la portes. L'arme porte la force de la compagnie, l'armure tient face aux gardiens, l'amulette donne le rythme de la nuit et de ta main, l'anneau la fortune et l'absence.",
+            "Une relique épique, légendaire ou mythique se souvient d'un **trait** de son emplacement (deux pour une mythique) : ce qu'elle a fait, et qu'elle refait tant que tu la portes. L'arme porte la force de la compagnie, l'armure tient face aux gardiens, l'amulette donne le rythme de la nuit et de ta main, l'anneau la fortune et l'absence.",
             { slot: "traits" },
-            "Une légendaire ou une mythique se souvient aussi de **qui la portait** : un compagnon déjà venu dans ta compagnie. Tant que tu la portes, ce compagnon inflige ×1,5 (légendaire) ou ×2 (mythique) dégâts. Une relique qui se souvient de ton compagnon le plus fort vaut de l'or."
+            "Une légendaire ou une mythique se souvient aussi de **qui la portait** : un compagnon déjà venu dans ta compagnie. Tant que tu la portes, ce compagnon inflige ×1,5 (légendaire) ou ×2 (mythique) dégâts. Une relique qui se souvient de ton compagnon le plus fort vaut de l'or."
           ]
         },
         {
           id: "sets",
           title: "Les parures",
           blocks: [
-            "Chaque relique vient d'un **lieu** : le biome de l'étape où elle est tombée (son nom le dit, « sylvestre », « fangeuse »…). Deux reliques d'un même lieu portées ensemble éveillent une parure ; quatre, une parure plus forte. Le lieu d'une relique ne change jamais, même réveillée.",
+            "Chaque relique vient d'un **lieu** : le biome de l'étape où elle est tombée (son nom le dit, « sylvestre », « fangeuse »…). Deux reliques d'un même lieu portées ensemble éveillent une parure ; quatre, une parure plus forte. Le lieu d'une relique ne change jamais, même réveillée.",
             { slot: "places" }
           ]
         },
@@ -397,36 +397,36 @@ export const wikiArticles = defineMessages<Articles>({
           id: "awaken",
           title: "Le Réveil",
           blocks: [
-            "Une relique trouvée tôt n'est pas perdue quand tu descends plus bas : à la forge, Brom la **réveille** à ta nuit la plus profonde, dans le même lieu (la même étape d'une boucle plus profonde). Elle garde ses bonus, ses traits, sa mémoire et sa parure, et prend la densité de cette profondeur ; ses bonus grandissent comme si elle y était tombée.",
-            "Coût, par strate descendue : 20 éclats pour une commune, 60 pour une rare, 160 pour une épique, 500 pour une légendaire, 1 600 pour une mythique (le Marteau inachevé le réduit comme la forge)."
+            "Une relique trouvée tôt n'est pas perdue quand tu descends plus bas : à la forge, Brom la **réveille** à ta nuit la plus profonde, dans le même lieu (la même étape d'une boucle plus profonde). Elle garde ses bonus, ses traits, sa mémoire et sa parure, et prend la densité de cette profondeur ; ses bonus grandissent comme si elle y était tombée.",
+            "Coût, par strate descendue : 20 éclats pour une commune, 60 pour une rare, 160 pour une épique, 500 pour une légendaire, 1 600 pour une mythique (le Marteau inachevé le réduit comme la forge)."
           ]
         },
         {
           id: "satchel",
           title: "La besace de la compagnie",
           blocks: [
-            `Pendant ton absence (page cachée ou jeu fermé), les gardiens et les élites que la compagnie franchit laissent leurs reliques aux chances habituelles. Elle les garde dans sa **besace**, ${f.satchel} au plus (les plus rares d'abord : les autres deviennent des éclats), et te la tend aux Retrouvailles. Ouvre-la : les reliques en sortent une à une, la plus modeste d'abord, la plus rare en dernier.`,
-            "Une besace que tu n'ouvres pas t'attend, dans l'inventaire. Un inventaire plein la fait attendre aussi : rien n'est recyclé sans toi."
+            `Pendant ton absence (page cachée ou jeu fermé), les gardiens et les élites que la compagnie franchit laissent leurs reliques aux chances habituelles. Elle les garde dans sa **besace**, ${f.satchel} au plus (les plus rares d'abord : les autres deviennent des éclats), et te la tend aux Retrouvailles. Ouvre-la : les reliques en sortent une à une, la plus modeste d'abord, la plus rare en dernier.`,
+            "Une besace que tu n'ouvres pas t'attend, dans l'inventaire. Un inventaire plein la fait attendre aussi : rien n'est recyclé sans toi."
           ]
         },
         {
           id: "forge",
           title: "Forge et recyclage",
           blocks: [
-            `La **forge** monte une relique jusqu'à +${f.forgeMax} : chaque niveau ajoute 10 % de leur valeur de base à tous ses bonus. Coût : \`rareté × 2 × 1,35^forge\` éclats.`,
+            `La **forge** monte une relique jusqu'à +${f.forgeMax} : chaque niveau ajoute 10 % de leur valeur de base à tous ses bonus. Coût : \`rareté × 2 × 1,35^forge\` éclats.`,
             { slot: "forge" },
-            `Le **recyclage** rend les éclats de la rareté (1, 3, 8, 25, 80) plus 50 % par niveau de forge. Les reliques se verrouillent, se recyclent en masse jusqu'à une rareté, et le sac en tient ${f.inventory} (plein, il recycle tout seul les nouvelles).`
+            `Le **recyclage** rend les éclats de la rareté (1, 3, 8, 25, 80) plus 50 % par niveau de forge. Les reliques se verrouillent, se recyclent en masse jusqu'à une rareté, et le sac en tient ${f.inventory} (plein, il recycle tout seul les nouvelles).`
           ]
         },
         {
           id: "market",
           title: "L'étal du Comptoir",
-          blocks: ["Le Comptoir vend contre des éclats (et te dit l'un de ses douze dictons à chaque visite). Les potions durent 10 min et s'empilent sans limite. Un coffre acheté s'ouvre sous tes yeux. Le Jeton du Comptoir retire 10 % à tous les prix.", { slot: "market" }, { tip: "Le Sablier doré paie une heure d'or au rythme actuel : au début d'une nuit, quand ton or rattrape vite les prix, c'est le meilleur achat de l'étal." }]
+          blocks: ["Le Comptoir vend contre des éclats (et te dit l'un de ses douze dictons à chaque visite). Les potions durent 10 min et s'empilent sans limite. Un coffre acheté s'ouvre sous tes yeux. Le Jeton du Comptoir retire 10 % à tous les prix.", { slot: "market" }, { tip: "Le Sablier doré paie une heure d'or au rythme actuel : au début d'une nuit, quand ton or rattrape vite les prix, c'est le meilleur achat de l'étal." }]
         },
         {
           id: "caravan",
           title: "La Roulotte",
-          blocks: ["À partir de ta 3e ascension, la Roulotte du Comptoir apporte une marchandise par semaine, la même pour tout le monde (elle change chaque lundi). Chacune s'achète une fois par semaine ; le Jeton, une fois par partie.", { slot: "caravan" }]
+          blocks: ["À partir de ta 3e ascension, la Roulotte du Comptoir apporte une marchandise par semaine, la même pour tout le monde (elle change chaque lundi). Chacune s'achète une fois par semaine ; le Jeton, une fois par partie.", { slot: "caravan" }]
         },
         {
           id: "named",
@@ -437,7 +437,7 @@ export const wikiArticles = defineMessages<Articles>({
           id: "regalia",
           title: "Les Regalia et la Couronne",
           blocks: [
-            "Le Sceau d'Orvane, le Manteau de la dernière cour et le Dernier Décret forment les **Regalia d'Orvane**. Portés tous les trois, le Roi te reconnaît (ses mots changent) et subit 10 % de dégâts en plus.",
+            "Le Sceau d'Orvane, le Manteau de la dernière cour et le Dernier Décret forment les **Regalia d'Orvane**. Portés tous les trois, le Roi te reconnaît (ses mots changent) et subit 10 % de dégâts en plus.",
             { slot: "crown" }
           ]
         }
@@ -450,13 +450,13 @@ export const wikiArticles = defineMessages<Articles>({
           id: "open",
           title: "Page ouverte, toi ailleurs",
           blocks: [
-            "Après 60 secondes sans aucune action, le **pilote automatique** prend le relais une fois par minute : tes compagnons dépensent l'or et, dès qu'ils peuvent battre le boss qui les arrêtait, relancent l'Auto pour retenter. En attendant, ils s'entraînent sur l'étape d'avant.",
+            "Après 60 secondes sans aucune action, le **pilote automatique** prend le relais une fois par minute : tes compagnons dépensent l'or et, dès qu'ils peuvent battre le boss qui les arrêtait, relancent l'Auto pour retenter. En attendant, ils s'entraînent sur l'étape d'avant.",
             {
               list: [
                 "Le compagnon suivant est recruté dès que l'or le permet.",
-                "Ensuite, chaque achat est pesé en DPS gagné par pièce d'or : les niveaux d'un compagnon jusqu'à son prochain palier, avec ou sans les talents qu'ils débloquent. Le meilleur est acheté ; s'il est hors de portée mais à moins de 5 minutes d'or, la compagnie économise.",
-                "Un talent qui n'ajoute pas de dégâts (or, critiques, chronomètre, trésor) s'achète quand il coûte 10 % de l'or au plus.",
-                "Aldric n'est jamais monté. L'interrupteur « Dépenser en mon absence » (en haut du panneau des compagnons) coupe tout ça : l'or est alors gardé."
+                "Ensuite, chaque achat est pesé en DPS gagné par pièce d'or : les niveaux d'un compagnon jusqu'à son prochain palier, avec ou sans les talents qu'ils débloquent. Le meilleur est acheté ; s'il est hors de portée mais à moins de 5 minutes d'or, la compagnie économise.",
+                "Un talent qui n'ajoute pas de dégâts (or, critiques, chronomètre, trésor) s'achète quand il coûte 10 % de l'or au plus.",
+                "Aldric n'est jamais monté. L'interrupteur « Dépenser en mon absence » (en haut du panneau des compagnons) coupe tout ça : l'or est alors gardé."
               ]
             }
           ]
@@ -464,33 +464,33 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "hidden",
           title: "Page cachée, ordinateur en veille",
-          blocks: [`Quand la page se réveille après plus de 5 secondes, le temps écoulé est simulé d'un coup (jusqu'à ${f.offlineHours} h), exactement comme le pilote l'aurait joué : tranches d'une minute, achats entre les tranches, étapes poussées jusqu'à un boss trop fort. La compagnie se bat seule : bonus de Patience en entier, mais ni frappes, ni pouvoirs, ni cristaux, ni potions.`]
+          blocks: [`Quand la page se réveille après plus de 5 secondes, le temps écoulé est simulé d'un coup (jusqu'à ${f.offlineHours} h), exactement comme le pilote l'aurait joué : tranches d'une minute, achats entre les tranches, étapes poussées jusqu'à un boss trop fort. La compagnie se bat seule : bonus de Patience en entier, mais ni frappes, ni pouvoirs, ni cristaux, ni potions.`]
         },
         {
           id: "closed",
           title: "Jeu fermé",
           blocks: [
-            `Jeu fermé (compte ou invité), la compagnie marche quand même : à la réouverture, le temps depuis la dernière fois que la partie a été gardée est rattrapé de la même façon (${f.offlineHours} h au plus, +1 h par niveau du Long Fil), jamais plus que ce que le serveur a vu passer. Un rattrapage de 8 h prend une à deux dixièmes de seconde.`,
-            "Une page ouverte garde la partie toutes les 30 s : recharger ne perd rien."
+            `Jeu fermé (compte ou invité), la compagnie marche quand même : à la réouverture, le temps depuis la dernière fois que la partie a été gardée est rattrapé de la même façon (${f.offlineHours} h au plus, +1 h par niveau du Long Fil), jamais plus que ce que le serveur a vu passer. Un rattrapage de 8 h prend une à deux dixièmes de seconde.`,
+            "Une page ouverte garde la partie toutes les 30 s : recharger ne perd rien."
           ]
         },
         {
           id: "reunion",
           title: "Les Retrouvailles",
           blocks: [
-            `De retour après ${f.reunionMinutes} min d'absence ou plus, ta première action déclenche les **Retrouvailles** : les dégâts de la compagnie ×${f.reunionDps} pendant un sixième de ton absence (une heure au plus ; une nuit donne l'heure entière).`,
-            "Avec elles, le **compte de la compagnie** : temps d'absence, route parcourue, or gagné et dépensé, murs rencontrés puis franchis, qui a rejoint, niveaux gagnés, et le boss qui barre encore la route. Il se termine sur un fragment de Chronique pas encore lu."
+            `De retour après ${f.reunionMinutes} min d'absence ou plus, ta première action déclenche les **Retrouvailles** : les dégâts de la compagnie ×${f.reunionDps} pendant un sixième de ton absence (une heure au plus ; une nuit donne l'heure entière).`,
+            "Avec elles, le **compte de la compagnie** : temps d'absence, route parcourue, or gagné et dépensé, murs rencontrés puis franchis, qui a rejoint, niveaux gagnés, et le boss qui barre encore la route. Il se termine sur un fragment de Chronique pas encore lu."
           ]
         },
         {
           id: "presence",
           title: "Ce que ta présence ajoute",
-          blocks: ["Aucun malus n'est appliqué à l'absent. Ta présence ajoute ce que seule une main peut faire : cristaux, pouvoirs, achats plus rapides, ascensions, autels, marché, équipement et forge. Et la [Promesse](promise) : le pilote ne la rompt jamais, il peut seulement la tenir."]
+          blocks: ["Aucun malus n'est appliqué à l'absent. Ta présence ajoute ce que seule une main peut faire : cristaux, pouvoirs, achats plus rapides, ascensions, autels, marché, équipement et forge. Et la [Promesse](promise) : le pilote ne la rompt jamais, il peut seulement la tenir."]
         }
       ]
     }),
     bestiary: (f) => ({
-      lead: `${f.creatures} créatures, sur sept pages : les cinq biomes, Hors des routes et les Douze Rois. Chacune a trois lignes du Grand Livre, qui se dévoilent à force de la vaincre.`,
+      lead: `${f.creatures} créatures, sur sept pages : les cinq biomes, Hors des routes et les Douze Rois. Chacune a trois lignes du Grand Livre, qui se dévoilent à force de la vaincre.`,
       sections: [
         {
           id: "how",
@@ -498,10 +498,10 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             {
               list: [
-                "Trois lignes par créature, à 1, 100 et 1 000 victoires (1, 5 et 25 pour les errants rares et les créatures d'événement ; 1, 10 et 100 pour les formes du Roi).",
-                "Rencontrer toutes les créatures d'une page de biome donne **+1 % d'or** (cinq pages, +5 %).",
+                "Trois lignes par créature, à 1, 100 et 1 000 victoires (1, 5 et 25 pour les errants rares et les créatures d'événement ; 1, 10 et 100 pour les formes du Roi).",
+                "Rencontrer toutes les créatures d'une page de biome donne **+1 % d'or** (cinq pages, +5 %).",
                 "Les victoires faites en masse (rattrapage, Autel du voyageur, Débandade) se répartissent entre les créatures de l'étape.",
-                "En jeu, le Bestiaire est dans la Halle, dès la première créature rencontrée ; les autres y sont des silhouettes."
+                "En jeu, le Bestiaire est dans la Halle, dès la première créature rencontrée ; les autres y sont des silhouettes."
               ]
             }
           ]
@@ -510,7 +510,7 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "eras",
           title: "Strates et préfixes",
-          blocks: ["Chaque boucle des cinq biomes est une nouvelle strate : les mêmes créatures, bien plus coriaces, portent le préfixe de leur strate (Écho, Cendre, Néant…) et changent d'apparence à chaque Âge. Chaque fiche montre la créature à travers les Âges. Voir [Strates, Âges et rois](strata)."]
+          blocks: ["Chaque boucle des cinq biomes est une nouvelle strate : les mêmes créatures, bien plus coriaces, portent le préfixe de leur strate (Écho, Cendre, Néant…) et changent d'apparence à chaque Âge. Chaque fiche montre la créature à travers les Âges. Voir [Strates, Âges et rois](strata)."]
         }
       ]
     }),
@@ -521,28 +521,28 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "echoes",
           title: "Les échos de la route",
-          blocks: ["Chaque biome garde douze échos écrits à la main, puis d'autres que la nuit compose. Le premier passage d'un gardien en ramène un : toujours le premier, puis 15 % de chance, +5 % par strate. Ils s'affichent sous chaque biome, au fil de ceux que ta partie a ramenés."]
+          blocks: ["Chaque biome garde douze échos écrits à la main, puis d'autres que la nuit compose. Le premier passage d'un gardien en ramène un : toujours le premier, puis 15 % de chance, +5 % par strate. Ils s'affichent sous chaque biome, au fil de ceux que ta partie a ramenés."]
         }
       ]
     }),
     strata: (f) => ({
-      lead: `Toutes les ${f.stagesPerEra} étapes, la route s'enfonce d'une strate : ${f.eras} strates, regroupées en ${f.ages} Âges de cinq, du présent jusqu'à l'Aube.`,
+      lead: `Toutes les ${f.stagesPerEra} étapes, la route s'enfonce d'une strate : ${f.eras} strates, regroupées en ${f.ages} Âges de cinq, du présent jusqu'à l'Aube.`,
       sections: [
         {
           id: "how",
           title: "Ce qu'est une strate",
           blocks: [
             "Chaque boucle complète des cinq biomes (50 étapes) commence une nouvelle strate, avec son nom et son préfixe. Les monstres y sont bien plus coriaces, et chaque Âge transforme la façon dont la nuit les dessine, comme les décors. Chaque strate use un peu plus les lieux.",
-            "Au bout de chaque strate, le Roi garde la 50e étape. Sa première chute dans une strate ramène la **pierre de voûte** de cette strate : un fragment de la Chronique."
+            "Au bout de chaque strate, le Roi garde la 50e étape. Sa première chute dans une strate ramène la **pierre de voûte** de cette strate : un fragment de la Chronique."
           ]
         },
         { id: "ages", title: `Les ${f.ages} Âges`, blocks: [{ slot: "ages" }] },
-        { id: "kings", title: "Les douze formes du Roi", blocks: ["Le gardien de chaque 50e étape est le Roi, sous la forme de l'Âge de la strate. Même force sous toutes ses formes : seuls son apparence, son nom et ses mots changent.", { slot: "kings" }] },
+        { id: "kings", title: "Les douze formes du Roi", blocks: ["Le gardien de chaque 50e étape est le Roi, sous la forme de l'Âge de la strate. Même force sous toutes ses formes : seuls son apparence, son nom et ses mots changent.", { slot: "kings" }] },
         { id: "list", title: `Les ${f.eras} strates`, blocks: [{ slot: "strata" }] },
         {
           id: "dawn",
           title: "L'Aube",
-          blocks: [`À l'étape ${fr(f.dawnStage)}, l'Aube se tient à la place du Roi. La route ne s'arrête pas là : dessous, la nuit se dessine à nouveau depuis sa première strate, plus profonde à chaque tour.`, { slot: "dawn" }]
+          blocks: [`À l'étape ${fr(f.dawnStage)}, l'Aube se tient à la place du Roi. La route ne s'arrête pas là : dessous, la nuit se dessine à nouveau depuis sa première strate, plus profonde à chaque tour.`, { slot: "dawn" }]
         }
       ]
     }),
@@ -555,7 +555,7 @@ export const wikiArticles = defineMessages<Articles>({
       ]
     }),
     chronicle: (f) => ({
-      lead: "L'histoire d'Idlebound se raconte par fragments, posés sur les mécaniques. Rien n'est stocké en texte : ta partie garde des compteurs, et le n-ième fragment d'une source est toujours le même.",
+      lead: "L'histoire d'Idlebound se raconte par fragments, posés sur les mécaniques. Rien n'est stocké en texte : ta partie garde des compteurs, et le n-ième fragment d'une source est toujours le même.",
       sections: [
         {
           id: "sources",
@@ -564,44 +564,44 @@ export const wikiArticles = defineMessages<Articles>({
             {
               list: [
                 "**Les pierres de voûte** des 60 strates (la première chute de chaque Roi), puis leur seconde lecture à chaque Descente.",
-                "**Les jalons** de ton histoire : ascensions 1, 5, 10, 25, 50, 100 ; Descentes 1, 3, 5, 10 ; les premiers compagnons qui se souviennent.",
-                "**Les Mots du Roi**, un par ascension : 50 écrits à la main, puis sa voix composée par la nuit. Les sept mots de son Éclipse, et douze mots à qui porte ses Regalia.",
+                "**Les jalons** de ton histoire : ascensions 1, 5, 10, 25, 50, 100 ; Descentes 1, 3, 5, 10 ; les premiers compagnons qui se souviennent.",
+                "**Les Mots du Roi**, un par ascension : 50 écrits à la main, puis sa voix composée par la nuit. Les sept mots de son Éclipse, et douze mots à qui porte ses Regalia.",
                 "**Les échos** de la route (12 par biome) et **les échos d'Âge** (8 par Âge), ramenés par les gardiens, les Brèches et le Silence.",
-                "Les errants rares, les événements, les souvenirs de Reconnaissance, les paroles tenues, les Leçons d'Aldric, les chants de Célestine (5 % des cristaux une fois rencontrée), ce qui reste après une absence, les dictons du Comptoir, les légendes des reliques nommées et des autels, les secrets et la Couronne."
+                "Les errants rares, les événements, les souvenirs de Reconnaissance, les paroles tenues, les Leçons d'Aldric, les chants de Célestine (5 % des cristaux une fois rencontrée), ce qui reste après une absence, les dictons du Comptoir, les légendes des reliques nommées et des autels, les secrets et la Couronne."
               ]
             },
-            "Un message annonce un fragment au plus une fois par minute (pierres de voûte et jalons toujours) ; les autres attendent dans la Chronique, dans la Halle, marqués comme nouveaux. La Lisière effilochée, l'Oreille d'Oriane et les Nuits du souvenir les rendent plus fréquents."
+            "Un message annonce un fragment au plus une fois par minute (pierres de voûte et jalons toujours) ; les autres attendent dans la Chronique, dans la Halle, marqués comme nouveaux. La Lisière effilochée, l'Oreille d'Oriane et les Nuits du souvenir les rendent plus fréquents."
           ]
         },
         {
           id: "recognition",
           title: "La Reconnaissance",
           blocks: [
-            `Une nuit où un compagnon atteint le niveau 100 compte pour sa Reconnaissance (deux nuits si tu as tenu une promesse qu'il attendait). Paliers : ${f.recognitionTiers} nuits, une de moins par niveau de Parenté.`,
+            `Une nuit où un compagnon atteint le niveau 100 compte pour sa Reconnaissance (deux nuits si tu as tenu une promesse qu'il attendait). Paliers : ${f.recognitionTiers} nuits, une de moins par niveau de Parenté.`,
             { slot: "recognition" },
-            "Chaque compagnon te salue en rejoignant la compagnie : en inconnu, à demi reconnu (paliers 1 et 2) ou reconnu (palier 3 et plus). Chaque fiche de [compagnon](companions) donne ses souvenirs."
+            "Chaque compagnon te salue en rejoignant la compagnie : en inconnu, à demi reconnu (paliers 1 et 2) ou reconnu (palier 3 et plus). Chaque fiche de [compagnon](companions) donne ses souvenirs."
           ]
         },
-        { id: "first-dusk", title: "Les scènes du Grand Livre", blocks: ["À quelques moments clés, une courte scène de quelques plans se joue par-dessus le jeu, qui continue en dessous. Chaque scène vécue se revoit dans la Chronique, « Ce que le Grand Livre a vu ».", { slot: "scenes" }] },
-        { id: "king-words", title: "Les Mots du Roi", blocks: ["À chaque ascension, le Roi laisse un mot. Les cinquante premiers sont écrits à la main ; chacun se découvre à l'ascension de son numéro.", { slot: "kingWords" }] },
+        { id: "first-dusk", title: "Les scènes du Grand Livre", blocks: ["À quelques moments clés, une courte scène de quelques plans se joue par-dessus le jeu, qui continue en dessous. Chaque scène vécue se revoit dans la Chronique, « Ce que le Grand Livre a vu ».", { slot: "scenes" }] },
+        { id: "king-words", title: "Les Mots du Roi", blocks: ["À chaque ascension, le Roi laisse un mot. Les cinquante premiers sont écrits à la main ; chacun se découvre à l'ascension de son numéro.", { slot: "kingWords" }] },
         { id: "milestones", title: "Les jalons", blocks: [{ slot: "milestones" }] },
         { id: "lessons", title: "Les Leçons d'Aldric", blocks: ["Le premier achat de chacun des sept talents d'Aldric laisse une Leçon.", { slot: "lessons" }] }
       ]
     }),
     deeds: (f) => ({
-      lead: `${f.achievements} hauts faits : des séries qui renforcent ta compagnie pour toujours, et ${f.secrets} secrets qui ne donnent rien d'autre que le plaisir de les trouver.`,
+      lead: `${f.achievements} hauts faits : des séries qui renforcent ta compagnie pour toujours, et ${f.secrets} secrets qui ne donnent rien d'autre que le plaisir de les trouver.`,
       sections: [
         {
           id: "bonus",
           title: "Ce qu'ils rapportent",
-          blocks: ["Chaque haut fait d'une série donne un bonus permanent de DPS : +2 % (+3 % pour les étapes, ascensions et essences, +5 % pour le mythique). Les deux paliers les plus hauts de chaque série valent 2,5 fois plus. Ta frappe en reçoit la moitié. Les hauts faits secrets ne donnent aucun bonus."]
+          blocks: ["Chaque haut fait d'une série donne un bonus permanent de DPS : +2 % (+3 % pour les étapes, ascensions et essences, +5 % pour le mythique). Les deux paliers les plus hauts de chaque série valent 2,5 fois plus. Ta frappe en reçoit la moitié. Les hauts faits secrets ne donnent aucun bonus."]
         },
         { id: "series", title: "Toutes les séries", blocks: [{ slot: "series" }] },
-        { id: "secrets", title: `Les ${f.secrets} secrets`, blocks: ["En jeu, un secret apparaît comme « ??? » avec son énigme jusqu'à ce que tu le trouves. Les solutions sont cachées : ouvre seulement celles que tu veux.", { slot: "secrets" }] }
+        { id: "secrets", title: `Les ${f.secrets} secrets`, blocks: ["En jeu, un secret apparaît comme « ??? » avec son énigme jusqu'à ce que tu le trouves. Les solutions sont cachées : ouvre seulement celles que tu veux.", { slot: "secrets" }] }
       ]
     }),
     descent: (f) => ({
-      lead: `La seconde renaissance, pour le long cours. À l'étape ${fr(f.descentStage)}, Eldra te montre son Métier : tu défais essences et autels pour tisser des fils, et reprends la nuit plus bas.`,
+      lead: `La seconde renaissance, pour le long cours. À l'étape ${fr(f.descentStage)}, Eldra te montre son Métier : tu défais essences et autels pour tisser des fils, et reprends la nuit plus bas.`,
       sections: [
         {
           id: "unlock",
@@ -611,23 +611,23 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "what",
           title: "Ce qu'elle remet à zéro",
-          blocks: [{ list: ["**Remis à zéro** : tout ce qu'efface une ascension, plus les essences et les autels.", "**Gardé** : reliques, éclats, hauts faits, la Chronique, le Bestiaire, la Reconnaissance, les statistiques à vie et ton record."] }]
+          blocks: [{ list: ["**Remis à zéro** : tout ce qu'efface une ascension, plus les essences et les autels.", "**Gardé** : reliques, éclats, hauts faits, la Chronique, le Bestiaire, la Reconnaissance, les statistiques à vie et ton record."] }]
         },
         {
           id: "threads",
           title: "Les fils",
           blocks: [
-            "Le fil est aussi long que la nuit est allée profond. Tissés en tout : `2^((meilleure étape - 750) / 250)`, arrondi en dessous. Une Descente tisse ce que ta meilleure étape ajoute aux fils déjà tissés : une nuit pas plus profonde que la précédente ne tisse rien.",
+            "Le fil est aussi long que la nuit est allée profond. Tissés en tout : `2^((meilleure étape - 750) / 250)`, arrondi en dessous. Une Descente tisse ce que ta meilleure étape ajoute aux fils déjà tissés : une nuit pas plus profonde que la précédente ne tisse rien.",
             { slot: "threads" }
           ]
         },
-        { id: "weaves", title: "Les Tissages", blocks: ["Au Métier, les fils achètent des Tissages permanents (prix : `base × croissance^niveau`, arrondi au-dessus), que rien ne défait.", { slot: "weaves" }, "La Chaîne d'abondance est le seul Tissage qui se multiplie. Son prix grandit d'un cinquième par niveau pendant que le fil double à chaque Âge : chaque Âge en achète moins que le précédent, sans emballement. Chaque Descente rouvre aussi les pierres de voûte des strates pour une seconde lecture."] },
+        { id: "weaves", title: "Les Tissages", blocks: ["Au Métier, les fils achètent des Tissages permanents (prix : `base × croissance^niveau`, arrondi au-dessus), que rien ne défait.", { slot: "weaves" }, "La Chaîne d'abondance est le seul Tissage qui se multiplie. Son prix grandit d'un cinquième par niveau pendant que le fil double à chaque Âge : chaque Âge en achète moins que le précédent, sans emballement. Chaque Descente rouvre aussi les pierres de voûte des strates pour une seconde lecture."] },
         {
           id: "strategy",
           title: "Quand descendre",
           blocks: [
             "La première Descente te ramène en arrière pendant un jour ou deux, puis te fait passer devant celui qui ne descend jamais. Descendre une fois par Âge (8 fils au moins) va plus loin que descendre trop souvent, qui paie la remontée trop de fois.",
-            "Le classement **Nuits retissées** compte les Descentes qui ont tissé au moins un fil : une Descente qui ne tisse rien n'y compte pas. Il récompense ton rythme au Métier, pas ta profondeur.",
+            "Le classement **Nuits retissées** compte les Descentes qui ont tissé au moins un fil : une Descente qui ne tisse rien n'y compte pas. Il récompense ton rythme au Métier, pas ta profondeur.",
             { slot: "crown" }
           ]
         }
@@ -645,14 +645,14 @@ export const wikiArticles = defineMessages<Articles>({
           id: "account",
           title: "Créer un compte",
           blocks: [
-            "Un e-mail, un nom et un mot de passe, rien d'autre. Ta partie te suit alors sur tous tes appareils et entre au classement. Si tu jouais en invité, ta partie rejoint le compte (ou tu choisis laquelle garder si elles diffèrent : rien n'est jamais écrasé en silence).",
-            "Si un e-mail de confirmation est envoyé, confirme-le dans les 3 jours : après, la partie n'est plus gardée tant que l'adresse n'est pas confirmée (le jeu reste jouable)."
+            "Un e-mail, un nom et un mot de passe, rien d'autre. Ta partie te suit alors sur tous tes appareils et entre au classement. Si tu jouais en invité, ta partie rejoint le compte (ou tu choisis laquelle garder si elles diffèrent : rien n'est jamais écrasé en silence).",
+            "Si un e-mail de confirmation est envoyé, confirme-le dans les 3 jours : après, la partie n'est plus gardée tant que l'adresse n'est pas confirmée (le jeu reste jouable)."
           ]
         },
         {
           id: "keeping",
           title: "Une partie toujours gardée",
-          blocks: ["Rien n'est stocké dans ton navigateur : la partie est sur le serveur, gardée toutes les 30 s et après chaque action importante. Si le serveur est injoignable, le jeu continue et réessaie. Deux appareils ouverts sur la même partie ? Celui qui n'a pas vu la dernière version gardée te propose de choisir."]
+          blocks: ["Rien n'est stocké dans ton navigateur : la partie est sur le serveur, gardée toutes les 30 s et après chaque action importante. Si le serveur est injoignable, le jeu continue et réessaie. Deux appareils ouverts sur la même partie ? Celui qui n'a pas vu la dernière version gardée te propose de choisir."]
         },
         {
           id: "verified",
@@ -725,7 +725,7 @@ export const wikiArticles = defineMessages<Articles>({
         },
         {
           id: "first-ascension",
-          title: "Your first ascension (around 3 h of play)",
+          title: "Your first ascension (around 3 h of play)",
           blocks: [
             `The Fallen King guards stage 50. Once he has fallen (stage ${f.ascensionStage} reached), the **Sanctum of Dusk** opens: that is the ascension.`,
             "You start over at stage 1. You lose your gold, your companions' levels and talents, and your stage progress. You keep your essences, altars, relics, shards, deeds and records.",
@@ -806,7 +806,7 @@ export const wikiArticles = defineMessages<Articles>({
           id: "stages",
           title: "Stages, elites and guardians",
           blocks: [
-            `Each stage holds ${f.monstersPerStage} monsters. Beat them to move on. Every 5 stages, a boss waits with a ${f.bossTimer} s timer:`,
+            `Each stage holds ${f.monstersPerStage} monsters. Beat them to move on. Every 5 stages, a boss waits with a ${f.bossTimer} s timer:`,
             { slot: "stageKinds" },
             `If the timer runs out, you go back one stage and Auto pauses (**Stay** mode). Up to stage ${f.woundLastStage}, elites and guardians **keep their wounds** (up to ${f.woundCapPct}% of their HP): every attempt counts. The Keep's gate (stage 45), the King and the deeper strata heal whole.`,
             "The map lets you go back to any stage already cleared. A boss replayed from the map pays gold only: only the furthest boss of the night drops relics and shards."
@@ -816,7 +816,7 @@ export const wikiArticles = defineMessages<Articles>({
           id: "rout",
           title: "The Rout",
           blocks: [
-            "On a stage below your record (so never on the very first night), when your company would beat a monster in under 0.1 s, the whole stage falls at once: its remaining wins, their gold (with a golden rat's share) and the Bestiary. Then the next stage, at one stage every 0.25 s. Elites and guardians are still fought.",
+            "On a stage below your record (so never on the very first night), when your company would beat a monster in under 0.1 s, the whole stage falls at once: its remaining wins, their gold (with a golden rat's share) and the Bestiary. Then the next stage, at one stage every 0.25 s. Elites and guardians are still fought.",
             "That is what makes each night quick to climb back: you pass in seconds what cost you hours."
           ]
         },
@@ -837,9 +837,9 @@ export const wikiArticles = defineMessages<Articles>({
           id: "crystals",
           title: "Wandering crystals",
           blocks: [
-            "While the game is visible, a crystal appears every 90 to 240 s (the first of a new game after 75 s) and stays 13 s. Catch it for one of these rewards:",
+            "While the game is visible, a crystal appears every 90 to 240 s (the first of a new game after 75 s) and stays 13 s. Catch it for one of these rewards:",
             { slot: "crystals" },
-            "One crystal in 20 is a **Crystal Storm**: the Lantern Queen crosses the sky and five crystals fall in turn, 3 s each. The Singing Stone makes them stay 18 s; Garrick's Lodestone, the Humming Loom and the Moth Lantern bring them sooner.",
+            "One crystal in 20 is a **Crystal Storm**: the Lantern Queen crosses the sky and five crystals fall in turn, 3 s each. The Singing Stone makes them stay 18 s; Garrick's Lodestone, the Humming Loom and the Moth Lantern bring them sooner.",
             { tip: "Keep the overcharge (DPS ×7) or the strike ×10 for a boss: catch the crystal during the fight, not before." }
           ]
         }
@@ -875,7 +875,7 @@ export const wikiArticles = defineMessages<Articles>({
       lead: "Seven powers, on keys 1 to 7, that your companions teach you at level 25 (and Aldric at level 10). They reward being there.",
       sections: [
         { id: "list", title: "The seven powers", blocks: [{ slot: "powers" }] },
-        { id: "cooldowns", title: "Recharges", blocks: ["The Altar of Echoes (-5% per level) and Eldra's Locket (-10%) shorten every recharge together, never below 40% of its base. The Vestment of Cinders makes Golden Rain last 45 s."] },
+        { id: "cooldowns", title: "Recharges", blocks: ["The Altar of Echoes (-5% per level) and Eldra's Locket (-10%) shorten every recharge together, never below 40% of its base. The Vestment of Cinders makes Golden Rain last 45 s."] },
         {
           id: "use",
           title: "Using them well",
@@ -1064,7 +1064,7 @@ export const wikiArticles = defineMessages<Articles>({
             `**Salvaging** gives back the rarity's shards (1, 3, 8, 25, 80) plus 50% per forge level. Relics can be locked, salvaged in bulk up to a rarity, and the pack holds ${f.inventory} (full, it salvages new ones on its own).`
           ]
         },
-        { id: "market", title: "The Stallkeeper's market", blocks: ["The Stallkeeper sells for shards (and tells you one of their twelve sayings each visit). Potions last 10 min and stack without limit. A chest bought opens before your eyes. The Stallkeeper's Token takes 10% off every price.", { slot: "market" }, { tip: "The Golden Hourglass pays an hour of gold at your current rate: early in a night, when your gold quickly catches up with prices, it is the best buy at the stall." }] },
+        { id: "market", title: "The Stallkeeper's market", blocks: ["The Stallkeeper sells for shards (and tells you one of their twelve sayings each visit). Potions last 10 min and stack without limit. A chest bought opens before your eyes. The Stallkeeper's Token takes 10% off every price.", { slot: "market" }, { tip: "The Golden Hourglass pays an hour of gold at your current rate: early in a night, when your gold quickly catches up with prices, it is the best buy at the stall." }] },
         { id: "caravan", title: "The Caravan", blocks: ["From your 3rd ascension, the Stallkeeper's Caravan brings one ware a week, the same for everyone (it changes every Monday). Each is bought once a week; the Token, once a game.", { slot: "caravan" }] },
         { id: "named", title: `The ${f.namedRelics} named relics`, blocks: ["Legendary or mythic, each has a fixed source, a legend and a unique effect. They drop only once per game, arrive locked and find room even in a full pack.", { slot: "named" }] },
         {
@@ -1092,20 +1092,20 @@ export const wikiArticles = defineMessages<Articles>({
             }
           ]
         },
-        { id: "hidden", title: "Page hidden, computer asleep", blocks: [`When the page wakes after more than 5 seconds, the time elapsed is simulated at once (up to ${f.offlineHours} h), exactly as the autopilot would have played it: one-minute slices, purchases between slices, stages pushed until a boss too strong. The company fights alone: the Patience bonus in full, but no strikes, powers, crystals or potions.`] },
+        { id: "hidden", title: "Page hidden, computer asleep", blocks: [`When the page wakes after more than 5 seconds, the time elapsed is simulated at once (up to ${f.offlineHours} h), exactly as the autopilot would have played it: one-minute slices, purchases between slices, stages pushed until a boss too strong. The company fights alone: the Patience bonus in full, but no strikes, powers, crystals or potions.`] },
         {
           id: "closed",
           title: "Game closed",
           blocks: [
-            `With the game closed (account or guest), the company still walks: when it opens again, the time since the game was last kept is caught up the same way (${f.offlineHours} h at most, +1 h per level of the Long Thread), never more than the server saw pass. An 8 h catch-up takes a tenth or two of a second.`,
-            "An open page keeps the game every 30 s: reloading loses nothing."
+            `With the game closed (account or guest), the company still walks: when it opens again, the time since the game was last kept is caught up the same way (${f.offlineHours} h at most, +1 h per level of the Long Thread), never more than the server saw pass. An 8 h catch-up takes a tenth or two of a second.`,
+            "An open page keeps the game every 30 s: reloading loses nothing."
           ]
         },
         {
           id: "reunion",
           title: "The Reunion",
           blocks: [
-            `Back after ${f.reunionMinutes} min away or more, your first action brings the **Reunion**: company damage ×${f.reunionDps} for a sixth of your absence (an hour at most; a night gives the full hour).`,
+            `Back after ${f.reunionMinutes} min away or more, your first action brings the **Reunion**: company damage ×${f.reunionDps} for a sixth of your absence (an hour at most; a night gives the full hour).`,
             "With it comes **the company's account**: time away, road walked, gold earned and spent, walls met then passed, who joined, levels gained, and the boss still barring the road. It ends on a Chronicle fragment not read yet."
           ]
         },
@@ -1240,7 +1240,7 @@ export const wikiArticles = defineMessages<Articles>({
             "If a confirmation e-mail is sent, confirm it within 3 days: after that, the game is no longer kept until the address is confirmed (the game stays playable)."
           ]
         },
-        { id: "keeping", title: "A game always kept", blocks: ["Nothing is stored in your browser: the game is on the server, kept every 30 s and after every important action. If the server cannot be reached, the game goes on and tries again. Two devices open on the same game? The one that did not see the last version kept lets you choose."] },
+        { id: "keeping", title: "A game always kept", blocks: ["Nothing is stored in your browser: the game is on the server, kept every 30 s and after every important action. If the server cannot be reached, the game goes on and tries again. Two devices open on the same game? The one that did not see the last version kept lets you choose."] },
         { id: "verified", title: "A verified game", blocks: ["Every game it receives is played again by the server with the same engine as the game. A game that could not have been played honestly is refused. That is what makes the leaderboard trustworthy."] },
         { id: "boards", title: "The Roll of the Bound", blocks: ["The public leaderboard has four boards. On a tie, whoever got there first ranks higher.", { slot: "boards" }] },
         { id: "settings", title: "Settings", blocks: ["Language, number notation (letters, scientific, engineering), sound and volume, damage numbers, reduced motion, colorblind colors, ascension confirmation. The game also installs as an app on phones."] }

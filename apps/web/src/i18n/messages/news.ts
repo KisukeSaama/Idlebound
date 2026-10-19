@@ -4,7 +4,7 @@ import { defineMessages } from "../define";
 export const news = defineMessages({
   fr: {
     metaTitle: "Actualités",
-    metaDescription: "Les nouvelles de la route : notes de mise à jour, nouveautés et annonces de l'équipe d'Idlebound.",
+    metaDescription: "Les nouvelles de la route : notes de mise à jour, nouveautés et annonces de l'équipe d'Idlebound.",
     title: "Actualités",
     subtitle: "Ce qui change sur la route, version après version.",
     kinds: { patch: "Notes de mise à jour", announcement: "Annonce" },

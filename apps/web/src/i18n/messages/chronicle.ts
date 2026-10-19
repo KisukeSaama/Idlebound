@@ -30,11 +30,11 @@ export const chronicle = defineMessages({
     reading: (descent: number) => `Relue à la Descente ${descent}`,
     scenes: "Ce que le Grand Livre a vu",
     scenesHint: "Les moments de ta route, à revoir.",
-    watch: (name: string) => `Revoir : ${name}`,
+    watch: (name: string) => `Revoir : ${name}`,
     nights: "Les Nuits",
     nightsHint: "Les cent dernières, de la plus récente à la plus ancienne.",
     nightLine: (night: string, stage: string, light: string) => `Nuit ${night}. Étape ${stage} atteinte. ${light} essences rapportées.`,
-    kingSaid: (word: string) => `Le Roi a dit : « ${word} »`,
+    kingSaid: (word: string) => `Le Roi a dit : « ${word} »`,
     descentLine: (descent: string, stage: string, threads: string) => `Descente ${descent}. Étape ${stage} atteinte. ${threads} fils tissés.`,
     pawPrint: "Une page blanche, une empreinte de patte",
     stats: {

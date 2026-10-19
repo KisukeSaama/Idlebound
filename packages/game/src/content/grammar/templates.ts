@@ -302,7 +302,7 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
   },
   "ledger-two": {
     voice: "ledger",
-    line: (s, h) => `Il reste deux choses ${h.in(s.place)} : ${h.a(s.object)} et ${h.a(s.object2)}. Les deux sont ${form(s.state, pair(s.object, s.object2))}.`
+    line: (s, h) => `Il reste deux choses ${h.in(s.place)} : ${h.a(s.object)} et ${h.a(s.object2)}. Les deux sont ${form(s.state, pair(s.object, s.object2))}.`
   },
   "ledger-why": { voice: "ledger", doer: "companion", line: (s, h) => `${h.cap(s.companion)} ${s.verb} ${h.in(s.place)}, sans dire pourquoi.` },
 
@@ -315,7 +315,7 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
     voice: "companion",
     line: (s, h) => `Ici, ${h.the(s.object)} ${h.is(s.object)} ${h.agree(s.color, s.object)}. ${h.it(s.object)} ne l'${h.was(s.object)} pas, la nuit d'avant.`
   },
-  "companion-every": { voice: "companion", doer: "remnant", line: (s) => `Hier soir, ${s.remnant} ${s.verb}. La veille aussi : chaque nuit recommence. Je fais comme si c'était nouveau.` },
+  "companion-every": { voice: "companion", doer: "remnant", line: (s) => `Hier soir, ${s.remnant} ${s.verb}. La veille aussi : chaque nuit recommence. Je fais comme si c'était nouveau.` },
 
   "remnant-then": { voice: "remnant", line: (s, h) => `${h.cap(h.a(s.object))}, puis ${h.a(s.object2)}, puis toi. Chaque nuit, je me souviens des mêmes choses, dans le même ordre.` },
   "remnant-yet": { voice: "remnant", doer: "remnant", line: (s, h) => `${h.cap(h.first(s.verb))} ${h.in(s.place)}, comme chaque nuit. Tu arrives toujours juste après.` },
@@ -329,18 +329,18 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
   "lysandre-certain": {
     voice: "lysandre",
     line: (s, h) =>
-      `Note : ${h.the(s.object)} ${h.is(s.object)} ${h.agree(s.state, s.object)} parce qu'${h.pron(s.object)} ${h.is(s.object)} ${h.agree(s.color, s.object)}. J'en suis sûr. J'en suis toujours sûr.`
+      `Note : ${h.the(s.object)} ${h.is(s.object)} ${h.agree(s.state, s.object)} parce qu'${h.pron(s.object)} ${h.is(s.object)} ${h.agree(s.color, s.object)}. J'en suis sûr. J'en suis toujours sûr.`
   },
 
   "unknown-whoever": {
     voice: "unknown",
-    line: (s, h) => `À qui trouvera ${h.the(s.object)} : ${h.pron(s.object)} ${h.was(s.object)} ${h.agree(s.color, s.object)}, avant. Souviens-t'en comme ça.`
+    line: (s, h) => `À qui trouvera ${h.the(s.object)} : ${h.pron(s.object)} ${h.was(s.object)} ${h.agree(s.color, s.object)}, avant. Souviens-t'en comme ça.`
   },
   "unknown-next": { voice: "unknown", line: (s, h) => `J'ai parcouru cette route avant toi, et laissé ${h.a(s.object)} ${h.in(s.place)} pour qui viendrait après. C'est toi.` },
 
   "oriane-tomorrow": {
     voice: "oriane",
-    line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)}. J'entends déjà la nuit de demain : ${h.pron(s.object)} le ${s.object.p ? "seront" : "sera"} encore.`
+    line: (s, h) => `${h.cap(h.the(s.object))} ${h.is(s.object)} ${h.agree(s.state, s.object)}. J'entends déjà la nuit de demain : ${h.pron(s.object)} le ${s.object.p ? "seront" : "sera"} encore.`
   },
   "oriane-about": {
     voice: "oriane",
@@ -389,7 +389,7 @@ export const FR_TEMPLATES: Record<TemplateId, FrT> = {
   },
   "reading-again": {
     voice: "unknown",
-    line: (s, h) => `Revu un fil plus bas : ${h.the(s.object)} n'${h.was(s.object)} jamais ${h.agree(s.color, s.object)}. ${h.it(s.object)} ${h.was(s.object)} ${h.agree(s.state, s.object)}, depuis toujours.`
+    line: (s, h) => `Revu un fil plus bas : ${h.the(s.object)} n'${h.was(s.object)} jamais ${h.agree(s.color, s.object)}. ${h.it(s.object)} ${h.was(s.object)} ${h.agree(s.state, s.object)}, depuis toujours.`
   },
   "reading-pass": {
     voice: "oriane",

@@ -1091,12 +1091,13 @@ describe("i18n", () => {
 
   it("tells a power's recharge after the walker's reductions", () => {
     const state = createInitialState();
-    expect(skillText("frenzy", "en", state).description).toMatch(/Recharge: 10 min\.$/);
-    expect(skillText("unweave", "fr", state).description).toMatch(/Recharge : 1 h\.$/);
+    // A number and its unit never part (U+00A0), nor a French colon from its word.
+    expect(skillText("frenzy", "en", state).description).toMatch(/Recharge: 10 min\.$/);
+    expect(skillText("unweave", "fr", state).description).toMatch(/Recharge : 1 h\.$/);
     // Three levels of the Altar of Echoes take 15% off: ten minutes become eight and a half.
     state.altars.echoes = 3;
-    expect(skillText("frenzy", "en", state).description).toMatch(/Recharge: 8 min 30 s\.$/);
-    expect(skillText("frenzy", "fr", state).description).toMatch(/Recharge : 8 min 30 s\.$/);
+    expect(skillText("frenzy", "en", state).description).toMatch(/Recharge: 8 min 30 s\.$/);
+    expect(skillText("frenzy", "fr", state).description).toMatch(/Recharge : 8 min 30 s\.$/);
   });
 
   it("names monsters with their era and keeps legacy item names", () => {

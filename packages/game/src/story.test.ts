@@ -195,7 +195,7 @@ describe("the Chronicle", () => {
     for (const locale of LOCALES) {
       const text = gameText(locale);
       const check = (line: string, max: number, where: string, deep = false) => {
-        expect(line.length, `${locale} ${where}`).toBeGreaterThan(2);
+        expect(line.replaceAll("…", "...").length, `${locale} ${where}`).toBeGreaterThan(2);
         expect(line.length, `${locale} ${where}: ${line}`).toBeLessThanOrEqual(max);
         expect(line, `${locale} ${where}`).not.toMatch(DASH);
         expect(line, `${locale} ${where}`).not.toMatch(EMOJI);

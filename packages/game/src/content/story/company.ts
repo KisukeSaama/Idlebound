@@ -21,7 +21,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
       ],
       nyx: [
         { by: "Nyx", text: "Between two nights you rest in the Sanctum. When you open your eyes, Nyx is sitting on the nearest stone, keeping watch over you. She says nothing." },
-        { by: "Nyx", text: "\"...Aldric?\" Nyx says your name from under her hood, like a question. Nobody told her your name tonight. She knows it anyway." },
+        { by: "Nyx", text: "\"…Aldric?\" Nyx says your name from under her hood, like a question. Nobody told her your name tonight. She knows it anyway." },
         { by: "Nyx", text: "By the fire, someone speaks of the Dawn, the morning that would end the Long Night. Nyx's hand goes to her dagger. She fears it more than any Remnant." },
         { by: "Nyx", text: "Nyx turns away and lowers her hood. There is no face under it, only night sky and a few stars. She was woven with the Long Night, like its shadow." },
         { by: "Nyx", text: "\"I am the night's shadow. I am not with you. I am around you, every night you walk.\"" }
@@ -62,8 +62,8 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         { by: "Kaelen", text: "\"Let me strike the last blow against him. Once. He walked the night I ran from. I owe him that.\"" }
       ],
       oriane: [
-        { by: "Oriane", text: "\"...a long way to get here,\" Oriane finishes, before you can. She hears the old nights in the caves, and in one of them you already said it." },
-        { by: "Oriane", text: "\"...and you are hungry,\" she finishes. You were not going to say that. She knows. She wants to hear you laugh, the way you did on older nights." },
+        { by: "Oriane", text: "\"…a long way to get here,\" Oriane finishes, before you can. She hears the old nights in the caves, and in one of them you already said it." },
+        { by: "Oriane", text: "\"…and you are hungry,\" she finishes. You were not going to say that. She knows. She wants to hear you laugh, the way you did on older nights." },
         { by: "Oriane", text: "Oriane counts under her breath as you walk. \"Your nights,\" she says. \"Every night you have walked this road. I hear them all.\" The number is huge." },
         { by: "Oriane", text: "She stops in the middle of a number. \"I have lost count of your nights. I never lose count.\" She does not start again." },
         { by: "Oriane", text: "\"I stopped listening to the old nights. I listen to this one now, with you.\" She gives you a pale shell. \"Keep it. It still hears the old ones.\"" }
@@ -80,10 +80,10 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         "Have we had tea before? I feel we have had tea. Honey, was it?",
         "Honey, no milk. Sit, old friend. The road can wait one cup."
       ],
-      nyx: ["...", "...You. Again?", "...Aldric."],
+      nyx: ["…", "…You. Again?", "…Aldric."],
       garrick: [
         "Rich! We'll be rich! Well, I will. You'll be employed.",
-        "Rich! We'll be... Have I pitched you this before? Feels like I have.",
+        "Rich! We'll be… Have I pitched you this before? Feels like I have.",
         "You! Grab a pick. Same cut as always, partner. Small."
       ],
       seraphine: [
@@ -116,85 +116,85 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
   fr: {
     memories: {
       ysolde: [
-        { by: "Ysolde", text: "Ysolde vise le noir derrière ton épaule, puis baisse son arc. « Pardon. Quelque chose te tombe toujours dessus par là. Je ne sais pas comment je le sais. »" },
-        { by: "Ysolde", text: "La Forêt sombre se penche sur ton passage. « Les arbres disent ton nom, souffle Ysolde. Ils se souviennent de chaque nuit. Et de toi, dedans. »" },
-        { by: "Ysolde", text: "« Attention à cette racine, tu trébuches toujours dessus. » Tu n'y es pas encore. « Les arbres me l'ont montré. Tu as pris ce sentier plus de fois qu'on ne peut compter. »" },
-        { by: "Ysolde", text: "Elle t'emmène vers un creux de mousse en forme de corps. « La nuit t'a fait tomber ici, une nuit oubliée de tous. Les arbres me l'ont montré. J'ai été trop lente. »" },
-        { by: "Ysolde", text: "« Les arbres me montrent toutes tes nuits, même celles où tu tombes. Chaque fois, tu te relèves et tu reviens. La forêt dit que tu n'abandonnes jamais. »" }
+        { by: "Ysolde", text: "Ysolde vise le noir derrière ton épaule, puis baisse son arc. « Pardon. Quelque chose te tombe toujours dessus par là. Je ne sais pas comment je le sais. »" },
+        { by: "Ysolde", text: "La Forêt sombre se penche sur ton passage. « Les arbres disent ton nom, souffle Ysolde. Ils se souviennent de chaque nuit. Et de toi, dedans. »" },
+        { by: "Ysolde", text: "« Attention à cette racine, tu trébuches toujours dessus. » Tu n'y es pas encore. « Les arbres me l'ont montré. Tu as pris ce sentier plus de fois qu'on ne peut compter. »" },
+        { by: "Ysolde", text: "Elle t'emmène vers un creux de mousse en forme de corps. « La nuit t'a fait tomber ici, une nuit oubliée de tous. Les arbres me l'ont montré. J'ai été trop lente. »" },
+        { by: "Ysolde", text: "« Les arbres me montrent toutes tes nuits, même celles où tu tombes. Chaque fois, tu te relèves et tu reviens. La forêt dit que tu n'abandonnes jamais. »" }
       ],
       cendre: [
-        { by: "Frère Cendre", text: "Frère Cendre sert deux tasses avant que tu t'assoies. « Le thé d'abord. Un moine des Braises ne se bat jamais le ventre vide. La violence attendra. Elle attend toujours. »" },
-        { by: "Frère Cendre", text: "Il te tend ta tasse : du miel, pas de lait. « C'est comme ça que tu le prends. Je ne sais pas comment je le sais. On a dû partager un feu, une nuit que j'ai oubliée. »" },
-        { by: "Frère Cendre", text: "Il nourrit la flamme de son ordre, dernier souvenir du soleil, brindille après brindille. « Ma sœur l'allumait d'un regard. Elle la voulait plus grande, alors elle est partie. »" },
-        { by: "Frère Cendre", text: "« Ma sœur, c'est Ashka, prêtresse du Bûcher. Si elle et moi marchons un jour avec toi la même nuit, sépare-nous. On se battrait, et elle gagnerait. »" },
-        { by: "Frère Cendre", text: "« Dis à Ashka que la flamme brûle encore. Ça veut dire que l'ordre attend toujours qu'elle rentre. Ça veut dire que moi, je l'attends. »" }
+        { by: "Frère Cendre", text: "Frère Cendre sert deux tasses avant que tu t'assoies. « Le thé d'abord. Un moine des Braises ne se bat jamais le ventre vide. La violence attendra. Elle attend toujours. »" },
+        { by: "Frère Cendre", text: "Il te tend ta tasse : du miel, pas de lait. « C'est comme ça que tu le prends. Je ne sais pas comment je le sais. On a dû partager un feu, une nuit que j'ai oubliée. »" },
+        { by: "Frère Cendre", text: "Il nourrit la flamme de son ordre, dernier souvenir du soleil, brindille après brindille. « Ma sœur l'allumait d'un regard. Elle la voulait plus grande, alors elle est partie. »" },
+        { by: "Frère Cendre", text: "« Ma sœur, c'est Ashka, prêtresse du Bûcher. Si elle et moi marchons un jour avec toi la même nuit, sépare-nous. On se battrait, et elle gagnerait. »" },
+        { by: "Frère Cendre", text: "« Dis à Ashka que la flamme brûle encore. Ça veut dire que l'ordre attend toujours qu'elle rentre. Ça veut dire que moi, je l'attends. »" }
       ],
       nyx: [
         { by: "Nyx", text: "Entre deux nuits, tu te reposes au Sanctuaire. Quand tu rouvres les yeux, Nyx est assise sur la pierre la plus proche et veille sur toi. Elle ne dit rien." },
-        { by: "Nyx", text: "« ...Aldric ? » Nyx dit ton nom sous sa capuche, comme une question. Personne ne le lui a appris ce soir. Elle le sait quand même." },
+        { by: "Nyx", text: "« …Aldric ? » Nyx dit ton nom sous sa capuche, comme une question. Personne ne le lui a appris ce soir. Elle le sait quand même." },
         { by: "Nyx", text: "Près du feu, quelqu'un parle de l'Aube, le matin qui mettrait fin à la Longue Nuit. La main de Nyx va à sa dague. Elle la craint plus que n'importe quel Vestige." },
-        { by: "Nyx", text: "Nyx se détourne et abaisse sa capuche. Dessous, pas de visage : un ciel de nuit et quelques étoiles. Elle a été tissée avec la Longue Nuit, comme son ombre." },
-        { by: "Nyx", text: "« Je suis l'ombre de la nuit. Je ne suis pas avec toi. Je suis autour de toi, chaque nuit où tu marches. »" }
+        { by: "Nyx", text: "Nyx se détourne et abaisse sa capuche. Dessous, pas de visage : un ciel de nuit et quelques étoiles. Elle a été tissée avec la Longue Nuit, comme son ombre." },
+        { by: "Nyx", text: "« Je suis l'ombre de la nuit. Je ne suis pas avec toi. Je suis autour de toi, chaque nuit où tu marches. »" }
       ],
       garrick: [
-        { by: "Garrick", text: "Garrick te toise. « T'as une tête de chercheur d'éclats. Plissée. Fauchée. Moi, je déterre des étoiles tombées dans les Cavernes oubliées. On va s'entendre. »" },
-        { by: "Garrick", text: "Il te souffle où il cache ses plus beaux éclats, puis s'affole. « Pourquoi je t'ai dit ça ? Je ne le dis à personne. On dirait que je te fais confiance depuis des années. Oublie. »" },
-        { by: "Garrick", text: "Garrick lève un éclat vers le ciel. Il épouse exactement une fêlure de la Voûte de verre. « C'est pas des étoiles tombées, dit-il tout bas. C'est des morceaux du ciel. »" },
-        { by: "Garrick", text: "« Un jour, j'ai trouvé un éclat avec un visage dedans. Pas un visage d'Orvane : il regardait depuis l'autre côté du ciel. Il a cligné. Je l'ai enterré. »" },
-        { by: "Garrick", text: "Il déterre l'éclat au visage en jurant tout du long et te le donne. « Garde-le. Le visage a fermé les yeux. Faut croire qu'il te fait confiance. »" }
+        { by: "Garrick", text: "Garrick te toise. « T'as une tête de chercheur d'éclats. Plissée. Fauchée. Moi, je déterre des étoiles tombées dans les Cavernes oubliées. On va s'entendre. »" },
+        { by: "Garrick", text: "Il te souffle où il cache ses plus beaux éclats, puis s'affole. « Pourquoi je t'ai dit ça ? Je ne le dis à personne. On dirait que je te fais confiance depuis des années. Oublie. »" },
+        { by: "Garrick", text: "Garrick lève un éclat vers le ciel. Il épouse exactement une fêlure de la Voûte de verre. « C'est pas des étoiles tombées, dit-il tout bas. C'est des morceaux du ciel. »" },
+        { by: "Garrick", text: "« Un jour, j'ai trouvé un éclat avec un visage dedans. Pas un visage d'Orvane : il regardait depuis l'autre côté du ciel. Il a cligné. Je l'ai enterré. »" },
+        { by: "Garrick", text: "Il déterre l'éclat au visage en jurant tout du long et te le donne. « Garde-le. Le visage a fermé les yeux. Faut croire qu'il te fait confiance. »" }
       ],
       seraphine: [
-        { by: "Séraphine", text: "Séraphine demande à une racine qui tu es. Elle te désigne. « Elle dit qu'elle te connaît. Les racines ne mentent pas. Alors pourquoi je ne me souviens pas de toi ? »" },
-        { by: "Séraphine", text: "« Le Cœur du vieux bosquet t'attend, dit Séraphine. Le grand arbre au bout de la Forêt sombre. Il n'attendait plus personne depuis longtemps. »" },
-        { by: "Séraphine", text: "Au vieux bosquet, Séraphine reste à la lisière pendant que tu affrontes son Cœur. « Vas-y. Moi, je ne peux pas la frapper. Je serai là, après. »" },
-        { by: "Séraphine", text: "« L'arbre-mère du bosquet m'a tout appris. La première nuit, elle m'a demandé de t'aider à l'abattre, pour que la nuit continue. J'ai dit non. Elle a redemandé. »" },
-        { by: "Séraphine", text: "« Elle te remercie, chaque nuit où tu l'abats. » Séraphine te donne une graine tiède. « Sa dernière. Elle ne peut pas pousser dans cette nuit. Elle attend un matin. »" }
+        { by: "Séraphine", text: "Séraphine demande à une racine qui tu es. Elle te désigne. « Elle dit qu'elle te connaît. Les racines ne mentent pas. Alors pourquoi je ne me souviens pas de toi ? »" },
+        { by: "Séraphine", text: "« Le Cœur du vieux bosquet t'attend, dit Séraphine. Le grand arbre au bout de la Forêt sombre. Il n'attendait plus personne depuis longtemps. »" },
+        { by: "Séraphine", text: "Au vieux bosquet, Séraphine reste à la lisière pendant que tu affrontes son Cœur. « Vas-y. Moi, je ne peux pas la frapper. Je serai là, après. »" },
+        { by: "Séraphine", text: "« L'arbre-mère du bosquet m'a tout appris. La première nuit, elle m'a demandé de t'aider à l'abattre, pour que la nuit continue. J'ai dit non. Elle a redemandé. »" },
+        { by: "Séraphine", text: "« Elle te remercie, chaque nuit où tu l'abats. » Séraphine te donne une graine tiède. « Sa dernière. Elle ne peut pas pousser dans cette nuit. Elle attend un matin. »" }
       ],
       thorvald: [
-        { by: "Thorvald", text: "Thorvald abat son coude sur un tonneau. « Bras de fer ! Le perdant porte le sac. Le gagnant aussi, en fait. Moi, j'aime juste gagner. »" },
-        { by: "Thorvald", text: "À mi-partie, il s'arrête. « Attends. J'ai déjà perdu contre toi, une autre nuit. Je ne perds jamais deux fois. » Il perd deux fois." },
-        { by: "Thorvald", text: "Un rat doré traverse la route. Thorvald blêmit et se cache derrière toi. « C'est Pip. Je lui dois quelque chose. Le regarde pas dans les yeux. »" },
-        { by: "Thorvald", text: "« J'ai parié avec Pip que je pouvais abattre une montagne. Je l'ai abattue. Sauf que le pari, c'était que non. Je dois une montagne à un rat, et il tient les comptes. »" },
-        { by: "Thorvald", text: "« Si tu vois Pip, dis-lui qu'on est quittes. » Ils ne le sont pas : Thorvald lui doit encore presque toute une montagne, et il sait que tu le sais." }
+        { by: "Thorvald", text: "Thorvald abat son coude sur un tonneau. « Bras de fer ! Le perdant porte le sac. Le gagnant aussi, en fait. Moi, j'aime juste gagner. »" },
+        { by: "Thorvald", text: "À mi-partie, il s'arrête. « Attends. J'ai déjà perdu contre toi, une autre nuit. Je ne perds jamais deux fois. » Il perd deux fois." },
+        { by: "Thorvald", text: "Un rat doré traverse la route. Thorvald blêmit et se cache derrière toi. « C'est Pip. Je lui dois quelque chose. Le regarde pas dans les yeux. »" },
+        { by: "Thorvald", text: "« J'ai parié avec Pip que je pouvais abattre une montagne. Je l'ai abattue. Sauf que le pari, c'était que non. Je dois une montagne à un rat, et il tient les comptes. »" },
+        { by: "Thorvald", text: "« Si tu vois Pip, dis-lui qu'on est quittes. » Ils ne le sont pas : Thorvald lui doit encore presque toute une montagne, et il sait que tu le sais." }
       ],
       mirelle: [
-        { by: "Mirelle", text: "Mirelle te tend une fiole, te regarde boire et note quelque chose. « Intéressant. Tes oreilles arrêteront de siffler dans une heure. Sans doute. »" },
-        { by: "Mirelle", text: "Son carnet tombe ouvert. Ton nom y est, page après page, de sa main. « Rends-moi ça. On dirait que tu m'as déjà aidée. Je ne m'en souviens pas non plus. »" },
-        { by: "Mirelle", text: "Le carnet parle du baron Osric, son mari : doses, dates, ce qu'il a dit. Le Baron de la pourriture, dans le Marais, est l'homme qu'elle a épousé. Elle essaie de le guérir." },
-        { by: "Mirelle", text: "Aux pieds du Baron, elle te touche le bras. « Attends. Un souffle. Laisse-moi essayer ce remède sur lui d'abord. » Elle verse. Ça échoue. Elle hoche la tête, et tu frappes." },
-        { by: "Mirelle", text: "Elle te donne son alliance. « Aucun remède n'a marché, pas une seule nuit. Il voudrait que quelqu'un d'utile la porte. »" }
+        { by: "Mirelle", text: "Mirelle te tend une fiole, te regarde boire et note quelque chose. « Intéressant. Tes oreilles arrêteront de siffler dans une heure. Sans doute. »" },
+        { by: "Mirelle", text: "Son carnet tombe ouvert. Ton nom y est, page après page, de sa main. « Rends-moi ça. On dirait que tu m'as déjà aidée. Je ne m'en souviens pas non plus. »" },
+        { by: "Mirelle", text: "Le carnet parle du baron Osric, son mari : doses, dates, ce qu'il a dit. Le Baron de la pourriture, dans le Marais, est l'homme qu'elle a épousé. Elle essaie de le guérir." },
+        { by: "Mirelle", text: "Aux pieds du Baron, elle te touche le bras. « Attends. Un souffle. Laisse-moi essayer ce remède sur lui d'abord. » Elle verse. Ça échoue. Elle hoche la tête, et tu frappes." },
+        { by: "Mirelle", text: "Elle te donne son alliance. « Aucun remède n'a marché, pas une seule nuit. Il voudrait que quelqu'un d'utile la porte. »" }
       ],
       kaelen: [
         { by: "Kaelen", text: "Devant les Sentinelles déchues, Kaelen s'arrête et salue. C'était la garde du Roi, comme lui. Elles lui rendent son salut. Puis elles attaquent, et il se bat." },
         { by: "Kaelen", text: "Dans le donjon, Kaelen refuse de regarder le trône. Il affronte le Roi déchu les yeux fixés sur ses bottes." },
-        { by: "Kaelen", text: "« Je l'ai servi, dit Kaelen en essuyant sa lame. Le Roi. J'étais son chevalier, avant la Longue Nuit. Il était bon, toujours. Ça rendait tout plus difficile. »" },
-        { by: "Kaelen", text: "« La nuit où la Longue Nuit fut tissée, c'était à moi de la parcourir le premier. J'ai fui. Le roi Aldemar l'a parcourue à ma place. Il n'a jamais fini de payer pour ça. »" },
-        { by: "Kaelen", text: "« Laisse-moi lui porter le dernier coup. Une fois. Il a marché la nuit que j'ai fuie. Je lui dois bien ça. »" }
+        { by: "Kaelen", text: "« Je l'ai servi, dit Kaelen en essuyant sa lame. Le Roi. J'étais son chevalier, avant la Longue Nuit. Il était bon, toujours. Ça rendait tout plus difficile. »" },
+        { by: "Kaelen", text: "« La nuit où la Longue Nuit fut tissée, c'était à moi de la parcourir le premier. J'ai fui. Le roi Aldemar l'a parcourue à ma place. Il n'a jamais fini de payer pour ça. »" },
+        { by: "Kaelen", text: "« Laisse-moi lui porter le dernier coup. Une fois. Il a marché la nuit que j'ai fuie. Je lui dois bien ça. »" }
       ],
       oriane: [
-        { by: "Oriane", text: "« ...un long chemin jusqu'ici », achève Oriane avant toi. Elle entend les vieilles nuits dans les cavernes, et dans l'une d'elles, tu l'as déjà dit." },
-        { by: "Oriane", text: "« ...et tu as faim », achève-t-elle. Ce n'est pas ce que tu allais dire. Elle le sait. Elle veut t'entendre rire, comme les nuits d'avant." },
-        { by: "Oriane", text: "Oriane compte à mi-voix pendant que vous marchez. « Tes nuits, dit-elle. Toutes les nuits où tu as pris cette route. Je les entends toutes. » Le nombre est immense." },
-        { by: "Oriane", text: "Elle s'arrête au milieu d'un nombre. « J'ai perdu le compte de tes nuits. Je ne perds jamais le compte. » Elle ne recommence pas." },
-        { by: "Oriane", text: "« J'ai cessé d'écouter les vieilles nuits. J'écoute celle-ci, maintenant, avec toi. » Elle te donne un coquillage pâle. « Garde-le. Lui entend encore les anciennes. »" }
+        { by: "Oriane", text: "« …un long chemin jusqu'ici », achève Oriane avant toi. Elle entend les vieilles nuits dans les cavernes, et dans l'une d'elles, tu l'as déjà dit." },
+        { by: "Oriane", text: "« …et tu as faim », achève-t-elle. Ce n'est pas ce que tu allais dire. Elle le sait. Elle veut t'entendre rire, comme les nuits d'avant." },
+        { by: "Oriane", text: "Oriane compte à mi-voix pendant que vous marchez. « Tes nuits, dit-elle. Toutes les nuits où tu as pris cette route. Je les entends toutes. » Le nombre est immense." },
+        { by: "Oriane", text: "Elle s'arrête au milieu d'un nombre. « J'ai perdu le compte de tes nuits. Je ne perds jamais le compte. » Elle ne recommence pas." },
+        { by: "Oriane", text: "« J'ai cessé d'écouter les vieilles nuits. J'écoute celle-ci, maintenant, avec toi. » Elle te donne un coquillage pâle. « Garde-le. Lui entend encore les anciennes. »" }
       ]
     },
     hireLines: {
       ysolde: [
         "Ne bouge plus. Là. Voilà, tu respires encore.",
-        "Ne bouge plus. Non, tu sais déjà où. Comment tu sais où ? On a déjà traversé cette forêt ensemble ?",
+        "Ne bouge plus. Non, tu sais déjà où. Comment tu sais où ? On a déjà traversé cette forêt ensemble ?",
         "À gauche de la racine, comme toujours. Je couvre tes arrières. Les arbres se souviennent de toi, et moi aussi, un peu."
       ],
       cendre: [
         "La violence n'est jamais la réponse. C'est, en revanche, très souvent la question.",
-        "On a déjà pris le thé ? J'ai l'impression qu'on a déjà pris le thé. Avec du miel, c'est ça ?",
+        "On a déjà pris le thé ? J'ai l'impression qu'on a déjà pris le thé. Avec du miel, c'est ça ?",
         "Du miel, pas de lait. Assieds-toi, vieil ami. La route attendra une tasse."
       ],
-      nyx: ["...", "...Toi. Encore ?", "...Aldric."],
+      nyx: ["…", "…Toi. Encore ?", "…Aldric."],
       garrick: [
-        "Riches ! On sera riches ! Enfin, moi. Toi, tu toucheras un salaire.",
-        "Riches ! On sera... Je t'ai déjà fait l'article ? J'ai l'impression que oui.",
-        "Toi ! Prends une pioche. Ta part est la même que d'habitude, associé. Petite."
+        "Riches ! On sera riches ! Enfin, moi. Toi, tu toucheras un salaire.",
+        "Riches ! On sera… Je t'ai déjà fait l'article ? J'ai l'impression que oui.",
+        "Toi ! Prends une pioche. Ta part est la même que d'habitude, associé. Petite."
       ],
       seraphine: [
         "Les racines m'obéissent parce que je leur ai demandé gentiment. Une fois.",
@@ -202,18 +202,18 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         "Viens. Le bosquet t'attend. Moi aussi."
       ],
       thorvald: [
-        "Quitte ou double !",
-        "Quitte ou double ! Encore ? Attends, j'avais perdu quoi contre toi, la dernière fois ?",
+        "Quitte ou double !",
+        "Quitte ou double ! Encore ? Attends, j'avais perdu quoi contre toi, la dernière fois ?",
         "Quitte ou double, l'ami. Tu me dois toujours une revanche."
       ],
       mirelle: [
         "Bois ça. Non, ne le sens pas d'abord.",
-        "Bois ça. Tu en as déjà bu ? Impossible. Je l'ai préparé ce soir.",
+        "Bois ça. Tu en as déjà bu ? Impossible. Je l'ai préparé ce soir.",
         "Le carnet est ouvert. Bois, puis dis-moi tout ce que tu ressens."
       ],
       kaelen: [
         "Reste derrière moi. Non, plus loin.",
-        "Reste derrière moi. C'est toujours ta place ? On dirait bien.",
+        "Reste derrière moi. C'est toujours ta place ? On dirait bien.",
         "Reste à côté de moi. Rien que cette fois. J'aimerais la compagnie."
       ],
       oriane: [

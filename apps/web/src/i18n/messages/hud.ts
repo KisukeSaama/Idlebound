@@ -34,8 +34,8 @@ export const hud = defineMessages({
       dpsLabel: "DPS",
       clickTitle: "Dégâts par frappe",
       clickLabel: "Frappe",
-      essencesTitle: "Essences : chacune ajoute +10 % de DPS tant que tu la gardes. Gagnées à l'ascension, dépensées aux autels du Sanctuaire",
-      shardsTitle: "Éclats : gagnés sur les gardiens, les cristaux et en recyclant ton butin. À dépenser au marché et à la forge"
+      essencesTitle: "Essences : chacune ajoute +10 % de DPS tant que tu la gardes. Gagnées à l'ascension, dépensées aux autels du Sanctuaire",
+      shardsTitle: "Éclats : gagnés sur les gardiens, les cristaux et en recyclant ton butin. À dépenser au marché et à la forge"
     },
     nav: {
       label: "Menus du jeu",
@@ -44,7 +44,7 @@ export const hud = defineMessages({
     },
     install: {
       title: "Garde la route à portée de main",
-      text: "Installe Idlebound sur cet appareil : le jeu s'ouvrira d'une seule touche, comme une application.",
+      text: "Installe Idlebound sur cet appareil : le jeu s'ouvrira d'une seule touche, comme une application.",
       install: "Installer",
       decline: "Non merci"
     },
@@ -53,49 +53,49 @@ export const hud = defineMessages({
       scene: "Combat en grand"
     },
     scene: {
-      label: (biome: string, stage: Count) => `Combat : ${biome}, étape ${stage}`,
+      label: (biome: string, stage: Count) => `Combat : ${biome}, étape ${stage}`,
       attack: "Frapper le monstre",
       appears: (name: string, hp: string) => `${name} surgit, ${hp} points de vie.`,
       falls: (name: string) => `${name} tombe.`,
       kinds: { boss: "Gardien", miniboss: "Élite", treasure: "Trésor", rare: "Errant", normal: "" },
       killProgressTitle: "Monstres à vaincre pour débloquer l'étape suivante",
       killProgress: (kills: Count, total: Count) => `${kills} / ${total} monstres`,
-      bossBeaten: "Gardien vaincu : tu peux le combattre à nouveau",
-      farming: "Étape déjà franchie : tu restes pour l'or",
-      seconds: (value: string) => `${value} s`
+      bossBeaten: "Gardien vaincu : tu peux le combattre à nouveau",
+      farming: "Étape déjà franchie : tu restes pour l'or",
+      seconds: (value: string) => `${value} s`
     },
     stageBar: {
       previous: "Étape précédente",
       next: "Étape suivante",
       stage: (stage: Count, boss: boolean) => `Étape ${stage}${boss ? " (élite ou gardien)" : ""}`,
-      autoOn: "Auto : tu passes à l'étape suivante dès que celle-ci est franchie. Appuie pour rester ici et gagner de l'or sans avancer.",
-      autoOff: "Rester : tu combats sur cette étape sans avancer, pour l'or. Appuie pour repasser en Auto et reprendre la route.",
+      autoOn: "Auto : tu passes à l'étape suivante dès que celle-ci est franchie. Appuie pour rester ici et gagner de l'or sans avancer.",
+      autoOff: "Rester : tu combats sur cette étape sans avancer, pour l'or. Appuie pour repasser en Auto et reprendre la route.",
       auto: "Auto",
       farm: "Rester"
     },
     buffs: {
       label: "Effets actifs",
-      seconds: (value: Count) => `${value} s`,
-      rage: "Rage : DPS ×2",
-      fortune: "Fortune : or ×2",
-      autoclick: "Frappe automatique : 5 coups/s",
-      overcharge: "Surcharge : DPS ×7",
-      sharpness: "Affûtage : frappe ×10",
-      ritual: (pct: Count) => `Rituel : +${pct} % DPS jusqu'à ta prochaine ascension`,
-      ritualShort: (pct: Count) => `+${pct} %`,
-      patience: (pct: Count) => `Patience : DPS +${pct} %`,
-      patienceShort: (pct: Count) => `+${pct} %`
+      seconds: (value: Count) => `${value} s`,
+      rage: "Rage : DPS ×2",
+      fortune: "Fortune : or ×2",
+      autoclick: "Frappe automatique : 5 coups/s",
+      overcharge: "Surcharge : DPS ×7",
+      sharpness: "Affûtage : frappe ×10",
+      ritual: (pct: Count) => `Rituel : +${pct} % DPS jusqu'à ta prochaine ascension`,
+      ritualShort: (pct: Count) => `+${pct} %`,
+      patience: (pct: Count) => `Patience : DPS +${pct} %`,
+      patienceShort: (pct: Count) => `+${pct} %`
     },
     skills: {
       label: "Pouvoirs",
-      ready: (name: string, key: string, description: string) => `${name} (touche ${key}) : ${description}`,
-      cooldown: (time: string) => ` Recharge : ${time}.`,
-      minutes: (value: Count) => `${value} min`,
-      seconds: (value: Count) => `${value} s`,
-      activeSeconds: (value: Count) => `${value}s`
+      ready: (name: string, key: string, description: string) => `${name} (touche ${key}) : ${description}`,
+      cooldown: (time: string) => ` Recharge : ${time}.`,
+      minutes: (value: Count) => `${value} min`,
+      seconds: (value: Count) => `${value} s`,
+      activeSeconds: (value: Count) => `${value} s`
     },
     crystal: {
-      catch: "Attraper le cristal errant : or, éclats, essence ou bonus temporaire"
+      catch: "Attraper le cristal errant : or, éclats, essence ou bonus temporaire"
     },
     heroes: {
       title: "Compagnons",
@@ -105,16 +105,16 @@ export const hud = defineMessages({
       max: "Max",
       buyAllTalents: (count: number) => `Acheter ${count} talent${count > 1 ? "s" : ""} disponible${count > 1 ? "s" : ""}`,
       ready: (count: number) => `${count} achat${count > 1 ? "s" : ""} à ta portée`,
-      click: "Frappe : ",
-      dps: "DPS : ",
+      click: "Frappe : ",
+      dps: "DPS : ",
       dpsPerLevel: (value: string) => `${value} DPS par niveau`,
-      share: (pct: Count) => ` · ${pct} %`,
-      milestoneTitle: (current: string) => `Paliers : dégâts de ce compagnon ×3,5 au niveau 200, puis tous les 25 niveaux. Actuel : ×${current}`,
+      share: (pct: Count) => ` · ${pct} %`,
+      milestoneTitle: (current: string) => `Paliers : dégâts de ce compagnon ×3,5 au niveau 200, puis tous les 25 niveaux. Actuel : ×${current}`,
       milestone: (level: Count) => ` · palier niv. ${level}`,
       talentsOf: (hero: string) => `Talents de ${hero}`,
       talentOwned: "Acquis",
       talentCost: (cost: string) => `${cost} or`,
-      talentLabel: (name: string, text: string, status: string) => `${name} : ${text}. ${status}.`,
+      talentLabel: (name: string, text: string, status: string) => `${name} : ${text}. ${status}.`,
       hire: "Recruter",
       train: "S'entraîner",
       buyLabel: (hired: boolean, hero: string, count: number, cost: string) =>
@@ -122,35 +122,35 @@ export const hud = defineMessages({
     },
     effects: {
       heroDps: (hero: string, mult: Count) => `DPS de ${hero} ×${mult}`,
-      globalDps: (pct: Count) => `DPS de tous les compagnons +${pct} %`,
+      globalDps: (pct: Count) => `DPS de tous les compagnons +${pct} %`,
       click: (mult: Count) => `Dégâts de frappe ×${mult}`,
-      clickDps: (pct: Count) => `Chaque frappe inflige aussi ${pct} % de tes DPS`,
-      idleDps: (pct: Count) => `Bonus de Patience : tes compagnons frappent +${pct} % plus fort`,
-      critChance: (pct: Count) => `+${pct} % de chances de critique`,
+      clickDps: (pct: Count) => `Chaque frappe inflige aussi ${pct} % de tes DPS`,
+      idleDps: (pct: Count) => `Bonus de Patience : tes compagnons frappent +${pct} % plus fort`,
+      critChance: (pct: Count) => `+${pct} % de chances de critique`,
       critDamage: (add: Count) => `Multiplicateur des critiques +${add} (×10 de base)`,
-      gold: (pct: Count) => `Or gagné +${pct} %`,
-      bossTimer: (seconds: Count) => `+${seconds} s au chrono des élites et gardiens`,
-      treasure: (pct: Count) => `+${pct} % de chances de rat doré`
+      gold: (pct: Count) => `Or gagné +${pct} %`,
+      bossTimer: (seconds: Count) => `+${seconds} s au chrono des élites et gardiens`,
+      treasure: (pct: Count) => `+${pct} % de chances de rat doré`
     },
     altarValue: {
-      pct: (value: string) => `+${value} %`,
-      seconds: (value: Count) => `+${value} s`,
+      pct: (value: string) => `+${value} %`,
+      seconds: (value: Count) => `+${value} s`,
       stages: (value: Count) => `${value} étapes`,
       none: "aucune",
       stage: (stage: Count) => `étape ${stage}`
     },
-    affix: (value: string, label: string) => `+${value} % ${inSentence(label)}`,
+    affix: (value: string, label: string) => `+${value} % ${inSentence(label)}`,
     tutorial: {
       ok: "OK",
       okLabel: "Compris",
-      hire: "Tu as assez d'or : monte Aldric de niveau pour frapper plus fort.",
-      companion: (hero: string) => `Recrute ${hero} : elle inflige des dégâts chaque seconde, même quand tu ne frappes pas.`,
+      hire: "Tu as assez d'or : monte Aldric de niveau pour frapper plus fort.",
+      companion: (hero: string) => `Recrute ${hero} : elle inflige des dégâts chaque seconde, même quand tu ne frappes pas.`,
       boss: "Élites et gardiens doivent tomber avant la fin du chrono. Sinon, tu recules d'une étape et tu y restes pour gagner de l'or.",
-      skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou sur son bouton en bas.`,
+      skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou sur son bouton en bas.`,
       farm: "Tu restes sur l'étape précédente. Renforce-toi, puis reprends la route (bouton Rester → Auto).",
-      ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu : tu peux recommencer la route en échange d'essences, qui renforcent toutes tes nuits suivantes.",
-      altarRework: "Les pierres du Sanctuaire ont changé : chaque niveau d'un autel sans plafond multiplie désormais son effet, et l'Autel du voyageur te fait passer les premières étapes. Tout ce que tu leur avais offert t'est rendu en essences : choisis de nouveau tes autels, dans la fenêtre d'ascension.",
-      harvestCap: "L'Autel de la récolte s'est fait plus exigeant : il s'arrête au niveau 5 et demande plus d'essences. Tout ce que tu lui avais offert t'est rendu en essences."
+      ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu : tu peux recommencer la route en échange d'essences, qui renforcent toutes tes nuits suivantes.",
+      altarRework: "Les pierres du Sanctuaire ont changé : chaque niveau d'un autel sans plafond multiplie désormais son effet, et l'Autel du voyageur te fait passer les premières étapes. Tout ce que tu leur avais offert t'est rendu en essences : choisis de nouveau tes autels, dans la fenêtre d'ascension.",
+      harvestCap: "L'Autel de la récolte s'est fait plus exigeant : il s'arrête au niveau 5 et demande plus d'essences. Tout ce que tu lui avais offert t'est rendu en essences."
     },
     fx: {
       crit: "CRITIQUE",
@@ -160,47 +160,47 @@ export const hud = defineMessages({
     },
     toasts: {
       routTitle: "Débandade",
-      routText: "Tu as déjà parcouru cette étape une nuit passée, et ta compagnie écrase ses Vestiges : ils se défont tous d'un coup. L'étape entière tombe avec son or, et la route file ainsi jusqu'au premier monstre qui résiste.",
-      count: (count: number) => `x${count}`,
+      routText: "Tu as déjà parcouru cette étape une nuit passée, et ta compagnie écrase ses Vestiges : ils se défont tous d'un coup. L'étape entière tombe avec son or, et la route file ainsi jusqu'au premier monstre qui résiste.",
+      count: (count: number) => `×${count}`,
       bossFailedTitle: "La nuit te repousse",
       bossFailedText: "Tu recules d'une étape. Renforce tes compagnons, puis repasse en Auto (bouton Rester) pour le retenter.",
-      bossFailedWounded: (pct: number) => `Il garde ses blessures : il reviendra avec ${pct} % de vie en moins. Repasse en Auto (bouton Rester) pour le retenter.`,
+      bossFailedWounded: (pct: number) => `Il garde ses blessures : il reviendra avec ${pct} % de vie en moins. Repasse en Auto (bouton Rester) pour le retenter.`,
       biome: (era: string, stage: Count) => `${era} · étape ${stage}`,
-      achievement: (name: string) => `Haut fait : ${name}`,
-      achievementText: (description: string, pct: Count) => `${description} +${pct} % DPS`,
+      achievement: (name: string) => `Haut fait : ${name}`,
+      achievementText: (description: string, pct: Count) => `${description} +${pct} % DPS`,
       loot: (rarity: string, level: Count) => `${rarity} · niveau ${level}`,
       lootTraits: (base: string, traits: string) => `${base} · ${traits}`,
       awakened: (name: string, stage: string) => `${name} réveillée à l'étape ${stage}`,
       awakenedText: "Elle garde ce dont elle se souvient, et sa Densité et ses bonus grandissent à cette profondeur.",
-      skillUnlocked: (name: string) => `Nouveau pouvoir : ${name}`,
-      skillUnlockedText: (key: string, description: string) => `Touche ${key} : ${description}`,
-      crystalTitle: "Cristal errant !",
+      skillUnlocked: (name: string) => `Nouveau pouvoir : ${name}`,
+      skillUnlockedText: (key: string, description: string) => `Touche ${key} : ${description}`,
+      crystalTitle: "Cristal errant !",
       crystal: {
         gold: (amount: string) => `+${amount} pièces d'or`,
-        overcharge: (seconds: Count) => `DPS ×7 pendant ${seconds} s`,
-        sharpness: (seconds: Count) => `Frappe ×10 pendant ${seconds} s`,
+        overcharge: (seconds: Count) => `DPS ×7 pendant ${seconds} s`,
+        sharpness: (seconds: Count) => `Frappe ×10 pendant ${seconds} s`,
         shards: (amount: number) => `+${amount} éclat${amount > 1 ? "s" : ""}`,
         essence: (amount: number) => `+${amount} essence${amount > 1 ? "s" : ""}`
       },
       ascendedTitle: "Ascension accomplie",
-      ascendedText: (essences: string) => `+${essences} essences : chacune ajoute 10 % de DPS tant que tu la gardes. La route recommence.`,
-      inventoryFull: (item: string, shards: number) => `Sac plein : ${item} part au recyclage (+${shards} éclats).`,
-      hourglass: (kills: string) => `Le sablier s'écoule : ${kills} monstres vaincus en un instant.`,
+      ascendedText: (essences: string) => `+${essences} essences : chacune ajoute 10 % de DPS tant que tu la gardes. La route recommence.`,
+      inventoryFull: (item: string, shards: number) => `Sac plein : ${item} part au recyclage (+${shards} éclats).`,
+      hourglass: (kills: string) => `Le sablier s'écoule : ${kills} monstres vaincus en un instant.`,
       fragmentTitle: "Un fragment refait surface",
       fragmentMore: "Il t'attend dans la Chronique du Hall.",
-      bestiary: (name: string) => `Bestiaire : ${name}`,
+      bestiary: (name: string) => `Bestiaire : ${name}`,
       recognition: (name: string, tier: number) =>
-        tier === 1 ? `${name} te reconnaît à peine (souvenir 1 sur 5)` : tier === 5 ? `${name} se souvient de toi : +10 % de dégâts` : `${name} se souvient un peu plus de toi (souvenir ${tier} sur 5)`,
+        tier === 1 ? `${name} te reconnaît à peine (souvenir 1 sur 5)` : tier === 5 ? `${name} se souvient de toi : +10 % de dégâts` : `${name} se souvient un peu plus de toi (souvenir ${tier} sur 5)`,
       recognitionManyTitle: "Des visages familiers",
-      recognitionMany: (names: string, first: boolean) => `${names} ${first ? "te reconnaissent à peine" : "se souviennent un peu plus de toi"}. Au cinquième souvenir, un compagnon inflige +10 % de dégâts. Leurs souvenirs t'attendent dans la Chronique.`,
+      recognitionMany: (names: string, first: boolean) => `${names} ${first ? "te reconnaissent à peine" : "se souviennent un peu plus de toi"}. Au cinquième souvenir, un compagnon inflige +10 % de dégâts. Leurs souvenirs t'attendent dans la Chronique.`,
       and: " et ",
       secretTitle: "Secret découvert",
-      namedTitle: (name: string) => `Relique nommée : ${name}`,
+      namedTitle: (name: string) => `Relique nommée : ${name}`,
       wandererTitle: (name: string) => `${name} croise ta route`
     },
     cloudChoice: {
       title: "Deux parties trouvées",
-      text: "Ton compte contient déjà une partie différente de celle que tu viens de jouer. Laquelle veux-tu garder ? L'autre sera définitivement perdue.",
+      text: "Ton compte contient déjà une partie différente de celle que tu viens de jouer. Laquelle veux-tu garder ? L'autre sera définitivement perdue.",
       best: "Plus avancée",
       bestStage: "Meilleure étape",
       ascensions: "Ascensions",
@@ -210,17 +210,17 @@ export const hud = defineMessages({
       account: "Partie du compte",
       keepCurrent: "Garder la partie en cours",
       takeAccount: "Reprendre la partie du compte",
-      weakerTitle: "Effacer la partie du compte ?",
+      weakerTitle: "Effacer la partie du compte ?",
       weakerText: (stage: Count, ascensions: number, time: string) =>
-        `La partie du compte va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`,
+        `La partie du compte va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`,
       /** A guest's game, carried on from another page of the same browser. */
       guest: {
-        text: "Une autre page a continué ta partie pendant que tu jouais ici. Laquelle veux-tu garder ? L'autre sera définitivement perdue.",
+        text: "Une autre page a continué ta partie pendant que tu jouais ici. Laquelle veux-tu garder ? L'autre sera définitivement perdue.",
         kept: "Partie gardée",
         takeKept: "Reprendre la partie gardée",
-        weakerTitle: "Effacer la partie gardée ?",
+        weakerTitle: "Effacer la partie gardée ?",
         weakerText: (stage: Count, ascensions: number, time: string) =>
-          `La partie gardée va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`
+          `La partie gardée va plus loin : étape ${stage}, ${ascensions} ascension${ascensions > 1 ? "s" : ""}, ${time} de jeu. Garder la partie en cours l'efface pour toujours.`
       }
     },
     elsewhere: {
@@ -233,15 +233,15 @@ export const hud = defineMessages({
       taken: {
         title: "Ta partie continue ailleurs",
         voice: "Ta route s'écrit ailleurs à présent. Le Grand Livre t'attend là où tu marches.",
-        text: "Tu as repris ta partie sur un autre appareil ou dans une autre page, alors elle s'est arrêtée ici. Tu peux la reprendre ici à tout moment : elle s'arrêtera là-bas."
+        text: "Tu as repris ta partie sur un autre appareil ou dans une autre page, alors elle s'est arrêtée ici. Tu peux la reprendre ici à tout moment : elle s'arrêtera là-bas."
       }
     },
     ledgerAway: {
       title: "Le Grand Livre ne répond pas",
       voice: "Ta route y est toujours écrite. On frappe encore à sa porte.",
-      text: (seconds: Count) => `Serveur de jeu injoignable. Ta progression t'y attend : nouvel essai dans ${seconds} s.`,
+      text: (seconds: Count) => `Serveur de jeu injoignable. Ta progression t'y attend : nouvel essai dans ${seconds} s.`,
       trying: "Nouvel essai…",
-      offline: "Cet appareil est hors ligne : on réessaie dès le retour du réseau.",
+      offline: "Cet appareil est hors ligne : on réessaie dès le retour du réseau.",
       retry: "Réessayer maintenant"
     },
     modal: {
@@ -250,7 +250,7 @@ export const hud = defineMessages({
     errors: {
       network: "Connexion au serveur impossible. Vérifie ta connexion internet.",
       status: (status: Count) => `Le serveur a répondu par une erreur (${status}). Réessaie dans un instant.`,
-      sessionExpired: "Session expirée : reconnecte-toi pour garder ta progression.",
+      sessionExpired: "Session expirée : reconnecte-toi pour garder ta progression.",
       contextMissing: "Le jeu n'a pas pu démarrer. Recharge la page."
     },
     /**
@@ -423,7 +423,7 @@ export const hud = defineMessages({
     toasts: {
       routTitle: "Rout",
       routText: "You walked this stage on an earlier night, and your company overwhelms its Remnants: they all come apart at once. The whole stage falls, gold included, and the road runs on like this until a monster holds.",
-      count: (count: number) => `x${count}`,
+      count: (count: number) => `×${count}`,
       bossFailedTitle: "The night pushes you back",
       bossFailedText: "You drop back one stage. Strengthen your companions, then switch back to Auto (the Stay button) to try again.",
       bossFailedWounded: (pct: number) => `It keeps its wounds: it will come back with ${pct}% less health. Switch back to Auto (the Stay button) to try again.`,
@@ -500,7 +500,7 @@ export const hud = defineMessages({
     ledgerAway: {
       title: "The Ledger does not answer",
       voice: "Your road is still written there. Someone keeps knocking at its door.",
-      text: (seconds: Count) => `Can't reach the game server. Your progress is waiting there: trying again in ${seconds} s.`,
+      text: (seconds: Count) => `Can't reach the game server. Your progress is waiting there: trying again in ${seconds} s.`,
       trying: "Trying again…",
       offline: "This device is offline: we try again as soon as the network is back.",
       retry: "Try now"

@@ -18,7 +18,7 @@ const n = (value: number) => value.toLocaleString("en-US");
 const clock = (seconds: number) => {
   const total = Math.round(seconds);
   const parts = [[Math.floor(total / 3600), "h"], [Math.floor(total / 60) % 60, "min"], [total % 60, "s"]] as const;
-  return parts.filter(([value]) => value > 0).map(([value, unit]) => `${value} ${unit}`).join(" ") || "0 s";
+  return parts.filter(([value]) => value > 0).map(([value, unit]) => `${value} ${unit}`).join(" ") || "0 s";
 };
 const s = (count: number, word: string, plural = `${word}s`) => (count > 1 ? plural : word);
 
@@ -112,10 +112,10 @@ export const en: GameText = {
     "awakened-10": "First Step", "awakened-25": "Destiny", "awakened-50": "Awakening", "awakened-100": "Transcendence", "awakened-150": "Infinity"
   },
   skills: {
-    frenzy: { name: "Frenzy", description: "Your blade strikes on its own 10 times per second for 30 s." },
-    rally: { name: "Rallying Cry", description: "Maëlle sounds her horn: every companion deals double damage for 30 s." },
-    hawkeye: { name: "Hawkeye", description: "Ysolde lends you the trees' eyes: +50% chance for your strikes to be critical (ten times the damage or more) for 30 s." },
-    goldrain: { name: "Golden Rain", description: "Brother Cinder prays for a good harvest: all gold you earn is tripled for 30 s." },
+    frenzy: { name: "Frenzy", description: "Your blade strikes on its own 10 times per second for 30 s." },
+    rally: { name: "Rallying Cry", description: "Maëlle sounds her horn: every companion deals double damage for 30 s." },
+    hawkeye: { name: "Hawkeye", description: "Ysolde lends you the trees' eyes: +50% chance for your strikes to be critical (ten times the damage or more) for 30 s." },
+    goldrain: { name: "Golden Rain", description: "Brother Cinder prays for a good harvest: all gold you earn is tripled for 30 s." },
     ritual: { name: "Resonance Ritual", description: "Nyx ties you to the night's rhythm: companions deal +5% damage until your next ascension. Each use adds another 5%." },
     echo: { name: "Time Echo", description: "Garrick strikes an echo vein: the last power you used, if it is still recharging, is ready again at once." },
     unweave: SYSTEMS_TEXT.en.unweave
@@ -126,7 +126,7 @@ export const en: GameText = {
     blade: { name: "Altar of the Blade", description: "Your strikes hit harder: each level multiplies their damage by 1.10, the part that comes from your companions included." },
     fortune: { name: "Altar of Fortune", description: "You earn more gold: each level multiplies all the gold you earn by 1.12." },
     patience: { name: "Altar of Patience", description: "Feeds the Patience bonus, a lasting damage bonus of your companions that adds to Kaelen's and Morgrath's. Its part is +14% at level 1 and grows ×1.14 per level: it weighs little at first, but at high levels each level is worth more than the Altar of Might (×1.10), at a price that climbs faster." },
-    time: { name: "Altar of Time", description: "You get 1 more second per level to beat elites and guardians (30 s at the start)." },
+    time: { name: "Altar of Time", description: "You get 1 more second per level to beat elites and guardians (30 s at the start)." },
     fate: { name: "Altar of Fate", description: "Your critical strikes deal 20% more damage per level." },
     precision: { name: "Altar of Precision", description: "Your strikes get +1% chance per level to be critical." },
     treasure: { name: "Altar of Treasure", description: "+0.5% chance per level to meet a golden rat, which drops ten times the gold (1% at the start, 25% at most)." },
@@ -139,10 +139,10 @@ export const en: GameText = {
   market: {
     chest: { name: "Relic Chest", description: "A random relic at the level of your best stage." },
     "great-chest": { name: "Great Chest", description: "An epic relic or better, with a higher chance of legendary, at the level of your best stage." },
-    rage: { name: "Rage Potion", description: "Your companions deal double damage for 10 min. Each potion adds 10 min." },
-    fortune: { name: "Fortune Elixir", description: "All the gold you earn is doubled for 10 min. Each elixir adds 10 min." },
-    autoclick: { name: "Striking Scroll", description: "Your blade strikes on its own 5 times per second for 10 min." },
-    hourglass: { name: "Golden Hourglass", description: "Instantly earn 1 h of gold at your current rate." }
+    rage: { name: "Rage Potion", description: "Your companions deal double damage for 10 min. Each potion adds 10 min." },
+    fortune: { name: "Fortune Elixir", description: "All the gold you earn is doubled for 10 min. Each elixir adds 10 min." },
+    autoclick: { name: "Striking Scroll", description: "Your blade strikes on its own 5 times per second for 10 min." },
+    hourglass: { name: "Golden Hourglass", description: "Instantly earn 1 h of gold at your current rate." }
   },
   achievementNames: {
     clicks: ["Steel in Hand", "Sore Wrist", "Ten Thousand Cuts", "Brom Sharpens It Again", "A Blade the Night Did Not Forge"],
@@ -188,7 +188,7 @@ export const en: GameText = {
     legend: (t) => `Find ${t} legendary ${s(t, "relic")}.`,
     mythic: (t) => `Find ${t} mythic ${s(t, "relic")}.`,
     hit: (t, big) => `Deal a single hit of ${big(t)} damage.`,
-    time: (t) => `Walk the night for ${Math.round(t / 3600)} h in total.`,
+    time: (t) => `Walk the night for ${Math.round(t / 3600)} h in total.`,
     fails: (t) => `Be pushed back by an elite or a guardian ${t === 1 ? "once" : `${t} times`}.`,
     ...SYSTEMS_TEXT.en.achievementDescriptions
   },
