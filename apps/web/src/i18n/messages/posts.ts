@@ -179,6 +179,13 @@ export const NEWS_POSTS: NewsPost[] = [
           changes: [{ label: "Une créature frappée", text: "s'éclaire d'un cran, cernée de la couleur de celui qui frappe" }]
         },
         {
+          kind: "compare",
+          before: "/news/2-1/hit-before.png",
+          after: "/news/2-1/hit-after.png",
+          alt: { before: "Le Rat des champs frappé par une flèche de Maëlle, avant : tout le corps d'un vert plat, la fourrure effacée", after: "Le même coup, après : le rat éclairci dans ses propres bruns, cerné d'un fin liseré vert, la fourrure lisible" },
+          caption: "Une flèche de Maëlle sur le Rat des champs : fais glisser pour voir avant et après."
+        },
+        {
           kind: "entry",
           name: "Le cristal errant",
           tag: "changed",
@@ -188,6 +195,13 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "Pendant l'averse de la Reine-lanterne", text: "doré" },
             { label: "En vol", text: "sans flou ni inclinaison" }
           ]
+        },
+        {
+          kind: "compare",
+          before: "/news/2-1/crystal-before.png",
+          after: "/news/2-1/crystal-after.png",
+          alt: { before: "Le cristal errant avant : petit, penché, dans un halo violet flou", after: "Le cristal errant après : droit, plus grand, dans des anneaux de lumière violette dessinés en pixels" },
+          caption: "Le cristal errant, au-dessus des plaines."
         },
         {
           kind: "entry",
@@ -378,6 +392,13 @@ export const NEWS_POSTS: NewsPost[] = [
           changes: [{ label: "A struck creature", text: "lights a step paler, ringed in the striker's color" }]
         },
         {
+          kind: "compare",
+          before: "/news/2-1/hit-before.png",
+          after: "/news/2-1/hit-after.png",
+          alt: { before: "The Field Rat struck by Maëlle's arrow, before: its whole body one flat green, the fur erased", after: "The same hit, after: the rat lit in its own browns, ringed by a thin green rim, the fur still readable" },
+          caption: "Maëlle's arrow on the Field Rat: slide to see it before and after."
+        },
+        {
           kind: "entry",
           name: "The wandering crystal",
           tag: "changed",
@@ -387,6 +408,13 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "During the Lantern Queen's storm", text: "golden" },
             { label: "In flight", text: "no blur, no tilt" }
           ]
+        },
+        {
+          kind: "compare",
+          before: "/news/2-1/crystal-before.png",
+          after: "/news/2-1/crystal-after.png",
+          alt: { before: "The wandering crystal before: small, tilted, in a blurred violet halo", after: "The wandering crystal after: upright, larger, inside rings of violet light drawn in pixels" },
+          caption: "The wandering crystal, over the plains."
         },
         {
           kind: "entry",
