@@ -149,8 +149,8 @@ export const hud = defineMessages({
       skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou sur son bouton en bas.`,
       farm: "Tu restes sur l'étape précédente. Renforce-toi, puis reprends la route (bouton Rester → Auto).",
       ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu : tu peux recommencer la route en échange d'essences, qui renforcent toutes tes nuits suivantes.",
-      altarRework: "Les autels ont été refondus : chaque niveau des autels illimités multiplie désormais son effet, et le voyageur fait sauter les premières étapes. Tous tes niveaux t'ont été rendus en essences : choisis de nouveau tes autels dans la fenêtre d'ascension.",
-      harvestCap: "L'autel de la récolte a changé : il s'arrête au niveau 5 et demande davantage. Tous ses niveaux t'ont été rendus en essences."
+      altarRework: "Les pierres du Sanctuaire ont changé : chaque niveau d'un autel sans plafond multiplie désormais son effet, et l'Autel du voyageur te fait passer les premières étapes. Tout ce que tu leur avais offert t'est rendu en essences : choisis de nouveau tes autels, dans la fenêtre d'ascension.",
+      harvestCap: "L'Autel de la récolte s'est fait plus exigeant : il s'arrête au niveau 5 et demande plus d'essences. Tout ce que tu lui avais offert t'est rendu en essences."
     },
     fx: {
       crit: "CRITIQUE",
@@ -411,8 +411,8 @@ export const hud = defineMessages({
       skill: (key: string) => `New power unlocked: press ${key} or use its button at the bottom.`,
       farm: "You're staying on the previous stage. Get stronger, then take the road again (Stay → Auto button).",
       ascend: "The Fallen King has fallen! Open “Ascension” in the menu: you can start the road over for essences, which strengthen every night after this one.",
-      altarRework: "The altars have been reworked: each level of an open-ended altar now multiplies its effect, and the Wanderer skips the first stages. All your levels were refunded in essences: pick your altars again in the ascension window.",
-      harvestCap: "The Altar of Harvest has changed: it stops at level 5 and asks for more. All its levels came back to you as essences."
+      altarRework: "The stones of the Sanctum have changed: each level of an altar without a cap now multiplies its effect, and the Altar of the Wanderer carries you past the first stages. Everything you offered them came back to you as essences: choose your altars again, in the ascension window.",
+      harvestCap: "The Altar of Harvest has grown more demanding: it stops at level 5 and asks for more essences. Everything you offered it came back to you as essences."
     },
     fx: {
       crit: "CRITICAL",
