@@ -16,8 +16,13 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+## v2.0.1
+
 ### Fixes
 
+- Wandering crystal: it now shows the moment it falls. Before, on a busy night, only its
+  violet glow could appear for a second and more, and a crystal of the Lantern Queen's storm
+  could fade before it was seen.
 - Relic cards: every card of the bag and of the worn slots now has one height, whatever the
   relic says. The relic's color lights its top, and a long relic scrolls its own lines. In
   the bag, Equip and Lock sit side by side with Salvage across under them, on every card:

@@ -53,6 +53,7 @@ export function PixelSprite({
   scale: fixedScale,
   cover = false,
   nearest = false,
+  eager = false,
   className,
   style,
   label
@@ -63,6 +64,8 @@ export function PixelSprite({
   scale?: number;
   cover?: boolean;
   nearest?: boolean;
+  /** Draws at once instead of at the next idle moment: a small sprite that lives a few seconds (the crystal). */
+  eager?: boolean;
   className?: string;
   style?: CSSProperties;
   label?: string;
@@ -77,8 +80,7 @@ export function PixelSprite({
     const ctx = element?.getContext("2d");
     if (!element || !ctx) return;
     let cleanup: (() => void) | null = null;
-    // Generation waits for an idle moment: a page full of sprites never freezes the browser.
-    const cancel = whenIdle(() => {
+    const draw = () => {
       const frames: Surface[] = sourceRef.current.frames().map(toSurface);
       const first = frames[0];
       element.width = first.width;
@@ -119,12 +121,17 @@ export function PixelSprite({
         observer?.disconnect();
         stop?.();
       };
-    });
+    };
+    // Generation waits for an idle moment: a page full of sprites never freezes the browser. A
+    // busy scene can hold it back a second and more, so an eager sprite draws at once.
+    let cancel = () => {};
+    if (eager) draw();
+    else cancel = whenIdle(draw);
     return () => {
       cancel();
       cleanup?.();
     };
-  }, [key, size, fixedScale, cover, nearest]);
+  }, [key, size, fixedScale, cover, nearest, eager]);
 
   return <canvas ref={canvas} width={0} height={0} className={className ? `pixel-sprite ${className}` : "pixel-sprite"} style={style} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true} />;
 }
