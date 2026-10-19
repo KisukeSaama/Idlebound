@@ -679,14 +679,12 @@ button.resource:hover .resource-label {
   --crystal-px: 3px;
   position: absolute;
   z-index: 6;
-  width: 108px;
-  height: 108px;
-  margin: -54px 0 0 -54px;
+  margin: -54px 0 0 -48px;
   padding: 0;
   border: 0;
   background: none;
-  display: grid;
-  place-items: center;
+  display: block;
+  line-height: 0;
   animation: crystal-float 2.4s steps(1, end) infinite;
   cursor: pointer;
 }
@@ -4018,9 +4016,7 @@ kbd {
   }
   .crystal {
     --crystal-px: 2px;
-    width: 72px;
-    height: 72px;
-    margin: -36px 0 0 -36px;
+    margin: -36px 0 0 -32px;
   }
   .hero-panel-head {
     padding: 8px 10px;

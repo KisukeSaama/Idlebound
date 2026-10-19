@@ -2,7 +2,7 @@
  * Palette remapping tables: how treatments recolor the world without leaving the Orvane 64.
  * Each table maps a palette index to the nearest entry of a transformed color.
  */
-import { ORVANE_64, palRgb, type Pal } from "@idlebound/game/art";
+import { C, ORVANE_64, palLuma, palRgb, type Pal } from "@idlebound/game/art";
 import { clonePixels, EMPTY, type Pixels } from "./pixels";
 
 export function paletteMap(transform: (r: number, g: number, b: number) => [number, number, number]): Pal[] {
@@ -31,15 +31,23 @@ export const GREY_TABLE = paletteMap((r, g, b) => {
   return [luma * 0.95, luma * 0.92, luma * 1.08];
 });
 /** A face not in the company tonight: most of its color drained, a step darker. */
-export const FADED_TABLE = paletteMap((r, g, b) => {
-  const luma = (r * 299 + g * 587 + b * 114) / 1000;
-  return [(r * 0.3 + luma * 0.7) * 0.8, (g * 0.3 + luma * 0.7) * 0.8, (b * 0.3 + luma * 0.7) * 0.8];
-});
-/** A face gone grey, a step darker. */
-export const ASHEN_TABLE = paletteMap((r, g, b) => {
-  const luma = ((r * 299 + g * 587 + b * 114) / 1000) * 0.8;
-  return [luma, luma, luma * 1.04];
-});
+/** The night's own greys, darkest first. */
+const NIGHT_GREYS: readonly Pal[] = [C.ink, C.night1, C.night2, C.night3, C.night4, C.dusk, C.haze, C.lilac, C.pale, C.moon];
+
+/** Every color to the night's grey nearest its lightness times `dim`: the order of lightness kept. */
+function greysAt(dim: number): Pal[] {
+  return ORVANE_64.map((_, index) => {
+    const luma = palLuma(index) * dim;
+    let best = NIGHT_GREYS[0];
+    for (const grey of NIGHT_GREYS) if (Math.abs(palLuma(grey) - luma) < Math.abs(palLuma(best) - luma)) best = grey;
+    return best;
+  });
+}
+
+/** A face not in the company tonight: the night's greys, a step darker. */
+export const FADED_TABLE = greysAt(0.85);
+/** A face gone grey (Aldric, given all away): the night's greys, darker still. */
+export const ASHEN_TABLE = greysAt(0.7);
 
 export type PortraitShade = "faded" | "grey";
 
