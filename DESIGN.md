@@ -40,13 +40,13 @@ Defined once on `:root` in `globals.css`. Never hardcode a color that has a toke
 | `--bg` / `--bg-2` | `#0b0a14` / `#111018` | The night (page, arena, sunk fields) / alternate rows, bars |
 | `--panel` | `rgba(22,20,30,.96)` | Framed panels over the background |
 | `--panel-solid`, `--panel-2`, `--panel-3` | `#16141e`, `#1d1a27`, `#28253a` | Windows / raised keys and inputs / hover |
-| `--border` / `--border-strong` | `#2c2938` / `#3e3a50` | Hairlines / emphasized frames |
-| `--text` / `--muted` / `--faint` | `#ece8f3` / `#a8a2b8` / `#8c86a0` | Body text / secondary / hints |
+| `--border` / `--border-strong` / `--border-field` | `#2c2938` / `#3e3a50` / `#6e6787` | Hairlines / emphasized frames / the edge of a field one types in (3:1 at least) |
+| `--text` / `--muted` / `--faint` | `#ece8f3` / `#a8a2b8` / `#958fa9` | Body text / secondary / hints |
 | `--gold`, `--gold-2`, `--gold-deep` | `#e8b949`, `#f7d98b`, `#8f6a20` | Gold currency, primary actions, focus ring, links / bevel light / frame thread |
-| `--violet`, `--violet-2` | `#9b6bff`, `#c9a6ff` | Magic only: essences, ascension, talents to buy |
+| `--violet`, `--violet-2` | `#a67dff`, `#c9a6ff` | Magic only: essences, ascension, talents to buy |
 | `--essence` | `#c38bff` | Essences and ascension |
 | `--shard` | `#7fd8ff` | Shards and the market |
-| `--danger` / `--success` | `#e8566f` / `#5fcf80` | HP, errors, boss timer urgency / confirmations |
+| `--danger` / `--success` | `#ef6d83` / `#5fcf80` | HP, errors, boss timer urgency / confirmations |
 | `--danger-soft` / `--success-soft` | `#ff9db0` / `#c4f5d2` | Losses and warnings in small print / cleared stages, Auto |
 | `--companion` | `#8ff0c4` | Companion (passive) damage numbers and their label |
 | `--tip-bg` / `--tip-border` | `#090b19` / `#8b93b5` | Item cards (tooltips of powers, talents, relics) |
@@ -68,8 +68,11 @@ Content colors live with the game data, not in CSS:
 
 - **Display: Cinzel** (600, 700, 800) self-hosted via `next/font/local` (`src/fonts`, OFL), variable
   `--font-display`. Headings, the gold counter, big numbers, window titles. Serif, engraved, fantasy.
-- **Body: Alegreya Sans** (400, 500, 700, 800, italic) self-hosted via `next/font/local`, variable
+- **Body: Alegreya Sans** (400, 500, 700, 800) self-hosted via `next/font/local`, variable
   `--font-body`. Everything else: a humanist sans with calligraphic roots, very readable.
+  Its italics are a family of their own (`--font-body-italic`, never preloaded: a page loads
+  them when it shows them); italic text names `--font-italic` (the italics, then the body),
+  and `em`, `i` and `cite` take it by default.
   Base 16px, line-height 1.5. Labels are sentence case, never tracked capitals (Cinzel is
   the only face in capitals, by design).
   The two variables are set by `next/font` on `<html>` only: `globals.css` never redefines
@@ -214,9 +217,13 @@ Content colors live with the game data, not in CSS:
   its rule in its title. While the satchel holds relics, a banner leads the pack (the closed
   satchel's pixels, its count, "Open the satchel").
 - **Toasts**: on the right of the scene, next to the companions panel, under the scene's top
-  bar (placement details under Motion), at most 4 at once (2 on phones), auto-dismiss 3.8 s
-  (4.5 s for danger). The others wait in line and none is dropped; while more than a
-  screenful waits, each goes after 2.6 s. A tap clears a toast (once it has shown 0.7 s, so a
+  bar (placement details under Motion), at most 4 at once (2 on phones), auto-dismiss after
+  the time to read them: 3.8 s (4.5 s for danger, 8 s with a quote) or 1.5 s plus 0.26 s a
+  word if longer, 14 s at most. The others wait in line and none is dropped; while more than
+  a screenful waits, each goes after 60% of its time (2.6 s at least). A mouse resting on the
+  stack, or the keyboard inside it, holds every toast until it leaves (then 1.5 s at least).
+  A line of the Chronicle (fragment, Bestiary line, memory) carries "Read in the Chronicle",
+  which opens it there. A tap clears a toast (once it has shown 0.7 s, so a
   thumb already striking does not clear it unread) and goes on to what lies under it: a
   crystal behind it is caught, the creature struck. Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
   in the item's rarity color), success, info, danger.
@@ -261,8 +268,10 @@ Content colors live with the game data, not in CSS:
   stays quiet.
 - **Navigation rail**: raised keys with bevel; the key of the open window is pressed in
   (sunk, gold label).
-- **Badges** on the navigation rail: `!` urgent (hops a pixel), `+` something to spend, a
-  count; small square labels with a black line.
+- **Badges** on the navigation rail: `!` urgent (hops a pixel three times when it lights,
+  then holds still), `+` something new to spend, a count of new things; small square labels
+  with a black line, white on #6f45d6 or gold. A badge says something new and goes out when
+  its window is opened; the key's accessible name carries what it says.
 
 ### Progressive interface
 
@@ -329,12 +338,12 @@ Full-viewport app, no page scroll (`position: fixed; inset: 0`).
 └──────┴────────────────────────────────────────────────────────────┴─────────────────────┘
 ```
 
-- **Navigation rail**: map, equipment, inventory, market, ascension, achievements, account,
+- **Navigation rail**: map, equipment (worn relics and the pack), market, ascension, achievements, account,
   settings. SVG icons in the style of the `Picto` set (`WindowIcon`: map, helmet, backpack,
   stall, gem, trophy, cloud, cog), the same in each window's title, plus a short label; each
   opens a modal.
 - **≤ 1080px**: resource labels hidden, smaller logo, scene header centered.
-- **Desktop under 820px tall**: smaller rail icons so all eight buttons stay visible.
+- **Desktop under 820px tall**: smaller rail icons so all seven buttons stay visible.
 - **Compact combat HUD** (≤ 900px wide or ≤ 560px tall): era and biome on one line, smaller
   stage pips, powers and HP bar, so the monster keeps most of the scene. Portrait phones
   keep the stage keys at a thumb's size (36 px pips, 36 px tall arrows and Auto switch; 33 px
@@ -768,7 +777,19 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   keeps any two outlines at least 12 pixels apart. The interface keeps its SVG `Picto`s,
   one of its own for each power, offer and ware (a test keeps the names distinct); the
   workshop shows each pixel icon beside its picto.
-- **Crystal**: a 16 × 24 faceted gem whose three facets catch the light in turn.
+- **Crystal**: a 16 × 24 faceted gem whose three facets catch the light in turn. On the road
+  it falls inside its own light (`renderCrystalLit`, 32 × 36): three dotted rings, sparser
+  outward, in the essence ramp (gold for a storm crystal), breathing a pixel out on one frame
+  in three. No CSS glow, blur or tilt: it floats by whole art pixels, its box placed on whole
+  CSS pixels, and blinks out whole before it goes.
+- **Faces in shade**: a companion not yet hired, or away from the company tonight, is drawn
+  through a faded table (most of its color drained, a step darker); Aldric's face, once the
+  walker gave all of themselves away, through a grey one (`shadePixels`). Both stay inside
+  the palette; no CSS filter touches a sprite. Nyx's medallion, when her face is found (the
+  Faceless), opens on a 24 × 24 night of the generator: dithered rings of sky and six stars,
+  two twinkling into a cross.
+- **Centering**: sprites centered in a box anchor on a rounded-down pixel (`round()`), so a
+  sprite never sits on half a pixel.
 
 **Rendering.** Buffers are palette indices; they become canvases once and stay in small LRU
 caches kept apart (32 creature sheets, 24 arena effects, 112 interface sprites, 64 interface
@@ -1039,8 +1060,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
 - HP bar has a trailing "ghost" bar; the boss timer turns red under 30%. The panel keeps the
   monster just slain (its name, `0 / max`, an empty bar) until the next arrives, and each
   monster's ghost bar starts full, so one struck down in a single blow still reads and drains.
-- Crystals float, turn their facets to the light and blink before expiring; affordable talents pulse; the urgent
-  badge pops.
+- Crystals float by whole pixels, turn their facets to the light and blink before expiring;
+  affordable talents pulse; the urgent badge hops three times when it lights.
 - Durations are short (120 ms for UI feedback, under 1 s for effects). Motion never blocks
   input.
 - **Reduced motion**: honoured from `prefers-reduced-motion` and from the in-game
@@ -1156,10 +1177,12 @@ of the course.
 - Meaning never rests on hue alone: a rarity is named on its card, a gain or loss carries
   ▲ or ▼, the stage still to clear wears a dashed ring, the Ledger's dot is full once
   written and a ring while waiting, and market warnings carry the `warning` picto.
-- Text keeps the `--text` / `--muted` contrast on panel backgrounds. `--faint` (#8c86a0)
-  holds 4.5:1 on every background it sits on: 5.65 on `--bg`, 5.23 on `--panel-solid`,
-  4.91 on `--panel-2`, 5.29 on the bestiary and fragment cards (#151126), 5.80 on the
-  talent chips (#07060c). It stays for secondary labels.
+- Text keeps the `--text` / `--muted` contrast on panel backgrounds. `--faint` (#958fa9)
+  holds 4.5:1 on every background it sits on, hovered keys included: 6.35 on `--bg`,
+  5.52 on `--panel-2`, 4.79 on `--panel-3`. It stays for secondary labels. `--violet`
+  (#a67dff) and `--danger` (#ef6d83) read as text at 4.94 and 5.07 on `--panel-3`, their
+  lightest ground. A rail badge is white on #6f45d6 (6:1). A field's edge (`--border-field`)
+  stands at 3.22:1 on `--panel-2`, the 3:1 a control asks.
 - **Ledger out of reach**: when the server does not answer at load, the game does not
   start blank. The loading screen becomes the gate: logo, a Cinzel title ("The Ledger does
   not answer"), the Ledger's voice in gold, the plain line with the next attempt's

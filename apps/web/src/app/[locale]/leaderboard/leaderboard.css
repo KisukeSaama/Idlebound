@@ -84,6 +84,7 @@
   color: var(--muted) !important;
   font-size: 1rem;
   font-style: italic;
+  font-family: var(--font-italic);
 }
 
 /* Depth is the board that counts: its tab says so. */

@@ -94,6 +94,8 @@ export function migrateState(raw: unknown): unknown {
   // Version 17 lets relics remember (traits, the companion who carried them): every relic an
   // older save holds remembers now, drawn from the relic alone, the same on every device.
   if (version < 17) rememberRelics(merged);
+  // Version 18 adds two settings, the music's own volume and whether the Chronicle's lines are
+  // told by a toast: the defaults merged above fill them, nothing else moves.
   merged.version = SAVE_VERSION;
   return merged;
 }

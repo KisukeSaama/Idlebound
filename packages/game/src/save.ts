@@ -126,6 +126,7 @@ export const gameStateSchema = z.object({
     notation: z.enum(["letters", "scientific", "engineering"]),
     sound: z.boolean(),
     volume: z.number().min(0).max(1),
+    musicVolume: z.number().min(0).max(1),
     damageNumbers: z.boolean(),
     reducedMotion: z.boolean(),
     confirmAscension: z.boolean(),
@@ -133,7 +134,8 @@ export const gameStateSchema = z.object({
     offlineSpending: z.boolean(),
     darkNight: z.boolean(),
     colorblind: z.boolean(),
-    salvageOnArrival: z.enum(["none", "common", "rare"])
+    salvageOnArrival: z.enum(["none", "common", "rare"]),
+    loreToasts: z.boolean()
   }),
   tutorial: z.object({ done: z.array(z.string().max(40)).max(50) }),
   bestiary: idRecord(count, 300),

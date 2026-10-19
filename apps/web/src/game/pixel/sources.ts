@@ -5,15 +5,16 @@ import type { Item, Locale, Notation } from "@idlebound/game";
 import { ALTAR_ICONS, CARAVAN_ICONS, MARKET_ICONS, POWER_ICONS } from "@idlebound/game/art";
 import { idleFrames, renderCreature } from "./creature";
 import { renderEvenRat } from "./mask";
-import { CRYSTAL_FRAMES } from "./objects";
+import { CRYSTAL_FRAMES, renderStarfield, STARFIELD_FRAMES } from "./objects";
 import { hash2, type Pixels } from "./pixels";
 import { satchelIcon } from "./satchel";
 import type { PixelSource } from "./PixelSprite";
 import { structureView } from "./props";
 import { flattenScene, type PlaceId } from "./scene";
 import { depthFrame, placeFrames, stageFrame, STAGE_FRAMES, type Depth } from "./stage";
-import { crystalPixels, emblemPixels, iconPixels, portraitPixels, relicPixels, sceneSheet } from "./sprites";
+import { crystalLitPixels, crystalPixels, emblemPixels, iconPixels, portraitPixels, relicPixels, sceneSheet } from "./sprites";
 import { stillCache } from "./surface";
+import { shadePixels, type PortraitShade } from "./tables";
 
 export function creatureSource(id: string, era = 0, animated = true): PixelSource {
   return {
@@ -31,8 +32,18 @@ export function awakenedSeed(notation: Notation, sound: boolean, locale: Locale)
   return seed;
 }
 
-export function portraitSource(heroId: string, seed?: number): PixelSource {
-  return { key: `portrait:${heroId}:${seed ?? ""}`, frames: () => [portraitPixels(heroId, seed)] };
+/**
+ * A companion's face, in its own colors or in a shade of the palette: `faded` for a companion
+ * not yet in the company (or away from it tonight), `grey` for a face gone grey (Aldric, once
+ * the walker gave all of themselves away). Never a filter over the pixels.
+ */
+export function portraitSource(heroId: string, seed?: number, shade?: PortraitShade): PixelSource {
+  return { key: `portrait:${heroId}:${seed ?? ""}:${shade ?? ""}`, frames: () => [shade ? shadePixels(portraitPixels(heroId, seed), shade) : portraitPixels(heroId, seed)] };
+}
+
+/** Nyx's medallion opened on the night (the Faceless). */
+export function starfieldSource(): PixelSource {
+  return { key: "starfield", frames: () => stillCache.get("starfield-px", () => Array.from({ length: STARFIELD_FRAMES }, (_, frame) => renderStarfield(frame))), fps: 4 };
 }
 
 /** The tiny gold rat on Thorvald's medallion (the Even secret). */
@@ -72,6 +83,11 @@ export function caravanIconSource(id: keyof typeof CARAVAN_ICONS): PixelSource {
 
 export function crystalSource(): PixelSource {
   return { key: "crystal", frames: () => Array.from({ length: CRYSTAL_FRAMES }, (_, frame) => crystalPixels(frame)), fps: 5 };
+}
+
+/** The wandering crystal on the road, its light around it (gold in a storm). */
+export function crystalLitSource(storm: boolean): PixelSource {
+  return { key: `crystal-lit:${storm}`, frames: () => Array.from({ length: CRYSTAL_FRAMES }, (_, frame) => crystalLitPixels(frame, storm)), fps: 5 };
 }
 
 /** A biome's scene in motion, its guardian standing on the road when asked, in a view `width` columns wide (the workshop). */

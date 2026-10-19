@@ -13,14 +13,23 @@ const body = localFont({
     { path: "../../fonts/alegreya-sans-latin-400.woff2", weight: "400", style: "normal" },
     { path: "../../fonts/alegreya-sans-latin-500.woff2", weight: "500", style: "normal" },
     { path: "../../fonts/alegreya-sans-latin-700.woff2", weight: "700", style: "normal" },
-    { path: "../../fonts/alegreya-sans-latin-800.woff2", weight: "800", style: "normal" },
+    { path: "../../fonts/alegreya-sans-latin-800.woff2", weight: "800", style: "normal" }
+  ],
+  variable: "--font-body",
+  display: "swap"
+});
+// The italics (lore lines, quotes, captions) are a family of their own, loaded when a page
+// shows them rather than preloaded on every page: see --font-italic in globals.css.
+const bodyItalic = localFont({
+  src: [
     { path: "../../fonts/alegreya-sans-latin-400-italic.woff2", weight: "400", style: "italic" },
     { path: "../../fonts/alegreya-sans-latin-500-italic.woff2", weight: "500", style: "italic" },
     { path: "../../fonts/alegreya-sans-latin-700-italic.woff2", weight: "700", style: "italic" },
     { path: "../../fonts/alegreya-sans-latin-800-italic.woff2", weight: "800", style: "italic" }
   ],
-  variable: "--font-body",
-  display: "swap"
+  variable: "--font-body-italic",
+  display: "swap",
+  preload: false
 });
 
 // Every page is rendered per request: runtime env (one image for dev and prod) and the
@@ -65,7 +74,7 @@ export default async function RootLayout({ children, params }: Props & { childre
   const locale = assertLocale((await params).locale);
   const preference = await getPreference();
   return (
-    <html lang={locale} className={`${display.variable} ${body.variable}`}>
+    <html lang={locale} className={`${display.variable} ${body.variable} ${bodyItalic.variable}`}>
       <body>
         <I18nProvider locale={locale} preference={preference}>{children}</I18nProvider>
         <ErrorReporting />

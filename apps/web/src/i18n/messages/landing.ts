@@ -16,7 +16,7 @@ export const landing = defineMessages({
     hero: {
       titleLead: "Terrasse le Roi déchu, ",
       titleAccent: "un coup à la fois.",
-      lead: "Chaque nuit, le Roi déchu se relève. Chaque nuit, tu te fraies un chemin jusqu'à son trône. Et quand il tombe, la route recommence.",
+      lead: "Chaque nuit, le Roi déchu se relève. Tu frappes, ta compagnie se bat même quand tu fais autre chose, et chaque nuit te mène un peu plus loin sur la route.",
       play: "Prendre la route",
       leaderboard: "Voir le classement",
       back: "Déjà en route ?",
@@ -90,7 +90,7 @@ export const landing = defineMessages({
     hero: {
       titleLead: "Slay the Fallen King, ",
       titleAccent: "one blow at a time.",
-      lead: "Every night, the Fallen King rises. Every night, you cut your way to his throne. And when he falls, the road begins again.",
+      lead: "Every night, the Fallen King rises. You strike, your company fights on while you do something else, and every night takes you a little further down the road.",
       play: "Take the road",
       leaderboard: "See the leaderboard",
       back: "Already on the road?",

@@ -25,8 +25,9 @@ import type { Messages } from "@/i18n/messages";
 import { useFormat, useGame, useMagnitude, useReveals } from "../context";
 import { GoldIcon, Picto } from "../icons";
 import { PixelSprite } from "../pixel/PixelSprite";
-import { awakenedSeed, emblemSource, evenRatSource, portraitSource } from "../pixel/sources";
+import { awakenedSeed, emblemSource, evenRatSource, portraitSource, starfieldSource } from "../pixel/sources";
 import { describeEffect, describePromise } from "../text";
+import { useTouchArm } from "../touchArm";
 import { promiseStatus, type PromiseStatus } from "../windows/PromiseTab";
 
 const MODES: BuyMode[] = [1, 10, 25, 100, "max"];
@@ -359,6 +360,7 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
   const isClick = hero.id === CLICK_HERO_ID;
   const hired = level > 0;
   const hold = useHoldRepeat(() => onBuy(hero.id));
+  const { armed, gate } = useTouchArm();
   // The list clips what leaves it: near its top, the talent cards open under their talent.
   const [tipsBelow, setTipsBelow] = useState(false);
   const placeTips = ({ currentTarget: row }: { currentTarget: HTMLLIElement }) => {
@@ -380,8 +382,8 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
         aria-hidden="true"
         onPointerDown={onPortrait ? () => onPortrait(hero.id) : undefined}
       >
-        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed)} size="parent" nearest /></span>
-        {starfield ? <span className="medallion-stars" /> : null}
+        <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, portraitSeed, fading ? "grey" : hired ? undefined : "faded")} size="parent" nearest /></span>
+        {starfield ? <span className="medallion-stars"><PixelSprite source={starfieldSource()} size="parent" cover /></span> : null}
         {even ? <PixelSprite source={evenRatSource()} scale={1} className="medallion-rat" /> : null}
         {promise ? <span className="medallion-promise"><Picto name={promise === "broken" ? "frayed" : "knot"} size={14} /></span> : null}
         {hired ? <span className="hero-level">{level}</span> : null}
@@ -406,23 +408,26 @@ const HeroRow = memo(function HeroRow({ hero, portraitSeed, level, recognition, 
               const canBuy = talent.buyable;
               const state = talent.owned ? "owned" : canBuy ? "buyable" : "reachable";
               const status = talent.owned ? m.talentOwned : m.talentCost(magnitude(talent.cost));
+              const isArmed = armed === talent.id;
               return (
-                <button
-                  key={talent.id}
-                  type="button"
-                  role="listitem"
-                  className={`talent talent-${state}`}
-                  disabled={!canBuy}
-                  onClick={() => onTalent(talent.id)}
-                  aria-label={m.talentLabel(talent.name, talent.text, status)}
-                >
-                  {talent.owned ? <Picto name="check" size={14} /> : talent.level}
-                  <span className="talent-tip" role="tooltip">
-                    <strong>{talent.name}</strong>
-                    <span>{talent.text}</span>
-                    <em>{status}</em>
-                  </span>
-                </button>
+                <span key={talent.id} role="listitem" className="talent-item">
+                  <button
+                    type="button"
+                    className={`talent talent-${state}${isArmed ? " armed" : ""}`}
+                    data-arm={talent.id}
+                    disabled={!canBuy}
+                    onClick={() => gate(talent.id, () => onTalent(talent.id))}
+                    aria-label={m.talentLabel(talent.name, talent.text, status)}
+                  >
+                    {talent.owned ? <Picto name="check" size={14} /> : talent.level}
+                    <span className="talent-tip" role="tooltip">
+                      <strong>{talent.name}</strong>
+                      <span>{talent.text}</span>
+                      <em>{status}</em>
+                      {isArmed ? <em className="tip-again">{m.talentTapAgain}</em> : null}
+                    </span>
+                  </button>
+                </span>
               );
             })}
           </div>

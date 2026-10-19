@@ -40,7 +40,13 @@ export const hud = defineMessages({
     nav: {
       label: "Menus du jeu",
       hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
-      unread: (count: number) => `${count} ${count > 1 ? "fragments non lus" : "fragment non lu"}`
+      unread: (count: number) => `${count} ${count > 1 ? "fragments non lus" : "fragment non lu"}`,
+      badgeAscend: "le Roi est tombé, le crépuscule t'attend",
+      badgeEssences: "de nouvelles essences à offrir",
+      badgePackFull: "sac presque plein",
+      badgeRelics: (count: number) => (count > 1 ? `${count} nouvelles reliques` : "une nouvelle relique"),
+      badgeWare: "une nouvelle marchandise à ta portée",
+      badgeAddress: "adresse à confirmer"
     },
     install: {
       title: "Garde la route à portée de main",
@@ -88,6 +94,7 @@ export const hud = defineMessages({
     },
     skills: {
       label: "Pouvoirs",
+      tapAgain: "Touche encore pour le lancer",
       ready: (name: string, key: string, description: string) => `${name} (touche ${key}) : ${description}`,
       cooldown: (time: string) => ` Recharge : ${time}.`,
       minutes: (value: Count) => `${value} min`,
@@ -112,6 +119,7 @@ export const hud = defineMessages({
       milestoneTitle: (current: string) => `Paliers : dégâts de ce compagnon ×3,5 au niveau 200, puis tous les 25 niveaux. Actuel : ×${current}`,
       milestone: (level: Count) => ` · palier niv. ${level}`,
       talentsOf: (hero: string) => `Talents de ${hero}`,
+      talentTapAgain: "Touche encore pour l'apprendre",
       talentOwned: "Acquis",
       talentCost: (cost: string) => `${cost} or`,
       talentLabel: (name: string, text: string, status: string) => `${name} : ${text}. ${status}.`,
@@ -162,6 +170,7 @@ export const hud = defineMessages({
       routTitle: "Débandade",
       routText: "Tu as déjà parcouru cette étape une nuit passée, et ta compagnie écrase ses Vestiges : ils se défont tous d'un coup. L'étape entière tombe avec son or, et la route file ainsi jusqu'au premier monstre qui résiste.",
       count: (count: number) => `×${count}`,
+      chronicle: "Lire dans la Chronique",
       bossFailedTitle: "La nuit te repousse",
       bossFailedText: "Tu recules d'une étape. Renforce tes compagnons, puis repasse en Auto (bouton Rester) pour le retenter.",
       bossFailedWounded: (pct: number) => `Il garde ses blessures : il reviendra avec ${pct} % de vie en moins. Repasse en Auto (bouton Rester) pour le retenter.`,
@@ -302,7 +311,13 @@ export const hud = defineMessages({
     nav: {
       label: "Game menus",
       hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
-      unread: (count: number) => `${count} unread ${count > 1 ? "fragments" : "fragment"}`
+      unread: (count: number) => `${count} unread ${count > 1 ? "fragments" : "fragment"}`,
+      badgeAscend: "the King has fallen, dusk awaits you",
+      badgeEssences: "new essences to offer",
+      badgePackFull: "pack almost full",
+      badgeRelics: (count: number) => (count > 1 ? `${count} new relics` : "a new relic"),
+      badgeWare: "a new ware within reach",
+      badgeAddress: "address to confirm"
     },
     install: {
       title: "Keep the road within reach",
@@ -350,6 +365,7 @@ export const hud = defineMessages({
     },
     skills: {
       label: "Powers",
+      tapAgain: "Tap again to use it",
       ready: (name: string, key: string, description: string) => `${name} (key ${key}): ${description}`,
       cooldown: (time: string) => ` Cooldown: ${time}.`,
       minutes: (value: Count) => `${value}m`,
@@ -374,6 +390,7 @@ export const hud = defineMessages({
       milestoneTitle: (current: string) => `Milestones: this companion's damage ×3.5 at level 200, then every 25 levels. Now: ×${current}`,
       milestone: (level: Count) => ` · milestone lv. ${level}`,
       talentsOf: (hero: string) => `${hero}'s talents`,
+      talentTapAgain: "Tap again to learn it",
       talentOwned: "Owned",
       talentCost: (cost: string) => `${cost} gold`,
       talentLabel: (name: string, text: string, status: string) => `${name}: ${text}. ${status}.`,
@@ -424,6 +441,7 @@ export const hud = defineMessages({
       routTitle: "Rout",
       routText: "You walked this stage on an earlier night, and your company overwhelms its Remnants: they all come apart at once. The whole stage falls, gold included, and the road runs on like this until a monster holds.",
       count: (count: number) => `×${count}`,
+      chronicle: "Read in the Chronicle",
       bossFailedTitle: "The night pushes you back",
       bossFailedText: "You drop back one stage. Strengthen your companions, then switch back to Auto (the Stay button) to try again.",
       bossFailedWounded: (pct: number) => `It keeps its wounds: it will come back with ${pct}% less health. Switch back to Auto (the Stay button) to try again.`,

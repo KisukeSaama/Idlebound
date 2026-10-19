@@ -87,9 +87,6 @@ export function SlotIcon({ slot, size = 22, color = "currentColor" }: { slot: st
   );
 }
 
-/** Variation selector that keeps symbols such as ☠ or ⚔ as tinted text instead of emoji. */
-export const TEXT_PRESENTATION = "\uFE0E";
-
 const INK = "#2a1a0c";
 
 /** Pictograms drawn in the style of the game icons; the game never shows emoji. */
@@ -424,6 +421,19 @@ const PICTOS = {
     <>
       <path d="M3.500 4.500c3.800.600 5.400 3 5 6.500-.2 2-1.200 4-2.500 5.800M16.500 4.500c-3.800.600-5.400 3-5 6.500.2 2 1.200 4 2.500 5.800" fill="none" stroke="#0b0a14" strokeWidth="4" strokeLinecap="round" />
       <path d="M3.500 4.500c3.800.600 5.400 3 5 6.500-.2 2-1.200 4-2.500 5.800M16.500 4.500c-3.800.600-5.400 3-5 6.500.2 2 1.200 4 2.500 5.800" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </>
+  ),
+  chevronLeft: <path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />,
+  chevronRight: <path d="M7.5 4l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />,
+  /** The stage of a guardian, in the color of its pip. */
+  crownMark: <path d="M3 15.5L2.2 6l4.6 3.8L10 3.5l3.2 6.3L17.8 6 17 15.5z" fill="currentColor" stroke="#0b0a14" strokeWidth="1.3" strokeLinejoin="round" />,
+  /** The stage of an elite, in the color of its pip. */
+  skull: (
+    <>
+      <path d="M10 2.5c-4 0-6.5 2.7-6.5 6.3 0 2.2 1 3.6 2.3 4.4v2.8h8.4v-2.8c1.3-.8 2.3-2.2 2.3-4.4 0-3.6-2.5-6.3-6.5-6.3z" fill="currentColor" stroke="#0b0a14" strokeWidth="1.3" strokeLinejoin="round" />
+      <circle cx="7.4" cy="9.3" r="1.6" fill="#0b0a14" />
+      <circle cx="12.6" cy="9.3" r="1.6" fill="#0b0a14" />
+      <path d="M8.6 16v-1.6M11.4 16v-1.6" stroke="#0b0a14" strokeWidth="1.1" />
     </>
   ),
   fastForward: <path d="M2.5 4.5l7 5.5-7 5.5zM10.5 4.5l7 5.5-7 5.5z" fill="currentColor" />,

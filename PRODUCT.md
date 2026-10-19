@@ -721,16 +721,33 @@ rejects real play.
 
 ## Game screen
 
-- A navigation rail opens the windows: map (stage selector and auto-advance), equipment and
-  inventory, altars and ascension, market, Hall (achievements, statistics, leaderboard),
-  account and settings. Badges (`!`, `+` or a count) flag an available ascension or altar,
-  a nearly full inventory, enough shards for the market, an unconfirmed e-mail and the
-  number of unread Chronicle fragments.
+- A navigation rail opens the windows: map (stage selector and auto-advance), equipment
+  (the worn relics and the pack, one key), altars and ascension, market, Hall (achievements,
+  statistics, leaderboard), account and settings. A badge lights for something new, then
+  goes out once its window is opened: an ascension ready (`!`), essences gathered since the
+  Sanctum was last opened while an altar is within reach (`+`), the relics come into the
+  pack since it was last opened (a count; the key then opens on the pack), a ware of the
+  stall the shards newly reach (`+`), and the unread Chronicle fragments (a count). Only a
+  nearly full pack and an unconfirmed e-mail stay lit (`!`). What was last seen is kept in
+  this browser, per game: a view convenience, never game state.
 - The inventory sort and the board picked on the in-game Roll are remembered in this browser
   (closing the window or reloading keeps them); they are view conveniences, never game state.
-- Settings: language, number notation (letters, scientific, engineering), sound and its volume,
-  damage numbers, reduced motion, colorblind colors (rarities, gains and losses in hues that
-  red-green blindness keeps apart), ascension confirmation.
+- Settings: language, number notation (letters, scientific, engineering), sound, the volume
+  of the effects and, apart, of the music of the Ledger's scenes, damage numbers, reduced
+  motion (the game's own setting cuts every animation short, as the system's preference
+  does), colorblind colors (rarities, gains and losses in hues that red-green blindness keeps
+  apart), ascension confirmation, and, once the Chronicle is open, whether its lines
+  (fragments, Bestiary lines, memories) are announced by a toast (on by default; off, they
+  only wait in the Chronicle). Save version 18 adds the music volume and that choice
+  (`musicVolume`, `loreToasts`), defaulted for older saves.
+- Keyboard: 1 to 7 for the powers, M the map, E the equipment, A the Sanctum, H the Hall
+  (each opens once its window is in the rail, and closes it again), B the next buy amount, F
+  advance or stay, Enter and Space strike, Escape closes. Letters are read as typed, so they
+  hold on every keyboard; nothing answers while a field, a scene, a question, a chest or the
+  Reunion has the keys. The Settings list the keys the walker can use.
+- Under a finger, the first tap on a talent or a power shows what it does (its card, "Tap
+  again"), the second learns or uses it; a mouse, a pen and the keyboard keep their single
+  press.
   Its foot names the version the walker plays (`v0.6.0`): the `version` of the root
   `package.json`, read at build time, the same on the develop server.
 - One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a

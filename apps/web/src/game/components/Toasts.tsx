@@ -139,7 +139,16 @@ function tapThrough(event: ReactPointerEvent<HTMLDivElement>) {
   under?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, composed: true, clientX, clientY, pointerId, pointerType, isPrimary, button: 0, buttons: 1 }));
 }
 
-export function Toasts({ toasts, held = false, onDismiss }: { toasts: Toast[]; held?: boolean; onDismiss: (id: number) => void }) {
+interface ToastsProps {
+  toasts: Toast[];
+  held?: boolean;
+  onDismiss: (id: number) => void;
+  /** A pointer resting on the stack, or the keys inside it: the toasts wait to be read. */
+  onPause: (paused: boolean) => void;
+  onChronicle: (id: number) => void;
+}
+
+export function Toasts({ toasts, held = false, onDismiss, onPause, onChronicle }: ToastsProps) {
   const root = useRef<HTMLDivElement>(null);
   const reposition = useRef<() => void>(() => {});
   const { t } = useI18n();
@@ -199,7 +208,22 @@ export function Toasts({ toasts, held = false, onDismiss }: { toasts: Toast[]; h
   useEffect(() => reposition.current(), [toasts]);
 
   return (
-    <div ref={root} className={`toasts ${held ? "held" : ""}`} role="status" aria-live="polite">
+    <div
+      ref={root}
+      className={`toasts ${held ? "held" : ""}`}
+      role="status"
+      aria-live="polite"
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") onPause(true);
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === "mouse") onPause(false);
+      }}
+      onFocus={() => onPause(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) onPause(false);
+      }}
+    >
       {toasts.map((toast) => (
         <div
           key={toast.id}
@@ -228,6 +252,16 @@ export function Toasts({ toasts, held = false, onDismiss }: { toasts: Toast[]; h
                 <blockquote>{toast.quote.text}</blockquote>
                 <figcaption>{toast.quote.by}</figcaption>
               </figure>
+            ) : null}
+            {toast.lore ? (
+              <button
+                type="button"
+                className="toast-link"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => onChronicle(toast.id)}
+              >
+                {t.hud.toasts.chronicle}
+              </button>
             ) : null}
           </div>
         </div>
