@@ -48,6 +48,7 @@ import { haptics } from "./haptics";
 import { CloudSync } from "./cloud";
 import { GameContext, revealsOf, type GameUi, type ToastInput, type WindowId } from "./context";
 import { hintsAnsweredBy } from "./hints";
+import { WINDOW_KEYS, nextBuyMode } from "./hotkeys";
 import { SKILL_PICTO, type PictoName } from "./icons";
 import { ANNOUNCED, ANNOUNCED_AT_LOAD, OWN_TOAST, reveals, revealMark, sceneMark, stratumLabel, type RevealId } from "./shell";
 import { describePromise } from "./text";
@@ -94,6 +95,11 @@ const FRESH_MS = 4_000;
 const TOASTS_ON_PHONE = 2;
 const TOASTS_ON_DESKTOP = 4;
 const RUSHED_TOAST_MS = 2_600;
+/** Reading time per word of a toast, and the longest a toast stays. */
+const MS_PER_WORD = 260;
+const MAX_TOAST_MS = 14_000;
+/** A toast let go after a pause keeps at least this long, to finish its line. */
+const RESUMED_TOAST_MS = 1_500;
 /** Remembrance Nights are checked against the walker's own calendar this often. */
 const REMEMBER_EVERY_MS = 60_000;
 /** Icon of each announced element's first-appearance toast. */
@@ -145,15 +151,51 @@ export default function GameApp() {
     /** The leaving timer of each toast on screen, restarted when a stacked toast counts one more. */
     const timers = new Map<number, ReturnType<typeof setTimeout>>();
     const roomOnScreen = () => (window.matchMedia(PHONE_QUERY).matches ? TOASTS_ON_PHONE : TOASTS_ON_DESKTOP);
-    const schedule = (entry: Toast) => {
-      clearTimeout(timers.get(entry.id));
-      const duration = entry.quote ? 8000 : entry.tone === "danger" ? 4500 : 3800;
-      timers.set(entry.id, setTimeout(() => {
-        timers.delete(entry.id);
-        onScreen = onScreen.filter((item) => item.id !== entry.id);
+    /** When each toast on screen leaves, and what was left of its time while the stack is paused. */
+    const due = new Map<number, number>();
+    const left = new Map<number, number>();
+    let paused = false;
+    const leaveAfter = (id: number, ms: number) => {
+      clearTimeout(timers.get(id));
+      due.set(id, performance.now() + ms);
+      timers.set(id, setTimeout(() => {
+        timers.delete(id);
+        due.delete(id);
+        onScreen = onScreen.filter((item) => item.id !== id);
         setToasts(onScreen);
         next();
-      }, line.length > roomOnScreen() ? Math.min(duration, RUSHED_TOAST_MS) : duration));
+      }, ms));
+    };
+    const schedule = (entry: Toast) => {
+      // Long enough to be read: a quarter second a word past the first glance, more for a quote.
+      const words = [entry.title, entry.text, entry.quote?.text].join(" ").split(/\s+/).filter(Boolean).length;
+      const duration = Math.min(MAX_TOAST_MS, Math.max(entry.quote ? 8000 : entry.tone === "danger" ? 4500 : 3800, 1500 + words * MS_PER_WORD));
+      // A long line moves faster, never faster than a hurried read.
+      const ms = line.length > roomOnScreen() ? Math.max(RUSHED_TOAST_MS, duration * 0.6) : duration;
+      if (paused) {
+        clearTimeout(timers.get(entry.id));
+        timers.delete(entry.id);
+        left.set(entry.id, ms);
+        return;
+      }
+      leaveAfter(entry.id, ms);
+    };
+    /** A pointer on the stack, or a key inside it, holds every toast shown until it leaves. */
+    const pause = (on: boolean) => {
+      if (on === paused) return;
+      paused = on;
+      const now = performance.now();
+      if (on) {
+        for (const [id, at] of due) {
+          clearTimeout(timers.get(id));
+          timers.delete(id);
+          left.set(id, Math.max(0, at - now));
+        }
+        due.clear();
+        return;
+      }
+      for (const [id, ms] of left) if (onScreen.some((entry) => entry.id === id)) leaveAfter(id, Math.max(ms, RESUMED_TOAST_MS));
+      left.clear();
     };
     const next = () => {
       if (holding.current) return;
@@ -205,16 +247,20 @@ export default function GameApp() {
       if (!onScreen.some((entry) => entry.id === id)) return;
       clearTimeout(timers.get(id));
       timers.delete(id);
+      due.delete(id);
+      left.delete(id);
       onScreen = onScreen.filter((entry) => entry.id !== id);
       setToasts(onScreen);
       next();
     };
-    return { add, next, forget, dismiss };
+    return { add, next, forget, dismiss, pause };
   }, []);
   const toast = useCallback((input: ToastInput) => {
+    // The Chronicle's lines wait there in silence when the walker asked so.
+    if (input.lore && !store.state.settings.loreToasts) return;
     toastId.current += 1;
     pump.add({ ...input, id: toastId.current });
-  }, [pump]);
+  }, [pump, store]);
 
   const covered = openWindow !== null || confirmRequest !== null || reunion !== null || cutscene !== null || chest !== null || satchel !== null;
   // A newer release waits only while a reload would take something from the screen: a
@@ -432,6 +478,7 @@ export default function GameApp() {
     const sync = () => {
       audio.setEnabled(store.state.settings.sound);
       audio.setVolume(store.state.settings.volume);
+      audio.setMusicVolume(store.state.settings.musicVolume);
       audio.setStage(store.state.stage);
       document.documentElement.classList.toggle("reduced-motion", store.state.settings.reducedMotion);
       document.documentElement.classList.toggle("colorblind", store.state.settings.colorblind);
@@ -643,7 +690,7 @@ export default function GameApp() {
         case "bestiary": {
           if (!HERALDED.has(event.id) || !BESTIARY_BY_ID[event.id]) break;
           const line = g.bestiary[event.id]?.[event.tier - 1];
-          if (line) toast({ tone: "violet", icon: "scroll", title: m.bestiary(g.monsters[event.id] ?? event.id), text: line });
+          if (line) toast({ tone: "violet", icon: "scroll", title: m.bestiary(g.monsters[event.id] ?? event.id), text: line, lore: true });
           break;
         }
         case "recognition":
@@ -658,7 +705,7 @@ export default function GameApp() {
             audio.play("recognition");
             if (all.length === 1) {
               const [one] = all;
-              toast({ tone: "gold", icon: "sparkle", title: words.recognition(text.heroes[one.heroId].name, one.tier), text: chronicleText({ source: "memory", hero: one.heroId, tier: one.tier }, currentLocale()).text });
+              toast({ tone: "gold", icon: "sparkle", title: words.recognition(text.heroes[one.heroId].name, one.tier), text: chronicleText({ source: "memory", hero: one.heroId, tier: one.tier }, currentLocale()).text, lore: true });
               return;
             }
             const names = all.map((entry) => text.heroes[entry.heroId].name);
@@ -709,23 +756,44 @@ export default function GameApp() {
           lastFragmentAt = now;
           audio.play("fragment");
           const line = chronicleText(event.entry, locale);
-          toast({ tone: "violet", icon: "scroll", title: m.fragmentTitle, text: line.by ? `${line.by}${locale === "fr" ? " : " : ": "}${line.text}` : line.text });
+          toast({ tone: "violet", icon: "scroll", title: m.fragmentTitle, text: line.by ? `${line.by}${locale === "fr" ? " : " : ": "}${line.text}` : line.text, lore: true });
           break;
         }
       }
     });
   }, [store, cloud, toast, loadRoll]);
 
-  // Keyboard shortcuts: 1-7 for powers, Escape to close.
+  // Keyboard shortcuts: 1-7 for powers, M E A H for the windows, B for the buy amount, F to
+  // advance or stay, Escape to close. Never while a field has the keys, nor under a scene,
+  // a question, a chest or a Reunion, which take them.
+  const keysTaken = useRef(false);
+  keysTaken.current = confirmRequest !== null || reunion !== null || cutscene !== null || chest !== null || satchel !== null;
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT")) return;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable)) return;
       if (event.key === "Escape") {
         setOpenWindow(null);
         return;
       }
-      if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
+      if (event.ctrlKey || event.metaKey || event.altKey || event.repeat || keysTaken.current) return;
+      const letter = event.key.length === 1 ? event.key.toLowerCase() : "";
+      const shown = reveals(store.state);
+      const place = WINDOW_KEYS.find((entry) => entry.key === letter);
+      if (place) {
+        if (!shown[place.reveal]) return;
+        setOpenWindow((open) => (open && (open.id === place.window || (place.window === "gear" && open.id === "inventory")) ? null : { id: place.window }));
+        for (const hint of hintsAnsweredBy(store.state, place.window)) store.apply({ type: "tutorial", step: hint });
+        return;
+      }
+      if (letter === "b" && shown.buyModes) {
+        store.act({ type: "settings", patch: { buyMode: nextBuyMode(store.state.settings.buyMode) } });
+        return;
+      }
+      if (letter === "f" && shown.autoToggle) {
+        store.act({ type: "auto" });
+        return;
+      }
       // Read by the key's place, not its letter: on a French keyboard, the number row without
       // Shift types "&", "é"...
       const digit = /^(?:Digit|Numpad)(\d)$/.exec(event.code)?.[1];
@@ -776,7 +844,17 @@ export default function GameApp() {
           {satchel ? <SatchelOpening request={satchel} onDone={() => setSatchel(null)} /> : null}
           {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
           {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
-          <Toasts toasts={toasts} held={covered} onDismiss={pump.dismiss} />
+          <Toasts
+            toasts={toasts}
+            held={covered}
+            onDismiss={pump.dismiss}
+            onPause={pump.pause}
+            onChronicle={(id) => {
+              pump.dismiss(id);
+              pump.pause(false);
+              ui.openWindow("hall", "chronicle");
+            }}
+          />
           <InstallInvite covered={covered} />
         </div>
       </GameContext.Provider>

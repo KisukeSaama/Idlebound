@@ -215,6 +215,8 @@ export interface Settings {
   sound: boolean;
   /** Volume of the sound effects, 0 to 1. */
   volume: number;
+  /** Volume of the music of the Ledger's scenes, 0 to 1. */
+  musicVolume: number;
   damageNumbers: boolean;
   reducedMotion: boolean;
   confirmAscension: boolean;
@@ -227,6 +229,8 @@ export interface Settings {
   colorblind: boolean;
   /** Relics found at this rarity or below are salvaged as they arrive (never a named relic). */
   salvageOnArrival: "none" | "common" | "rare";
+  /** Lines of the Chronicle (fragments, Bestiary, memories) are told by a toast as they come; off, they only wait in the Chronicle. */
+  loreToasts: boolean;
 }
 
 export interface TutorialState {

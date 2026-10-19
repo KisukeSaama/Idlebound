@@ -214,9 +214,13 @@ Content colors live with the game data, not in CSS:
   its rule in its title. While the satchel holds relics, a banner leads the pack (the closed
   satchel's pixels, its count, "Open the satchel").
 - **Toasts**: on the right of the scene, next to the companions panel, under the scene's top
-  bar (placement details under Motion), at most 4 at once (2 on phones), auto-dismiss 3.8 s
-  (4.5 s for danger). The others wait in line and none is dropped; while more than a
-  screenful waits, each goes after 2.6 s. A tap clears a toast (once it has shown 0.7 s, so a
+  bar (placement details under Motion), at most 4 at once (2 on phones), auto-dismiss after
+  the time to read them: 3.8 s (4.5 s for danger, 8 s with a quote) or 1.5 s plus 0.26 s a
+  word if longer, 14 s at most. The others wait in line and none is dropped; while more than
+  a screenful waits, each goes after 60% of its time (2.6 s at least). A mouse resting on the
+  stack, or the keyboard inside it, holds every toast until it leaves (then 1.5 s at least).
+  A line of the Chronicle (fragment, Bestiary line, memory) carries "Read in the Chronicle",
+  which opens it there. A tap clears a toast (once it has shown 0.7 s, so a
   thumb already striking does not clear it unread) and goes on to what lies under it: a
   crystal behind it is caught, the creature struck. Tones: gold (achievement, ascension), violet (biome, power, crystal), loot (title
   in the item's rarity color), success, info, danger.

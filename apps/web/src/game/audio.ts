@@ -65,6 +65,8 @@ class AudioEngine {
   private bus: GainNode | null = null;
   /** Effects volume (silent at the Dawn). */
   private fx: GainNode | null = null;
+  /** Music volume, the scenes' themes (silent at the Dawn). */
+  private musicOut: GainNode | null = null;
   /** Age X: a low-pass and a delay over everything. */
   private muffle: BiquadFilterNode | null = null;
   private late: DelayNode | null = null;
@@ -80,6 +82,7 @@ class AudioEngine {
   /** The page is out of sight. */
   private hidden = false;
   volume = 0.6;
+  musicVolume = 0.6;
 
   /** Sound on or off: while off (and while the page is hidden) the context sleeps. */
   setEnabled(enabled: boolean) {
@@ -115,7 +118,7 @@ class AudioEngine {
     try {
       const ctx = new AudioContext();
       this.context = ctx;
-      // effects → bus (Quiet) → fx (volume) → muffle → late → master
+      // effects → bus (Quiet) → fx (volume) → muffle → late → master; music → musicOut → muffle
       this.master = ctx.createGain();
       this.master.gain.value = MASTER_GAIN;
       this.master.connect(ctx.destination);
@@ -129,6 +132,9 @@ class AudioEngine {
       this.fx = ctx.createGain();
       this.fx.gain.value = this.place.dawn ? 0 : this.volume;
       this.fx.connect(this.muffle);
+      this.musicOut = ctx.createGain();
+      this.musicOut.gain.value = this.place.dawn ? 0 : this.musicVolume;
+      this.musicOut.connect(this.muffle);
       this.bus = ctx.createGain();
       this.bus.connect(this.fx);
       const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
@@ -147,6 +153,12 @@ class AudioEngine {
     this.refresh();
   }
 
+  setMusicVolume(volume: number) {
+    if (volume === this.musicVolume) return;
+    this.musicVolume = volume;
+    this.refresh();
+  }
+
   /** The stage walked: Age X muffles every sound, the Dawn silences them. */
   setStage(stage: number) {
     const place = placeFor(stage);
@@ -162,6 +174,7 @@ class AudioEngine {
     const now = ctx.currentTime;
     const place = this.place;
     this.fx.gain.setTargetAtTime(place.dawn ? 0 : this.volume, now, 0.3);
+    this.musicOut?.gain.setTargetAtTime(place.dawn ? 0 : this.musicVolume, now, 0.3);
     this.muffle.frequency.setTargetAtTime(place.muffled ? MUFFLED_CUTOFF : OPEN_CUTOFF, now, 0.6);
     this.late.delayTime.setTargetAtTime(place.muffled ? MUFFLED_DELAY : 0, now, 0.6);
   }
@@ -242,11 +255,11 @@ class AudioEngine {
   /** The music of a scene: the Dusk theme, its reprise, or a cut to silence (a blow). */
   music(cue: MusicCue) {
     const ctx = this.context;
-    if (!this.enabled || this.place.dawn || !ctx || ctx.state !== "running" || !this.fx) return;
+    if (!this.enabled || this.place.dawn || !ctx || ctx.state !== "running" || !this.musicOut) return;
     this.silence(cue === "hush" ? 0.06 : 0.4);
     if (cue === "hush") return;
     const gain = ctx.createGain();
-    gain.connect(this.fx);
+    gain.connect(this.musicOut);
     this.score = { nodes: schedulePiece(ctx, gain, PIECES[cue], ctx.currentTime + 0.05), gain };
   }
 

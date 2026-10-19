@@ -732,9 +732,22 @@ rejects real play.
   this browser, per game: a view convenience, never game state.
 - The inventory sort and the board picked on the in-game Roll are remembered in this browser
   (closing the window or reloading keeps them); they are view conveniences, never game state.
-- Settings: language, number notation (letters, scientific, engineering), sound and its volume,
-  damage numbers, reduced motion, colorblind colors (rarities, gains and losses in hues that
-  red-green blindness keeps apart), ascension confirmation.
+- Settings: language, number notation (letters, scientific, engineering), sound, the volume
+  of the effects and, apart, of the music of the Ledger's scenes, damage numbers, reduced
+  motion (the game's own setting cuts every animation short, as the system's preference
+  does), colorblind colors (rarities, gains and losses in hues that red-green blindness keeps
+  apart), ascension confirmation, and, once the Chronicle is open, whether its lines
+  (fragments, Bestiary lines, memories) are announced by a toast (on by default; off, they
+  only wait in the Chronicle). Save version 18 adds the music volume and that choice
+  (`musicVolume`, `loreToasts`), defaulted for older saves.
+- Keyboard: 1 to 7 for the powers, M the map, E the equipment, A the Sanctum, H the Hall
+  (each opens once its window is in the rail, and closes it again), B the next buy amount, F
+  advance or stay, Enter and Space strike, Escape closes. Letters are read as typed, so they
+  hold on every keyboard; nothing answers while a field, a scene, a question, a chest or the
+  Reunion has the keys. The Settings list the keys the walker can use.
+- Under a finger, the first tap on a talent or a power shows what it does (its card, "Tap
+  again"), the second learns or uses it; a mouse, a pen and the keyboard keep their single
+  press.
   Its foot names the version the walker plays (`v0.6.0`): the `version` of the root
   `package.json`, read at build time, the same on the develop server.
 - One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a

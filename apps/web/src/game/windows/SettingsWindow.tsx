@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useI18n, type LocalePreference } from "@/i18n/client";
 import { audio } from "../audio";
 import { haptics } from "../haptics";
-import { useGame } from "../context";
+import { useGame, useReveals } from "../context";
+import { WINDOW_KEYS } from "../hotkeys";
 import { WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
 
@@ -34,6 +35,8 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
   const text = t.windows.settings;
   const settings = state.settings;
   const volumeStep = stepForGain(settings.volume);
+  const musicStep = stepForGain(settings.musicVolume);
+  const { shown } = useReveals();
   const update = (patch: Partial<typeof settings>) => store.act({ type: "settings", patch });
   // Language the browser asks for, shown next to "Automatic". Read after mount (no navigator on the server).
   const [detected, setDetected] = useState<(typeof LOCALES)[number] | null>(null);
@@ -88,6 +91,23 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
           </span>
         </div>
         <div className="setting-row">
+          <label htmlFor="music-volume">{text.music}</label>
+          <span className="volume-control">
+            <input
+              id="music-volume"
+              type="range"
+              min={0}
+              max={VOLUME_STEPS}
+              step={1}
+              value={musicStep}
+              aria-valuetext={text.volumeValue(musicStep)}
+              disabled={!settings.sound}
+              onChange={(event) => update({ musicVolume: gainForStep(Number(event.target.value)) })}
+            />
+            <output htmlFor="music-volume" className="volume-value">{text.volumeValue(musicStep)}</output>
+          </span>
+        </div>
+        <div className="setting-row">
           <span id="notation-label">{text.notation}</span>
           <div className="segmented" role="radiogroup" aria-labelledby="notation-label">
             {NOTATIONS.map((notation) => (
@@ -104,6 +124,10 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
         <Toggle label={text.damageNumbers} hint={text.damageNumbersHint} checked={settings.damageNumbers} onChange={(value) => update({ damageNumbers: value })} />
         <Toggle label={text.reducedMotion} hint={text.reducedMotionHint} checked={settings.reducedMotion} onChange={(value) => update({ reducedMotion: value })} />
         <Toggle label={text.colorblind} hint={text.colorblindHint} checked={settings.colorblind} onChange={(value) => update({ colorblind: value })} />
+        {/* Once the Chronicle is open, where the lines wait when they are not announced. */}
+        {shown.hall ? (
+          <Toggle label={text.loreToasts} hint={text.loreToastsHint} checked={settings.loreToasts} onChange={(value) => update({ loreToasts: value })} />
+        ) : null}
         <Toggle label={text.confirmAscension} hint={text.confirmAscensionHint} checked={settings.confirmAscension} onChange={(value) => update({ confirmAscension: value })} />
         {/* Only once the walker has seen a sky other than the Kingdom's (Age II and deeper). */}
         {ageForStage(state.maxStageEver) > 0 || settings.darkNight ? (
@@ -115,6 +139,11 @@ export function SettingsWindow({ onClose }: { onClose: () => void }) {
         {SKILLS.filter((skill) => isSkillUnlocked(state, skill.id)).map((skill) => (
           <li key={skill.id}><kbd>{skill.hotkey}</kbd> {g.skills[skill.id].name}</li>
         ))}
+        {WINDOW_KEYS.filter((entry) => shown[entry.reveal]).map((entry) => (
+          <li key={entry.window}><kbd>{entry.key.toUpperCase()}</kbd> {t.hud.windowTitles[entry.window].label}</li>
+        ))}
+        {shown.buyModes ? <li><kbd>{text.buyModeKey}</kbd> {text.buyModeAction}</li> : null}
+        {shown.autoToggle ? <li><kbd>{text.autoKey}</kbd> {text.autoAction}</li> : null}
         <li><kbd>{text.enterKey}</kbd> {text.enterAction}</li>
         <li><kbd>{text.spaceKey}</kbd> {text.enterAction}</li>
         <li><kbd>{text.escapeKey}</kbd> {text.escapeAction}</li>

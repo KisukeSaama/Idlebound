@@ -21,6 +21,8 @@ export interface ToastInput {
   color?: string;
   /** Toasts sharing this key while one is still waiting or shown count up in it (x2, x3) instead of piling. */
   stack?: string;
+  /** A line of the Chronicle: it links there, and stays silent when the walker asked so (it waits in the Chronicle). */
+  lore?: boolean;
 }
 
 export interface GameUi {

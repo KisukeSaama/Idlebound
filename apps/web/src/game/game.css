@@ -3662,6 +3662,23 @@ kbd {
   color: var(--muted);
 }
 
+/* A line of the Chronicle leads there, to be read again. */
+.toast-link {
+  margin-top: 4px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--gold-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.toast-link:hover {
+  color: var(--gold);
+}
+
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(-14px) scale(0.95); }
 }

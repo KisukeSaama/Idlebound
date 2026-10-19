@@ -55,7 +55,7 @@ export type CommandType = Command["type"];
 
 /** The settings a walker changes from the page: what the server lets a command touch. */
 const SETTING_KEYS: readonly (keyof Settings)[] = [
-  "notation", "sound", "volume", "damageNumbers", "reducedMotion", "confirmAscension", "buyMode", "offlineSpending", "darkNight", "colorblind", "salvageOnArrival"
+  "notation", "sound", "volume", "musicVolume", "damageNumbers", "reducedMotion", "confirmAscension", "buyMode", "offlineSpending", "darkNight", "colorblind", "salvageOnArrival", "loreToasts"
 ];
 
 /** Runs `command` on `engine` at `now` (the time of the last step). Returns what the action returns. */
