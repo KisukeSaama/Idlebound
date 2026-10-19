@@ -48,3 +48,48 @@ To look at a dump without touching the live database, restore it into a scratch 
 first (`createdb` through the same `run`, then `-d <scratch>`). The round trip (migrated
 schema, dump, restore into another database, rows and migrations compared) was tested on the
 development Postgres.
+
+## One walker's game
+
+Besides the dumps, the API keeps each account's game as its first save of the day left it,
+for 30 days (`save_snapshots`). To give a walker back yesterday's game without touching
+anyone else's, from the `api` container (`compose exec api sh`):
+
+- `node review.js --snapshots <username>`: the days kept, their revision and best stage;
+- `node review.js --restore <username> --day YYYY-MM-DD`: that day's game becomes the
+  account's, as a new revision; open pages are asked to choose.
+
+## Rolling back
+
+Every build pushes its images twice: under the branch (`main`, `develop`) and under the
+commit (`$CI_COMMIT_SHA`). A deployment runs its own commit's images, so a later push never
+changes what it ran.
+
+To go back to an earlier release, run the manual job `rollback_prod` (or `rollback_dev`) of the
+latest pipeline with the variable `ROLLBACK_SHA` set to the full hash of the commit to go back
+to. It writes the deployment files of the current commit, dumps the database as any
+deployment does, then starts the earlier commit's images.
+
+- The database keeps the migrations the later release applied. A migration that only added
+  something is harmless to the earlier code; one that dropped or renamed a column is not:
+  then restore the `predeploy` dump taken before that release (see Restoring) after rolling
+  back, and what was saved since is lost.
+- A save written by the later release with a newer save version is never relabelled by the
+  earlier code: it refuses it, and the page keeps the game in hand until the later release is
+  back.
+
+## Watching
+
+- `api` answers `/live` (its event loop turns, nothing else) and `/health` (the database
+  answers too). Its healthcheck marks it unhealthy when `/health` fails, and acts as a
+  watchdog: six `/live` probes in a row without an answer (about a minute and a half) end
+  node, the container exits and restarts (`init: true` makes this possible; the log says
+  `watchdog: no answer, node ended`). A database that is down never restarts the API. The
+  watchdog was tested in a container whose event loop blocks: it restarted once, then ran.
+- Errors met by pages are logged by the API as `[client]` lines:
+  `compose logs api | grep '\[client\]'`. Replay reports are `[api] replay` lines (and the
+  `replay_reports` table, summarised by `node review.js --replays`).
+- The API keeps 5 logs of 50 MB, the other services 3 of 10 MB.
+- An uptime check from outside the host is still to set up (Uptime Kuma, Better Stack, or any
+  monitor that alerts): watch `https://<host>/api/health`, which answers 200 when the web, the
+  API and the database all answer.

@@ -30,6 +30,10 @@ export function createApp() {
     await next();
   });
 
+  // The process answers at all: its event loop turns. Nothing else is asked, so a database
+  // that is down never makes the watchdog of compose.yml restart a sound API.
+  app.get("/live", (c) => c.json({ ok: true }));
+
   app.get("/health", async (c) => {
     try {
       await sql`select 1`;

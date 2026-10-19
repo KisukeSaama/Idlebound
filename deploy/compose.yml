@@ -10,6 +10,13 @@ x-logging: &logging
     max-size: "10m"
     max-file: "3"
 
+# The API logs more (replay reports, client errors): a few days of them under load.
+x-api-logging: &api-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "5"
+
 services:
   # Only service on the traefik network. The browser reaches the API only through it (/api/*).
   web:
@@ -81,7 +88,10 @@ services:
 
   api:
     image: ${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}
-    logging: *logging
+    logging: *api-logging
+    # A small init as PID 1: the watchdog below can end a stalled node, which PID 1 could not
+    # be, and the container then exits and restarts.
+    init: true
     environment:
       NODE_ENV: production
       API_PORT: "8000"
@@ -108,10 +118,20 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    # Health is the API and its database. The same probe is a watchdog: `restart` never acts
+    # on an unhealthy container, so when /live (the event loop alone, never the database) has
+    # not answered six probes in a row, about a minute and a half, it ends node and the
+    # container restarts. A database that is down marks the API unhealthy, never restarts it.
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/health >/dev/null 2>&1 || exit 1"]
+      test:
+        - CMD-SHELL
+        - >-
+          if wget -qO- -T 4 http://127.0.0.1:8000/live >/dev/null 2>&1; then rm -f /tmp/stalled;
+          else n=$$(( $$(cat /tmp/stalled 2>/dev/null || echo 0) + 1 )); echo $$n > /tmp/stalled;
+          if [ $$n -ge 6 ]; then echo "watchdog: no answer, node ended" > /proc/1/fd/2; kill -9 $$(pidof node); fi; fi;
+          wget -qO- -T 4 http://127.0.0.1:8000/health >/dev/null 2>&1
       interval: 15s
-      timeout: 5s
+      timeout: 10s
       retries: 20
       start_period: 30s
     restart: unless-stopped
