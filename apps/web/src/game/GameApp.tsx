@@ -70,6 +70,7 @@ import { NavRail } from "./components/NavRail";
 import { Scene } from "./components/Scene";
 import { PHONE_QUERY, Toasts, type Toast } from "./components/Toasts";
 import { WindowHost } from "./windows/WindowHost";
+import { WindowBoundary } from "./windows/WindowBoundary";
 import "./damage.css";
 import "./game.css";
 
@@ -768,14 +769,18 @@ export default function GameApp() {
             </main>
             <HeroPanel folded={mobileTab === "scene"} onFold={(folded) => setMobileTab(folded ? "scene" : "heroes")} />
           </div>
-          {openWindow ? <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} /> : null}
+          {openWindow ? (
+            <WindowBoundary key={openWindow.id} onClose={() => setOpenWindow(null)}>
+              <WindowHost id={openWindow.id} tab={openWindow.tab} onClose={() => setOpenWindow(null)} />
+            </WindowBoundary>
+          ) : null}
           <CloudChoiceModal />
           <ElsewhereModal />
           {confirmRequest ? <ConfirmDialog request={confirmRequest} onDone={() => setConfirmRequest(null)} /> : null}
-          {chest ? <ChestOpening request={chest} onDone={() => setChest(null)} /> : null}
-          {satchel ? <SatchelOpening request={satchel} onDone={() => setSatchel(null)} /> : null}
-          {cutscene ? <Cutscene id={cutscene} onDone={() => setCutscene(null)} /> : null}
-          {reunion ? <ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /> : null}
+          {chest ? <WindowBoundary onClose={() => setChest(null)}><ChestOpening request={chest} onDone={() => setChest(null)} /></WindowBoundary> : null}
+          {satchel ? <WindowBoundary onClose={() => setSatchel(null)}><SatchelOpening request={satchel} onDone={() => setSatchel(null)} /></WindowBoundary> : null}
+          {cutscene ? <WindowBoundary onClose={() => setCutscene(null)}><Cutscene id={cutscene} onDone={() => setCutscene(null)} /></WindowBoundary> : null}
+          {reunion ? <WindowBoundary onClose={() => setReunion(null)}><ReunionModal account={reunion.account} seconds={reunion.seconds} onClose={() => setReunion(null)} /></WindowBoundary> : null}
           <Toasts toasts={toasts} held={covered} onDismiss={pump.dismiss} />
           <InstallInvite covered={covered} />
         </div>

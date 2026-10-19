@@ -1264,6 +1264,15 @@ language.
 - Every page renders per request (the CSP nonce requires it), so none is prerendered.
 - Public, indexable leaderboard. Only production is indexable; the dev environment answers
   `noindex`.
+- **When something breaks.** A game window, a scene, a chest or the Reunion that throws while
+  it renders falls alone, in a small window ("This window could not open": try again, or
+  close it), never the game behind it. A page that breaks shows "The road came apart" with a
+  retry and a way home (`error.tsx`, and `global-error.tsx` when the root layout itself
+  breaks). Every page reports what no boundary caught (uncaught errors, unhandled rejections)
+  and what the boundaries caught to `POST /api/client-error`: the kind, the message, the stack,
+  the path and the release, never who (no account, no cookie, the address used for the rate
+  limit only: 10 a minute per address, 600 for everyone, 5 per page). The API writes one
+  `[client]` line per report to its log.
 - Hosted on the owner's platform (Traefik, GitLab CI). Production:
   `https://idlebound.kisukesaama.com`, development: `https://idlebound-d.kisukesaama.com`.
 - The database is dumped every day (14 days kept on the host, copied off it when a remote is

@@ -5,6 +5,7 @@ import { sql } from "./db/client";
 import { env } from "./env";
 import { fail } from "./lib/errors";
 import { authRoutes } from "./routes/auth";
+import { clientErrorRoutes } from "./routes/client-error";
 import { leaderboardRoutes } from "./routes/leaderboard";
 import { saveRoutes } from "./routes/save";
 
@@ -41,6 +42,7 @@ export function createApp() {
   app.route("/auth", authRoutes);
   app.route("/save", saveRoutes);
   app.route("/leaderboard", leaderboardRoutes);
+  app.route("/client-error", clientErrorRoutes);
 
   app.notFound((c) => c.json(fail("not_found"), 404));
   app.onError((error, c) => {

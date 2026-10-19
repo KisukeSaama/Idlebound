@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { ErrorReporting } from "@/components/ErrorReporting";
 import { I18nProvider } from "@/i18n/client";
 import { assertLocale, getI18n, getPreference } from "@/i18n/server";
 import { SITE_NAME, isIndexable, pageAlternates, pageSocial, siteUrl } from "@/lib/site";
@@ -67,6 +68,7 @@ export default async function RootLayout({ children, params }: Props & { childre
     <html lang={locale} className={`${display.variable} ${body.variable}`}>
       <body>
         <I18nProvider locale={locale} preference={preference}>{children}</I18nProvider>
+        <ErrorReporting />
       </body>
     </html>
   );

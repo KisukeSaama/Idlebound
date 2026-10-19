@@ -178,6 +178,16 @@ suite("API (real Postgres)", () => {
     expect(response.status).toBe(200);
   });
 
+  it("hears what broke on a page, without a word about who", async () => {
+    const client = new Client("10.0.0.50");
+    const report = { kind: "window", message: "Cannot read properties of undefined", stack: "TypeError: at GearWindow", path: "/fr/play", version: "v2.0.1" };
+    expect((await client.call("POST", "/client-error", report)).status).toBe(204);
+    expect((await client.call("POST", "/client-error", { ...report, kind: "anything" })).status).toBe(400);
+    expect((await client.call("POST", "/client-error", { ...report, message: "x".repeat(501) })).status).toBe(400);
+    // A page caught in a loop of errors is heard ten times a minute, then quietly ignored.
+    for (let index = 0; index < 12; index += 1) expect((await client.call("POST", "/client-error", report)).status).toBe(204);
+  });
+
   it("refuses a request without the anti-CSRF header", async () => {
     const response = await app.request("/auth/login", { method: "POST", body: "{}", headers: { "content-type": "application/json" } });
     expect(response.status).toBe(403);
