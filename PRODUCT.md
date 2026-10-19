@@ -721,11 +721,15 @@ rejects real play.
 
 ## Game screen
 
-- A navigation rail opens the windows: map (stage selector and auto-advance), equipment and
-  inventory, altars and ascension, market, Hall (achievements, statistics, leaderboard),
-  account and settings. Badges (`!`, `+` or a count) flag an available ascension or altar,
-  a nearly full inventory, enough shards for the market, an unconfirmed e-mail and the
-  number of unread Chronicle fragments.
+- A navigation rail opens the windows: map (stage selector and auto-advance), equipment
+  (the worn relics and the pack, one key), altars and ascension, market, Hall (achievements,
+  statistics, leaderboard), account and settings. A badge lights for something new, then
+  goes out once its window is opened: an ascension ready (`!`), essences gathered since the
+  Sanctum was last opened while an altar is within reach (`+`), the relics come into the
+  pack since it was last opened (a count; the key then opens on the pack), a ware of the
+  stall the shards newly reach (`+`), and the unread Chronicle fragments (a count). Only a
+  nearly full pack and an unconfirmed e-mail stay lit (`!`). What was last seen is kept in
+  this browser, per game: a view convenience, never game state.
 - The inventory sort and the board picked on the in-game Roll are remembered in this browser
   (closing the window or reloading keeps them); they are view conveniences, never game state.
 - Settings: language, number notation (letters, scientific, engineering), sound and its volume,

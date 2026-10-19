@@ -293,7 +293,8 @@ button.resource:hover .resource-label {
   padding: 0 4px;
   border-radius: var(--radius-sm);
   border: 1px solid #000;
-  background: var(--violet);
+  /* White on this violet reads at 6:1 (on --violet it fell to 3.5:1). */
+  background: #6f45d6;
   color: #fff;
   font-size: 0.76rem;
   font-weight: 800;
@@ -303,7 +304,8 @@ button.resource:hover .resource-label {
 .nav-badge.urgent {
   background: var(--gold);
   color: #1a1204;
-  animation: badge-pop 1.4s steps(2, jump-none) infinite;
+  /* It hops three times when it lights, then holds still: a badge that never stops says nothing. */
+  animation: badge-pop 1.4s steps(2, jump-none) 3;
 }
 
 @keyframes badge-pop {
@@ -422,14 +424,16 @@ button.resource:hover .resource-label {
 }
 
 .stage-arrow {
+  display: inline-grid;
+  place-items: center;
   width: 30px;
   height: 30px;
+  padding: 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: var(--panel-2);
   box-shadow: var(--bevel);
-  font-size: 1.2rem;
-  line-height: 1;
+  color: var(--text);
 }
 
 .stage-arrow:disabled {
@@ -492,12 +496,11 @@ button.resource:hover .resource-label {
 }
 
 .pip-crown {
-  font-variant-emoji: text;
   position: absolute;
   top: -9px;
-  font-size: 0.75rem;
+  left: 50%;
+  margin-left: -6px;
   color: #ff8fa4;
-  text-shadow: 0 1px 2px #000;
 }
 
 .biome-boss .pip-crown {
@@ -3868,7 +3871,6 @@ kbd {
   }
   .pip-crown {
     top: -8px;
-    font-size: 0.66rem;
   }
   .stage-arrow {
     width: 26px;
@@ -4390,6 +4392,24 @@ kbd {
 .reduced-motion .skill.active,
 .reduced-motion .nav-badge.urgent {
   animation: none !important;
+}
+
+/* The game's own setting reaches as far as the system's preference (globals.css): every
+   animation and transition cut short, the lines told in the band keeping their time. */
+:root.reduced-motion *,
+:root.reduced-motion *::before,
+:root.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+:root.reduced-motion .scene-line {
+  animation-duration: 7s !important;
+}
+
+:root.reduced-motion .scene-dream {
+  animation-duration: 6s !important;
 }
 
 /* ------------------------------------------------ sanctum, loom, stall, armory (places past the King) */

@@ -40,7 +40,13 @@ export const hud = defineMessages({
     nav: {
       label: "Menus du jeu",
       hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
-      unread: (count: number) => `${count} ${count > 1 ? "fragments non lus" : "fragment non lu"}`
+      unread: (count: number) => `${count} ${count > 1 ? "fragments non lus" : "fragment non lu"}`,
+      badgeAscend: "le Roi est tombé, le crépuscule t'attend",
+      badgeEssences: "de nouvelles essences à offrir",
+      badgePackFull: "sac presque plein",
+      badgeRelics: (count: number) => (count > 1 ? `${count} nouvelles reliques` : "une nouvelle relique"),
+      badgeWare: "une nouvelle marchandise à ta portée",
+      badgeAddress: "adresse à confirmer"
     },
     install: {
       title: "Garde la route à portée de main",
@@ -331,7 +337,13 @@ export const hud = defineMessages({
     nav: {
       label: "Game menus",
       hallTitle: (label: string, ratio: string) => `${label} (${ratio})`,
-      unread: (count: number) => `${count} unread ${count > 1 ? "fragments" : "fragment"}`
+      unread: (count: number) => `${count} unread ${count > 1 ? "fragments" : "fragment"}`,
+      badgeAscend: "the King has fallen, dusk awaits you",
+      badgeEssences: "new essences to offer",
+      badgePackFull: "pack almost full",
+      badgeRelics: (count: number) => (count > 1 ? `${count} new relics` : "a new relic"),
+      badgeWare: "a new ware within reach",
+      badgeAddress: "address to confirm"
     },
     install: {
       title: "Keep the road within reach",
