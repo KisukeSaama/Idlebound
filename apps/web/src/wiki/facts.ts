@@ -28,7 +28,9 @@ import {
   STAGES_PER_BIOME,
   STAGES_PER_ERA,
   WOUND_CAP,
-  WOUND_LAST_STAGE
+  WOUND_LAST_STAGE,
+  FIRST_NIGHT_KING_WOUND,
+  HERO_BY_ID
 } from "@idlebound/game";
 
 /**
@@ -48,6 +50,8 @@ export const FACTS = {
   essenceDpsPct: ESSENCE_DPS_BONUS * 100,
   woundCapPct: WOUND_CAP * 100,
   woundLastStage: WOUND_LAST_STAGE,
+  firstKingWoundPct: FIRST_NIGHT_KING_WOUND * 100,
+  maelleCost: HERO_BY_ID.maelle.baseCost,
   offlineHours: OFFLINE_BASE_CAP_HOURS,
   reunionDps: REUNION_DPS,
   reunionMinutes: REUNION_MIN_AWAY_SECONDS / 60,

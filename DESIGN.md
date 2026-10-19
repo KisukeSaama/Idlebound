@@ -162,6 +162,10 @@ Content colors live with the game data, not in CSS:
   less) the banner is a 132 px strip showing the stones and the name and description sit
   under it, then the ascension and the altars; from level 5
   an altar card carries an "Altar legend" disclosure (tooltip on hover, open on touch).
+  An affordable altar card says, in bold under its values, what one level does to the
+  walker's damage once the essences it takes are counted (`--success-soft`, `--danger-soft`
+  below ×1); a Distribute button (violet, small) sits under the altars' hint with one line
+  saying what it does or that keeping the essences gives more for now.
   The Descent tab (Eldra's Loom) shows the threads, what a Descent takes and keeps, the threads it would weave,
   the stage of the next thread, a danger-confirmed Descend button and the eight Weaves as cards.
 - **The Promise** (a folder tab of the ascension window, from the second night): one line on

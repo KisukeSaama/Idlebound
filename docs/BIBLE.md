@@ -274,6 +274,7 @@ Every existing system, what it is in the world, and the word the UI can lean on.
 | Boss timer (30 s) | The **seam** of the hour: a guardian can only be beaten while the seam it holds is open. When it closes, the night pushes the walker back. |
 | Failing a boss, one stage back, farm mode | "The night pushes back." The walker trains on the previous stretch until strong enough. |
 | A guardian of the present night keeps its wounds (shipped) | A Remnant remembers the blows of the night too: the walker who comes back finds it still bleeding light. Deeper memories are too dense to keep a wound, and the King's seam closes whole. |
+| On the first night, the Keep's gate and the King keep their wounds too (shipped) | The King has never met this walker: his seam is still thin, and the Keep remembers the first blows as the fields do. From the first dusk on he knows them, and his seam closes whole again. |
 | The Rout (shipped, save version 12) | **Rout** (FR: *Débandade*). On a stretch of road the walker already walked on an earlier night, Remnants the company would unmake in a blink do not wait to be struck one by one: worn-out memories that know how this ends, they all come apart at once and the whole stage falls. Never on the first night, never an elite or a guardian, never past the best stage: the road the walker has not walked yet is fought. |
 | Auto-advance | The walker's will to go on. Turning it off is choosing to stay a while. |
 | HP curve (steeper by segment) | Older memories are denser. The Remnants of deeper strata are heavier to unmake. |
@@ -1284,7 +1285,7 @@ the scene, a road walked alone) is told once, in a toast, when the Hall that kee
 
 | Scene | When | What it shows |
 |---|---|---|
-| **The Long Night** | A new walk, before the first strike | The fields at dusk and the walker in them; the Keep at the end of the road, its King waiting; "Dusk again." |
+| **The Long Night** | A new walk, as its first Remnant falls | The fields at dusk and the walker in them; the Keep at the end of the road, its King waiting; "Dusk again." |
 | **The First Dusk** | Ascension 1 | The Keep and its King; "Night one."; "You're early."; one blow and the King going up in violet lights; the Sanctum's thirteen stones; "Dusk again." |
 | **Almost** | Maëlle hired again after she first half remembers (~3 h) | The road at dusk; Maëlle's face in the dark: "You again? No. I'd remember. Wouldn't I?"; she keeps looking back. |
 | **The Empty Throne** | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; then the Binding, said plainly (layer 3): Aldemar had Eldra weave the night against the Morning, his knight was to walk it first, ran, and the King walked instead. The crown (layer 4) waits for its own milestones. |

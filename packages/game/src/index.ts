@@ -9,6 +9,7 @@ export * from "./numbers";
 export * from "./rng";
 export * from "./state";
 export * from "./formulas";
+export * from "./altarPlan";
 export * from "./scale";
 export * from "./loot";
 export * from "./engine";

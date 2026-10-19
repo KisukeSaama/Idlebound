@@ -21,7 +21,7 @@ import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SL
 import { CARAVAN_WARES, isoWeek } from "./data/caravan";
 import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFFS, MARKET_BY_ID } from "./data/market";
 import { CRYSTAL_SHARDS_MAX, salvageValue } from "./engine";
-import { LANTERN_CRYSTAL_WAIT, MAX_STAGE, affixValue, altarValue, MAX_TREASURE_CHANCE, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, SATCHEL_SIZE, altarMaxLevel, bossHp, crystalEssenceReward, derive, equipmentBonus, equipmentBonusUncapped, essencesForStage, heroCost, memoryStartGold, relicGoldMultiplier, stageGold, woundCapWith, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
+import { LANTERN_CRYSTAL_WAIT, MAX_STAGE, affixValue, altarValue, MAX_TREASURE_CHANCE, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, SATCHEL_SIZE, altarMaxLevel, bossHp, crystalEssenceReward, derive, equipmentBonus, equipmentBonusUncapped, essencesForStage, heroCost, memoryStartGold, relicGoldMultiplier, stageGold, woundCapWith, firstNight, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
 import { PLACE_BONUS, TRAIT_BY_ID, TRAIT_COUNT, awakenedSpend, memoryReached, relicPlace, remembersBearer, traitMax, traitValue, type PlaceId, type TraitId } from "./data/traits";
 import { maxAffixValue } from "./loot";
 import {
@@ -461,7 +461,7 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
     // ×10 margin: items salvaged since, rounding, chained overcharge crystals…
     // A boss of the present night may have kept its wounds from earlier fights.
     // Armor that remembers scars lets deeper bosses keep theirs too.
-    const wounds = 1 - woundCapWith(lastBoss, heldTrait([state], "scars", 0));
+    const wounds = 1 - woundCapWith(lastBoss, heldTrait([state], "scars", 0), firstNight(state));
     if (maxDps * derived.bossTimer * 10 < bossHp(lastBoss, runBits(state)) * wounds) fail("power", `Stage ${lastBoss} boss cannot be beaten with this power.`);
   }
 
@@ -520,7 +520,7 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   const bottled = state.buffs.filter((buff) => isMarketBuff(buff.id)).reduce((sum, buff) => sum + lasting(buff), 0);
   if (bottled > (state.lifetime.shardsEarned / MIN_BOON_SHARDS) * BUFF_DURATION_SECONDS + CLOCK_SLACK_SECONDS) fail("buff", "More boon time than shards could buy.");
   // Deeper, only against armor that remembers scars (one the walker holds), and never the King.
-  if (trail.wound && (trail.wound.share > woundCapWith(trail.wound.stage, heldTrait([state], "scars", 0)) + EPSILON || trail.wound.stage !== state.maxStage || !isBossStage(trail.wound.stage) || lifetime.bossFails === 0)) fail("trail", "Impossible wounds.");
+  if (trail.wound && (trail.wound.share > woundCapWith(trail.wound.stage, heldTrait([state], "scars", 0), firstNight(state)) + EPSILON || trail.wound.stage !== state.maxStage || !isBossStage(trail.wound.stage) || lifetime.bossFails === 0)) fail("trail", "Impossible wounds.");
 
   const lore = state.lore;
   // One guardian per biome and stratum: a biome's echoes never outnumber its first clears,

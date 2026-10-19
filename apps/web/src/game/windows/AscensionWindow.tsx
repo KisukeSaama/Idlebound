@@ -7,26 +7,31 @@ import {
   MAX_STAGE,
   WEAVES,
   altarMaxLevel,
+  altarNet,
   altarOpen,
   altarPrice,
   ascensionPreview,
+  distributeEssences,
   canDescend,
   descentPreview,
   formatDuration,
   promiseAbstains,
+  trimmed,
   promisesOpen,
   stageForThreads,
+  walkerStrikesLead,
   weaveCost,
   weaveLevel,
   wandererSkip,
   weaveValue
 } from "@idlebound/game";
+import type { AltarId } from "@idlebound/game";
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
 import { useFormat, useGame, useUi } from "../context";
 import { EssenceIcon, WindowIcon } from "../icons";
 import { Modal } from "../components/Modal";
-import { formatAltarValue } from "../text";
+import { formatAltarValue, percentValue } from "../text";
 import { PlaceHeading } from "./PlaceBanner";
 import { PromiseNotice, PromiseTab } from "./PromiseTab";
 import { gameNow } from "@/lib/clock";
@@ -82,6 +87,11 @@ function Sanctum({ onClose }: { onClose: () => void }) {
   // their cap fold into one line under the others.
   const open = ALTARS.filter((altar) => altarOpen(state, altar.id));
   const done = open.filter((altar) => !Number.isFinite(altarPrice(state, altar.id)));
+  // What a wise walker would offer now: the altars that give more than the essences kept.
+  const plan = keeping ? [] : distributeEssences(state, walkerStrikesLead(state, now));
+  const distribute = () => {
+    for (const id of plan) store.act({ type: "altar", id });
+  };
 
   const ascend = async () => {
     if (state.settings.confirmAscension) {
@@ -132,6 +142,14 @@ function Sanctum({ onClose }: { onClose: () => void }) {
       <h3 className="section-heading">{text.altars}</h3>
       <p className="modal-hint">{text.altarsHint}</p>
       <PromiseNotice when={keeping} />
+      {keeping ? null : (
+        <div className="altar-distribute">
+          <button type="button" className="btn btn-violet btn-sm" disabled={plan.length === 0} onClick={distribute}>
+            <EssenceIcon size={14} /> {text.distribute}
+          </button>
+          <span className="modal-hint">{plan.length > 0 ? text.distributeHint : text.distributeNone}</span>
+        </div>
+      )}
       <div className="altar-grid">
         {open.filter((altar) => !done.includes(altar)).map((altar) => {
           const level = state.altars[altar.id] ?? 0;
@@ -148,6 +166,7 @@ function Sanctum({ onClose }: { onClose: () => void }) {
               </header>
               <p>{copy.description}</p>
               <p className="altar-value">{text.current} <strong>{formatAltarValue(altar, level, locale, state.settings.notation, max)}</strong> → {formatAltarValue(altar, level + 1, locale, state.settings.notation, max)}</p>
+              {cost <= state.essences && !keeping ? <AltarNet id={altar.id} now={now} /> : null}
               {legend ? (
                 <details className="altar-legend">
                   <summary title={`${legend.text} (${legend.by})`}>{t.sanctum.legendSummary}</summary>
@@ -203,6 +222,21 @@ function Sanctum({ onClose }: { onClose: () => void }) {
       ) : null}
     </>
   );
+}
+
+/**
+ * What raising an altar does to the walker's damage once the essences it takes are counted:
+ * the damage altars say the net, the others what the essences offered cost.
+ */
+function AltarNet({ id, now }: { id: AltarId; now: number }) {
+  const { state } = useGame();
+  const { t, locale } = useI18n();
+  const text = t.windows.ascension;
+  const { net, damage } = altarNet(state, id, now);
+  const loses = net < 1 - 1e-9;
+  const decimal = (value: string) => (locale === "fr" ? value.replace(".", ",") : value);
+  const line = damage !== 1 ? text.altarNet(decimal(trimmed(net, net >= 10 ? 1 : 2))) : text.altarCostOnly(decimal(percentValue(1 - net, state.settings.notation)));
+  return <p className={`altar-net${loses ? " altar-net-loss" : ""}`}>{line}</p>;
 }
 
 /** Eldra's Loom (BIBLE 12.7): the Descent and the eight Weaves. */

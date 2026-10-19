@@ -55,7 +55,7 @@ market is French-speaking, with a full English version.
 |---|---|
 | Stages | 10 monsters per stage. No last stage: the road goes on as deep as the walker walks (see "The deep road"). A save may name a stage up to 10,000,000. |
 | Rout | On a stage under the best stage ever (so never on the first night), when the company would fell one of its monsters in under 0.1 s (companion DPS plus automatic strikes), the whole stage falls at once: its remaining kills, their gold (a golden rat's share at its odds) and the Bestiary, then the next stage, one stage every 0.25 s. Elites and guardians are still fought. The catch-up (hidden tab, closed game) routs the same way. The first Rout is explained once by a toast; each shows "Rout · stage N" and its gold. |
-| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through; the Keep's gate (stage 45), the King and the strata below heal whole. |
+| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through. On the walk's first night (no ascension, no Descent yet), the Keep's gate (stage 45) keeps them too (75%) and the King up to 50% of his HP (`FIRST_NIGHT_KING_WOUND`): the first King is a wall of minutes, not of an hour. From the first dusk on, the gate, the King and the strata below heal whole. |
 | Biomes | 5 biomes of 10 stages, six normal creatures, an elite and a guardian each: the Verdant Plains (Field Rat, Jumpy Boar, Carrion Crow, Hollow Scarecrow, Lantern Moth, Dusk Hare; Last Reaper; Moss Alpha), the Dark Forest (Shade Wolf, Briar Witch, Grove Spinner, Mourning Owl, Toadstool Choir, Whispering Bramble; Root Knight; Heart of the Old Grove), the Forgotten Caves (Blind Crawler, Echo Bat, Crystal Mite, Drip Leech, Haunted Cart, Hollow Canary; Miner's Shade; Stone Devourer), the Corrupted Marsh (Bog Remnant, Rot Toad, Will-o'-Wisp, Drowned Courtier, Peat Cutter, Mire Heron; Mire Colossus; Baron of Rot) and the Fallen King's Ruins (Gargoyle of the Hours, Banner Wraith, Fallen Sentinel, Hollow Page, Hound of the Last Hunt, Candle Maid; Stone Warden; the King). |
 | The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000 the Dawn stands in his place, a milestone: beaten, it lets the walker through. Below it the forms come round again with the Ages (the Fallen King at 3050, the Titan King at 3300…). |
 | Rare wanderers | One per biome (the Lost Shepherd, the Weeping Stag, the Singing Geode, the Ferryman, the Court Jester): 0.5% of the biome's normal spawns that are not a golden rat or an event, once a run at most, ×5 gold, a Chronicle fragment on the first defeat. |
@@ -108,10 +108,11 @@ late game; mashing the mouse is never required.
   of 9 seeds, every profile giving its word at each dusk to the strongest companion who can
   ask, among the promises its style can keep: a profile that strikes gives no word to
   Ysolde nor to Nyx) every style stands within a quarter of the others (the best over the
-  worst: 1.18 since the relics remember, version 1.3): the occasional player leads (1157,
-  back every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
-  blocks the company, 4 h of real play), then 10 clicks/s (1082), 5/s (1079), 2/s (1038),
-  continuous bursts (1014) and idle (984). Before 1.3 the same runs stood at 898 to 1052
+  worst: 1.14 since the first night's King keeps his wounds, version 2.1): 5 clicks/s
+  leads (1097), then the occasional player (1093, back every hour for 10 minutes, the tab
+  left open to the autopilot, ascending when a boss blocks the company, 4 h of real play),
+  10 clicks/s (1090), 2/s (990), idle (983) and bursts (960). Before 2.1 the same runs stood
+  at 984 to 1157 (1.18, since the relics remember, version 1.3); before 1.3 at 898 to 1052
   (1.17) on the same seeds; earlier figures: 961 to 1186 (1.23).
   Before the cap on damage to guardians the same runs stood at 936 to 1009 (1.08): every
   style went deeper with the cap, the occasional player most (+179).
@@ -123,10 +124,10 @@ late game; mashing the mouse is never required.
   stages in more than twice the stagnation time), not only once it stalls: without that
   rule the bursts crept for hours and fell to 736 (1.28). The bot buys the Blade when its
   clicks lead the company (they deal more than the Patience bonus), Patience otherwise:
-  at 10 clicks/s the strikes are then almost all the damage (clicks 325 times the company
-  without its bonus), and 8 h away adds only 1 stage to that walker. 8 h in a background tab
-  after 24 h of play adds 15 to 43 stages to the others (median per profile), and the
-  Reunion doubles the first hour back (+13 to +20 stages instead of +5 to +13). The 72 h bot (5 clicks/s, seed 42, a word
+  at 10 clicks/s the strikes are then almost all the damage (clicks 375 times the company
+  without its bonus), and 8 h away adds only 2 stages to that walker. 8 h in a background tab
+  after 24 h of play adds 16 to 22 stages to the others (median per profile), and the
+  Reunion doubles the first hour back (+14 to +23 stages instead of +6 to +12). The 72 h bot (5 clicks/s, seed 42, a word
   given each night) reaches stage 1518 after 12 ascensions (500 at 16 h, 1000 at 30 h), and
   in a week 1960 after 26, each ascension adding fewer stages past 1000 (+120, +98, +70,
   +58, +70, then about +25 in the last days): no runaway. Before the Promise the same seed
@@ -210,6 +211,16 @@ their base. The Vestment of Cinders makes Golden Rain last 45 s.
   | Wanderer | 10 stages cleared at the start of each run | ×1.8 | 10 |
   | Memory | starting gold of 100 monsters of stage 5 × level | ×1.5 | 20 |
 
+- **The Sanctum's counsel**: every altar card the walker can afford says what one level does
+  once the essences it takes are counted: for an altar of damage (Might, Blade, Patience, Fate,
+  Precision), "With the essences offered: your damage ×N" (in red below ×1); for the others,
+  the share of damage the essences offered cost. A **Distribute** button offers the essences
+  as the bots do (`distributeEssences`, `altarPlan.ts`): capped altars when they cost 3% of the
+  essences held at most, then the open-ended level that adds the most per essence while it
+  beats keeping the essences (the Blade when the walker's strikes lead, Patience when the
+  company does: weighed on the company when there is one, else on the Blade and Patience
+  levels already raised, else on the walker's pace over the walk), the Harvest when it pays
+  more in the nights to come. It offers nothing under the Nameless's word.
 - **Spending versus holding** is the core decision: the open-ended altars multiply at each
   level against an exponential price, so the best split keeps about half the essences in
   hand at every stage of the game, and which altars to feed depends on the play style
@@ -506,6 +517,8 @@ line of text: it stores counters, and the n-th fragment of a source is always th
     frequent.
 - **The King's first refusals**: until the first ascension, the first time a session's King
   fight is lost, the failure toast carries his line "Come back when your hands stop shaking."
+  and says plainly what his fall opens: the Sanctum of Dusk, where the walker walks the road
+  again with essences that strengthen every night after.
 - **The Night list**: the ascension history written as one line per night, with the King's
   Word of that night.
 - **The Ledger's scenes** (BIBLE 12.10): eleven moments told like a film, over everything
@@ -515,7 +528,7 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   them, actors standing on their ground (the guardian, the walker) and beats in time: lines,
   sounds, the Dusk theme, the frame of a blow. A press shows the line coming up whole, then
   moves to the shot's next line or the next shot; Escape or "Skip" ends it. The scenes:
-  **the Long Night** (a new walk, before the first strike, about 24 s), **the First Dusk**
+  **the Long Night** (a new walk, as its first Remnant falls, about 24 s; minute one is the monster, the strike and the gold, with a first hint saying to strike), **the First Dusk**
   (the first ascension, about 40 s; its ascension toast then carries no quote), **Almost**
   (Maëlle hired again after she half remembers), **the Empty Throne**
   (ascension 13), **the Crown in the Ice**, **the Rehearsal**, **the Threshold** and
@@ -698,16 +711,30 @@ opens again, within the same cap as a hidden tab.
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
 (`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 47, stage 50 in
-1 h 24, first ascension at 2 h 52, stage 100 at 3 h 41 (version 1.3, relics that remember;
+1 h 20, first ascension at 2 h 20, stage 100 at 3 h 04 (version 2.1, the first night's gate
+and King keeping their wounds: the bot no longer waits at the King, so the first dusk comes
+about half an hour sooner and spreads from 1 h 37 to 2 h 50 by seed, where the seeds held at
+the King went past 4 h 30 before; a King keeping 30% of his wounds gives 2 h 40 and 3 h 39,
+none gives 2 h 52 and 3 h 41; version 1.3 stood at 1 min 47, 1 h 24, 2 h 52 and 3 h 41,
 before it 1 h 29, 3 h 01 and 3 h 51), then
 steady progress carried by ascensions. Over 30 seeds: 1 min 48, 1 h 33, 3 h 11 and 4 h 08
 (before 1.3: 1 min 48, 1 h 35, 2 h 55 and 3 h 59),
 the same to the minute as before the replay (1 min 48, 1 h 36, 2 h 53, 3 h 59): since the
 engine steps every 100 ms (version 1.1, the bots' cadence), any change sends every seed down
 another road, and nine seeds swing a median by a quarter of an hour either way. A naive walker (it buys the newest companion it can afford, never the best
-value) loses 2 min 27 at the stage 20 guardian, 2 min 33 at the stage 30 guardian and
-3 min 09 at the stage 40 guardian (median of
-9 seeds, `npx tsx packages/game/scripts/walls.ts 9`). The pace of a run is set by the gold a
+value) loses 2 min 27 at the stage 20 guardian, 2 min 31 at the stage 30 guardian, 3 min 09
+at the stage 40 guardian and 13 min 05 at the first King (median of 9 seeds, `npx tsx
+packages/game/scripts/walls.ts 9`; before version 2.1, 42 min 08 at the King, who then
+healed whole; Maëlle at 25 gold was tried and dropped: it slowed the first night by a
+third for the bot and the naive walker alike, the stage 50 seed by seed +39%). **The walker who is not a bot**
+(`npx tsx packages/game/scripts/realistic.ts 9 3`: 2 strikes a second, the same naive
+purchases, a first hour then four 15-minute sessions a day, the tab open between them,
+closed at night, calling the dusk as soon as it sees the King fallen the first time, then
+once the road stops paying) reaches stage 10 in 4 min 11 and stage 41 after its first hour;
+the company walks on to the King in the open tab (the autopilot only goes back to a boss it
+can beat, so the wounds of one fight help it, 54 min at the King as before); it ascends on
+its first return, after 1 h 00 of play, and stands at stage 280, 960 and 1450 at the end of
+days 1, 2 and 3 (24 ascensions; 230, 890 and 1380 before 2.1). The pace of a run is set by the gold a
 monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to stage 10.
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
 bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
@@ -715,7 +742,7 @@ background tab add and the first hour back with and without the Reunion. The bal
 scripts play each seed (and each profile) in its own process, six at a time at a low
 priority so the machine stays usable (`BALANCE_WORKERS=n` for another count); `npm run sims`
 plays all of them at once on the same six places, in about six minutes, and `npm run compare`
-sets two versions of the game side by side, seed by seed (see AGENTS.md). Over 120 seeds the first ascension comes at 2 h 48
+sets two versions of the game side by side, seed by seed (see AGENTS.md). Before version 2.1, over 120 seeds the first ascension came at 2 h 48
 (median), 80% of walkers between 2 h 01 and 3 h 43. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
@@ -750,6 +777,11 @@ rejects real play.
   press.
   Its foot names the version the walker plays (`v0.6.0`): the `version` of the root
   `package.json`, read at build time, the same on the develop server.
+- The first seconds: a hint says to strike the monster (from the very first second, gone with
+  the first strike); after Aldric's second level, a hint tells the walker to keep their gold for
+  Maëlle (50 gold, the first companion) until she joins. What relics remember (traits) is told
+  with the second relic found, never in the same breath as the first relic's toast; the first
+  relic's toast says it is already worn (a relic of the road goes to its empty slot).
 - One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a
   time, each gone for good once the walker did what it says, opened the place it points to,
   read it for 30 s, or pressed "OK" (a closed seam is explained once, not at every failed

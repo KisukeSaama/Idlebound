@@ -89,6 +89,8 @@ const QUIET_EVENTS: ReadonlySet<string> = new Set(["caravan"]);
 const ROUT_TOLD = "rout";
 /** How long a newly earned element of the shell glows. */
 const FRESH_MS = 4_000;
+/** The Long Night is told as the first Remnant of a walk falls, or a page loaded within these first kills. */
+const PROLOGUE_KILLS = 3;
 /**
  * Toasts on screen at once: on a phone's layout two (the same test as the CSS), elsewhere
  * four. The others wait their turn in line, none dropped; a long line moves faster.
@@ -431,9 +433,11 @@ export default function GameApp() {
   }, [ready, store, toast, fresh]);
 
   // The Ledger's scenes: one plays when the walker lives its moment during play, and a new
-  // walk opens on the Long Night. A load (a new engine) only takes note of the moments already
-  // lived; several lived at once (a long road walked alone) play only the last. The scenes
-  // lived and never played are told once, in a toast, when the Hall that keeps them is open.
+  // walk tells the Long Night as its first Remnant falls (minute one is the monster, the strike
+  // and the gold; the story comes once the walker has struck). A load (a new engine) only takes
+  // note of the moments already lived; several lived at once (a long road walked alone) play
+  // only the last. The scenes lived and never played are told once, in a toast, when the Hall
+  // that keeps them is open.
   useEffect(() => {
     if (!ready) return;
     let engine = store.engine;
@@ -442,10 +446,14 @@ export default function GameApp() {
       pump.forget(new Set(gameText(currentLocale()).cutscenes[id].lines));
       playScene(id);
     };
-    const load = () => {
+    /** The first Remnants of a new walk have fallen and the Long Night was never told. */
+    const prologueDue = () => {
       const state = store.state;
-      const untouched = state.lifetime.clicks === 0 && state.lifetime.kills === 0 && state.maxStageEver <= 1;
-      if (untouched && !state.tutorial.done.includes(sceneMark("prologue"))) play("prologue");
+      const firstBlows = state.lifetime.ascensions === 0 && state.maxStageEver <= 1 && state.lifetime.kills >= 1 && state.lifetime.kills <= PROLOGUE_KILLS;
+      return firstBlows && !state.tutorial.done.includes(sceneMark("prologue"));
+    };
+    const load = () => {
+      if (prologueDue()) play("prologue");
       else tellKept();
     };
     const tellKept = () => {
@@ -469,6 +477,7 @@ export default function GameApp() {
       const fresh = lived.filter((id) => !known.has(id));
       known = new Set(lived);
       if (fresh.length > 0) play(fresh[fresh.length - 1]);
+      else if (prologueDue()) play("prologue");
       else tellKept();
     };
     return store.subscribe(check);
@@ -552,10 +561,11 @@ export default function GameApp() {
           {
             // A guardian of the present night keeps its wounds: say how far down it stays.
             const wound = store.state.trail.wound;
-            const text = wound && wound.stage === event.stage && wound.share > 0 ? m.bossFailedWounded(Math.round(wound.share * 100)) : m.bossFailedText;
-            // The King, to a walker who never passed him: once a session.
+            const told = wound && wound.stage === event.stage && wound.share > 0 ? m.bossFailedWounded(Math.round(wound.share * 100)) : m.bossFailedText;
+            // The King, to a walker who never passed him: once a session, with what his fall opens.
             const first = isKingStage(event.stage) && store.state.lifetime.ascensions === 0 && !repelled;
             if (first) repelled = true;
+            const text = first ? `${told} ${m.kingFallOpens}` : told;
             toast({ tone: "danger", icon: "hourglass", title: m.bossFailedTitle, text, quote: first ? { by: g.speakers.king, text: g.voices.kingRepels[0] } : undefined });
           }
           break;

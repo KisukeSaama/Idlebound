@@ -3,8 +3,8 @@
 import { ALTAR_REWORK_NOTICE, HARVEST_NOTICE_TOLD } from "@idlebound/game";
 import { useEffect, useRef } from "react";
 import { useI18n } from "@/i18n/client";
-import { useGame } from "../context";
-import { HINT_READ_MS, currentHint, hintLearned, type Hint, type HintId } from "../hints";
+import { useGame, useMagnitude } from "../context";
+import { HINT_READ_MS, currentHint, hintLearned, maelleCost, type Hint, type HintId } from "../hints";
 
 /** How often the time a hint has spent under the walker's eyes is counted. */
 const READ_STEP_MS = 1_000;
@@ -17,6 +17,7 @@ const READ_STEP_MS = 1_000;
 export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
   const { state, store } = useGame();
   const { t, g } = useI18n();
+  const magnitude = useMagnitude();
   const m = t.hud.tutorial;
   const hint = currentHint(state);
   if (!hint) return null;
@@ -29,8 +30,9 @@ export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
 
   function hintText({ id, skill }: Hint): string {
     switch (id) {
+      case "strike": return m.strike;
       case "hire": return m.hire;
-      case "companion": return m.companion(g.heroes.maelle.name);
+      case "companion": return state.gold >= maelleCost(state) ? m.companion(g.heroes.maelle.name) : m.companionSave(g.heroes.maelle.name, magnitude(maelleCost(state)));
       case "boss": return m.boss;
       case "skill": return m.skill(skill?.hotkey ?? "1");
       case "farm": return m.farm;

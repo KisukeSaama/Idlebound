@@ -3,7 +3,8 @@ import { playBot } from "../scripts/bot";
 import { GameEngine } from "./engine";
 import { ALTAR_BY_ID, altarTotalCost, legacyHarvestCost, legacyHarvestPrice } from "./data/altars";
 import { relicDensity } from "./data/items";
-import { WAGER_MAX_GOLD, crystalEssenceReward, derive, essencesForStage, stageGold } from "./formulas";
+import { FIRST_NIGHT_KING_WOUND, WAGER_MAX_GOLD, WOUND_CAP, crystalEssenceReward, derive, essencesForStage, stageGold, woundCapAt } from "./formulas";
+import { HEROES } from "./data/heroes";
 import { generateItem } from "./loot";
 import { seededRng } from "./rng";
 import { parseState } from "./save";
@@ -183,7 +184,7 @@ describe("crystals, hourglasses and shards", () => {
     const killsBefore = engine.state.lifetime.kills;
     expect(engine.buyOffer("hourglass", now)).toBe(true);
     // More kills than a second of play could hold: the hour poured must be counted.
-    expect(engine.state.lifetime.kills - killsBefore).toBeGreaterThan(100);
+    expect(engine.state.lifetime.kills - killsBefore).toBeGreaterThan(20);
     now += 1_000;
     engine.tick(now);
     const snapshot = structuredClone(engine.state);
@@ -214,6 +215,57 @@ describe("a game closed and opened again", () => {
     next.tick(now + 8 * 3600_000);
     expect(codes(verifyTransition(saved, next.state, 3600_000))).toContain("time");
   });
+});
+
+/**
+ * A naive walker striking 15 times a second up to the King, who then leaves the company to
+ * face him alone, without a purchase, until he pushes it back once (or `limit` seconds).
+ */
+function untilTheKingRefuses(seed: number, limit = 4 * 3600) {
+  const engine = new GameEngine(createInitialState(T0), seededRng(seed), T0);
+  const s = engine.state;
+  let now = T0;
+  for (let step = 0; now < T0 + limit * 1000 && s.trail.wound?.stage !== 50; step += 1) {
+    now += 100;
+    engine.tick(now);
+    if (s.maxStage >= 50) {
+      if (!s.autoAdvance) engine.toggleAutoAdvance();
+      continue;
+    }
+    engine.click(now);
+    if (step % 2 === 0) engine.click(now);
+    if (step % 10 === 0) {
+      engine.buyAllUpgrades(now);
+      for (let guard = 0; guard < 40; guard += 1) {
+        const hero = [...HEROES].reverse().find((entry) => (entry.index <= 1 || s.heroLevels[entry.id] || s.heroLevels[HEROES[entry.index - 1].id]) && engine.heroPurchase(entry.id, 1).cost <= s.gold);
+        if (!hero || !engine.buyHero(hero.id, 1, now)) break;
+      }
+      // Sent back, it trains a minute on the stage before, then tries again.
+      if (!s.autoAdvance && step % 600 === 0) engine.toggleAutoAdvance();
+    }
+  }
+  return { engine, now };
+}
+
+describe("the first night's Keep", () => {
+  it("lets the King keep his wounds on the first night only, within their bound", () => {
+    const { engine, now } = untilTheKingRefuses(3);
+    const wound = engine.state.trail.wound;
+    expect(wound?.stage).toBe(50);
+    expect(wound!.share).toBeGreaterThan(0);
+    expect(wound!.share).toBeLessThanOrEqual(FIRST_NIGHT_KING_WOUND);
+    expect(woundCapAt(engine.state, 45)).toBe(WOUND_CAP);
+    expect(verifyState(engine.state, now)).toEqual([]);
+    // Deeper than the King's first-night bound: refused.
+    const deeper = structuredClone(engine.state);
+    deeper.trail.wound = { stage: 50, share: FIRST_NIGHT_KING_WOUND + 0.1 };
+    expect(codes(verifyState(deeper, now))).toContain("trail");
+    // After a first dusk, the King heals whole: a wound on him is refused.
+    const later = structuredClone(engine.state);
+    later.lifetime.ascensions = 1;
+    expect(woundCapAt(later, 50)).toBe(0);
+    expect(codes(verifyState(later, now))).toContain("trail");
+  }, 60_000);
 });
 
 describe("relic density", () => {

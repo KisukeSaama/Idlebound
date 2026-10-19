@@ -2636,6 +2636,24 @@ button.resource:hover .resource-label {
   color: var(--text);
 }
 
+/* The level's net effect on damage once the essences it takes are counted. */
+.altar .altar-net {
+  color: var(--success-soft);
+  font-weight: 700;
+}
+
+.altar .altar-net-loss {
+  color: var(--danger-soft);
+}
+
+.altar-distribute {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 4px 0 10px;
+}
+
 .altar .btn {
   margin-top: auto;
 }

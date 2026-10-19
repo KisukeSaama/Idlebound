@@ -3,12 +3,27 @@ import { describe, expect, it } from "vitest";
 import { currentHint, hintLearned, hintsAnsweredBy } from "./hints";
 
 describe("tutorial hints", () => {
-  it("shows nothing at minute one, then one hint at a time, in order", () => {
+  it("tells the first strike, then one hint at a time, in order", () => {
     const state = createInitialState();
+    expect(currentHint(state)?.id).toBe("strike");
+    state.lifetime.clicks = 1;
+    expect(hintLearned(state, "strike")).toBe(true);
     expect(currentHint(state)).toBeNull();
     state.gold = HERO_BY_ID.maelle.baseCost;
     expect(currentHint(state)?.id).toBe("hire");
     state.heroLevels.aldric = 1;
+    expect(currentHint(state)?.id).toBe("companion");
+    state.heroLevels.maelle = 1;
+    expect(currentHint(state)).toBeNull();
+  });
+
+  it("tells the walker to keep their gold for Maëlle once Aldric has trained a little", () => {
+    const state = createInitialState();
+    state.lifetime.clicks = 40;
+    state.heroLevels.aldric = 1;
+    state.gold = 0;
+    expect(currentHint(state)).toBeNull();
+    state.heroLevels.aldric = 2;
     expect(currentHint(state)?.id).toBe("companion");
     state.heroLevels.maelle = 1;
     expect(currentHint(state)).toBeNull();
@@ -27,6 +42,7 @@ describe("tutorial hints", () => {
   it("drops a hint the moment the walker did what it says, marked or not", () => {
     const state = createInitialState();
     state.heroLevels.aldric = 10;
+    state.heroLevels.maelle = 1;
     state.gold = 0;
     expect(currentHint(state)?.id).toBe("skill");
     expect(hintLearned(state, "skill")).toBe(false);
