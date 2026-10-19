@@ -4,6 +4,8 @@
 //   review [--board crystals|stage|promises|weavings] [--days 30] [--limit 25]
 //   review --hide <username>     takes a walker's line off every board (leaderboard.hidden)
 //   review --show <username>     puts it back
+//   review --snapshots <username>             the account's daily snapshots (30 days)
+//   review --restore <username> --day <date>  puts that day's snapshot back as the account's game
 //
 // La Veille (crystals) is reviewed first: it is the board presence weighs on most.
 import { usernameKey } from "@idlebound/game";
@@ -11,6 +13,7 @@ import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { db, sql } from "./db/client";
 import { leaderboard, presenceDays, users } from "./db/schema";
 import { presenceScore } from "./lib/presence";
+import { listSnapshots, restoreSnapshot } from "./lib/snapshots";
 import { BOARDS, type BoardId } from "./routes/leaderboard";
 
 function option(name: string): string | undefined {
@@ -20,13 +23,18 @@ function option(name: string): string | undefined {
 
 const percent = (value: number | null) => (value === null ? "-" : `${Math.round(value * 100)}%`);
 
-async function setHidden(username: string, hidden: boolean) {
+async function walker(username: string) {
   const [user] = await db.select({ id: users.id, username: users.username }).from(users).where(eq(users.usernameKey, usernameKey(username))).limit(1);
   if (!user) {
     console.error(`No walker named ${username}.`);
     process.exitCode = 1;
-    return;
   }
+  return user;
+}
+
+async function setHidden(username: string, hidden: boolean) {
+  const user = await walker(username);
+  if (!user) return;
   await db.update(leaderboard).set({ hidden }).where(eq(leaderboard.userId, user.id));
   console.log(`${user.username}: ${hidden ? "hidden from" : "shown on"} the boards.`);
 }
@@ -63,9 +71,44 @@ async function review() {
   }));
 }
 
+async function snapshots(username: string) {
+  const user = await walker(username);
+  if (!user) return;
+  const rows = await listSnapshots(user.id);
+  if (rows.length === 0) console.log(`${user.username}: no snapshot kept.`);
+  else console.table(rows.map((row) => ({ day: row.day, revision: row.revision, "best stage": row.maxStage, taken: row.createdAt.toISOString() })));
+}
+
+async function restore(username: string, day: string | undefined) {
+  if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    console.error("Name the day to restore: --day YYYY-MM-DD (see --snapshots).");
+    process.exitCode = 1;
+    return;
+  }
+  const user = await walker(username);
+  if (!user) return;
+  const restored = await restoreSnapshot(user.id, day);
+  if (!restored) {
+    console.error(`${user.username}: no snapshot on ${day}, or no game kept.`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`${user.username}: the game of ${day} (best stage ${restored.maxStage}) is back as revision ${restored.revision}. Open pages will be asked to choose.`);
+}
+
 const hide = option("hide");
 const show = option("show");
-const task = hide ? setHidden(hide, true) : show ? setHidden(show, false) : review();
+const listed = option("snapshots");
+const restored = option("restore");
+const task = hide
+  ? setHidden(hide, true)
+  : show
+    ? setHidden(show, false)
+    : listed
+      ? snapshots(listed)
+      : restored
+        ? restore(restored, option("day"))
+        : review();
 task
   .catch((error) => {
     console.error(error);

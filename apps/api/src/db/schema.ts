@@ -109,6 +109,20 @@ export const saves = pgTable("saves", {
 }, (table) => [index("saves_game_created_at_idx").on(table.gameCreatedAt)]);
 
 /**
+ * An account's game as it stood at its first accepted save of a day (UTC), kept 30 days (see
+ * lib/snapshots.ts): `saves` holds one row rewritten every 30 s, so a game a faulty page sent
+ * back, or a walker's mistake, can be put back by a person from the day before.
+ */
+export const saveSnapshots = pgTable("save_snapshots", {
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  day: date("day", { mode: "string" }).notNull(),
+  state: jsonb("state").$type<GameState>().notNull(),
+  revision: integer("revision").notNull(),
+  maxStage: integer("max_stage").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.userId, table.day] }), index("save_snapshots_day_idx").on(table.day)]);
+
+/**
  * A guest's game: no account, no e-mail. The browser holds an httpOnly cookie, the row is
  * found by its hash. Never ranked; purged once unvisited for too long (see lib/guest.ts).
  */

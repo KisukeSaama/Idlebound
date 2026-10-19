@@ -14,6 +14,7 @@ import { forgetGuest, guestId, keepGuest, newGuest, renewGuest, visitDue } from 
 import { fail } from "../lib/errors";
 import { clientIp, limiter, tooMany } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
+import { snapshotSave } from "../lib/snapshots";
 import { verificationOverdue } from "../lib/verification";
 
 /** At most one save every 10 s per game, an account's or a guest's (the client sends one every 30 s). */
@@ -484,6 +485,7 @@ export const saveRoutes = new Hono()
             .returning({ userId: saves.userId });
           if (inserted.length === 0) return { status: 409, body: fail("save_conflict") };
         }
+        await snapshotSave(tx, user.id, values.state, values.revision, values.updatedAt.getTime());
         // The guest's game is the account's now: one game, one keeper.
         if (witness && guest) {
           await tx.delete(guestSaves).where(eq(guestSaves.id, guest));

@@ -792,6 +792,11 @@ rejects real play.
 ## Saves
 
 - **Server-side only.** No local save, no import/export, for accounts and guests alike.
+- **A day's snapshot.** The first save an account's game has accepted each day (UTC) is kept
+  apart (`save_snapshots`, 30 days). A person can list them and put one back
+  (`npm run review -w @idlebound/api -- --snapshots <username>`, then `--restore <username> --day
+  YYYY-MM-DD`): it becomes the account's game as a new revision, so every open page is asked to
+  choose, and the server's ledger of the game starts again from its record. Guests have none.
 - **A guest's game is kept without an account** (`guest_saves`, `GET`/`PUT`/`DELETE
   /save/guest`). A new game is begun by the server (`POST /save/guest/new`, see Anti-cheat,
   the fates): a browser without a game gets an httpOnly cookie (`ib_guest`, SameSite Lax, 30

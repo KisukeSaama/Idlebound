@@ -257,6 +257,38 @@ suite("API (real Postgres)", () => {
     expect((await client.call("GET", "/auth/me")).json.user).toBeNull();
   }, 60_000);
 
+  it("keeps the day's first save of an account as a snapshot a person can put back", async () => {
+    const client = new Client("10.0.0.40");
+    const username = freshName("Snap");
+    expect((await client.call("POST", "/auth/register", { email: `snap${unique}@idlebound.test`, username, password: "Un-Mot-De-Passe-Solide" })).status).toBe(201);
+    const userId = (await sql`select id from users where username = ${username}`)[0].id as string;
+
+    const state = playedState(3);
+    expect((await client.call("PUT", "/save", { state, baseRevision: null })).status).toBe(200);
+    const later = structuredClone(state);
+    later.lastTickAt += 1000;
+    const second = await client.call("PUT", "/save", { state: later, baseRevision: 1 });
+    expect(second.status, JSON.stringify(second.json)).toBe(200);
+
+    // One snapshot a day: the second save of the day leaves the first one's game.
+    const kept = await sql`select revision, max_stage, state from save_snapshots where user_id = ${userId}`;
+    expect(kept).toHaveLength(1);
+    expect(kept[0].revision).toBe(1);
+    expect(kept[0].state.lastTickAt).toBe(state.lastTickAt);
+
+    const { listSnapshots, restoreSnapshot } = await import("./lib/snapshots");
+    const [day] = await listSnapshots(userId);
+    expect(day.maxStage).toBe(state.maxStageEver);
+    expect(await restoreSnapshot(userId, "1999-01-01")).toBeNull();
+    // Put back as a new revision: the open page builds on revision 2 and must choose.
+    expect(await restoreSnapshot(userId, day.day)).toEqual({ revision: 3, maxStage: state.maxStageEver });
+    const cloud = await client.call("GET", "/save");
+    expect(cloud.json.save.revision).toBe(3);
+    expect(cloud.json.save.state.lastTickAt).toBe(state.lastTickAt);
+    const stale = await client.call("PUT", "/save", { state: later, baseRevision: 2 });
+    expect(stale.status).toBe(409);
+  }, 60_000);
+
   it("refunds the altars of a version 3 save once, and never for a save relabelled older", async () => {
     const client = new Client("10.0.0.9");
     const register = await client.call("POST", "/auth/register", { email: `fate${unique}@idlebound.test`, username: freshName("Fate"), password: "Un-Mot-De-Passe-Solide" });
