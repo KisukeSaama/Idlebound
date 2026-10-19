@@ -40,7 +40,7 @@ export const site = defineMessages({
     },
     error: {
       title: "La route s'est effacée",
-      text: "Une erreur a interrompu cette page. Le Grand Livre garde ta partie : réessaie, ou reviens à l'accueil.",
+      text: "Une erreur a interrompu cette page. Le Grand Livre garde ta partie : réessaie, ou reviens à l'accueil.",
       retry: "Réessayer",
       back: "Retour à l'accueil"
     },
