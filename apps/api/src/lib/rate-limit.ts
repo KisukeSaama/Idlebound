@@ -4,12 +4,15 @@ import { env } from "../env";
 import { fail } from "./errors";
 
 /**
- * Past this size, expired keys are purged before adding one; if the map is still full, new
- * keys are refused (bounded memory) while keys already tracked keep working.
+ * Past this size, expired keys are purged before adding one; if the map is still full, the
+ * least recently seen key that is not held back makes room (bounded memory). A flood of new
+ * keys therefore never shuts newcomers out, and never frees a key that is being held back.
  */
 const MAX_KEYS = 50_000;
 /** A full map is swept at most this often: a flood of new keys must not cost a full scan each. */
 const FULL_SWEEP_MS = 1_000;
+/** Keys looked at, oldest first, to find one to let go of: a map full of held keys costs no full scan. */
+const EVICTION_SCAN = 64;
 
 /**
  * In-memory sliding-window limiter. A single API instance runs per environment, so no
@@ -28,11 +31,14 @@ export class RateLimiter {
         this.lastFullSweep = now;
         this.sweep(now);
       }
-      // Still full: a new key waits for room rather than growing the map without bound.
-      if (this.hits.size >= this.maxKeys) return Math.ceil(this.windowMs / 1000);
+      // Still full: the least recently seen key that is not held back makes room. Only when
+      // every key looked at is held back does the new one wait.
+      if (this.hits.size >= this.maxKeys && !this.evict(now)) return Math.ceil(this.windowMs / 1000);
     }
     const since = now - this.windowMs;
     const recent = (this.hits.get(key) ?? []).filter((time) => time > since);
+    // Seen again: to the end of the map, which keeps its keys from the least recently seen.
+    this.hits.delete(key);
     if (recent.length >= this.limit) {
       this.hits.set(key, recent);
       return Math.ceil((recent[0] + this.windowMs - now) / 1000);
@@ -40,6 +46,21 @@ export class RateLimiter {
     recent.push(now);
     this.hits.set(key, recent);
     return 0;
+  }
+
+  /** Lets go of the least recently seen key that is under its limit; false when none was found. */
+  private evict(now: number): boolean {
+    const since = now - this.windowMs;
+    let looked = 0;
+    for (const [key, times] of this.hits) {
+      if (times.filter((time) => time > since).length < this.limit) {
+        this.hits.delete(key);
+        return true;
+      }
+      looked += 1;
+      if (looked >= EVICTION_SCAN) return false;
+    }
+    return false;
   }
 
   /** Hits still counted for this key, without recording one. */
@@ -109,6 +130,27 @@ function rateKey(address: string): string {
     return groups ? `${groups.slice(0, 4).join(":")}::/64` : address;
   }
   return address;
+}
+
+/**
+ * The wider network of a rate key: an IPv6 /64 belongs to a /48 a single site can hold whole
+ * (65,536 of them), so the limits that count new games and logins also count per /48. Null for
+ * an IPv4 address, already one key per subscriber.
+ */
+export function networkKey(key: string): string | null {
+  const match = key.match(/^([^:]+:[^:]+:[^:]+):[^:]+::\/64$/);
+  return match ? `${match[1]}::/48` : null;
+}
+
+/**
+ * Counts a request against its address, then against the /48 that address belongs to (see
+ * `networkKey`): the seconds to wait, or 0 when both allow it.
+ */
+export function consumeNetwork(address: RateLimiter, network: RateLimiter, key: string): number {
+  const wait = address.consume(key);
+  if (wait > 0) return wait;
+  const wide = networkKey(key);
+  return wide ? network.consume(wide) : 0;
 }
 
 function expandIPv6(address: string): string[] | null {

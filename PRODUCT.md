@@ -777,8 +777,11 @@ rejects real play.
   locks out only their own address; a looser ceiling (60 per 15 min) holds per account
   whatever the address. Once that ceiling is spent, an address that already failed on the
   account waits, while one that never failed still gets a try: the player is never locked
-  out by guesses from elsewhere. Each limiter tracks at most 50,000 keys; when full, a new
-  key waits until old ones expire.
+  out by guesses from elsewhere. Sign-up and login also count per IPv6 /48 (20 sign-ups an
+  hour, 80 logins per 15 min): a site holding a whole /48 has 65,536 addresses of its own.
+  Each limiter tracks at most 50,000 keys; when full, the least recently seen key that is not
+  held back makes room, so a flood of new keys never shuts newcomers out nor frees a key that
+  is being held back (a new key waits only when every key looked at is held back).
 - Forgotten password: single-use link valid 1 h, same answer whether the account exists.
   Requesting a link is limited to 5 per hour per IP (3 per account), using one to 10 per
   hour per IP.
@@ -807,11 +810,14 @@ rejects real play.
   top of it, with the same revisions, conflicts and catch-up as an account's. It goes
   through the same `validation.ts` (see Anti-cheat), is never ranked, and is deleted after
   **30 days without a visit** (a read or a save counts, to the day; the cookie slides with
-  it). No "not kept" warning is left: leaving the page asks for confirmation only when the
+  it). A game saved only once (a page opened, a few blows, then left: under a minute of play)
+  is deleted after **48 hours** without a visit. No "not kept" warning is left: leaving the page asks for confirmation only when the
   last saves failed or the session ended.
 - Guest saves are rate limited: 6 per minute per game (as for an account), 60 per minute
-  per IP for all its games together, and 20 new guest games per hour per IP. A guest's first
-  save may be at most 30 days old.
+  per IP for all its games together, and 20 new guest games per hour per IP (60 per IPv6
+  /48). Every address together, the server begins keeping at most 3,000 guest games an hour
+  (`GUEST_GAMES_PER_HOUR`): past it a new guest still plays, and its game is kept once the
+  hour turns. A guest's first save may be at most 30 days old.
 - On sign-up or login, a fresh guest run (under 90 s of play, no ascension, best stage 3 or
   less) or the same run adopts the account's save; a guest run that differs from it triggers
   an explicit choice, never a silent overwrite. Until the choice is made both games stay

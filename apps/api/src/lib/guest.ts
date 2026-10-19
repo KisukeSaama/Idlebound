@@ -1,4 +1,4 @@
-import { lt } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
 import { GUEST_SAVE_DAYS } from "@idlebound/game";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
@@ -53,10 +53,21 @@ export function forgetGuest(c: Context) {
   deleteCookie(c, GUEST_COOKIE, { path: "/", secure: env.COOKIE_SECURE });
 }
 
-/** Deletes the guest games nobody visited for GUEST_SAVE_DAYS. */
+/**
+ * A guest game saved once and never again (a page opened, a few blows, then left: less than
+ * a minute of play) is let go after this many hours unvisited, the others after
+ * GUEST_SAVE_DAYS: most rows a flood of new guests leaves are of the first kind.
+ */
+export const GUEST_GLIMPSE_HOURS = 48;
+
+/** Deletes the guest games nobody visited for GUEST_SAVE_DAYS, and the glimpses after GUEST_GLIMPSE_HOURS. */
 export async function purgeGuestSaves(now = new Date()) {
   const removed = await db.delete(guestSaves)
     .where(lt(guestSaves.lastSeenAt, new Date(now.getTime() - GUEST_SAVE_DAYS * DAY)))
     .returning({ id: guestSaves.id });
   if (removed.length > 0) console.log(`[api] ${removed.length} guest game(s) deleted after ${GUEST_SAVE_DAYS} days unvisited`);
+  const glimpses = await db.delete(guestSaves)
+    .where(and(eq(guestSaves.revision, 1), lt(guestSaves.lastSeenAt, new Date(now.getTime() - GUEST_GLIMPSE_HOURS * 3_600_000))))
+    .returning({ id: guestSaves.id });
+  if (glimpses.length > 0) console.log(`[api] ${glimpses.length} guest game(s) saved once deleted after ${GUEST_GLIMPSE_HOURS} h unvisited`);
 }

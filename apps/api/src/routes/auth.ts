@@ -10,12 +10,15 @@ import { fail } from "../lib/errors";
 import { localeOf } from "../lib/i18n";
 import { resetPasswordMail, sendMail, verifyEmailMail } from "../lib/mail";
 import { checkPasswordStrength, dummyVerify, hashPassword, verifyPassword } from "../lib/password";
-import { clientIp, limiter, tooMany } from "../lib/rate-limit";
+import { clientIp, consumeNetwork, limiter, tooMany } from "../lib/rate-limit";
 import { createSession, currentUser, destroyAllSessions, destroySession, hashToken, newToken } from "../lib/session";
 import { VERIFY_LINK_DAYS, verificationRequired, verifyDeadline } from "../lib/verification";
 
 const registerIp = limiter(5, 60 * 60_000);
 const loginIp = limiter(20, 15 * 60_000);
+/** The same, per IPv6 /48: a site holding a whole /48 has 65,536 addresses of its own (see `networkKey`). */
+const registerNetwork = limiter(20, 60 * 60_000);
+const loginNetwork = limiter(80, 15 * 60_000);
 /** Guesses at one account from one address. A success clears it, so what it holds are failures. */
 const loginAttempt = limiter(8, 15 * 60_000);
 /**
@@ -108,7 +111,7 @@ export const authRoutes = new Hono()
   })
 
   .post("/register", async (c) => {
-    const wait = registerIp.consume(clientIp(c));
+    const wait = consumeNetwork(registerIp, registerNetwork, clientIp(c));
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, registerBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
@@ -142,7 +145,7 @@ export const authRoutes = new Hono()
   })
 
   .post("/login", async (c) => {
-    const wait = loginIp.consume(clientIp(c));
+    const wait = consumeNetwork(loginIp, loginNetwork, clientIp(c));
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, loginBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);

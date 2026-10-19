@@ -669,6 +669,20 @@ suite("API (real Postgres)", () => {
       expect(gone.has("ib_guest")).toBe(false);
     }, 60_000);
 
+    it("lets go of a guest's game saved only once after 48 hours unvisited, never one played on", async () => {
+      const { purgeExpired } = await import("./lib/session");
+      const glimpse = new Client("10.0.1.30");
+      const played = new Client("10.0.1.31");
+      for (const client of [glimpse, played]) expect((await client.call("PUT", "/save/guest", { state: createInitialState(), baseRevision: null })).status).toBe(200);
+      const playedRow = await guestRow(played);
+      await sql`update guest_saves set revision = 2 where id = ${playedRow!.id}`;
+      for (const client of [glimpse, played]) await sql`update guest_saves set last_seen_at = now() - interval '49 hours' where id = ${(await guestRow(client))!.id}`;
+      const glimpseRow = await guestRow(glimpse);
+      await purgeExpired();
+      expect(await sql`select 1 from guest_saves where id = ${glimpseRow!.id}`).toHaveLength(0);
+      expect(await sql`select 1 from guest_saves where id = ${playedRow!.id}`).toHaveLength(1);
+    }, 60_000);
+
     it("rate-limits a guest's saves per game and per address", async () => {
       // One game: six saves a minute.
       const guest = new Client("10.0.1.10");
@@ -1242,7 +1256,8 @@ suite("API (real Postgres)", () => {
       expect(guest.value("ib_guest")).toBe(cookie);
       const [row] = await sql`select seed is not null as seed, runtime is not null as runtime from guest_saves where game_created_at = ${fresh.json.createdAt}`;
       expect(row).toEqual({ seed: true, runtime: true });
-      const reports = await sql`select outcome from replay_reports where guest_id is not null and detail->>'base' is null and outcome <> 'no-journal'`;
+      const { hashToken } = await import("./lib/session");
+      const reports = await sql`select outcome from replay_reports where guest_id = ${hashToken(cookie ?? "")} and outcome <> 'no-journal'`;
       expect(reports.filter((report) => report.outcome !== "match")).toEqual([]);
       // Another browser, without the cookie, gets another game: never this one's seed.
       const other = await new Client("10.0.2.4").call("POST", "/save/guest/new");

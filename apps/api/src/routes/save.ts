@@ -12,7 +12,7 @@ import { runReplay } from "../replay/pool";
 import type { ReplayVerdict } from "../replay/check";
 import { forgetGuest, guestId, keepGuest, newGuest, renewGuest, visitDue } from "../lib/guest";
 import { fail } from "../lib/errors";
-import { clientIp, limiter, tooMany } from "../lib/rate-limit";
+import { clientIp, consumeNetwork, limiter, tooMany } from "../lib/rate-limit";
 import { currentUser } from "../lib/session";
 import { snapshotSave } from "../lib/snapshots";
 import { verificationOverdue } from "../lib/verification";
@@ -31,6 +31,14 @@ const guestSaveIp = limiter(60, 60_000);
 const guestOpenIp = limiter(60, 60_000);
 /** New guest games from one address: each one is a row the server keeps for weeks. */
 const guestCreateIp = limiter(20, 60 * 60_000);
+/** The same per IPv6 /48 (see `networkKey`): one site, 65,536 addresses. */
+const guestCreateNetwork = limiter(60, 60 * 60_000);
+/**
+ * Guest games the server begins keeping in an hour, every address together: a flood from
+ * many addresses cannot fill the disk faster than this. Past it, a guest still plays, and its
+ * game is kept once the hour turns (see `GUEST_GAMES_PER_HOUR`).
+ */
+const guestCreateAll = limiter(env.GUEST_GAMES_PER_HOUR, 60 * 60_000);
 
 /** Violations sent back to the client: enough to debug, never a megabyte of echoes. */
 const MAX_REPORTED_VIOLATIONS = 20;
@@ -596,7 +604,7 @@ export const saveRoutes = new Hono()
     if (ipWait > 0) return tooMany(c, ipWait);
     let id = guestId(c);
     if (!id) {
-      const createWait = guestCreateIp.consume(ip);
+      const createWait = consumeNetwork(guestCreateIp, guestCreateNetwork, ip);
       if (createWait > 0) return tooMany(c, createWait);
       const guest = newGuest();
       keepGuest(c, guest.token);
@@ -666,12 +674,17 @@ export const saveRoutes = new Hono()
           return null;
         }
         // The game this cookie's pending seed began: its row, under the cookie it already has.
+        const allWait = guestCreateAll.consume("all");
+        if (allWait > 0) {
+          console.warn("[api] guest games: the hourly ceiling is reached, new ones wait");
+          return { status: 429, body: fail("too_many_attempts", { retryAfter: allWait }), retryAfter: allWait };
+        }
         if (id && (await tx.select({ owner: pendingSeeds.owner }).from(pendingSeeds).where(eq(pendingSeeds.owner, guestOwner(id))).limit(1)).length > 0) {
           await tx.insert(guestSaves).values({ id, ...values, lastSeenAt: values.updatedAt });
           return null;
         }
         // A new guest game (or one whose row is gone): a new row under a new cookie.
-        const createWait = guestCreateIp.consume(ip);
+        const createWait = consumeNetwork(guestCreateIp, guestCreateNetwork, ip);
         if (createWait > 0) return { status: 429, body: fail("too_many_attempts", { retryAfter: createWait }), retryAfter: createWait };
         const guest = newGuest();
         await tx.insert(guestSaves).values({ id: guest.id, ...values, lastSeenAt: values.updatedAt });
