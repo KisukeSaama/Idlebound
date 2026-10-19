@@ -1911,6 +1911,18 @@ button.resource:hover .resource-label {
   scrollbar-width: none;
 }
 
+.modal-tabs[data-more="end"] {
+  mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+}
+
+.modal-tabs[data-more="start"] {
+  mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent);
+}
+
+.modal-tabs[data-more="start end"] {
+  mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+}
+
 .modal-tabs button {
   flex: none;
   margin-bottom: 1px;
@@ -3812,6 +3824,43 @@ kbd {
   .resource-essence:active,
   .resource-shard:active {
     scale: 0.95;
+  }
+}
+
+/* Under a finger, every small key answers a 44 px touch: an invisible pad around it, the
+   drawing unchanged. Neighbours in a row only grow up and down, never over each other. */
+@media (pointer: coarse) {
+  .modal-close,
+  .stage-arrow,
+  .stage-pip,
+  .skill,
+  .talent,
+  .buy-modes button {
+    position: relative;
+  }
+  .modal-close::after,
+  .stage-arrow::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2));
+  }
+  .stage-pip::after,
+  .skill::after,
+  .talent::after,
+  .buy-modes button::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2)) 0;
+  }
+  /* The strip lets its keys' pads out; its ends keep their round corners themselves. */
+  .buy-modes {
+    overflow: visible;
+  }
+  .buy-modes button:first-child {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  }
+  .buy-modes button:last-child {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   }
 }
 

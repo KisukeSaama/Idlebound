@@ -38,6 +38,29 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, asi
   const dialog = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  const tablist = useRef<HTMLDivElement>(null);
+
+  // A row of tabs wider than the window fades at the side where more wait, and the open one
+  // scrolls into sight: on a narrow phone no tab hides without a sign.
+  useEffect(() => {
+    const row = tablist.current;
+    if (!row) return;
+    const edges = () => {
+      const more = [row.scrollLeft > 1 ? "start" : "", row.scrollLeft + row.clientWidth < row.scrollWidth - 1 ? "end" : ""].filter(Boolean).join(" ");
+      if (row.dataset.more !== more) row.dataset.more = more;
+    };
+    edges();
+    row.addEventListener("scroll", edges, { passive: true });
+    const observer = new ResizeObserver(edges);
+    observer.observe(row);
+    return () => {
+      row.removeEventListener("scroll", edges);
+      observer.disconnect();
+    };
+  }, [tabs?.length]);
+  useEffect(() => {
+    if (activeTab) tabRefs.current.get(activeTab)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [activeTab]);
 
   useEffect(() => {
     // The scene behind the veil slows down while the window is open.
@@ -146,7 +169,7 @@ export function Modal({ title, icon, onClose, size = "md", children, footer, asi
           {onClose ? <button type="button" className="modal-close" aria-label={t.hud.modal.close} onClick={onClose}><Picto name="close" size={16} /></button> : null}
         </header>
         {tabs ? (
-          <div className="modal-tabs" role="tablist" aria-labelledby={titleId} onKeyDown={onTabKey}>
+          <div ref={tablist} className="modal-tabs" role="tablist" aria-labelledby={titleId} onKeyDown={onTabKey}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
