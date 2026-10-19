@@ -1287,7 +1287,7 @@ the scene, a road walked alone) is told once, in a toast, when the Hall that kee
 | **The Long Night** | A new walk, before the first strike | The fields at dusk and the walker in them; the Keep at the end of the road, its King waiting; "Dusk again." |
 | **The First Dusk** | Ascension 1 | The Keep and its King; "Night one."; "You're early."; one blow and the King going up in violet lights; the Sanctum's thirteen stones; "Dusk again." |
 | **Almost** | Maëlle hired again after she first half remembers (~3 h) | The road at dusk; Maëlle's face in the dark: "You again? No. I'd remember. Wouldn't I?"; she keeps looking back. |
-| **The Empty Throne** | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; the hall left to the walker. |
+| **The Empty Throne** | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; then the Binding, said plainly (layer 3): Aldemar had Eldra weave the night against the Morning, his knight was to walk it first, ran, and the King walked instead. The crown (layer 4) waits for its own milestones. |
 | **The Crown in the Ice** | Past stage 500 | The Rime's hall, a smaller crown frozen in its floor, Kaelen's keystone. There were other kings. |
 | **The Rehearsal** | Past stage 1,000 | The sky alight over the Keep; the walker takes it for the Dawn; Ashka's keystone: its rehearsal. |
 | **The Loom** | Descent 1 | The room below every stratum; Eldra at her loom, the night on its beam; "Mind the threads." |

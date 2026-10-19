@@ -44,7 +44,7 @@ export const CUTSCENES_TEXT: Record<Locale, Record<CutsceneId, CutsceneText>> = 
       lines: [
         "Night thirteen. The King spoke before the walker raised the sword.",
         VOICES_TEXT.en.kingWords[12],
-        "The Fallen King was the first walker. He sat down on his throne to rest, and the crown never let him up."
+        "To keep the Morning out, Aldemar had Eldra weave this night. His knight was meant to walk it first. He ran, and the King walked instead."
       ]
     },
     "rime-crown": {
@@ -76,7 +76,7 @@ export const CUTSCENES_TEXT: Record<Locale, Record<CutsceneId, CutsceneText>> = 
       name: "The Threshold",
       lines: [
         "Stage 2000. The King did not rise to fight. He slept on his throne, and the whole night was drowsy around him.",
-        "The walker struck all the same. The King did not wake as he went.",
+        "The walker struck all the same. The King fell without ever waking.",
         keystone("en", 39)
       ]
     },
@@ -121,7 +121,7 @@ export const CUTSCENES_TEXT: Record<Locale, Record<CutsceneId, CutsceneText>> = 
       lines: [
         "Treizième nuit. Le Roi parla avant que le marcheur ne lève l'épée.",
         VOICES_TEXT.fr.kingWords[12],
-        "Le Roi déchu fut le premier marcheur. Il s'assit sur son trône pour se reposer, et la couronne ne le laissa plus se lever."
+        "Aldemar fit tisser cette nuit par Eldra, contre le Matin. Son chevalier devait la parcourir le premier. Il fuit. Le Roi y alla à sa place."
       ]
     },
     "rime-crown": {
@@ -153,7 +153,7 @@ export const CUTSCENES_TEXT: Record<Locale, Record<CutsceneId, CutsceneText>> = 
       name: "Le Seuil",
       lines: [
         "Étape 2000. Le Roi ne se leva pas pour combattre. Il dormait sur son trône, et toute la nuit somnolait autour de lui.",
-        "Le marcheur frappa quand même. Le Roi ne se réveilla pas en partant.",
+        "Le marcheur frappa quand même. Le Roi tomba sans se réveiller.",
         keystone("fr", 39)
       ]
     },
