@@ -1264,7 +1264,15 @@ language.
   The sitemap states no `lastmod`.
 - Accessibility: every public page opens on a "Skip to content" link, hidden until a
   keyboard reaches it, that jumps to its `main`.
-- Every page renders per request (the CSP nonce requires it), so none is prerendered.
+- Every page renders per request (the CSP nonce requires it), so none is prerendered. A page
+  without a nonce would need `'unsafe-inline'` scripts (the App Router writes its data in
+  inline scripts, which a hash cannot cover per request), so the public pages are not cached
+  at the edge: the security default holds.
+- The art generator and its recipes (about a megabyte) load on demand, the first time a page
+  draws a sprite (`pixel/Art.tsx`, `pixel/artSource.ts`); the palette and the scene's grid are
+  their own entries (`@idlebound/game/palette`, `@idlebound/game/grid`). Every page, the
+  landing and the game included, starts on about 1.3 MB of scripts (430 KB gzipped), down
+  from 2.4 MB (690 KB) when every page carried the recipes.
 - Public, indexable leaderboard. Only production is indexable; the dev environment answers
   `noindex`.
 - **When something breaks.** A game window, a scene, a chest or the Reunion that throws while
