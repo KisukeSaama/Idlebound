@@ -4,7 +4,7 @@
  * and the scenes. Generation happens once per key; the LRU keeps memory bounded.
  */
 import type { ItemSlot, Rarity } from "@idlebound/game";
-import { palRgb, type IconRecipe, type Pal } from "@idlebound/game/art";
+import { palLab, palRgb, type IconRecipe, type Pal } from "@idlebound/game/art";
 import { idleFrames, renderCreature } from "./creature";
 import { renderEmblem } from "./mask";
 import { renderCrystal, renderIcon, renderRelic } from "./objects";
@@ -38,16 +38,49 @@ export interface CreatureSheet {
 export type Tone = "grey" | "eclipse";
 const TONES: Record<Tone, (pixels: Pixels) => Pixels> = { grey: greyPixels, eclipse: eclipsePixels };
 
-/** The frame of a hit: the body inside the outline in one color; the outline stays dark and eyes keep their light. */
+/**
+ * Every palette entry mapped to the one a step lighter in the same hue (Lab: lightness up by
+ * 8 to 30, the nearest in a and b); the lightest keep their own.
+ */
+export const LIGHTER_TABLE: Uint8Array = (() => {
+  const table = new Uint8Array(256);
+  const labs = Array.from({ length: 64 }, (_, pal) => palLab(pal));
+  for (let pal = 0; pal < 256; pal += 1) {
+    table[pal] = pal;
+    if (pal === EMPTY || pal >= 64) continue;
+    const [l, a, b] = labs[pal];
+    let best = -1;
+    let bestDistance = Infinity;
+    for (let other = 0; other < 64; other += 1) {
+      const [ol, oa, ob] = labs[other];
+      const rise = ol - l;
+      if (rise < 8 || rise > 30) continue;
+      const distance = (oa - a) ** 2 + (ob - b) ** 2 + 0.5 * (rise - 16) ** 2;
+      if (distance < bestDistance) {
+        best = other;
+        bestDistance = distance;
+      }
+    }
+    if (best >= 0) table[pal] = best;
+  }
+  return table;
+})();
+
+/**
+ * The frame of a hit: the body a step lighter in its own colors, and a 1 px rim of `color`
+ * just inside the outline (who struck). The outline stays dark and eyes keep their light, so
+ * the creature stays readable under a rain of blows.
+ */
 export function flashPixels(source: Pixels, color: Pal): Pixels {
   const out = clonePixels(source);
   const empty = (x: number, y: number) => x < 0 || y < 0 || x >= source.w || y >= source.h || source.idx[y * source.w + x] === EMPTY;
+  const edge = (x: number, y: number) => !empty(x, y) && (empty(x - 1, y) || empty(x + 1, y) || empty(x, y - 1) || empty(x, y + 1));
   for (let y = 0; y < source.h; y += 1) {
     for (let x = 0; x < source.w; x += 1) {
       const at = y * source.w + x;
-      if (source.idx[at] === EMPTY || source.emit[at]) continue;
-      if (empty(x - 1, y) || empty(x + 1, y) || empty(x, y - 1) || empty(x, y + 1)) continue;
-      out.idx[at] = color;
+      if (source.idx[at] === EMPTY || source.emit[at] || edge(x, y)) continue;
+      const rim = edge(x - 1, y) || edge(x + 1, y) || edge(x, y - 1) || edge(x, y + 1);
+      out.idx[at] = rim ? color : LIGHTER_TABLE[source.idx[at]];
       out.alpha[at] = 255;
     }
   }

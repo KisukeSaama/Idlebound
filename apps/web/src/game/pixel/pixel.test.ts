@@ -13,7 +13,7 @@ import { LANDMARKS } from "./backdrop";
 import { compositeLayers, flattenScene, MAX_SCENE_COLORS, PLACE_IDS, renderScene, type Scene } from "./scene";
 import { eclipsePixels, eclipseRing, GREY_TABLE, GREYS, greyPixels, greyScene, lanternPlaces, remembrancePixels, seamPixels, unfinishedOrder, unfinishedPixels, unfinishedShare } from "./events";
 import { placeFrames } from "./stage";
-import { flashPixels } from "./sprites";
+import { flashPixels, LIGHTER_TABLE } from "./sprites";
 
 const hash = (pixels: Pixels) => hashBitmap(toRgba(pixels));
 /** Every Age's mark: the first era of each Age, the Ink of the Blank and the Dawn's line. */
@@ -221,7 +221,7 @@ describe("pixel generator", () => {
     }
   });
 
-  it("lights a hit inside the outline: the whole body in one color, eyes and outline untouched", () => {
+  it("lights a hit inside the outline: the body a step lighter in its own colors, a rim of the striker's, eyes and outline untouched", () => {
     for (const id of Object.keys(CREATURE_RECIPES)) {
       const still = renderCreature(id).pixels;
       const edge = (at: number) => {
@@ -232,10 +232,17 @@ describe("pixel generator", () => {
       const drawn = [...still.idx.keys()].filter((at) => still.idx[at] !== EMPTY);
       const kept = drawn.filter((at) => still.emit[at] || edge(at));
       const inside = drawn.filter((at) => !still.emit[at] && !edge(at));
-      const lit = flashPixels(still, C.lilac);
+      const lit = flashPixels(still, C.mint);
       expect(kept.filter((at) => lit.idx[at] !== still.idx[at]).length, `${id} outline and eyes kept`).toBe(0);
-      expect(inside.every((at) => lit.idx[at] === C.lilac), `${id} filled`).toBe(true);
+      expect(inside.every((at) => lit.idx[at] === C.mint || lit.idx[at] === LIGHTER_TABLE[still.idx[at]]), `${id} lit`).toBe(true);
+      // Never a flat silhouette: the body keeps more than its rim's single color.
+      const colors = new Set(inside.map((at) => lit.idx[at]));
+      if (inside.length > 40) expect(colors.size, `${id} keeps its shapes`).toBeGreaterThan(2);
     }
+  });
+
+  it("lightens every palette entry within its hue, never darker", () => {
+    for (let pal = 0; pal < 64; pal += 1) expect(palLab(LIGHTER_TABLE[pal])[0]).toBeGreaterThanOrEqual(palLab(pal)[0]);
   });
 
   it("draws every creature in solid pixels and 4 to 12 colors, at every era", () => {
