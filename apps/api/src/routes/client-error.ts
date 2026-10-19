@@ -38,6 +38,6 @@ export const clientErrorRoutes = new Hono().post("/", async (c) => {
   const parsed = reportBody.safeParse(input);
   if (!parsed.success) return c.json(fail("invalid_request"), 400);
   const { kind, message, stack, path, release, version } = parsed.data;
-  console.warn(`[client] ${kind} ${line(path.split("?")[0], 200)} v${version ?? "?"} ${release ?? "?"}: ${line(message, 500)}${stack ? ` | ${line(stack, 1500)}` : ""}`);
+  console.warn(`[client] ${kind} ${line(path.split("?")[0], 200)} ${version ?? "?"} ${release ?? "?"}: ${line(message, 500)}${stack ? ` | ${line(stack, 1500)}` : ""}`);
   return c.body(null, 204);
 });
