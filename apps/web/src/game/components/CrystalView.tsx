@@ -26,7 +26,7 @@ export function CrystalView() {
         store.act({ type: "crystal" });
       }}
     >
-      <PixelSprite source={crystalSource()} size={76} />
+      <PixelSprite source={crystalSource()} size={76} eager />
     </button>
   );
 }
