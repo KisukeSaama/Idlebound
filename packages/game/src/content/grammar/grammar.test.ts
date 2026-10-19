@@ -157,6 +157,42 @@ describe("fragment grammar", () => {
     for (const lexicon of [...FR_STRATA, ...Object.values(FR_BIOMES), ...FR_SONGS]) for (const deed of lexicon.verbs) expect(deed.startsWith("a ")).toBe(true);
   });
 
+  it("gives every deed a doer it fits: no rat sets the table, no companion croaks", () => {
+    for (const biome of BIOME_IDS) {
+      expect(FR_BIOMES[biome].kinds, biome).toEqual(EN_BIOMES[biome].kinds);
+      const remnants = REMNANTS.filter((entry) => entry.biome === biome);
+      for (const kind of EN_BIOMES[biome].kinds) {
+        if (kind === "person") expect(remnants.some((entry) => entry.person), `${biome}: nobody can ${kind}`).toBe(true);
+        if (kind === "beast") expect(remnants.some((entry) => !entry.person), `${biome}: no beast for ${kind}`).toBe(true);
+      }
+      expect(EN_BIOMES[biome].kinds.some((kind) => kind !== "beast"), `${biome}: a deed a companion can do`).toBe(true);
+    }
+    const lower = (text: string) => text.toLowerCase();
+    for (const { source } of CASES.echo) {
+      if (source.kind !== "echo") continue;
+      const doer = EN_TEMPLATES[grammarTemplate(source)].doer;
+      if (!doer) continue;
+      const text = lower(grammarLine(source, "en").text);
+      const lexicon = EN_BIOMES[source.biome];
+      const deed = lexicon.verbs.findIndex((verb) => text.includes(lower(verb.replace(/^I /, ""))));
+      expect(deed, text).toBeGreaterThanOrEqual(0);
+      const kind = lexicon.kinds[deed];
+      if (doer === "companion") expect(kind, text).not.toBe("beast");
+      else {
+        const who = REMNANTS.filter((entry) => entry.biome === source.biome).find((entry) => text.includes(lower(entry.en)) || lower(grammarLine(source, "en").by) === lower(entry.en));
+        expect(who, text).toBeDefined();
+        if (who && kind !== "any") expect(who.person, `${who.en}: ${text}`).toBe(kind === "person");
+      }
+    }
+    for (const { source } of [...CASES.age, ...CASES.reading]) {
+      const doer = EN_TEMPLATES[grammarTemplate(source)].doer;
+      if (!doer) continue;
+      const line = grammarLine(source, "en").text;
+      expect(REMNANTS.some((entry) => lower(line).includes(lower(entry.en))), line).toBe(false);
+      expect(/^(A Remnant|Someone|Again, deeper\. A Remnant)/.test(line), line).toBe(true);
+    }
+  });
+
   it("carries the house into Age IX and the white into Age XI", () => {
     const ageWords = (from: number) =>
       EN_STRATA.slice(from, from + 5)

@@ -1581,7 +1581,12 @@ A fragment past an authored pool is built from:
 
 Rules: at most 140 characters; never generate a Truth-level noun (dream, dreamer, player,
 screen, tab) outside Age VIII and deeper; never repeat the same template twice in a row;
-seed = hash(source, n, descent). The grammar is a writer's tool: authored pools are always
+seed = hash(source, n, descent). The doer fits the deed: a deed of a place's lexicon may
+be marked for people only (`^laid the table`) or for beasts and things only (`~croaked`), a
+Remnant with hands and a voice (the Reaper, a drowned courtier) does the first, a beast the
+second, and a companion never croaks; in the strata, where no creature of the five places
+belongs, a Remnant, unnamed, or someone does the deed. What stays after an absence opens in
+more than one way ("Far from the road", "You were seven", "A voice called you"). The grammar is a writer's tool: authored pools are always
 used first, and every Remembrance Night adds authored lines.
 
 ### 17.4 Pacing

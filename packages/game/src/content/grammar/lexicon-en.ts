@@ -32,7 +32,7 @@ export const EN_STRATA: readonly EnLexicon[] = [
   en("spindle|thread|low star|footstool", "at@bottom of the sky|hollow of the sky|on@lowest step|underside of the stars", "wove|knelt|bent low|pulled a thread", "low|deep|patient", "indigo"),
   en("ribbon of light|veil|pale lantern|shimmer", "on@horizon|far north|at@edge of the sky|false dawn", "rehearsed|shimmered|rose too early|faded", "early|trembling|fleeting", "green"),
   // Age V: the Loom
-  en("warp thread|loom weight|heddle|taut string", "loom|warp|high frame|threads#p", "hummed|pulled a thread taut|climbed a thread|plucked a string", "taut|humming|endless", "linen-white"),
+  en("silver thread|loom weight|heddle|taut string", "loom|warp|high frame|workshop", "hummed|pulled a thread taut|climbed a thread|plucked a string", "taut|humming|endless", "linen-white"),
   en("weft thread|tiny label|needle|spool", "weave|cloth|selvage|basket", "stitched|mended|wrote very small|sighed", "tired|tiny|careful", "faded blue"),
   en("shuttle|reel|knotted cord|borrowed shadow", "gap between threads|crossing|passage|narrow way", "slipped past|went back and forth|crossed|began again", "familiar|quick|restless", "copper"),
   en("knot|name tied in thread|ball of yarn|rope end", "great knot|snarl|heart of the knot|loop", "tied a knot|pulled tight|held fast|picked at a knot", "tight|tangled|stubborn", "dark red"),
@@ -83,11 +83,11 @@ export const EN_STRATA: readonly EnLexicon[] = [
 
 /** Biome lexicons, for the echoes past the written ones. */
 export const EN_BIOMES: Record<string, EnLexicon> = {
-  "green-plains": en("sheaf|scythe|ribbon|scarecrow's hat", "wheat#m|barn|hedgerow|farmhouse", "looked back|laid the table|counted the sheaves|rang the harvest bell", "still standing|dusty|warm", "gold"),
+  "green-plains": en("sheaf|scythe|ribbon|scarecrow's hat", "wheat#m|barn|hedgerow|farmhouse", "looked back|^counted the sheaves|waited for the harvest|~nosed through the stubble", "still standing|dusty|warm", "gold"),
   "dark-forest": en("thorn|owl feather|root|carved name", "brambles#p|hollow oak|clearing|roots#p", "whispered a name|grew a thorn|bled|asked who", "thorny|mossy|listening", "dark green"),
   "forgotten-caves": en("pick|sky-shard|rune lamp|canary cage", "vault|gallery|mine shaft|deep vein", "dug|echoed|struck a vein|heard tomorrow", "frozen|echoing|deep", "glacier blue"),
-  "corrupted-marsh": en("wedding ring|guttering flame|brick of peat|drowned letter", "mire|on@drowned road|sinking manor|reeds#p", "sank an inch|bowed|croaked|tried a cure", "sodden|rotting|faithful", "verdigris"),
-  "fallen-king-ruins": en("faded banner|cracked bell|guard's spear|hound's collar", "great hall|throne room|on@stair|at@window", "saluted|kept watch|climbed the stair|faced the window", "colorless|cracked|loyal", "violet")
+  "corrupted-marsh": en("wedding ring|guttering flame|brick of peat|drowned letter", "mire|on@drowned road|sinking manor|reeds#p", "sank an inch|^bowed|~croaked|^tried a cure", "sodden|rotting|faithful", "verdigris"),
+  "fallen-king-ruins": en("faded banner|cracked bell|guard's spear|hound's collar", "great hall|throne room|on@stair|at@window", "^saluted|kept watch|climbed the stair|faced the window", "colorless|cracked|loyal", "violet")
 };
 
 /** The King's own words (40). His deeds are said by him: "I sat down". */

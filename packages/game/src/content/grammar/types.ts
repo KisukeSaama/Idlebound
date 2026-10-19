@@ -36,13 +36,21 @@ export interface FrAdj {
 }
 
 /**
+ * Who may do a deed: anyone, only someone with hands and a voice (a companion, the Reaper,
+ * a drowned courtier), or only a beast or a thing (a rat, a toad, the old tree).
+ */
+export type DeedKind = "any" | "person" | "beast";
+
+/**
  * Sixteen words: four objects, four places, four deeds (EN simple past "screamed", FR passé
- * composé third person singular "a crié"), three states (adjectives) and one color.
+ * composé third person singular "a crié"), three states (adjectives) and one color. `kinds`
+ * says who may do each deed (the same in both languages).
  */
 export interface Lexicon<N, A> {
   objects: readonly [N, N, N, N];
   places: readonly [N, N, N, N];
   verbs: readonly [string, string, string, string];
+  kinds: readonly [DeedKind, DeedKind, DeedKind, DeedKind];
   states: readonly [A, A, A];
   color: A;
 }
@@ -120,5 +128,11 @@ export interface Helpers<N, A> {
 
 export interface Template<N, A> {
   voice: Voice;
+  /**
+   * Who does the deed (`verb`), when someone named does it: the Remnant or the companion of
+   * the line. The grammar then picks a doer the deed fits (a rat never sets the table), and
+   * in the strata, where no creature of the road belongs, a Remnant or someone unnamed.
+   */
+  doer?: "remnant" | "companion";
   line: (slots: Slots<N, A>, h: Helpers<N, A>) => string;
 }
