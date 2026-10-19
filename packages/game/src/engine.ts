@@ -1150,7 +1150,8 @@ export class GameEngine {
           const fight = grace + this.bossLeft(stage) / (d.dps * this.stageFactor(stage, d));
           if (fight > d.bossTimer - (unfailing ? UNFAILING_MARGIN_SECONDS : 0)) {
             // Reaching a boss too strong, the company fights it once anyway, as in an open
-            // tab, and the wounds it leaves stay (up to stage 44). Then it trains and waits.
+            // tab, and the wounds it leaves stay (up to stage 44, to the King on the first
+            // night). Then it trains and waits.
             // The night the walker promised never to be pushed back, it does not try.
             if (stage === failedAt || unfailing) { blockedAt = stage; break; }
             if (d.bossTimer > time) break;

@@ -16,6 +16,7 @@ import {
   REUNION_DPS,
   REUNION_MIN_AWAY_SECONDS,
   WOUND_LAST_STAGE,
+  FIRST_NIGHT_LAST_STAGE,
   ascensionPreview,
   wandererSkip,
   altarOpen,
@@ -837,10 +838,11 @@ describe("anti-cheat", () => {
     const fails = engine.state.lifetime.bossFails;
     const summary = engine.tick(now)!;
     expect(engine.state.maxStage).toBeGreaterThan(wounded);
-    // The boss that stops it now was fought once on arrival, and keeps its wounds up to stage 44.
+    // The boss that stops it now was fought once on arrival, and keeps its wounds up to stage
+    // 44 (to the King on the first night).
     const blockedAt = summary.blockedAt!;
     expect(engine.state.lifetime.bossFails).toBeGreaterThan(fails);
-    if (blockedAt <= WOUND_LAST_STAGE && !isKingStage(blockedAt)) expect(engine.state.trail.wound?.stage).toBe(blockedAt);
+    if (blockedAt <= WOUND_LAST_STAGE || (blockedAt <= FIRST_NIGHT_LAST_STAGE && engine.state.lifetime.ascensions === 0)) expect(engine.state.trail.wound?.stage).toBe(blockedAt);
     else expect(engine.state.trail.wound).toBeUndefined();
     expect(verifyTransition(before, engine.state, 3 * 3600_000 + 1000)).toEqual([]);
     expect(verifyState(engine.state, now)).toEqual([]);

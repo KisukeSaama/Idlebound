@@ -42,6 +42,13 @@ export const ASCENSION_MIN_STAGE = 51;
 export const WOUND_KEEP = 1;
 export const WOUND_CAP = 0.75;
 export const WOUND_LAST_STAGE = 44;
+/**
+ * The first night: the King has never met this walker, and his seam is still thin. On a walk
+ * that has never seen a dusk, the Keep's gate and the King keep their wounds too, the King up
+ * to `FIRST_NIGHT_KING_WOUND` of his HP (BIBLE 6.1).
+ */
+export const FIRST_NIGHT_LAST_STAGE = 50;
+export const FIRST_NIGHT_KING_WOUND = 0.5;
 export const ESSENCE_DPS_BONUS = 0.1;
 /**
  * Essence growth per stage past stage 140: +2% per stage pushed before ascending. Faster,
@@ -131,16 +138,26 @@ export function roadLuck(state: GameState, worn = wornItems(state)): number {
   return wornTrait(worn, "star", 1);
 }
 
-/**
- * Share of its HP a guardian or an elite keeps of its wounds: the present night's (up to stage
- * 44), or, deeper, what the trait Scars holds. The King always heals whole.
- */
-export function woundCapAt(state: GameState, stage: number, worn = wornItems(state)): number {
-  return woundCapWith(stage, wornTrait(worn, "scars"));
+/** Whether the walk has never seen a dusk: no ascension, no Descent. */
+export function firstNight(state: GameState): boolean {
+  return state.lifetime.ascensions === 0 && state.descents === 0;
 }
 
-/** The share of its wounds a boss of `stage` keeps against armor of Old Scars worth `scars` (0 without). */
-export function woundCapWith(stage: number, scars: number): number {
+/**
+ * Share of its HP a guardian or an elite keeps of its wounds: the present night's (up to stage
+ * 44), or, deeper, what the trait Scars holds. The King heals whole, except on the walk's first
+ * night (see `FIRST_NIGHT_LAST_STAGE`).
+ */
+export function woundCapAt(state: GameState, stage: number, worn = wornItems(state)): number {
+  return woundCapWith(stage, wornTrait(worn, "scars"), firstNight(state));
+}
+
+/**
+ * The share of its wounds a boss of `stage` keeps against armor of Old Scars worth `scars` (0
+ * without), on the walk's first night (`first`) or another.
+ */
+export function woundCapWith(stage: number, scars: number, first = false): number {
+  if (first && stage > WOUND_LAST_STAGE && stage <= FIRST_NIGHT_LAST_STAGE) return isKingStage(stage) ? FIRST_NIGHT_KING_WOUND : WOUND_CAP;
   if (isKingStage(stage)) return 0;
   return stage <= WOUND_LAST_STAGE ? Math.max(WOUND_CAP, scars) : scars;
 }
