@@ -227,12 +227,12 @@ const en: SystemsText = {
     },
     stray: {
       name: "Stray Armor",
-      text: "An empty suit of armor walks the road. Beat it in time: the first one leaves you its plate.",
+      text: "An empty suit of armor walks the road. Beat it in time: the first leaves you its plate.",
       line: { by: "The Nameless", text: "Mine. Maybe." }
     },
     eclipse: {
       name: "The King's Eclipse",
-      text: "The King rises in shadow, with half as much health again and the same time to beat him. He always leaves a relic.",
+      text: "The King rises in shadow with 50% more health. He always leaves a relic.",
       line: { by: "The King", text: "Tonight the dark sits on me too. Strike hard. I won't mind." }
     },
     tide: {
@@ -482,7 +482,7 @@ const fr: SystemsText = {
     },
     seam: {
       name: "La Brèche",
-      text: `Une Brèche s'ouvre : abats son Gardien en ${SEAM_SECONDS} s pour l'or d'une élite, un fragment, peut-être une relique.`,
+      text: `Une Brèche s'ouvre : abats son Gardien en ${SEAM_SECONDS} s. Or, fragment, et parfois une relique.`,
       line: { by: "Le Grand Livre", text: "Une fissure dans la nuit, fine comme un cheveu, et du pâle derrière. Le marcheur a pesé dessus jusqu'à ce qu'elle se referme." }
     },
     wager: {
@@ -512,7 +512,7 @@ const fr: SystemsText = {
     },
     eclipse: {
       name: "L'Éclipse du Roi",
-      text: "Le Roi se lève dans l'ombre, avec moitié plus de points de vie et le même temps pour l'abattre. Il laisse toujours une relique.",
+      text: "Le Roi se lève dans l'ombre avec 50 % de vie en plus. Il laisse toujours une relique.",
       line: { by: "Le Roi", text: "Ce soir, le noir pèse sur moi aussi. Frappe fort. Je ne t'en voudrai pas." }
     },
     tide: {

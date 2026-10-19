@@ -52,10 +52,10 @@ export const landing = defineMessages({
       boss: "Gardien : "
     },
     board: {
-      title: "Les marcheurs les plus profonds",
+      title: "Ceux qui sont allés le plus loin",
       rank: "Rang",
       walker: "Marcheur",
-      depth: "Étape la plus haute",
+      depth: "Étape la plus lointaine",
       value: (stage: string) => `Étape ${stage}`,
       empty: "Le classement attend ses premiers marcheurs. ",
       emptyCta: "Et si c'était toi ?",
@@ -126,10 +126,10 @@ export const landing = defineMessages({
       boss: "Guardian: "
     },
     board: {
-      title: "The deepest walkers",
+      title: "The walkers who went furthest",
       rank: "Rank",
       walker: "Walker",
-      depth: "Highest stage",
+      depth: "Furthest stage",
       value: (stage: string) => `Stage ${stage}`,
       empty: "The leaderboard is waiting for its first walkers. ",
       emptyCta: "Why not you?",

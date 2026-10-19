@@ -14,7 +14,7 @@ export const night = defineMessages({
       map: "La carte est ouverte : reviens sur une étape déjà franchie pour gagner de l'or sans risque.",
       gear: "Ta première relique : équipe-la pour ajouter ses bonus à ta compagnie.",
       market: "Tu as assez d'éclats pour le marché : coffres de reliques, potions et sablier s'y achètent en éclats.",
-      ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension te fait recommencer la route contre des essences, que les autels changent en bonus permanents.",
+      ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension te fait recommencer la route en échange d'essences, que les autels changent en bonus permanents.",
       hall: "Le Grand Livre t'ouvre une page : hauts faits (ils augmentent tes dégâts), Bestiaire et Chronique.",
       loom: "La Descente s'ouvre au Sanctuaire, au Métier d'Eldra : elle efface tes essences et tes autels, et te donne des fils qui achètent des bonus que rien n'efface.",
       caravan: "La Roulotte du Comptoir est au marché : une marchandise rare à payer en éclats, qui change chaque semaine.",

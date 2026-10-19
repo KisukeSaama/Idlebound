@@ -183,13 +183,13 @@ export const en: GameText = {
     // The threshold counts Aldric (the walker), who is not a companion.
     hired: (t) => `Have ${t - 1} companions in your company in a single night.`,
     skills: (t) => `Use ${n(t)} powers.`,
-    ascend: (t) => `Ascend ${t} ${s(t, "time")}.`,
+    ascend: (t) => (t === 1 ? "Ascend once." : `Ascend ${t} times.`),
     essences: (t) => `Collect ${n(t)} essences in total.`,
     legend: (t) => `Find ${t} legendary ${s(t, "relic")}.`,
     mythic: (t) => `Find ${t} mythic ${s(t, "relic")}.`,
     hit: (t, big) => `Deal a single hit of ${big(t)} damage.`,
     time: (t) => `Walk the night for ${Math.round(t / 3600)} h in total.`,
-    fails: (t) => `Be pushed back by an elite or a guardian ${t} ${s(t, "time")}.`,
+    fails: (t) => `Be pushed back by an elite or a guardian ${t === 1 ? "once" : `${t} times`}.`,
     ...SYSTEMS_TEXT.en.achievementDescriptions
   },
   slots: { weapon: "Weapon", armor: "Armor", amulet: "Amulet", ring: "Ring" },

@@ -103,7 +103,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "free", title: "Faut-il frapper sans arrêt ?", blocks: ["Non. Tes frappes portent le tout début de chaque nuit, puis tes compagnons prennent le relais. Ils frappent même quand la page est en arrière-plan. Ta présence ajoute ce que seule une main peut faire : attraper les cristaux, lancer les pouvoirs, faire l'ascension, gérer l'équipement."] },
         { id: "who-to-level", title: "Quel compagnon monter en priorité ?", blocks: ["Le plus récent, presque toujours : chaque compagnon fait bien plus de dégâts que le précédent. Monte-le jusqu'à son prochain palier (10, 25, 50, 100, 150, puis tous les 25 niveaux à partir de 200), achète le talent, et recommence. Un compagnon arrêté entre deux paliers gaspille de l'or.", { tip: "Le bouton **Max** montre combien de niveaux tu peux t'offrir. Viser le palier suivant vaut presque toujours mieux que saupoudrer." }] },
         { id: "stuck", title: "Je suis bloqué devant un boss, que faire ?", blocks: [{ list: ["Laisse le mode **Rester** tourner un moment : tu gagnes de l'or sur l'étape d'avant et tes compagnons montent.", "Lance tes pouvoirs au début du combat (Cri de ralliement surtout).", "Jusqu'à l'étape 44, chaque tentative laisse des blessures au boss : réessaie.", "Après la première ascension : si un mur ne cède pas en 20 minutes, fais ton ascension. C'est plus rapide que d'insister."] }] },
-        { id: "when-ascend", title: "Quand faire mon ascension ?", blocks: ["Quand ta progression s'arrête. Les simulations sont claires : ascensionner quelques minutes après ta dernière nouvelle étape va bien plus loin qu'attendre une heure devant un mur. Les essences augmentent avec l'étape la plus loin franchie, mais moins vite que les PV des monstres : pousser un peu paie, camper des heures non."] },
+        { id: "when-ascend", title: "Quand faire mon ascension ?", blocks: ["Quand ta progression s'arrête. Faire ton ascension quelques minutes après ta dernière nouvelle étape mène bien plus loin qu'attendre une heure devant un mur. Les essences augmentent avec l'étape la plus lointaine franchie, mais moins vite que les PV des monstres : pousser un peu paie, camper des heures non."] },
         { id: "which-altar", title: "Quels autels acheter ?", blocks: ["Ceux qui suivent ton style. Si tu laisses surtout tourner le jeu, l'**Autel de la patience** est le meilleur. Si tes frappes font l'essentiel de tes dégâts, l'**Autel de la lame**. Entre les deux, **puissance** et **fortune**. Ensuite, les autels plafonnés (temps, trésor, marchandage…) s'ouvrent à la troisième puis à la cinquième nuit. Et garde toujours environ la moitié de tes essences en main. Détails dans [Ascension et autels](ascension#strategy)."] },
         { id: "relic-choice", title: "Quelle relique porter ?", blocks: ["Regarde le chiffre **Compagnie ×N** de chaque relique : c'est ce qu'elle multiplie dans les dégâts de ta compagnie, comparé à l'emplacement vide. Plus il est grand, mieux c'est. Les reliques trouvées dans les strates profondes ont de la **Densité** : chaque strate sous la nuit présente ajoute ×1,03 aux dégâts de la compagnie."] },
         { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20) et à acheter au marché du Comptoir : coffres, potions, sabliers. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
@@ -122,7 +122,7 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             "Les **PV** suivent une courbe en trois segments : très raide au début, puis ×1,15 par étape, puis ×1,18 par étape. L'élite (toutes les 5 étapes) a 6 fois les PV d'un Vestige, le gardien (toutes les 10 étapes) 10 fois.",
             "L'**or** d'un monstre vaut 1/30 de ses PV (le double à l'étape 1, l'écart se résorbant jusqu'à l'étape 10). Tes bonus d'or (Autel de fortune, talents, reliques, Bestiaire) s'y ajoutent.",
-            "Les **essences** d'une ascension dépendent de l'étape la plus loin franchie pendant la nuit : 20 × 1,075 par étape au-delà de 50, jusqu'à l'étape 140, puis +2 % par étape, plus 3 par étape au-delà de 50. L'Autel de la récolte, la Chaîne d'abondance et certaines reliques les multiplient.",
+            "Les **essences** d'une ascension dépendent de l'étape la plus lointaine franchie pendant la nuit : 20 × 1,075 par étape au-delà de 50, jusqu'à l'étape 140, puis +2 % par étape, plus 3 par étape au-delà de 50. L'Autel de la récolte, la Chaîne d'abondance et certaines reliques les multiplient.",
             `Les **fils** de la Descente : 2 à l'étape 1 000, deux fois plus à chaque Âge (250 étapes), 32 à l'étape ${fr(f.descentStage)}.`
           ]
         }
@@ -258,9 +258,9 @@ export const wikiArticles = defineMessages<Articles>({
           id: "essences",
           title: "Les essences",
           blocks: [
-            `Les essences gagnées dépendent de l'étape la plus loin franchie pendant la nuit. Chaque essence gardée en main donne **+${f.essenceDpsPct} % de DPS**. Quelques repères :`,
+            `Les essences gagnées dépendent de l'étape la plus lointaine franchie pendant la nuit. Chaque essence gardée en main donne **+${f.essenceDpsPct} % de DPS**. Quelques repères :`,
             { slot: "essences" },
-            "La croissance est volontairement plus lente que celle des PV : pousser quelques étapes de plus paie, camper des heures devant un mur ne paie pas. Le plus rapide est d'ascensionner peu après l'arrêt de ta progression."
+            "La croissance est volontairement plus lente que celle des PV : pousser quelques étapes de plus paie, camper des heures devant un mur ne paie pas. Le plus rapide : faire ton ascension peu après l'arrêt de ta progression."
           ]
         },
         {
@@ -286,7 +286,7 @@ export const wikiArticles = defineMessages<Articles>({
                 "L'**Autel de la récolte** (+10 % d'essences par niveau, 5 niveaux) quand un niveau rapporte plus aux nuits suivantes que les essences gardées."
               ]
             },
-            { warn: "Tout offrir fait perdre bien plus qu'on ne le croit : une simulation de 72 h atteint l'étape 1 684 avec un choix réfléchi, 468 en gardant tout, et beaucoup moins en dépensant tout." }
+            { warn: "Tout offrir fait perdre bien plus qu'on ne le croit : chaque essence gardée vaut +10 % de DPS, et chaque niveau d'autel coûte plus cher que le précédent. Garde toujours une bonne part de tes essences en main, et ne garde pas tout non plus : les deux extrêmes avancent bien moins loin qu'un partage réfléchi." }
           ]
         },
         {
@@ -626,7 +626,7 @@ export const wikiArticles = defineMessages<Articles>({
           id: "strategy",
           title: "Quand descendre",
           blocks: [
-            "La première Descente te ramène en arrière pendant un jour ou deux, puis te fait passer devant celui qui ne descend jamais. Les simulations : descendre une fois par Âge (8 fils au moins) va plus loin que descendre trop souvent, qui paie la remontée trop de fois.",
+            "La première Descente te ramène en arrière pendant un jour ou deux, puis te fait passer devant celui qui ne descend jamais. Descendre une fois par Âge (8 fils au moins) va plus loin que descendre trop souvent, qui paie la remontée trop de fois.",
             "Le classement **Nuits retissées** compte les Descentes qui ont tissé au moins un fil : une Descente qui ne tisse rien n'y compte pas. Il récompense ton rythme au Métier, pas ta profondeur.",
             { slot: "crown" }
           ]
@@ -757,7 +757,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "free", title: "Do I have to strike all the time?", blocks: ["No. Your strikes carry the very start of each night, then your companions take over. They strike even while the page is in the background. Your presence adds what only a hand can do: catching crystals, using powers, ascending, managing gear."] },
         { id: "who-to-level", title: "Which companion should I level first?", blocks: ["The newest, almost always: each companion deals far more damage than the one before. Level them to their next breakpoint (10, 25, 50, 100, 150, then every 25 levels from 200), buy the talent, and repeat. A companion stopped between two breakpoints wastes gold.", { tip: "The **Max** button shows how many levels you can afford. Aiming for the next breakpoint is almost always better than spreading gold around." }] },
         { id: "stuck", title: "I'm stuck at a boss, what do I do?", blocks: [{ list: ["Let **Stay** mode run for a while: you earn gold on the stage before and your companions grow.", "Use your powers at the start of the fight (Rallying Cry above all).", "Up to stage 44, each attempt leaves wounds on the boss: try again.", "After your first ascension: if a wall does not give within 20 minutes, ascend. It is faster than insisting."] }] },
-        { id: "when-ascend", title: "When should I ascend?", blocks: ["When your progress stops. The simulations are clear: ascending a few minutes after your last new stage goes much further than waiting an hour at a wall. Essences grow with the furthest stage cleared, but more slowly than monster HP: pushing a little pays, camping for hours does not."] },
+        { id: "when-ascend", title: "When should I ascend?", blocks: ["When your progress stops. Ascending a few minutes after your last new stage goes much further than waiting an hour at a wall. Essences grow with the furthest stage cleared, but more slowly than monster HP: pushing a little pays, camping for hours does not."] },
         { id: "which-altar", title: "Which altars should I buy?", blocks: ["Those that match your style. If you mostly let the game run, the **Altar of Patience** is the best. If your strikes deal most of your damage, the **Altar of the Blade**. In between, **Might** and **Fortune**. Then the capped altars (time, treasure, bargains…) open on the third and fifth nights. And always keep about half of your essences in hand. Details in [Ascension and altars](ascension#strategy)."] },
         { id: "relic-choice", title: "Which relic should I wear?", blocks: ["Look at each relic's **Company ×N** figure: what it multiplies in your company's damage, against the slot left empty. The bigger, the better. Relics found in deep strata have **Density**: each stratum below the present night adds ×1.03 to the company's damage."] },
         { id: "shards", title: "What are shards for?", blocks: ["Forging your relics (up to +20) and buying at the Stallkeeper's market: chests, potions, hourglasses. You earn them from guardians, crystals and by salvaging relics you no longer need. The **Golden Hourglass** (an hour of gold right now) is the best buy at the start of a night."] },
@@ -936,7 +936,7 @@ export const wikiArticles = defineMessages<Articles>({
                 "The **Altar of Harvest** (+10% essences per level, 5 levels) once a level adds more to the nights to come than the essences kept."
               ]
             },
-            { warn: "Offering everything costs far more than it seems: a 72 h simulation reaches stage 1,684 with a sound choice, 468 holding everything, and much less spending everything." }
+            { warn: "Offering everything costs far more than it seems: each essence you keep is worth +10% DPS, and each altar level costs more than the last. Always keep a good share of your essences in hand, and do not hoard them all either: both extremes go much less far than a sound split." }
           ]
         },
         {
@@ -1224,7 +1224,7 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "strategy",
           title: "When to descend",
-          blocks: ["The first Descent sets you back for a day or two, then pulls you ahead of the walker who never descends. The simulations: descending once an Age (8 threads at least) goes further than descending too often, which pays the climb back too many times.", "The **Rewoven Nights** board counts the Descents that wove at least one thread: a Descent that weaves nothing does not count. It rewards your pace at the Loom, not your depth.", { slot: "crown" }]
+          blocks: ["The first Descent sets you back for a day or two, then pulls you ahead of the walker who never descends. Descending once an Age (8 threads at least) goes further than descending too often, which pays the climb back too many times.", "The **Rewoven Nights** board counts the Descents that wove at least one thread: a Descent that weaves nothing does not count. It rewards your pace at the Loom, not your depth.", { slot: "crown" }]
         }
       ]
     }),

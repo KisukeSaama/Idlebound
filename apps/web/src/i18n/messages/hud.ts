@@ -148,7 +148,7 @@ export const hud = defineMessages({
       boss: "Élites et gardiens doivent tomber avant la fin du chrono. Sinon, tu recules d'une étape et tu y restes pour gagner de l'or.",
       skill: (key: string) => `Nouveau pouvoir débloqué : appuie sur ${key} ou sur son bouton en bas.`,
       farm: "Tu restes sur l'étape précédente. Renforce-toi, puis reprends la route (bouton Rester → Auto).",
-      ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu : tu peux recommencer la route contre des essences, qui renforcent toutes tes nuits suivantes.",
+      ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu : tu peux recommencer la route en échange d'essences, qui renforcent toutes tes nuits suivantes.",
       altarRework: "Les autels ont été refondus : chaque niveau des autels illimités multiplie désormais son effet, et le voyageur fait sauter les premières étapes. Tous tes niveaux t'ont été rendus en essences : choisis de nouveau tes autels dans la fenêtre d'ascension.",
       harvestCap: "L'autel de la récolte a changé : il s'arrête au niveau 5 et demande davantage. Tous ses niveaux t'ont été rendus en essences."
     },

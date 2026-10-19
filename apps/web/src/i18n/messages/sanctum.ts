@@ -69,7 +69,7 @@ export const sanctum = defineMessages({
       },
       toasts: {
         given: (name: string) => `Parole donnée · ${name}`,
-        ready: "Parole remplie",
+        ready: "Condition remplie",
         readyText: "Ce qui t'était demandé est fait. Respecte encore sa règle jusqu'à ton crépuscule, et elle sera tenue.",
         kept: (name: string) => `Parole tenue · ${name}`,
         keptText: (total: number) => `Ses dégâts doublent pour toujours : ×${total} en tout. Elle compte aussi pour sa Reconnaissance.`,
@@ -182,7 +182,7 @@ export const sanctum = defineMessages({
       },
       toasts: {
         given: (name: string) => `Word given · ${name}`,
-        ready: "Word fulfilled",
+        ready: "Condition met",
         readyText: "What was asked of you is done. Keep to its rule until your dusk, and it is kept.",
         kept: (name: string) => `Word kept · ${name}`,
         keptText: (total: number) => `Their damage doubles for good: ×${total} in all. It also counts toward their Recognition.`,

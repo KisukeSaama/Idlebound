@@ -164,7 +164,7 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
       "last-hound": "Limier de la dernière chasse",
       "candle-maid": "Servante aux chandelles",
       "court-jester": "Le Bouffon de la cour",
-      "seam-warden": "Gardien de la brèche",
+      "seam-warden": "Gardien de la Brèche",
       "walker-echo": "Écho d'un marcheur",
       "the-quiet": "Le Silence",
       "stray-armor": "L'Armure errante",

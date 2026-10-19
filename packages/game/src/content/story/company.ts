@@ -147,7 +147,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         { by: "Séraphine", text: "Séraphine demande à une racine qui tu es. Elle te désigne. « Elle dit qu'elle te connaît. Les racines ne mentent pas. Alors pourquoi je ne me souviens pas de toi ? »" },
         { by: "Séraphine", text: "« Le Cœur du vieux bosquet t'attend, dit Séraphine. Le grand arbre au bout de la Forêt sombre. Il n'attendait plus personne depuis longtemps. »" },
         { by: "Séraphine", text: "Au vieux bosquet, Séraphine reste à la lisière pendant que tu affrontes son Cœur. « Vas-y. Moi, je ne peux pas la frapper. Je serai là, après. »" },
-        { by: "Séraphine", text: "« Le Cœur du bosquet était mon maître. La première nuit, elle m'a demandé de t'aider à l'abattre, pour que la nuit continue. J'ai dit non. Elle a redemandé. »" },
+        { by: "Séraphine", text: "« L'arbre-mère du bosquet m'a tout appris. La première nuit, elle m'a demandé de t'aider à l'abattre, pour que la nuit continue. J'ai dit non. Elle a redemandé. »" },
         { by: "Séraphine", text: "« Elle te remercie, chaque nuit où tu l'abats. » Séraphine te donne une graine tiède. « Sa dernière. Elle ne peut pas pousser dans cette nuit. Elle attend un matin. »" }
       ],
       thorvald: [

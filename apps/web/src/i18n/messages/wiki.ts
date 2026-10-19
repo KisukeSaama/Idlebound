@@ -309,7 +309,7 @@ export const wiki = defineMessages({
         aldricNote: (cost: string) => `Aldric coûte ${cost} pièces d'or au niveau 1, et chaque niveau 10 % de plus que le précédent.`
       },
       ascension: {
-        cleared: "Étape la plus loin franchie",
+        cleared: "Étape la plus lointaine franchie",
         dps: "DPS si tu les gardes",
         essencesNote: "Sans Autel de la récolte, Chaîne d'abondance ni relique d'essences, qui multiplient ces chiffres.",
         legends: "Qui a élevé chaque autel"
