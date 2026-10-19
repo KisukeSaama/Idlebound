@@ -46,6 +46,411 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    slug: "patch-notes-2-1",
+    date: "2026-10-20",
+    kind: "patch",
+    version: "v2.1",
+    cover: { biome: "green-plains", creature: "wild-boar" },
+    fr: {
+      title: "Notes de mise à jour 2.1",
+      summary: "Une première heure plus franche, un premier Roi plus juste, un Sanctuaire qui dit ses comptes, et un jeu qui se lit d'un coup d'œil.",
+      body: [
+        { kind: "p", text: "Bonsoir, marcheuse, marcheur. Avant d'aller plus loin, on a refait la route depuis le début, comme si on la découvrait. On a trouvé une première heure qui parlait trop avant de te laisser frapper, un premier Roi qui pouvait te retenir bien trop longtemps, un Sanctuaire où l'on pouvait perdre en croyant gagner, et trop de mots pour une seule chose. La 2.1 répare tout ça." },
+        { kind: "h2", text: "Nouveau" },
+        {
+          kind: "entry",
+          name: "La première heure",
+          tag: "changed",
+          context: "Les premières minutes doivent te mettre l'épée en main, pas un livre.",
+          changes: [
+            { label: "Le premier coup", text: "une aide te dit de frapper le monstre dès la première seconde" },
+            { label: "La Longue Nuit", text: "racontée quand tombe ton premier monstre, et non plus avant ton premier coup" },
+            { label: "Maëlle", text: "dès qu'Aldric atteint le niveau 2, une aide te dit de garder ton or pour elle (50 or) : elle se bat même quand tu ne frappes pas" },
+            { label: "Le premier refus du Roi", text: "il dit aussi ce que sa chute t'ouvrira : le Sanctuaire du Crépuscule" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [{ spec: { kind: "portrait", hero: "maelle" }, label: "Maëlle" }],
+          caption: "Maëlle, la première à marcher avec toi."
+        },
+        {
+          kind: "entry",
+          name: "Les autels",
+          tag: "new",
+          context: "Un autel coûte des essences qui te donnaient déjà de la force. Tu dois voir ce que tu gagnes vraiment avant de payer.",
+          changes: [
+            { label: "Chaque autel à ta portée", text: "montre ce qu'un niveau fait à tes dégâts, une fois comptées les essences qu'il prend, en rouge quand tu y perdrais" },
+            { label: "Répartir", text: "un nouveau bouton place tes essences seulement là où un autel rapporte plus que de les garder" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "altar", id: "might" }, label: "Puissance" },
+            { spec: { kind: "altar", id: "patience" }, label: "Patience" },
+            { spec: { kind: "altar", id: "fortune" }, label: "Fortune" }
+          ],
+          caption: "Trois des autels du Sanctuaire."
+        },
+        {
+          kind: "entry",
+          name: "Les écrans tactiles",
+          tag: "new",
+          context: "Sur un téléphone, rien ne se survole : tu dois pouvoir lire avant de choisir.",
+          changes: [{ label: "Talents et pouvoirs", text: "un premier toucher montre ce qu'ils font, un second les apprend ou les lance" }]
+        },
+        {
+          kind: "entry",
+          name: "Les réglages",
+          tag: "new",
+          context: "Chacun écoute et lit la nuit à sa façon.",
+          changes: [
+            { label: "La musique des scènes", text: "son propre volume" },
+            { label: "Les lignes de la Chronique", text: "peuvent t'attendre dans la Chronique au lieu d'être annoncées" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Les raccourcis",
+          tag: "new",
+          context: "Pour celles et ceux qui gardent une main sur le clavier.",
+          changes: [{ label: "Nouvelles touches", text: "M la carte, E l'équipement, A le Sanctuaire, H le Hall, B la quantité achetée, F avancer ou rester" }]
+        },
+        {
+          kind: "entry",
+          name: "Les notifications",
+          tag: "changed",
+          context: "Une nouvelle qui part avant d'être lue ne sert à rien.",
+          changes: [
+            { label: "Leur durée", text: "chacune reste assez longtemps pour être lue" },
+            { label: "La souris posée dessus", text: "les retient" },
+            { label: "Une ligne de la Chronique", text: "mène à la Chronique" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Ton compte",
+          tag: "changed",
+          context: "Une adresse oubliée ne doit pas coûter une longue marche.",
+          changes: [
+            { label: "Une adresse jamais confirmée", text: "deux rappels avant que le compte ne parte" },
+            { label: "Une partie au-delà de l'étape 50", text: "son compte n'est jamais supprimé pour ça" }
+          ]
+        },
+        { kind: "h2", text: "Équilibrage" },
+        {
+          kind: "entry",
+          name: "Le premier Roi",
+          tag: "down",
+          context: "Ta première nuit ne devrait pas buter une heure sur la même porte. Comme les gardiens avant eux, la porte du donjon et le Roi gardent désormais leurs blessures cette nuit-là.",
+          changes: [
+            { label: "La porte du donjon (étape 45), première nuit", before: "guérit entièrement", after: "garde jusqu'à 75 % de ses blessures" },
+            { label: "Le Roi déchu, première nuit", before: "guérit entièrement", after: "garde jusqu'à 50 % de ses blessures" },
+            { label: "Dès ton premier crépuscule", text: "ils guérissent de nouveau entièrement" }
+          ]
+        },
+        { kind: "h2", text: "Corrections" },
+        {
+          kind: "entry",
+          name: "Les mots du jeu",
+          tag: "fixed",
+          context: "Une chose, un mot. Sinon on croit qu'il y en a deux.",
+          changes: [
+            { label: "Partout", text: "une strate (plus d'« ère »), une relique (plus d'« objet »), le sac, le marché, les élites et les gardiens" },
+            { label: "En haut à gauche", before: "Ère IV", after: "Strate IV" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "La première relique",
+          tag: "fixed",
+          context: "Trop de choses arrivaient en même temps que ta première relique.",
+          changes: [
+            { label: "Son annonce", text: "dit qu'elle est déjà portée" },
+            { label: "Ce que les reliques retiennent", text: "expliqué avec ta deuxième relique, plus dans le même souffle" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Les coups de la compagnie",
+          tag: "changed",
+          context: "Un éclair d'une seule couleur, cent fois par minute, fatiguait les yeux et effaçait la créature.",
+          changes: [{ label: "Une créature frappée", text: "s'éclaire d'un cran, cernée de la couleur de celui qui frappe" }]
+        },
+        {
+          kind: "entry",
+          name: "Le cristal errant",
+          tag: "changed",
+          context: "Le cristal flou et penché ne ressemblait pas au reste du monde.",
+          changes: [
+            { label: "Sa chute", text: "il tombe dans sa propre lumière, dessiné dans les pixels du monde" },
+            { label: "Pendant l'averse de la Reine-lanterne", text: "doré" },
+            { label: "En vol", text: "sans flou ni inclinaison" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Les pastilles",
+          tag: "fixed",
+          context: "Une pastille toujours allumée ne dit plus rien.",
+          changes: [
+            { label: "Quand elles s'allument", text: "seulement pour quelque chose de nouveau, et elles s'éteignent dès que tu ouvres la fenêtre" },
+            { label: "Celles qui restent", text: "un sac presque plein, une adresse à confirmer" },
+            { label: "L'équipement et le sac", text: "une seule touche" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "La lisibilité",
+          tag: "fixed",
+          context: "La nuit est sombre, ses mots ne doivent pas l'être.",
+          changes: [
+            { label: "Mouvement réduit", text: "le réglage du jeu immobilise désormais toutes les animations" },
+            { label: "Textes et contours", text: "textes pâles, libellés violets et rouges, pastilles et bords des champs plus faciles à lire" },
+            { label: "Petites touches", text: "répondent sur une surface plus grande" },
+            { label: "Compagnons pas encore recrutés, Aldric devenu gris", text: "gardent les couleurs de la nuit" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Les fenêtres",
+          tag: "fixed",
+          context: "Une fenêtre en panne ne doit pas arrêter la route.",
+          changes: [{ label: "Si une fenêtre échoue", text: "elle seule se ferme, avec de quoi la rouvrir, et la route continue" }]
+        },
+        {
+          kind: "entry",
+          name: "Les textes",
+          tag: "fixed",
+          context: "Tout ce qui agit doit dire clairement ce qu'il fait.",
+          changes: [
+            { label: "Les promesses", text: "l'aide dit en moins de mots quand une parole est tenue (à ta prochaine ascension), et les règles qui retiennent la compagnie nomment les compagnons concernés" },
+            { label: "Les reliques", text: "l'éveil et la Densité disent ce qu'ils font, les traits Déroute et Retrouvailles disent quand ils jouent" },
+            { label: "Les événements", text: "la Brèche et l'Éclipse du Roi disent ce qu'elles donnent, et de combien le Roi est plus dur" },
+            { label: "En français", text: "les lignes qui te parlent se lisent pareil pour toutes et tous, et la ponctuation ne laisse plus un deux-points seul en début de ligne" },
+            { label: "La Chronique", text: "ses fragments ne prêtent plus à une créature un geste qu'elle ne sait pas faire" },
+            { label: "Une partie refusée par le Registre", text: "dit simplement quoi faire" }
+          ]
+        },
+        {
+          kind: "spoiler",
+          label: "Une scène de la treizième nuit",
+          body: [
+            {
+              kind: "entry",
+              name: "Le Trône vide",
+              tag: "changed",
+              context: "La scène en disait trop, trop tôt.",
+              changes: [{ label: "La scène", text: "dit clairement ce qu'elle a à dire, et garde le reste pour plus loin sur la route" }]
+            }
+          ]
+        },
+        { kind: "p", text: "Merci de marcher avec nous. Si tu as une nouvelle venue ou un nouveau venu à emmener sur la route, c'est le bon soir. Bonne route." }
+      ],
+      link: { route: "play", label: "Reprendre la route" }
+    },
+    en: {
+      title: "Patch notes 2.1",
+      summary: "A plainer first hour, a fairer first King, a Sanctum that shows its sums, and a game you can read at a glance.",
+      body: [
+        { kind: "p", text: "Good evening, walker. Before going further, we walked the road again from the start, as if for the first time. We found a first hour that talked too much before letting you strike, a first King who could hold you far too long, a Sanctum where you could lose while thinking you gained, and too many words for one thing. 2.1 mends all of that." },
+        { kind: "h2", text: "New" },
+        {
+          kind: "entry",
+          name: "The first hour",
+          tag: "changed",
+          context: "The first minutes should put a sword in your hand, not a book.",
+          changes: [
+            { label: "The first strike", text: "a hint tells you to strike the monster from the very first second" },
+            { label: "The Long Night", text: "told as your first monster falls, no longer before your first strike" },
+            { label: "Maëlle", text: "once Aldric reaches level 2, a hint tells you to keep your gold for her (50 gold): she fights even when you do not strike" },
+            { label: "The King's first refusal", text: "he also says what his fall will open for you: the Sanctum of Dusk" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [{ spec: { kind: "portrait", hero: "maelle" }, label: "Maëlle" }],
+          caption: "Maëlle, the first to walk with you."
+        },
+        {
+          kind: "entry",
+          name: "The altars",
+          tag: "new",
+          context: "An altar costs essences that were already making you stronger. You should see what you really gain before you pay.",
+          changes: [
+            { label: "Every altar you can afford", text: "shows what one level does to your damage once the essences it takes are counted, in red when you would lose" },
+            { label: "Distribute", text: "a new button places your essences only where an altar gives more than keeping them" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "altar", id: "might" }, label: "Might" },
+            { spec: { kind: "altar", id: "patience" }, label: "Patience" },
+            { spec: { kind: "altar", id: "fortune" }, label: "Fortune" }
+          ],
+          caption: "Three of the Sanctum's altars."
+        },
+        {
+          kind: "entry",
+          name: "Touch screens",
+          tag: "new",
+          context: "On a phone nothing can be hovered: you should be able to read before you choose.",
+          changes: [{ label: "Talents and powers", text: "a first tap shows what they do, a second learns or uses them" }]
+        },
+        {
+          kind: "entry",
+          name: "Settings",
+          tag: "new",
+          context: "Everyone listens to and reads the night their own way.",
+          changes: [
+            { label: "The music of the scenes", text: "its own volume" },
+            { label: "The Chronicle's lines", text: "can wait for you in the Chronicle instead of being announced" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Shortcuts",
+          tag: "new",
+          context: "For those who keep a hand on the keyboard.",
+          changes: [{ label: "New keys", text: "M the map, E equipment, A the Sanctum, H the Hall, B the amount to buy, F advance or stay" }]
+        },
+        {
+          kind: "entry",
+          name: "Notifications",
+          tag: "changed",
+          context: "News that leaves before it is read is no news at all.",
+          changes: [
+            { label: "How long they stay", text: "each stays long enough to be read" },
+            { label: "A mouse resting on them", text: "holds them" },
+            { label: "A Chronicle line", text: "leads to the Chronicle" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Your account",
+          tag: "changed",
+          context: "A forgotten address should not cost a long walk.",
+          changes: [
+            { label: "An address never confirmed", text: "two reminders before the account goes" },
+            { label: "A game past stage 50", text: "its account is never deleted for it" }
+          ]
+        },
+        { kind: "h2", text: "Balance" },
+        {
+          kind: "entry",
+          name: "The first King",
+          tag: "down",
+          context: "Your first night should not stall for an hour at the same door. Like the guardians before them, the Keep's gate and the King now keep their wounds that night.",
+          changes: [
+            { label: "The Keep's gate (stage 45), first night", before: "heals whole", after: "keeps up to 75% of its wounds" },
+            { label: "The Fallen King, first night", before: "heals whole", after: "keeps up to 50% of his wounds" },
+            { label: "From your first dusk on", text: "they heal whole again" }
+          ]
+        },
+        { kind: "h2", text: "Fixes" },
+        {
+          kind: "entry",
+          name: "The game's words",
+          tag: "fixed",
+          context: "One thing, one word. Otherwise you think there are two.",
+          changes: [
+            { label: "Everywhere", text: "a stratum (no more \"era\"), a relic (no more \"item\"), the bag, the market, elites and guardians" },
+            { label: "Top left", before: "Era IV", after: "Stratum IV" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "The first relic",
+          tag: "fixed",
+          context: "Too much arrived at once with your first relic.",
+          changes: [
+            { label: "Its notice", text: "says it is already worn" },
+            { label: "What relics remember", text: "explained with your second relic, no longer in the same breath" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "The company's hits",
+          tag: "changed",
+          context: "A one-color flash a hundred times a minute tired the eyes and erased the creature.",
+          changes: [{ label: "A struck creature", text: "lights a step paler, ringed in the striker's color" }]
+        },
+        {
+          kind: "entry",
+          name: "The wandering crystal",
+          tag: "changed",
+          context: "The blurred, tilted crystal did not look like the rest of the world.",
+          changes: [
+            { label: "Its fall", text: "it falls inside its own light, drawn in the world's pixels" },
+            { label: "During the Lantern Queen's storm", text: "golden" },
+            { label: "In flight", text: "no blur, no tilt" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Badges",
+          tag: "fixed",
+          context: "A badge that is always lit says nothing.",
+          changes: [
+            { label: "When they light", text: "only for something new, and they go out once you open the window" },
+            { label: "Those that stay", text: "a nearly full bag, an address to confirm" },
+            { label: "Equipment and the bag", text: "one key" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Readability",
+          tag: "fixed",
+          context: "The night is dark, its words should not be.",
+          changes: [
+            { label: "Reduced motion", text: "the game's own setting now stills every animation" },
+            { label: "Text and edges", text: "faint text, violet and red labels, badges and field edges are easier to read" },
+            { label: "Small keys", text: "answer a larger touch" },
+            { label: "Companions not yet hired, Aldric gone grey", text: "keep the night's own colors" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Windows",
+          tag: "fixed",
+          context: "One broken window should not stop the road.",
+          changes: [{ label: "If a window fails", text: "only that window closes, with a way to open it again, and the road goes on" }]
+        },
+        {
+          kind: "entry",
+          name: "Texts",
+          tag: "fixed",
+          context: "Everything that acts should say plainly what it does.",
+          changes: [
+            { label: "Promises", text: "the help says in fewer words when a word is kept (at your next ascension), and the rules that hold the company back name the companions concerned" },
+            { label: "Relics", text: "awakening and Density say what they do, the Rout and Homecoming traits say when they apply" },
+            { label: "Events", text: "the Seam and the King's Eclipse say what they give, and how much tougher the King is" },
+            { label: "In French", text: "the lines spoken to you read the same for every walker, and punctuation no longer leaves a colon alone at the start of a line" },
+            { label: "The Chronicle", text: "its fragments no longer give a creature a deed it cannot do" },
+            { label: "A game refused by the Ledger", text: "says plainly what to do" }
+          ]
+        },
+        {
+          kind: "spoiler",
+          label: "A scene of the thirteenth night",
+          body: [
+            {
+              kind: "entry",
+              name: "The Empty Throne",
+              tag: "changed",
+              context: "The scene said too much, too soon.",
+              changes: [{ label: "The scene", text: "says plainly what it has to say, and keeps the rest for further down the road" }]
+            }
+          ]
+        },
+        { kind: "p", text: "Thank you for walking with us. If you have a newcomer to bring along the road, tonight is the night. Safe travels." }
+      ],
+      link: { route: "play", label: "Back on the road" }
+    }
+  },
+  {
     slug: "patch-notes-2-0",
     date: "2026-10-19",
     kind: "patch",

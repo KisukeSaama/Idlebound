@@ -11,6 +11,7 @@ exports[`news share cover > draws every article's cover, the same pixels every t
   "patch-notes-1-2": "3715877b",
   "patch-notes-1-3": "db19225b",
   "patch-notes-2-0": "06b87a1b",
+  "patch-notes-2-1": "2695ff3b",
   "the-wiki-opens": "d20e775b",
 }
 `;
