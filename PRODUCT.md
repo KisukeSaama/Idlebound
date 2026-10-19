@@ -830,7 +830,7 @@ rejects real play.
   most 30 days. Such a run replacing the account's game may claim no more time (play and
   time away) than the stored game had been credited, plus the time the server saw pass
   since that save. Two first saves sent at once keep the first written; the other gets the
-  conflict. A save never goes back to an older version than the stored one. A game belongs
+  conflict. A save never goes back to an older version than the stored one, and a save written by a newer version than the server's (a build rolled back) is left untouched by the migrations and refused, never relabelled nor stripped of what it carries. A game belongs
   to one account: a game another account already keeps (same creation date) is refused as
   a first save, a replacement or a guest's game (`lineage-taken`), whatever its numbers.
 - When the session ends under an account's game (password changed elsewhere, session
