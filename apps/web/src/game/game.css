@@ -3749,17 +3749,34 @@ kbd {
   }
 }
 
-/* Touch screens have no hover: tooltips would stick after a tap. A talent out of reach (or
-   learned) does nothing when touched, so a tap opens its card; one to buy is bought at once. */
+/* Touch screens have no hover: tooltips would stick after a tap. A finger never buys blind:
+   the first tap on a talent or a power opens its card and arms it, the second does what it
+   says (touchArm.ts). A talent out of reach (or learned) does nothing, so a tap opens its card. */
 @media (hover: none) {
   .skill-tip {
     display: none;
   }
+  .skill.armed .skill-tip {
+    display: grid;
+  }
+  .skill.armed .skill-tip,
+  .talent.armed .talent-tip,
   .talent:disabled:hover .talent-tip {
     opacity: 1;
     visibility: visible;
     transform: translate(-50%, 0);
   }
+}
+
+.tip-again {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--gold-2);
+}
+
+/* The list item holds its talent's key; display: contents would drop its role in some readers. */
+.talent-item {
+  display: inline-flex;
 }
 
 /* Under a finger, a key answers the moment it is touched: it sinks and gives a little. A

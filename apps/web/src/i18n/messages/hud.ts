@@ -88,6 +88,7 @@ export const hud = defineMessages({
     },
     skills: {
       label: "Pouvoirs",
+      tapAgain: "Touche encore pour le lancer",
       ready: (name: string, key: string, description: string) => `${name} (touche ${key}) : ${description}`,
       cooldown: (time: string) => ` Recharge : ${time}.`,
       minutes: (value: Count) => `${value} min`,
@@ -112,6 +113,7 @@ export const hud = defineMessages({
       milestoneTitle: (current: string) => `Paliers : dégâts de ce compagnon ×3,5 au niveau 200, puis tous les 25 niveaux. Actuel : ×${current}`,
       milestone: (level: Count) => ` · palier niv. ${level}`,
       talentsOf: (hero: string) => `Talents de ${hero}`,
+      talentTapAgain: "Touche encore pour l'apprendre",
       talentOwned: "Acquis",
       talentCost: (cost: string) => `${cost} or`,
       talentLabel: (name: string, text: string, status: string) => `${name} : ${text}. ${status}.`,
@@ -377,6 +379,7 @@ export const hud = defineMessages({
     },
     skills: {
       label: "Powers",
+      tapAgain: "Tap again to use it",
       ready: (name: string, key: string, description: string) => `${name} (key ${key}): ${description}`,
       cooldown: (time: string) => ` Cooldown: ${time}.`,
       minutes: (value: Count) => `${value}m`,
@@ -401,6 +404,7 @@ export const hud = defineMessages({
       milestoneTitle: (current: string) => `Milestones: this companion's damage ×3.5 at level 200, then every 25 levels. Now: ×${current}`,
       milestone: (level: Count) => ` · milestone lv. ${level}`,
       talentsOf: (hero: string) => `${hero}'s talents`,
+      talentTapAgain: "Tap again to learn it",
       talentOwned: "Owned",
       talentCost: (cost: string) => `${cost} gold`,
       talentLabel: (name: string, text: string, status: string) => `${name}: ${text}. ${status}.`,
