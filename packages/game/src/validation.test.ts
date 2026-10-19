@@ -217,14 +217,21 @@ describe("a game closed and opened again", () => {
   });
 });
 
-/** A naive walker striking five times a second until the King pushes it back once (or `limit` seconds). */
+/**
+ * A naive walker striking 15 times a second up to the King, who then leaves the company to
+ * face him alone, without a purchase, until he pushes it back once (or `limit` seconds).
+ */
 function untilTheKingRefuses(seed: number, limit = 4 * 3600) {
   const engine = new GameEngine(createInitialState(T0), seededRng(seed), T0);
   const s = engine.state;
   let now = T0;
-  for (let step = 0; now < T0 + limit * 1000; step += 1) {
+  for (let step = 0; now < T0 + limit * 1000 && s.trail.wound?.stage !== 50; step += 1) {
     now += 100;
     engine.tick(now);
+    if (s.maxStage >= 50) {
+      if (!s.autoAdvance) engine.toggleAutoAdvance();
+      continue;
+    }
     engine.click(now);
     if (step % 2 === 0) engine.click(now);
     if (step % 10 === 0) {
@@ -233,9 +240,9 @@ function untilTheKingRefuses(seed: number, limit = 4 * 3600) {
         const hero = [...HEROES].reverse().find((entry) => (entry.index <= 1 || s.heroLevels[entry.id] || s.heroLevels[HEROES[entry.index - 1].id]) && engine.heroPurchase(entry.id, 1).cost <= s.gold);
         if (!hero || !engine.buyHero(hero.id, 1, now)) break;
       }
-      if (!s.autoAdvance && s.trail.wound?.stage !== 50) engine.toggleAutoAdvance();
+      // Sent back, it trains a minute on the stage before, then tries again.
+      if (!s.autoAdvance && step % 600 === 0) engine.toggleAutoAdvance();
     }
-    if (s.trail.wound?.stage === 50) break;
   }
   return { engine, now };
 }

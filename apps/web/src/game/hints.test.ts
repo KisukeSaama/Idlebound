@@ -20,10 +20,10 @@ describe("tutorial hints", () => {
   it("tells the walker to keep their gold for Maëlle once Aldric has trained a little", () => {
     const state = createInitialState();
     state.lifetime.clicks = 40;
-    state.heroLevels.aldric = 2;
+    state.heroLevels.aldric = 1;
     state.gold = 0;
     expect(currentHint(state)).toBeNull();
-    state.heroLevels.aldric = 3;
+    state.heroLevels.aldric = 2;
     expect(currentHint(state)?.id).toBe("companion");
     state.heroLevels.maelle = 1;
     expect(currentHint(state)).toBeNull();

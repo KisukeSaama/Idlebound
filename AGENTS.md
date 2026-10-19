@@ -35,7 +35,7 @@ first hour then four 15-minute sessions a day, the tab open between them, closed
 | ------------------------------------------- | ------------------------------ |
 | The first King, a naive walker (`walls.ts`) | under 20 min median            |
 | Realistic first ascension                   | 1 to 2 h of play               |
-| Realistic stage at the end of day 1 / day 3 | about 200 / about 1400         |
+| Realistic stage at the end of day 1 / day 3 | 200 to 300 / about 1400        |
 
 - After any gameplay change (formula, number, reward, cost, timer, new mechanic), run
   `npm run sims` (about 6 min). It plays at once, sharing six cores, `milestones.ts 9` (the

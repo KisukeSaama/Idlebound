@@ -20,7 +20,7 @@ export interface Hint {
 }
 
 /** From this level of Aldric's, the walker is told to keep their gold for the first companion. */
-const SAVE_FOR_COMPANION_FROM = 3;
+const SAVE_FOR_COMPANION_FROM = 2;
 
 /** What Maëlle asks to join, the first companion of every night. */
 export function maelleCost(state: GameState): number {

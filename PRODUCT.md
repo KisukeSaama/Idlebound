@@ -108,11 +108,11 @@ late game; mashing the mouse is never required.
   of 9 seeds, every profile giving its word at each dusk to the strongest companion who can
   ask, among the promises its style can keep: a profile that strikes gives no word to
   Ysolde nor to Nyx) every style stands within a quarter of the others (the best over the
-  worst: 1.22 since the first night's King keeps his wounds, version 2.1): the occasional
-  player leads (1252, back every hour for 10 minutes, the tab left open to the autopilot,
-  ascending when a boss blocks the company, 4 h of real play), then bursts (1117), 10
-  clicks/s (1116), 5/s (1081), idle (1063) and 2/s (1026). Before 2.1 the same runs stood at
-  984 to 1157 (1.18, since the relics remember, version 1.3); before 1.3 at 898 to 1052
+  worst: 1.14 since the first night's King keeps his wounds, version 2.1): 5 clicks/s
+  leads (1097), then the occasional player (1093, back every hour for 10 minutes, the tab
+  left open to the autopilot, ascending when a boss blocks the company, 4 h of real play),
+  10 clicks/s (1090), 2/s (990), idle (983) and bursts (960). Before 2.1 the same runs stood
+  at 984 to 1157 (1.18, since the relics remember, version 1.3); before 1.3 at 898 to 1052
   (1.17) on the same seeds; earlier figures: 961 to 1186 (1.23).
   Before the cap on damage to guardians the same runs stood at 936 to 1009 (1.08): every
   style went deeper with the cap, the occasional player most (+179).
@@ -124,10 +124,10 @@ late game; mashing the mouse is never required.
   stages in more than twice the stagnation time), not only once it stalls: without that
   rule the bursts crept for hours and fell to 736 (1.28). The bot buys the Blade when its
   clicks lead the company (they deal more than the Patience bonus), Patience otherwise:
-  at 10 clicks/s the strikes are then almost all the damage (clicks 325 times the company
+  at 10 clicks/s the strikes are then almost all the damage (clicks 375 times the company
   without its bonus), and 8 h away adds only 2 stages to that walker. 8 h in a background tab
-  after 24 h of play adds 16 to 31 stages to the others (median per profile), and the
-  Reunion doubles the first hour back (+16 to +24 stages instead of +7 to +11). The 72 h bot (5 clicks/s, seed 42, a word
+  after 24 h of play adds 16 to 22 stages to the others (median per profile), and the
+  Reunion doubles the first hour back (+14 to +23 stages instead of +6 to +12). The 72 h bot (5 clicks/s, seed 42, a word
   given each night) reaches stage 1518 after 12 ascensions (500 at 16 h, 1000 at 30 h), and
   in a week 1960 after 26, each ascension adding fewer stages past 1000 (+120, +98, +70,
   +58, +70, then about +25 in the last days): no runaway. Before the Promise the same seed
@@ -710,27 +710,31 @@ opens again, within the same cap as a hidden tab.
 ### Balance targets
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
-(`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 49, stage 50 in
-1 h 50, first ascension at 2 h 53, stage 100 at 3 h 48 (version 2.1: Maëlle at 25 gold, the
-first night's gate and King keeping their wounds; the first ascension now spreads from 1 h 58
-to 3 h 51 by seed, where the seeds held at the King went past 4 h 30 before; version 1.3
-stood at 1 min 47, 1 h 24, 2 h 52 and 3 h 41, before it 1 h 29, 3 h 01 and 3 h 51), then
+(`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 47, stage 50 in
+1 h 20, first ascension at 2 h 20, stage 100 at 3 h 04 (version 2.1, the first night's gate
+and King keeping their wounds: the bot no longer waits at the King, so the first dusk comes
+about half an hour sooner and spreads from 1 h 37 to 2 h 50 by seed, where the seeds held at
+the King went past 4 h 30 before; a King keeping 30% of his wounds gives 2 h 40 and 3 h 39,
+none gives 2 h 52 and 3 h 41; version 1.3 stood at 1 min 47, 1 h 24, 2 h 52 and 3 h 41,
+before it 1 h 29, 3 h 01 and 3 h 51), then
 steady progress carried by ascensions. Over 30 seeds: 1 min 48, 1 h 33, 3 h 11 and 4 h 08
 (before 1.3: 1 min 48, 1 h 35, 2 h 55 and 3 h 59),
 the same to the minute as before the replay (1 min 48, 1 h 36, 2 h 53, 3 h 59): since the
 engine steps every 100 ms (version 1.1, the bots' cadence), any change sends every seed down
 another road, and nine seeds swing a median by a quarter of an hour either way. A naive walker (it buys the newest companion it can afford, never the best
-value) loses 1 min 55 at the stage 20 guardian, 4 min 22 at the stage 30 guardian, 6 min 07
-at the stage 40 guardian and 20 min 25 at the first King (median of 9 seeds, `npx tsx
-packages/game/scripts/walls.ts 9`; before version 2.1: 2 min 27, 2 min 31, 3 min 09 and
-42 min 08 at the King, who then healed whole). **The walker who is not a bot**
+value) loses 2 min 27 at the stage 20 guardian, 2 min 31 at the stage 30 guardian, 3 min 09
+at the stage 40 guardian and 13 min 05 at the first King (median of 9 seeds, `npx tsx
+packages/game/scripts/walls.ts 9`; before version 2.1, 42 min 08 at the King, who then
+healed whole; Maëlle at 25 gold was tried and dropped: it slowed the first night by a
+third for the bot and the naive walker alike, the stage 50 seed by seed +39%). **The walker who is not a bot**
 (`npx tsx packages/game/scripts/realistic.ts 9 3`: 2 strikes a second, the same naive
 purchases, a first hour then four 15-minute sessions a day, the tab open between them,
 closed at night, calling the dusk as soon as it sees the King fallen the first time, then
-once the road stops paying) reaches stage 10 in 3 min 44 and stage 40 after its first hour;
-the company walks on to the King in the open tab, and the first King costs it 6 min (54 min
-before 2.1); it ascends on its first return, after 1 h 02 of play, and stands at stage 207,
-910 and 1390 at the end of days 1, 2 and 3 (22 ascensions). The pace of a run is set by the gold a
+once the road stops paying) reaches stage 10 in 4 min 11 and stage 41 after its first hour;
+the company walks on to the King in the open tab (the autopilot only goes back to a boss it
+can beat, so the wounds of one fight help it, 54 min at the King as before); it ascends on
+its first return, after 1 h 00 of play, and stands at stage 280, 960 and 1450 at the end of
+days 1, 2 and 3 (24 ascensions; 230, 890 and 1380 before 2.1). The pace of a run is set by the gold a
 monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to stage 10.
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
 bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
@@ -757,8 +761,8 @@ rejects real play.
   Its foot names the version the walker plays (`v0.6.0`): the `version` of the root
   `package.json`, read at build time, the same on the develop server.
 - The first seconds: a hint says to strike the monster (from the very first second, gone with
-  the first strike); after Aldric's third level, a hint tells the walker to keep their gold for
-  Maëlle (25 gold, the first companion) until she joins. What relics remember (traits) is told
+  the first strike); after Aldric's second level, a hint tells the walker to keep their gold for
+  Maëlle (50 gold, the first companion) until she joins. What relics remember (traits) is told
   with the second relic found, never in the same breath as the first relic's toast; the first
   relic's toast says it is already worn (a relic of the road goes to its empty slot).
 - One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a
