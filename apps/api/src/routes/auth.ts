@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "../db/client";
 import { emailVerifications, passwordResets, users } from "../db/schema";
 import { env } from "../env";
+import { issueVerificationLink } from "../lib/confirm";
 import { guestId } from "../lib/guest";
 import { fail } from "../lib/errors";
 import { localeOf } from "../lib/i18n";
@@ -12,7 +13,7 @@ import { resetPasswordMail, sendMail, verifyEmailMail } from "../lib/mail";
 import { checkPasswordStrength, dummyVerify, hashPassword, verifyPassword } from "../lib/password";
 import { clientIp, consumeNetwork, limiter, tooMany } from "../lib/rate-limit";
 import { createSession, currentUser, destroyAllSessions, destroySession, hashToken, newToken } from "../lib/session";
-import { VERIFY_LINK_DAYS, verificationRequired, verifyDeadline } from "../lib/verification";
+import { verificationRequired, verifyDeadline } from "../lib/verification";
 
 const registerIp = limiter(5, 60 * 60_000);
 const loginIp = limiter(20, 15 * 60_000);
@@ -91,15 +92,7 @@ function uniqueViolation(error: unknown): boolean {
 
 /** New confirmation link for the account's current address; earlier links stop working. */
 async function sendVerification(user: { id: string; email: string; username: string }, locale: Locale) {
-  const token = newToken();
-  await db.delete(emailVerifications).where(eq(emailVerifications.userId, user.id));
-  await db.insert(emailVerifications).values({
-    id: hashToken(token),
-    userId: user.id,
-    email: user.email,
-    expiresAt: new Date(Date.now() + VERIFY_LINK_DAYS * 86_400_000)
-  });
-  const link = `${env.PUBLIC_SITE_URL}/${locale}/verify-email?token=${encodeURIComponent(token)}`;
+  const link = await issueVerificationLink(user, locale);
   sendMail(user.email, verifyEmailMail(user.username, link, locale)).catch((error) => console.error("[mail] send failed", error));
 }
 

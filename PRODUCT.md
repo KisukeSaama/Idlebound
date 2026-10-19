@@ -754,7 +754,7 @@ rejects real play.
   voids the previous one. A password reset through the e-mail link also confirms the
   address, unless the address changed since the link was sent: fixing the address voids
   every pending reset link. Fixing the address does not extend the deadline, and each fix
-  sends a link that counts against the resend limit (3 per hour). An account never confirmed is deleted 30 days after sign-up. Accounts created
+  sends a link that counts against the resend limit (3 per hour). An account never confirmed gets two reminders, each with a new link (day 7, day 25; they say the saves are paused and when the account goes), and is deleted 30 days after sign-up, never sooner than 3 days after the second reminder, nor without it sent. One whose game went past stage 50 (its best stage on the leaderboard) is never deleted for it: its reminders say only that the saves wait. Accounts created
   before this rule are considered confirmed.
 - Usernames: 3 to 16 characters (letters, digits, `-`, `_`), at least one letter, unique
   regardless of case and accents, reserved names blocked, strict FR/EN profanity filter that

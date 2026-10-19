@@ -966,13 +966,39 @@ suite("API (real Postgres)", () => {
       expect((await client.call("POST", "/auth/verify/resend")).status).toBe(400);
       expect((await client.call("POST", "/auth/email", { email, password })).status).toBe(403);
 
-      // An account never confirmed is deleted after 30 days.
+      // An account never confirmed is reminded on day 7 with a new link, then on day 25, and
+      // deleted after 30 days, never sooner than a few days after the last reminder.
       const ghost = `ghost-${unique}@test.fr`;
       expect((await new Client("10.0.0.22").call("POST", "/auth/register", { email: ghost, username: freshName("Gho"), password })).status).toBe(201);
-      await sql`update users set created_at = now() - interval '31 days' where email = ${ghost}`;
+      const reminders = async (address: string) => (await sql`select verify_reminders as count from users where email = ${address}`)[0]?.count as number | undefined;
+      await sql`update users set created_at = now() - interval '8 days' where email = ${ghost}`;
+      const [before] = await sql`select id from email_verifications where email = ${ghost}`;
+      await purgeExpired();
+      expect(await reminders(ghost)).toBe(1);
+      const [after] = await sql`select id from email_verifications where email = ${ghost}`;
+      expect(after.id).not.toBe(before.id);
+      // Twice in a row the same day: nothing more is sent.
+      await purgeExpired();
+      expect(await reminders(ghost)).toBe(1);
+      // Day 31, the second reminder only just sent: not deleted yet.
+      await sql`update users set created_at = now() - interval '31 days', verify_reminded_at = now() - interval '4 days' where email = ${ghost}`;
+      await purgeExpired();
+      expect(await reminders(ghost)).toBe(2);
+      expect(await sql`select 1 from users where email = ${ghost}`).toHaveLength(1);
+      await sql`update users set verify_reminded_at = now() - interval '4 days' where email = ${ghost}`;
       await purgeExpired();
       expect(await sql`select 1 from users where email = ${ghost}`).toHaveLength(0);
       expect(await sql`select 1 from users where email = ${fixed}`).toHaveLength(1);
+
+      // A walker who went past the Fallen King keeps the account, confirmed or not.
+      const deep = `deep-${unique}@test.fr`;
+      const deepClient = new Client("10.0.0.23");
+      expect((await deepClient.call("POST", "/auth/register", { email: deep, username: freshName("Dee"), password })).status).toBe(201);
+      expect((await deepClient.call("PUT", "/save", { state: playedState(1), baseRevision: null })).status).toBe(200);
+      await sql`update leaderboard set max_stage = 120 where user_id = (select id from users where email = ${deep})`;
+      await sql`update users set created_at = now() - interval '60 days', verify_reminders = 2, verify_reminded_at = now() - interval '20 days' where email = ${deep}`;
+      await purgeExpired();
+      expect(await sql`select 1 from users where email = ${deep}`).toHaveLength(1);
     } finally {
       env.SMTP_URL = previousSmtp;
     }

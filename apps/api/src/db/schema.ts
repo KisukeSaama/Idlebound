@@ -42,7 +42,10 @@ export const users = pgTable("users", {
   /** Language of the player's last visit, for e-mails sent outside of any request. */
   locale: text("locale").notNull().default("fr"),
   /** When the "account about to be deleted" warning was sent; cleared by any new activity. */
-  inactivityNoticeAt: timestamp("inactivity_notice_at", { withTimezone: true })
+  inactivityNoticeAt: timestamp("inactivity_notice_at", { withTimezone: true }),
+  /** Reminders sent to confirm the address (see lib/inactivity.ts), and when the last one left. */
+  verifyReminders: integer("verify_reminders").notNull().default(0),
+  verifyRemindedAt: timestamp("verify_reminded_at", { withTimezone: true })
 }, (table) => [index("users_last_seen_idx").on(table.lastSeenAt)]);
 
 export const sessions = pgTable("sessions", {

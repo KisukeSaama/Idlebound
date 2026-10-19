@@ -34,7 +34,7 @@ export const privacy = defineMessages({
       "Les échanges sont chiffrés (HTTPS), les tentatives de connexion sont limitées et changer de mot de passe révoque toutes les sessions. Les adresses IP ne servent qu'à limiter les abus et ne sont pas conservées.",
     retentionTitle: "Durée de conservation",
     retentionText:
-      `Tes données sont conservées tant que tu utilises ton compte. Un compte sans aucune connexion ni partie pendant 3 ans est supprimé automatiquement, avec sa partie et sa place au classement. Un e-mail d'avertissement t'est envoyé 30 jours avant la suppression : il suffit de te reconnecter pour garder ton compte. Un compte dont l'adresse e-mail n'a jamais été confirmée est supprimé 30 jours après sa création. Une partie jouée sans compte est supprimée après ${GUEST_SAVE_DAYS} jours sans visite.`,
+      `Tes données sont conservées tant que tu utilises ton compte. Un compte sans aucune connexion ni partie pendant 3 ans est supprimé automatiquement, avec sa partie et sa place au classement. Un e-mail d'avertissement t'est envoyé 30 jours avant la suppression : il suffit de te reconnecter pour garder ton compte. Un compte dont l'adresse e-mail n'a jamais été confirmée est supprimé 30 jours après sa création, après deux rappels par e-mail (au 7e et au 25e jour), sauf si sa partie a dépassé l'étape 50 : il est alors gardé. Une partie jouée sans compte est supprimée après ${GUEST_SAVE_DAYS} jours sans visite, ou après 48 heures si elle n'a été sauvegardée qu'une fois.`,
     rightsTitle: "Tes droits",
     rightsLead: "Tu peux supprimer définitivement ton compte et toutes ses données à tout moment depuis le jeu : menu ",
     accountMenu: "Compte & progression",
@@ -72,7 +72,7 @@ export const privacy = defineMessages({
       "Traffic is encrypted (HTTPS), sign-in attempts are rate limited and changing your password revokes every session. IP addresses are only used to limit abuse and are not stored.",
     retentionTitle: "Retention",
     retentionText:
-      `Your data is kept as long as you use your account. An account with no sign-in and no play for 3 years is deleted automatically, along with its game and its leaderboard entry. A warning email is sent to you 30 days before the deletion: just sign in again to keep your account. An account whose email address was never confirmed is deleted 30 days after it was created. A game played without an account is deleted after ${GUEST_SAVE_DAYS} days without a visit.`,
+      `Your data is kept as long as you use your account. An account with no sign-in and no play for 3 years is deleted automatically, along with its game and its leaderboard entry. A warning email is sent to you 30 days before the deletion: just sign in again to keep your account. An account whose email address was never confirmed is deleted 30 days after it was created, after two reminder emails (on the 7th and the 25th day), unless its game went past stage 50: then it is kept. A game played without an account is deleted after ${GUEST_SAVE_DAYS} days without a visit, or after 48 hours if it was saved only once.`,
     rightsTitle: "Your rights",
     rightsLead: "You can permanently delete your account and all its data at any time from the game: open ",
     accountMenu: "Account & progress",
