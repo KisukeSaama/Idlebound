@@ -117,13 +117,13 @@ export const PROMISES_TEXT: Record<Locale, Record<string, PromiseText>> = {
     },
     brom: {
       ask: "« Laisse-moi ton arme cette nuit. Elle a un pli qui ne me plaît pas, je veux le reprendre. Tu te débrouilleras sans. Tu as des mains. »",
-      kept: "Il te la rend au crépuscule, encore tiède de l'enclume. « Une nuit sans elle et tu n'es pas mort. Je suis presque fier. »",
+      kept: "Il te la rend au crépuscule, encore tiède de l'enclume. « Une nuit sans elle, et tu respires encore. Je suis presque fier. »",
       broken: "Il te regarde la reprendre sur l'enclume, à moitié faite. « Elle tiendra. Mal. Comme tout ce qu'on presse. »"
     },
     ysolde: {
       ask: "« Ne frappe pas cette nuit. Pas une fois. Garde l'épée baissée et laisse-moi tirer. J'ai vu où tu tombes quand tu te précipites. »",
-      kept: "« Tu n'as pas frappé. Pas une fois. » Elle détend son arc. « Et tu es encore debout. Les arbres l'ont remarqué. D'habitude, ils ne remarquent rien. »",
-      broken: "Ysolde baisse son arc. « Tu as frappé quand même. C'est comme ça que tu es tombé, la nuit que les arbres m'ont montrée. »"
+      kept: "« Tu n'as pas frappé. Pas une fois. » Elle détend son arc. « Et tu tiens encore sur tes jambes. Les arbres l'ont remarqué. D'habitude, ils ne remarquent rien. »",
+      broken: "Ysolde baisse son arc. « Tu as frappé quand même. C'est comme ça que la nuit t'a fait tomber, celle que les arbres m'ont montrée. »"
     },
     cendre: {
       ask: "« Si Ashka, la prêtresse du Bûcher, veut nous rejoindre cette nuit, dis-lui que la route est pleine. Gentiment. Elle mord. »",

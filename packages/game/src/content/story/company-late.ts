@@ -191,7 +191,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
         { by: "L'Éveillé", text: "De l'autre côté du feu, l'Éveillé se tient exactement comme toi. Tu changes d'appui, lui aussi, au même instant. Il t'imite." },
         { by: "L'Éveillé", text: "Tu essuies ta lame sur ta manche. De l'autre côté de la route, l'Éveillé essuie une main vide de la même façon. Chacun de tes gestes, il le refait." },
         { by: "L'Éveillé", text: "Les lèvres de l'Éveillé bougent un souffle avant que tu parles, et forment tes mots. Il sait ce que tu vas faire avant toi." },
-        { by: "L'Éveillé", text: "Un soir, tu tires l'épée, et l'Éveillé ne la tire pas. Pour la première fois, il cesse de t'imiter, et attend de voir ce que tu fais seul." },
+        { by: "L'Éveillé", text: "Un soir, tu tires l'épée, et l'Éveillé ne la tire pas. Pour la première fois, il cesse de t'imiter, et attend de voir ce que tu fais sans lui." },
         { by: "L'Éveillé", text: "L'Éveillé parle pour la première et la seule fois, le regard passant droit à travers toi, comme vers quelqu'un derrière tes yeux : « Bonjour. »" }
       ]
     },

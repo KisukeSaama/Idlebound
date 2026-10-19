@@ -119,8 +119,8 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
         { by: "Ysolde", text: "Ysolde vise le noir derrière ton épaule, puis baisse son arc. « Pardon. Quelque chose te tombe toujours dessus par là. Je ne sais pas comment je le sais. »" },
         { by: "Ysolde", text: "La Forêt sombre se penche sur ton passage. « Les arbres disent ton nom, souffle Ysolde. Ils se souviennent de chaque nuit. Et de toi, dedans. »" },
         { by: "Ysolde", text: "« Attention à cette racine, tu trébuches toujours dessus. » Tu n'y es pas encore. « Les arbres me l'ont montré. Tu as pris ce sentier plus de fois qu'on ne peut compter. »" },
-        { by: "Ysolde", text: "Elle t'emmène vers un creux de mousse en forme de corps. « Tu es tombé ici, une nuit dont aucun de nous ne se souvient. Les arbres me l'ont montré. J'ai été trop lente. »" },
-        { by: "Ysolde", text: "« Les arbres me montrent toutes tes nuits, même celles où tu tombes. Tu t'es toujours relevé, tu es toujours revenu. La forêt dit que tu n'abandonnes jamais. »" }
+        { by: "Ysolde", text: "Elle t'emmène vers un creux de mousse en forme de corps. « La nuit t'a fait tomber ici, une nuit oubliée de tous. Les arbres me l'ont montré. J'ai été trop lente. »" },
+        { by: "Ysolde", text: "« Les arbres me montrent toutes tes nuits, même celles où tu tombes. Chaque fois, tu te relèves et tu reviens. La forêt dit que tu n'abandonnes jamais. »" }
       ],
       cendre: [
         { by: "Frère Cendre", text: "Frère Cendre sert deux tasses avant que tu t'assoies. « Le thé d'abord. Un moine des Braises ne se bat jamais le ventre vide. La violence attendra. Elle attend toujours. »" },
@@ -181,7 +181,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
     },
     hireLines: {
       ysolde: [
-        "Ne bouge plus. Là. Voilà, tu n'es pas mort.",
+        "Ne bouge plus. Là. Voilà, tu respires encore.",
         "Ne bouge plus. Non, tu sais déjà où. Comment tu sais où ? On a déjà traversé cette forêt ensemble ?",
         "À gauche de la racine, comme toujours. Je couvre tes arrières. Les arbres se souviennent de toi, et moi aussi, un peu."
       ],
@@ -192,7 +192,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
       ],
       nyx: ["...", "...Toi. Encore ?", "...Aldric."],
       garrick: [
-        "Riches ! On sera riches ! Enfin, moi. Toi, tu seras employé.",
+        "Riches ! On sera riches ! Enfin, moi. Toi, tu toucheras un salaire.",
         "Riches ! On sera... Je t'ai déjà fait l'article ? J'ai l'impression que oui.",
         "Toi ! Prends une pioche. Ta part est la même que d'habitude, associé. Petite."
       ],
@@ -213,7 +213,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
       ],
       kaelen: [
         "Reste derrière moi. Non, plus loin.",
-        "Reste derrière moi. Tu t'es toujours tenu là ? On dirait bien.",
+        "Reste derrière moi. C'est toujours ta place ? On dirait bien.",
         "Reste à côté de moi. Rien que cette fois. J'aimerais la compagnie."
       ],
       oriane: [

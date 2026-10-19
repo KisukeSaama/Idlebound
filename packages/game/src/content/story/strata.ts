@@ -164,7 +164,7 @@ const fr: StrataText = {
   ],
   keystones: [
     // Âge I : le Royaume
-    { by: "Le Grand Livre", text: "Le Roi t'a regardé comme si tu étais en retard. Des marcheurs l'affrontent chaque nuit, depuis toujours. Il t'attendait." },
+    { by: "Le Grand Livre", text: "Le Roi a levé les yeux sur toi, comme sur quelqu'un en retard. Des marcheurs l'affrontent chaque nuit, depuis toujours. Il t'attendait." },
     { by: "Le Grand Livre", text: "Les chauves-souris ont crié avant ton coup. Elles avaient déjà entendu ce combat : cette même nuit a été vécue bien des fois." },
     { by: "Frère Cendre", text: "Sous la cendre, ce sont les mêmes champs. Le Bûcher les a brûlés jadis pour rappeler le soleil. Ils prennent encore le Matin pour un soleil." },
     { by: "Lysandre", text: "Il manque un tiers de ma carte. Ni brûlé, ni noyé : oublié en entier. Le Matin est passé tout près, ici, et a effacé ce qu'il touchait." },
@@ -226,14 +226,14 @@ const fr: StrataText = {
     // Âge XI : le Blanc
     { by: "Morgrath", text: "La nuit s'amincit. On devine derrière la couleur du ciel du matin. Nous sommes tout près du réveil." },
     { by: "Le Grand Livre", text: "Les Vestiges d'ici ont presque disparu, à peine remémorés. Ils se battent quand même. Toi aussi." },
-    { by: "Lysandre", text: "Tu es sorti du dessin par le bord. Ici, rien d'Orvane n'a encore été imaginé." },
+    { by: "Lysandre", text: "Tu as quitté le dessin par le bord. Ici, rien d'Orvane n'a encore été imaginé." },
     { by: "Le Grand Livre", text: "Rien n'a encore été écrit ici. Tes pas sont la première trace sur une page vierge." },
     { by: "Une main inconnue", text: "Une seule goutte d'encre, sur le point de tomber. Avant qu'on dessine Orvane, il n'y avait que ça : une goutte, et une main." },
     // Âge XII : le Premier Trait
     { by: "Aurelion", text: "Tout monde commence par un point de lumière, et quelqu'un qui le regarde. Je l'ai déjà vu commencer, pour d'autres mondes." },
     { by: "Ashka", text: "Le point est chaud. C'est le premier feu, celui que mon ordre priait depuis le début. Ce n'était jamais le soleil." },
     { by: "Eldra", text: "Quelque chose inspire et retient son souffle : le rêveur, au bord du réveil. J'ai tissé la nuit pour que ce souffle dure." },
-    { by: "Aldemar", text: "Aldemar, sans sa couronne : « Tu es venu jusqu'ici. La nuit ne finit pas à la lumière. Elle continue dessous. La route est à toi. »" },
+    { by: "Aldemar", text: "Aldemar, sans sa couronne : « Tu as marché jusqu'ici. La nuit ne finit pas à la lumière. Elle continue dessous. La route est à toi. »" },
     { by: "L'Aube", text: "Pas par ici. Derrière la lumière, la route redescend dans la nuit." }
   ],
   milestones: {
