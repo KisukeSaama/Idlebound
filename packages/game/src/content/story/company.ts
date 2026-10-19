@@ -160,7 +160,7 @@ export const COMPANY_TEXT: Record<Locale, Pick<CompanyText, "memories" | "hireLi
       mirelle: [
         { by: "Mirelle", text: "Mirelle te tend une fiole, te regarde boire et note quelque chose. « Intéressant. Tes oreilles arrêteront de siffler dans une heure. Sans doute. »" },
         { by: "Mirelle", text: "Son carnet tombe ouvert. Ton nom y est, page après page, de sa main. « Rends-moi ça. On dirait que tu m'as déjà aidée. Je ne m'en souviens pas non plus. »" },
-        { by: "Mirelle", text: "Le carnet parle du baron Osric, son mari : doses, dates, ce qu'il a dit. Le Baron de la Pourriture, dans le Marais, est l'homme qu'elle a épousé. Elle essaie de le guérir." },
+        { by: "Mirelle", text: "Le carnet parle du baron Osric, son mari : doses, dates, ce qu'il a dit. Le Baron de la pourriture, dans le Marais, est l'homme qu'elle a épousé. Elle essaie de le guérir." },
         { by: "Mirelle", text: "Aux pieds du Baron, elle te touche le bras. « Attends. Un souffle. Laisse-moi essayer ce remède sur lui d'abord. » Elle verse. Ça échoue. Elle hoche la tête, et tu frappes." },
         { by: "Mirelle", text: "Elle te donne son alliance. « Aucun remède n'a marché, pas une seule nuit. Il voudrait que quelqu'un d'utile la porte. »" }
       ],

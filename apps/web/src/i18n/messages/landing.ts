@@ -49,7 +49,7 @@ export const landing = defineMessages({
     biomes: {
       title: "Cinq lieux d'un royaume perdu",
       stages: (from: number, to: number) => `Étapes ${from} à ${to}`,
-      boss: "Boss : "
+      boss: "Gardien : "
     },
     board: {
       title: "Les marcheurs les plus profonds",
@@ -123,7 +123,7 @@ export const landing = defineMessages({
     biomes: {
       title: "Five places of a lost kingdom",
       stages: (from: number, to: number) => `Stages ${from} to ${to}`,
-      boss: "Boss: "
+      boss: "Guardian: "
     },
     board: {
       title: "The deepest walkers",

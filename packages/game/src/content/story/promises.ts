@@ -36,7 +36,7 @@ export const PROMISES_TEXT: Record<Locale, Record<string, PromiseText>> = {
     garrick: {
       ask: "\"Not one shard to the Stallkeeper tonight. Not the forge, not the Caravan either. Humour me. I want to count them all at dusk.\"",
       kept: "He counts your shards twice, lips moving. \"All there. See? Pieces of sky keep, if you let them.\"",
-      broken: "\"Thought so.\" He pats his pockets, counting what he still has. \"Never trust anyone near a stall. I don't, and I'm me.\""
+      broken: "\"Thought so.\" He pats his pockets, counting what he still has. \"Never trust anyone near a market. I don't, and I'm me.\""
     },
     seraphine: {
       ask: "\"At the Old Grove, give its Heart ten breaths before anyone strikes, then bring her down. She has something to tell me first.\"",
@@ -138,7 +138,7 @@ export const PROMISES_TEXT: Record<Locale, Record<string, PromiseText>> = {
     garrick: {
       ask: "« Pas un éclat au Comptoir cette nuit. Ni à la forge, ni à la Roulotte. Fais-moi plaisir. Je veux tous les compter au crépuscule. »",
       kept: "Il compte tes éclats deux fois, en remuant les lèvres. « Tout y est. Tu vois ? Les morceaux de ciel se gardent, si on les laisse. »",
-      broken: "« Je m'en doutais. » Il tâte ses poches et compte ce qui lui reste. « Ne te fie à personne près d'un étal. Moi le premier. »"
+      broken: "« Je m'en doutais. » Il tâte ses poches et compte ce qui lui reste. « Ne te fie à personne près d'un comptoir. Moi le premier. »"
     },
     seraphine: {
       ask: "« Au vieux bosquet, laisse à son Cœur dix souffles avant le premier coup, puis abats-la. Elle a quelque chose à me dire, d'abord. »",

@@ -7,7 +7,7 @@ export const chronicle = defineMessages({
     sources: {
       keystone: "Clés de voûte des strates",
       milestone: "Jalons",
-      king: "Paroles du roi",
+      king: "Paroles du Roi",
       echo: "Échos de la route",
       age: "Échos des Âges",
       wanderer: "Errants",

@@ -226,7 +226,7 @@ export const sanctum = defineMessages({
       bought: "Bought. The Caravan moves on and comes back next week with another offer.",
       left: "The Caravan left. It comes back next week with a new offer.",
       tokenOwned: "You already have the Token. You can only own one.",
-      packFull: (room: number) => `You need ${room} free ${room > 1 ? "spaces" : "space"} in your pack.`
+      packFull: (room: number) => `You need ${room} free ${room > 1 ? "spaces" : "space"} in your bag.`
     },
     armory: {
       regalia: "Regalia of Orvane",

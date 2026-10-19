@@ -57,7 +57,7 @@ export const wikiArticles = defineMessages<Articles>({
           id: "first-hour",
           title: "La première heure",
           blocks: [
-            "Les étapes se suivent par biomes de 10 : les Plaines verdoyantes (1 à 10), la Forêt sombre (11 à 20), les Cavernes oubliées (21 à 30), le Marais corrompu (31 à 40) et les Ruines du roi déchu (41 à 50).",
+            "Les étapes se suivent par biomes de 10 : les Plaines verdoyantes (1 à 10), la Forêt sombre (11 à 20), les Cavernes oubliées (21 à 30), le Marais corrompu (31 à 40) et les Ruines du Roi déchu (41 à 50).",
             {
               list: [
                 "**Les cristaux errants** apparaissent de temps en temps sur la scène, environ toutes les 1,5 à 4 minutes. Attrape-les : or, dégâts ×7, frappe ×10, éclats. Ils ne restent que 13 secondes.",
@@ -106,7 +106,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "when-ascend", title: "Quand faire mon ascension ?", blocks: ["Quand ta progression s'arrête. Les simulations sont claires : ascensionner quelques minutes après ta dernière nouvelle étape va bien plus loin qu'attendre une heure devant un mur. Les essences augmentent avec l'étape la plus loin franchie, mais moins vite que les PV des monstres : pousser un peu paie, camper des heures non."] },
         { id: "which-altar", title: "Quels autels acheter ?", blocks: ["Ceux qui suivent ton style. Si tu laisses surtout tourner le jeu, l'**Autel de la patience** est le meilleur. Si tes frappes font l'essentiel de tes dégâts, l'**Autel de la lame**. Entre les deux, **puissance** et **fortune**. Ensuite, les autels plafonnés (temps, trésor, marchandage…) s'ouvrent à la troisième puis à la cinquième nuit. Et garde toujours environ la moitié de tes essences en main. Détails dans [Ascension et autels](ascension#strategy)."] },
         { id: "relic-choice", title: "Quelle relique porter ?", blocks: ["Regarde le chiffre **Compagnie ×N** de chaque relique : c'est ce qu'elle multiplie dans les dégâts de ta compagnie, comparé à l'emplacement vide. Plus il est grand, mieux c'est. Les reliques trouvées dans les strates profondes ont de la **Densité** : chaque strate sous la nuit présente ajoute ×1,03 aux dégâts de la compagnie."] },
-        { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20) et à acheter à l'étal du Comptoir : coffres, potions, sabliers. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
+        { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20) et à acheter au marché du Comptoir : coffres, potions, sabliers. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
         { id: "lost", title: "Vais-je perdre ma partie ?", blocks: ["Non. Elle est gardée sur le serveur, même sans compte : ton navigateur la retrouve pendant 30 jours après ta dernière visite. Crée un compte pour la garder pour toujours et sur tous tes appareils. Voir [Compte et partie gardée](account)."] },
         { id: "cheat", title: "Peut-on tricher ?", blocks: ["Le serveur vérifie chaque partie envoyée avec le même moteur que le jeu : or gagné, temps joué, boss battables, butin. Une partie impossible est refusée. Le classement ne montre que des parties vérifiées."] },
         { id: "mistakes", title: "Les erreurs de débutant", blocks: [{ list: ["Dépenser toutes ses essences aux autels.", "Camper des heures devant un mur au lieu de faire son ascension.", "Laisser un compagnon juste sous un palier (niveau 24, 49, 99…).", "Oublier d'acheter les talents : ils doublent ou quadruplent les dégâts.", "Garder des reliques communes au lieu de les recycler en éclats.", "Ignorer les cristaux : une surcharge ×7 ou une frappe ×10 au bon moment fait tomber un boss."] }] }
@@ -308,7 +308,7 @@ export const wikiArticles = defineMessages<Articles>({
                 "Un compagnon ne demande ta parole qu'à partir de la **Reconnaissance 2** (trois nuits passées ensemble) : la première demande arrive donc vers la quatrième nuit.",
                 "Elle se donne au Sanctuaire, page Promesse : tout de suite si la nuit commence à peine (personne recruté, aucune étape franchie, rien de ce qu'elle interdit déjà fait), sinon pour le prochain crépuscule.",
                 "**Une parole par nuit**, sans pouvoir en changer. Jamais au même compagnon deux nuits de suite.",
-                "Un compagnon ne demande que des nuits que tu as déjà marchées : tant que les étapes nécessaires (son roi, son gardien) dépassent ton record, il n'est pas dans la liste."
+                "Un compagnon ne demande que des nuits que tu as déjà marchées : tant que les étapes nécessaires (son Roi, son gardien) dépassent ton record, il n'est pas dans la liste."
               ]
             }
           ]
@@ -322,7 +322,7 @@ export const wikiArticles = defineMessages<Articles>({
           id: "kept",
           title: "Tenue ou rompue",
           blocks: [
-            "Une promesse est **tenue** au crépuscule si ce qu'elle demande a été fait **et qu'un roi est tombé** cette nuit-là (en tête de nuit, après la parole donnée).",
+            "Une promesse est **tenue** au crépuscule si ce qu'elle demande a été fait **et que le Roi est tombé** cette nuit-là (en tête de nuit, après la parole donnée).",
             {
               list: [
                 "**Chaque parole tenue double les dégâts** de ce compagnon, pour toujours, jusqu'à cinq paroles (×32). Après ses cinq, il ne demande plus rien.",
@@ -368,8 +368,8 @@ export const wikiArticles = defineMessages<Articles>({
                 "**Gardiens** : 40 % de chance (garanti au premier passage), et `1 + étape/25` éclats.",
                 "**Élites** : 15 % de chance, et 1 éclat une fois sur trois environ.",
                 "Seul le boss le plus loin de la nuit lâche reliques et éclats : un boss rejoué depuis la carte ne paie que de l'or.",
-                "Les coffres de l'étal, la Brèche, l'Éclipse du roi et les cadeaux des compagnons.",
-                "La première chute du roi de ta marche laisse une relique épique ou mieux.",
+                "Les coffres du marché, la Brèche, l'Éclipse du Roi et les cadeaux des compagnons.",
+                "La première chute du Roi de ta marche laisse une relique épique ou mieux.",
                 `La route ne te laisse pas sans histoire : après ${f.drought} reliques de la route sans épique ni mieux, la suivante l'est.`,
                 "Une relique tombée va directement dans un emplacement vide. Sinon, le sac peut **recycler à l'arrivée** les communes, ou les communes et les rares : elles deviennent des éclats sans passer par le sac (jamais une relique nommée)."
               ]
@@ -485,7 +485,7 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "presence",
           title: "Ce que ta présence ajoute",
-          blocks: ["Aucun malus n'est appliqué à l'absent. Ta présence ajoute ce que seule une main peut faire : cristaux, pouvoirs, achats plus rapides, ascensions, autels, étal, équipement et forge. Et la [Promesse](promise) : le pilote ne la rompt jamais, il peut seulement la tenir."]
+          blocks: ["Aucun malus n'est appliqué à l'absent. Ta présence ajoute ce que seule une main peut faire : cristaux, pouvoirs, achats plus rapides, ascensions, autels, marché, équipement et forge. Et la [Promesse](promise) : le pilote ne la rompt jamais, il peut seulement la tenir."]
         }
       ]
     }),
@@ -742,7 +742,7 @@ export const wikiArticles = defineMessages<Articles>({
               list: [
                 "Each night goes further than the last. Every 50 stages begins a new **stratum**, with tougher monsters and a changed look. There are 60, grouped into 12 Ages.",
                 "Around the fourth night, a companion who starts to remember you will ask for your **word** for the night: that is [the Promise](promise). Keep it, and their damage doubles for good.",
-                "With the shards earned from guardians, [forge your relics](relics#forge) and visit the [Stallkeeper's stall](relics#market).",
+                "With the shards earned from guardians, [forge your relics](relics#forge) and visit the [Stallkeeper's market](relics#market).",
                 "Leave the page open while you work: your company walks on alone, and even with the game closed, it catches up to 8 hours. See [Playing in the background](idle).",
                 `Far down, at stage ${en(f.descentStage)}, opens [the Descent](descent), the second rebirth.`
               ]
@@ -760,7 +760,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "when-ascend", title: "When should I ascend?", blocks: ["When your progress stops. The simulations are clear: ascending a few minutes after your last new stage goes much further than waiting an hour at a wall. Essences grow with the furthest stage cleared, but more slowly than monster HP: pushing a little pays, camping for hours does not."] },
         { id: "which-altar", title: "Which altars should I buy?", blocks: ["Those that match your style. If you mostly let the game run, the **Altar of Patience** is the best. If your strikes deal most of your damage, the **Altar of the Blade**. In between, **Might** and **Fortune**. Then the capped altars (time, treasure, bargains…) open on the third and fifth nights. And always keep about half of your essences in hand. Details in [Ascension and altars](ascension#strategy)."] },
         { id: "relic-choice", title: "Which relic should I wear?", blocks: ["Look at each relic's **Company ×N** figure: what it multiplies in your company's damage, against the slot left empty. The bigger, the better. Relics found in deep strata have **Density**: each stratum below the present night adds ×1.03 to the company's damage."] },
-        { id: "shards", title: "What are shards for?", blocks: ["Forging your relics (up to +20) and buying at the Stallkeeper's stall: chests, potions, hourglasses. You earn them from guardians, crystals and by salvaging relics you no longer need. The **Golden Hourglass** (an hour of gold right now) is the best buy at the start of a night."] },
+        { id: "shards", title: "What are shards for?", blocks: ["Forging your relics (up to +20) and buying at the Stallkeeper's market: chests, potions, hourglasses. You earn them from guardians, crystals and by salvaging relics you no longer need. The **Golden Hourglass** (an hour of gold right now) is the best buy at the start of a night."] },
         { id: "lost", title: "Will I lose my game?", blocks: ["No. It is kept on the server, even without an account: your browser finds it again for 30 days after your last visit. Create an account to keep it for good and on all your devices. See [Account and kept game](account)."] },
         { id: "cheat", title: "Can you cheat?", blocks: ["The server checks every game it receives with the same engine as the game: gold earned, time played, bosses beatable, loot. An impossible game is refused. The leaderboard only shows verified games."] },
         { id: "mistakes", title: "Beginner mistakes", blocks: [{ list: ["Spending every essence on altars.", "Camping for hours at a wall instead of ascending.", "Leaving a companion just below a breakpoint (level 24, 49, 99…).", "Forgetting to buy talents: they double or quadruple damage.", "Keeping common relics instead of salvaging them into shards.", "Ignoring crystals: an overcharge ×7 or a strike ×10 at the right moment brings a boss down."] }] }
@@ -1014,7 +1014,7 @@ export const wikiArticles = defineMessages<Articles>({
                 "**Guardians**: 40% chance (guaranteed on the first clear), and `1 + stage/25` shards.",
                 "**Elites**: 15% chance, and 1 shard about one time in three.",
                 "Only the furthest boss of the night drops relics and shards: a boss replayed from the map pays gold only.",
-                "The stall's chests, the Seam, the King's Eclipse and the companions' gifts.",
+                "The market's chests, the Seam, the King's Eclipse and the companions' gifts.",
                 "The first fall of the King in your walk leaves an epic relic or better.",
                 `The road never leaves you without a story: after ${f.drought} relics of the road without an epic or better, the next one is.`,
                 "A relic dropped goes straight into an empty slot. Otherwise the pack can **salvage on arrival** the commons, or the commons and the rares: they turn into shards without going through the pack (never a named relic)."
@@ -1064,7 +1064,7 @@ export const wikiArticles = defineMessages<Articles>({
             `**Salvaging** gives back the rarity's shards (1, 3, 8, 25, 80) plus 50% per forge level. Relics can be locked, salvaged in bulk up to a rarity, and the pack holds ${f.inventory} (full, it salvages new ones on its own).`
           ]
         },
-        { id: "market", title: "The Stallkeeper's stall", blocks: ["The Stallkeeper sells for shards (and tells you one of their twelve sayings each visit). Potions last 10 min and stack without limit. A chest bought opens before your eyes. The Stallkeeper's Token takes 10% off every price.", { slot: "market" }, { tip: "The Golden Hourglass pays an hour of gold at your current rate: early in a night, when your gold quickly catches up with prices, it is the best buy at the stall." }] },
+        { id: "market", title: "The Stallkeeper's market", blocks: ["The Stallkeeper sells for shards (and tells you one of their twelve sayings each visit). Potions last 10 min and stack without limit. A chest bought opens before your eyes. The Stallkeeper's Token takes 10% off every price.", { slot: "market" }, { tip: "The Golden Hourglass pays an hour of gold at your current rate: early in a night, when your gold quickly catches up with prices, it is the best buy at the stall." }] },
         { id: "caravan", title: "The Caravan", blocks: ["From your 3rd ascension, the Stallkeeper's Caravan brings one ware a week, the same for everyone (it changes every Monday). Each is bought once a week; the Token, once a game.", { slot: "caravan" }] },
         { id: "named", title: `The ${f.namedRelics} named relics`, blocks: ["Legendary or mythic, each has a fixed source, a legend and a unique effect. They drop only once per game, arrive locked and find room even in a full pack.", { slot: "named" }] },
         {
@@ -1109,7 +1109,7 @@ export const wikiArticles = defineMessages<Articles>({
             "With it comes **the company's account**: time away, road walked, gold earned and spent, walls met then passed, who joined, levels gained, and the boss still barring the road. It ends on a Chronicle fragment not read yet."
           ]
         },
-        { id: "presence", title: "What your presence adds", blocks: ["No penalty is applied to the absent. Your presence adds what only a hand can do: crystals, powers, faster purchases, ascensions, altars, the stall, gear and the forge. And the [Promise](promise): the autopilot never breaks it, it can only keep it."] }
+        { id: "presence", title: "What your presence adds", blocks: ["No penalty is applied to the absent. Your presence adds what only a hand can do: crystals, powers, faster purchases, ascensions, altars, the market, gear and the forge. And the [Promise](promise): the autopilot never breaks it, it can only keep it."] }
       ]
     }),
     bestiary: (f) => ({

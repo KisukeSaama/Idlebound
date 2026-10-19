@@ -37,7 +37,7 @@ const en: SystemsText = {
     dawnbreak: { name: "Dawnbreak", legend: "Found at the Dawn, the far edge of the Long Night. It is warm to the touch, like a window in the morning sun: the only warm thing in the whole night." },
     "hollow-plate": { name: "The Hollow Plate", legend: "The empty armor that walked the road on its own. It lets you wear it for now, and will walk away the same way once you are done with it." },
     mosshide: { name: "Mosshide", legend: "The winter coat of the Moss Alpha, the old boar Maëlle has hunted all her life. Still warm, and moss still grows on it." },
-    "briar-mantle": { name: "Briar Mantle", legend: "The mother-tree of the dark forest wove this mantle for Séraphine's first winter, when she was its pupil. It still remembers being a gift." },
+    "briar-mantle": { name: "Briar Mantle", legend: "The mother-tree of the Dark Forest wove this mantle for Séraphine's first winter, when she was its pupil. It still remembers being a gift." },
     "aurelion-scales": { name: "Scales of Aurelion", legend: "Aurelion shed these scales long ago, in the Wyrm stratum where dragons come from. He lends them to you, and would like them back one day." },
     "ash-vestment": { name: "Vestment of Cinders", legend: "Robe of the first Ember Monk. When the Pyre cult burned the old forests, he walked into their fire to carry a single flame out alive." },
     "mantle-of-the-last-court": { name: "Mantle of the Last Court", legend: "Worn by the King's court on its last day. It was purple then. The color has faded away, and so has the court." },
@@ -62,7 +62,7 @@ const en: SystemsText = {
     guardianShards: (pct) => `+${pct} ${sEn(pct, "shard")} on every guardian kill`,
     seamDps: (pct) => `Companions deal +${p(pct)}% damage while a Seam is open`,
     bossTimer: (pct) => `+${pct} s to beat elites and guardians`,
-    idleBonus: (pct) => `+${p(pct)}% to the Patience bonus (the extra damage your companions always deal)`,
+    idleBonus: (pct) => `+${p(pct)}% to the Patience bonus (your company's lasting damage bonus)`,
     bossDamage: (pct) => `+${p(pct)}% damage to elites and guardians`,
     rainSeconds: (pct) => `Golden Rain lasts ${pct} s instead of ${RAIN_SECONDS} s`,
     cooldown: (pct) => `Powers recharge ${p(pct)}% faster (with the Altar of Echoes, ${COOLDOWN_CAP}% at most)`,
@@ -73,7 +73,7 @@ const en: SystemsText = {
     treasure: (pct) => `+${p(pct)}% chance to meet a golden rat (within its cap)`,
     crystalSooner: (pct) => `Wandering crystals come ${p(pct)}% sooner`,
     mirelle: (pct) => `+${p(pct)}% gold, +${p(MIRELLE_BARON_DAMAGE)}% damage to the Baron of Rot`,
-    marketDiscount: (pct) => `-${p(pct)}% shard prices at the stall and the Caravan`,
+    marketDiscount: (pct) => `-${p(pct)}% shard prices at the market and the Caravan`,
     wandererStages: (pct) => `The Altar of the Wanderer walks ${pct} more stages for you (within its caps)`,
     regalia: () => `One of the three Regalia of Orvane: wear all three for +${REGALIA_BONUS}% damage to the King`
   },
@@ -84,7 +84,7 @@ const en: SystemsText = {
     patience: { by: "The Silent Legion", text: "Morgrath's dead, the Silent Legion, carved it with bare hands over countless nights. The dead are patient, and they taught the stone to be patient too." },
     time: { by: "Eldra", text: "Eldra the Timeweaver tends this stone, but says she never built it. According to her, it built itself, later, and then went back to stand here." },
     fate: { by: "Oriane's mother", text: "Oriane's mother, a blind seer, cut five notches in it and no more: she said fate lets itself be pushed five times, never a sixth." },
-    precision: { by: "Ysolde's grandfather", text: "Ysolde's grandfather, an archer of the dark forest, set his last arrowhead in this stone. It still points at the weak spot of whatever stands before you." },
+    precision: { by: "Ysolde's grandfather", text: "Ysolde's grandfather, an archer of the Dark Forest, set his last arrowhead in this stone. It still points at the weak spot of whatever stands before you." },
     treasure: { by: "Thorvald", text: "Thorvald raised it to pay a debt he owes Pip, the golden rat. The inscription reads FOR PIP. WE ARE EVEN NOW. Someone has scratched out EVEN." },
     bargain: { by: "The Stallkeeper", text: "The Stallkeeper raised it, and wrote the reason on it: companions ask less gold of a walker they almost remember." },
     echoes: { by: "Oriane", text: "Oriane, the Echo Oracle, raised it. Speak near it and it answers a moment before you finish. Your powers learn to come back early the same way." },
@@ -116,7 +116,7 @@ const en: SystemsText = {
     "night-owl": {
       name: "Night Owl",
       riddle: "Walk at the darkest hour.",
-      line: { by: "The Ledger", text: "Someone crossed the Hearthfields at the darkest hour. The moon came out to see who." }
+      line: { by: "The Ledger", text: "Someone crossed the Verdant Plains at the darkest hour. The moon came out to see who." }
     },
     "thousandth-notch": {
       name: "The Thousandth Notch",
@@ -217,7 +217,7 @@ const en: SystemsText = {
     },
     caravan: {
       name: "The Caravan",
-      text: "The Caravan is in: one rare ware this week, sold for shards at the stall.",
+      text: "The Caravan is in: one rare ware this week, sold for shards at the market.",
       line: { by: "The Stallkeeper", text: "There is a road between nights too. Nobody walks it but me, so the prices are fair." }
     },
     quiet: {
@@ -227,12 +227,12 @@ const en: SystemsText = {
     },
     stray: {
       name: "Stray Armor",
-      text: "An empty armor walks the road. Beat it in time: the first one leaves you its plate.",
+      text: "An empty suit of armor walks the road. Beat it in time: the first one leaves you its plate.",
       line: { by: "The Nameless", text: "Mine. Maybe." }
     },
     eclipse: {
       name: "The King's Eclipse",
-      text: "The King rises in shadow, half again as tough, same time. He always leaves a relic.",
+      text: "The King rises in shadow, with half as much health again and the same time to beat him. He always leaves a relic.",
       line: { by: "The King", text: "Tonight the dark sits on me too. Strike hard. I won't mind." }
     },
     tide: {
@@ -257,7 +257,7 @@ const en: SystemsText = {
     }
   },
   achievementNames: {
-    stage: ["First Steps", "Scout", "Regicide", "Beyond the Ruins", "The Hundredth Stone", "Era Walker", "Far from the Hearth", "Before the Kingdom", "Past the Last Map", "A Thousand Stones", "Below the Words", "Not Yet", "Past the Last Chapel", "Loose Threads", "Erased Twice", "Unspoken", "A Lamp Left On", "What Was Undone", "White on White"],
+    stage: ["First Steps", "Scout", "Regicide", "Beyond the Ruins", "The Hundredth Stone", "Strata Walker", "Far from the Hearth", "Before the Kingdom", "Past the Last Map", "A Thousand Stones", "Below the Words", "Not Yet", "Past the Last Chapel", "Loose Threads", "Erased Twice", "Unspoken", "A Lamp Left On", "What Was Undone", "White on White"],
     ascend: ["Dusk Again", "The Road Looks Familiar", "Ten Dusks", "They Forget, You Don't", "Nobody Counts Anymore", "Night After Night", "Keeper of the Long Night"],
     essences: ["First Glimmer", "Something Kept", "A Well of Evenings", "Heavy with Memory", "Older Than Your Name", "Constellation", "Galaxy of Memory"],
     strata: ["Hallowed Ground", "Among the Threads", "Speaker of Names", "Behind the Glass", "The Blank Page", "Almost Morning"],
@@ -275,7 +275,7 @@ const en: SystemsText = {
     seams: (t) => (t === 1 ? "Close a Seam." : `Close ${nEn(t)} Seams.`),
     recognition: (t) => `Be fully remembered by ${t} ${sEn(t, "companion")}.`,
     descents: (t) => (t === 1 ? "Descend once." : `Descend ${t} times.`),
-    bestiary: (t) => `Meet ${nEn(t)} creatures.`,
+    bestiary: (t) => `Meet ${nEn(t)} monsters.`,
     fragments: (t) => `Find ${nEn(t)} fragments.`,
     named: (t) => (t === 1 ? "Find a named relic." : `Find ${t} named relics.`)
   },
@@ -290,7 +290,7 @@ const en: SystemsText = {
     "seventh-night": { name: "The Seventh Night", description: "Unlocks the seventh power, Unweave: skip the stage you are on." }
   },
   caravan: {
-    token: { name: "The Stallkeeper's Token", description: "A named ring: -10% shard prices at the stall and the Caravan. Sold only once, ever." },
+    token: { name: "The Stallkeeper's Token", description: "A named ring: -10% shard prices at the market and the Caravan. Sold only once, ever." },
     "sealed-coffer": { name: "Sealed Coffer", description: "A relic, legendary or better. The seal is not the Stallkeeper's." },
     "bottled-night": { name: "Bottled Night", description: "Instantly earn 2 h of gold at your company's current rate." },
     "pips-cheese": { name: "Pip's Cheese", description: `Golden rats come twice as often for ${BUFF_MINUTES} min (within their cap).` },
@@ -309,24 +309,24 @@ const en: SystemsText = {
 
 const fr: SystemsText = {
   relics: {
-    oathcutter: { name: "Tranche-Serment", legend: "L'épée de Kaelen. Il l'a brisée sur les marches du trône, la nuit où il a failli envers son roi. Depuis, elle essaie de remonter l'escalier." },
+    oathcutter: { name: "Tranche-Serment", legend: "L'épée de Kaelen. Il l'a brisée sur les marches du trône, la nuit où il a failli envers le Roi. Depuis, elle essaie de remonter l'escalier." },
     "thousandth-arrow": { name: "La Millième Flèche", legend: "Maëlle a empenné cette flèche le soir où elle a perdu le compte des soirs vécus. Elle n'a jamais manqué sa cible, et ça l'agace." },
     quietus: { name: "Quiétus", legend: "La faux de Morgrath. Il ne s'en est jamais servi : il dit qu'elle est gardée pour un seul coup, la nuit où le noir finira enfin." },
-    "unfinished-hammer": { name: "Le Marteau inachevé", legend: "Brom forgeait ce marteau chaque nuit pour le roi, qui n'est jamais venu le chercher. Il l'a enfin achevé, et te l'a donné." },
+    "unfinished-hammer": { name: "Le Marteau inachevé", legend: "Brom forgeait ce marteau chaque nuit pour le Roi, qui n'est jamais venu le chercher. Il l'a enfin achevé, et te l'a donné." },
     "splinter-of-sky": { name: "Éclat de voûte", legend: "Une lame taillée dans la Voûte de verre, le ciel fêlé d'Orvane. Brom refuse de l'affûter : il dit que le fil appartient déjà au ciel." },
     dawnbreak: { name: "Point-du-jour", legend: "Trouvée à l'Aube, tout au bout de la Longue Nuit. Elle est tiède au toucher, comme une fenêtre au soleil du matin : la seule chose tiède de toute la nuit." },
     "hollow-plate": { name: "Le Harnois creux", legend: "L'armure vide qui marchait seule sur la route. Elle se laisse porter pour l'instant, et repartira de même quand tu en auras fini avec elle." },
     mosshide: { name: "Peau-de-mousse", legend: "Le manteau d'hiver de l'Alpha moussu, le vieux sanglier que Maëlle chasse depuis toujours. Encore chaud, et la mousse y pousse toujours." },
-    "briar-mantle": { name: "Manteau de ronces", legend: "L'arbre-mère de la forêt sombre a tissé ce manteau pour le premier hiver de Séraphine, son élève. Il se souvient encore d'avoir été un cadeau." },
+    "briar-mantle": { name: "Manteau de ronces", legend: "L'arbre-mère de la Forêt sombre a tissé ce manteau pour le premier hiver de Séraphine, son élève. Il se souvient encore d'avoir été un cadeau." },
     "aurelion-scales": { name: "Écailles d'Aurelion", legend: "Aurelion a perdu ces écailles il y a très longtemps, dans la strate de la Guivre, d'où viennent les dragons. Il te les prête, et aimerait les récupérer un jour." },
     "ash-vestment": { name: "Robe des cendres", legend: "La robe du premier Moine des braises. Quand le culte du Bûcher a brûlé les vieilles forêts, il est entré dans le feu pour en ressortir avec une seule flamme." },
-    "mantle-of-the-last-court": { name: "Manteau de la dernière cour", legend: "Porté par la cour du roi, le dernier jour. Il était pourpre, alors. La couleur s'est effacée, et la cour avec." },
+    "mantle-of-the-last-court": { name: "Manteau de la dernière cour", legend: "Porté par la cour du Roi, le dernier jour. Il était pourpre, alors. La couleur s'est effacée, et la cour avec." },
     "eldra-locket": { name: "Médaillon d'Eldra", legend: "Le cadeau d'Eldra : un sablier gros comme une larme, dont le sable tombe vers le haut. Le temps ne coule pas pareil pour celle qui le tisse." },
     "singing-stone": { name: "La Pierre qui chante", legend: "Une pierre de la Géode chantante. Elle fredonne dès qu'on la regarde, et près de toi, elle ne s'arrête plus." },
     "oriane-ear": { name: "L'Oreille d'Oriane", legend: "Le cadeau d'Oriane : un coquillage de pierre pâle. Colle-le à ton oreille et tu entends, tout bas, ce que la nuit dira demain." },
     "grove-seed": { name: "Graine du vieux bosquet", legend: "Le cadeau de Séraphine : la dernière graine de l'arbre-mère qu'elle t'aide à abattre chaque nuit. Elle ne germera pas tant que dure la nuit. Elle attend le matin." },
     phylactery: { name: "Phylactère de Morgrath", legend: "Morgrath garde sa vie dans ce bocal. Il dit que c'est l'endroit le plus sûr du monde, puisque personne n'en voudrait." },
-    "last-decree": { name: "Le Dernier Décret", legend: "Le dernier décret du roi, toujours scellé. Il a ordonné que personne ne le lise jamais, et personne ne l'a lu." },
+    "last-decree": { name: "Le Dernier Décret", legend: "Le dernier décret du Roi, toujours scellé. Il a ordonné que personne ne le lise jamais, et personne ne l'a lu." },
     "signet-of-orvane": { name: "Sceau d'Orvane", legend: "L'anneau-sceau du Roi déchu. Il imprime une couronne et, dessous, une lettre si usée qu'on devine à peine un A." },
     "rat-ring": { name: "L'Anneau du rat", legend: "Un minuscule anneau d'or, mordillé. Messire Pip, le rat doré, l'a laissé tomber exprès. Pip fait tout exprès." },
     "lodestone-band": { name: "Aimantite de Garrick", legend: "Le cadeau de Garrick : l'éclat d'étoile où il a vu un jour un visage étrange, serti dans un anneau. Il jure que le visage a fermé les yeux, depuis." },
@@ -338,11 +338,11 @@ const fr: SystemsText = {
     critChance: (pct) => `+${Math.round(pct * 100)} % de chances que tes frappes soient critiques (dans le plafond des reliques)`,
     guardianGold: (pct) => `+${Math.round(pct * 100)} % d'or sur les gardiens de biome`,
     forgeDiscount: (pct) => `La forge coûte ${Math.round(pct * 100)} % d'éclats en moins`,
-    kingDamage: (pct) => `+${p(pct)} % de dégâts contre le roi (toutes les 50 étapes)`,
+    kingDamage: (pct) => `+${p(pct)} % de dégâts contre le Roi (toutes les 50 étapes)`,
     guardianShards: (pct) => `+${pct} ${sFr(pct, "éclat")} à chaque gardien vaincu`,
     seamDps: (pct) => `Tes compagnons infligent +${p(pct)} % de dégâts tant qu'une Brèche est ouverte`,
     bossTimer: (pct) => `+${pct} s pour abattre les élites et les gardiens`,
-    idleBonus: (pct) => `+${p(pct)} % au bonus de Patience (les dégâts en plus que tes compagnons infligent toujours)`,
+    idleBonus: (pct) => `+${p(pct)} % au bonus de Patience (le bonus de dégâts permanent de ta compagnie)`,
     bossDamage: (pct) => `+${p(pct)} % de dégâts contre les élites et les gardiens`,
     rainSeconds: (pct) => `La Pluie d'or dure ${pct} s au lieu de ${RAIN_SECONDS} s`,
     cooldown: (pct) => `Les pouvoirs se rechargent ${p(pct)} % plus vite (avec l'Autel des échos, ${COOLDOWN_CAP} % au plus)`,
@@ -353,9 +353,9 @@ const fr: SystemsText = {
     treasure: (pct) => `+${p(pct)} % de chances de croiser un rat doré (dans la limite de leur plafond)`,
     crystalSooner: (pct) => `Les cristaux errants viennent ${p(pct)} % plus tôt`,
     mirelle: (pct) => `+${p(pct)} % d'or, +${p(MIRELLE_BARON_DAMAGE)} % de dégâts contre le Baron de la pourriture`,
-    marketDiscount: (pct) => `-${p(pct)} % sur les prix en éclats de l'échoppe et de la Roulotte`,
+    marketDiscount: (pct) => `-${p(pct)} % sur les prix en éclats du marché et de la Roulotte`,
     wandererStages: (pct) => `L'Autel du voyageur parcourt ${pct} étapes de plus pour toi (dans ses plafonds)`,
-    regalia: () => `L'un des trois Regalia d'Orvane : porte les trois pour +${REGALIA_BONUS} % de dégâts contre le roi`
+    regalia: () => `L'un des trois Regalia d'Orvane : porte les trois pour +${REGALIA_BONUS} % de dégâts contre le Roi`
   },
   altarLegends: {
     might: { by: "L'Enclume", text: "Élevé par un marcheur qu'on appelait l'Enclume. Il a offert à cette pierre chaque visage aimé et n'a gardé que la force de ses poings. Elle la prête à ta compagnie." },
@@ -364,7 +364,7 @@ const fr: SystemsText = {
     patience: { by: "La Légion silencieuse", text: "Les morts de Morgrath, la Légion silencieuse, l'ont taillé à mains nues pendant des nuits sans nombre. Les morts sont patients, et ils ont appris la patience à la pierre." },
     time: { by: "Eldra", text: "Eldra, la Tisseuse du temps, veille sur cette pierre mais jure ne pas l'avoir bâtie. D'après elle, la pierre s'est bâtie toute seule, plus tard, puis est revenue ici." },
     fate: { by: "La mère d'Oriane", text: "La mère d'Oriane, une voyante aveugle, y a taillé cinq encoches, pas une de plus : elle disait que le destin se laisse pousser cinq fois, jamais six." },
-    precision: { by: "Le grand-père d'Ysolde", text: "Le grand-père d'Ysolde, archer de la forêt sombre, a serti dans cette pierre sa dernière pointe de flèche. Elle vise toujours le point faible de ce qui se dresse devant toi." },
+    precision: { by: "Le grand-père d'Ysolde", text: "Le grand-père d'Ysolde, archer de la Forêt sombre, a serti dans cette pierre sa dernière pointe de flèche. Elle vise toujours le point faible de ce qui se dresse devant toi." },
     treasure: { by: "Thorvald", text: "Thorvald l'a élevé pour payer une dette envers Messire Pip, le rat doré. On y lit : POUR PIP. NOUS SOMMES QUITTES. Quelqu'un a rayé QUITTES." },
     bargain: { by: "Le Comptoir", text: "Le Comptoir l'a élevé, et y a gravé pourquoi : les compagnons demandent moins d'or au marcheur dont ils se souviennent presque." },
     echoes: { by: "Oriane", text: "Oriane, l'Oracle d'écho, l'a élevé. Parle près de lui et il répond un instant avant que tu aies fini. Tes pouvoirs apprennent à revenir en avance, de la même façon." },
@@ -406,7 +406,7 @@ const fr: SystemsText = {
     "same-road": {
       name: "Même route",
       riddle: "Marche trois fois la même nuit.",
-      line: { by: "Oriane", text: "Trois nuits de suite, tu t'es arrêté à la même borne. Même l'écho s'ennuie." }
+      line: { by: "Oriane", text: "Trois nuits de suite, tu as fait halte à la même borne. Même l'écho s'ennuie." }
     },
     "keep-some": {
       name: "Garde-en",
@@ -420,7 +420,7 @@ const fr: SystemsText = {
     },
     "empty-hands": {
       name: "Mains nues",
-      riddle: "Affronte le roi avec ton épée, et rien d'autre.",
+      riddle: "Affronte le Roi avec ton épée, et rien d'autre.",
       line: { by: "Kaelen", text: "Pas de relique, ton épée seule. Ça lui aurait plu." }
     },
     pacifist: {
@@ -471,7 +471,7 @@ const fr: SystemsText = {
     "welcome-back": {
       name: "Bon retour",
       riddle: "Pars longtemps. Reviens.",
-      line: { by: "Le Comptoir", text: "Tu es resté longtemps parti. On a gardé ta lanterne allumée." }
+      line: { by: "Le Comptoir", text: "Ton absence a été longue. On a gardé ta lanterne allumée." }
     }
   },
   events: {
@@ -482,7 +482,7 @@ const fr: SystemsText = {
     },
     seam: {
       name: "La Brèche",
-      text: `Une Brèche s'ouvre : abats son Gardien en ${SEAM_SECONDS} s pour l'or d'une élite et un fragment.`,
+      text: `Une Brèche s'ouvre : abats son Gardien en ${SEAM_SECONDS} s pour l'or d'une élite, un fragment, peut-être une relique.`,
       line: { by: "Le Grand Livre", text: "Une fissure dans la nuit, fine comme un cheveu, et du pâle derrière. Le marcheur a pesé dessus jusqu'à ce qu'elle se referme." }
     },
     wager: {
@@ -492,12 +492,12 @@ const fr: SystemsText = {
     },
     walker: {
       name: "Écho d'un marcheur",
-      text: `L'écho d'un autre marcheur t'aide : tes compagnons font +${WALKER_BONUS} % de dégâts ${WALKER_SECONDS} s.`,
+      text: `L'écho d'un autre marcheur t'aide : tes compagnons font +${WALKER_BONUS} % de dégâts pendant ${WALKER_SECONDS} s.`,
       line: { by: "Le Grand Livre", text: "Les routes de deux marcheurs se sont touchées. L'espace de quelques souffles, le Grand Livre a dû écrire deux noms sur une même ligne." }
     },
     caravan: {
       name: "La Roulotte",
-      text: "La Roulotte est là : une marchandise rare cette semaine, en éclats, à l'échoppe.",
+      text: "La Roulotte est là : une marchandise rare cette semaine, à payer en éclats au marché.",
       line: { by: "Le Comptoir", text: "Entre deux nuits, il y a une route aussi. Personne n'y passe à part moi : les prix sont donc honnêtes." }
     },
     quiet: {
@@ -511,8 +511,8 @@ const fr: SystemsText = {
       line: { by: "Le Sans-Nom", text: "À moi. Peut-être." }
     },
     eclipse: {
-      name: "L'Éclipse du roi",
-      text: "Le roi se lève dans l'ombre, moitié plus solide, même chrono. Il laisse une relique.",
+      name: "L'Éclipse du Roi",
+      text: "Le Roi se lève dans l'ombre, avec moitié plus de points de vie et le même temps pour l'abattre. Il laisse toujours une relique.",
       line: { by: "Le Roi", text: "Ce soir, le noir pèse sur moi aussi. Frappe fort. Je ne t'en voudrai pas." }
     },
     tide: {
@@ -537,25 +537,25 @@ const fr: SystemsText = {
     }
   },
   achievementNames: {
-    stage: ["Premiers pas", "Éclaireur", "Régicide", "Au-delà des ruines", "La centième borne", "Marcheur des ères", "Loin du foyer", "Avant le royaume", "Plus loin que les cartes", "Mille bornes", "Sous les mots", "Pas encore", "Après la dernière chapelle", "Fils défaits", "Deux fois effacé", "Ce qui ne se dit pas", "Une lampe restée allumée", "Ce qui fut défait", "Blanc sur blanc"],
-    ascend: ["Le crépuscule, encore", "La route te dit quelque chose", "Dix crépuscules", "Ils oublient, pas toi", "Plus personne ne compte", "Nuit après nuit", "Gardien de la longue nuit"],
+    stage: ["Premiers pas", "Éclaireur", "Régicide", "Au-delà des ruines", "La centième borne", "Marcheur des strates", "Loin du foyer", "Avant le royaume", "Plus loin que les cartes", "Mille bornes", "Sous les mots", "Pas encore", "Après la dernière chapelle", "Fils défaits", "Deux fois effacé", "Ce qui ne se dit pas", "Une lampe restée allumée", "Ce qui fut défait", "Blanc sur blanc"],
+    ascend: ["Le crépuscule, encore", "La route te dit quelque chose", "Dix crépuscules", "Ils oublient, pas toi", "Plus personne ne compte", "Nuit après nuit", "Gardien de la Longue Nuit"],
     essences: ["Première lueur", "Quelque chose de gardé", "Un puits de soirs", "Lourd de souvenirs", "Plus vieux que ton nom", "Constellation", "Galaxie de souvenirs"],
     strata: ["Terre consacrée", "Parmi les fils", "Diseur de noms", "Derrière la vitre", "La page blanche", "Presque le matin"],
-    kings: ["Vive le roi", "Briseur de rois", "Cent couronnements", "La couronne est lourde"],
+    kings: ["Vive le Roi", "Briseur de rois", "Cent couronnements", "La couronne est lourde"],
     seams: ["Premier point", "Gardien des brèches", "La nuit tient"],
     recognition: ["Visage familier", "Vieux amis", "Compagnie des souvenirs", "Tous se souviennent"],
-    descents: ["Retissé", "Nuit profonde", "Lié au métier", "Nuit sans fond"],
+    descents: ["Retissé", "Nuit profonde", "Lié au Métier", "Nuit sans fond"],
     bestiary: ["Naturaliste", "Carnet de terrain", "Livre des vestiges", "Tous les cauchemars nommés"],
     fragments: ["Murmure", "À l'écoute", "Archiviste", "Gardien de la chronique", "La nuit se souvient"],
     named: ["Un nom dans l'acier", "Collectionneur de légendes", "Salle des reliques", "Toutes les légendes"]
   },
   achievementDescriptions: {
     strata: (t) => `Atteins la strate ${t}.`,
-    kings: (t) => (t === 1 ? "Vaincs le roi." : `Vaincs le roi ${nFr(t)} fois.`),
+    kings: (t) => (t === 1 ? "Vaincs le Roi." : `Vaincs le Roi ${nFr(t)} fois.`),
     seams: (t) => (t === 1 ? "Referme une Brèche." : `Referme ${nFr(t)} Brèches.`),
     recognition: (t) => (t === 1 ? "Qu'un compagnon se souvienne pleinement de toi." : `Que ${t} compagnons se souviennent pleinement de toi.`),
     descents: (t) => (t === 1 ? "Descends une fois." : `Descends ${t} fois.`),
-    bestiary: (t) => `Rencontre ${nFr(t)} créatures.`,
+    bestiary: (t) => `Rencontre ${nFr(t)} monstres.`,
     fragments: (t) => `Trouve ${nFr(t)} fragments.`,
     named: (t) => (t === 1 ? "Trouve une relique nommée." : `Trouve ${t} reliques nommées.`)
   },
@@ -565,12 +565,12 @@ const fr: SystemsText = {
     "long-thread": { name: "Le Long Fil", description: "Pendant ton absence, la compagnie marche 1 h de plus par niveau (8 h au départ)." },
     "humming-loom": { name: "Métier bourdonnant", description: "Les cristaux errants viennent 10 % plus tôt par niveau." },
     kinship: { name: "Parenté", description: "Tes compagnons se souviennent de toi plus vite : chaque palier de Reconnaissance demande une nuit de moins par niveau." },
-    "remembered-stones": { name: "Pierres mémoires", description: "Quand tu Descends, tu gardes 5 % des niveaux de chaque autel par niveau (arrondi à l'inférieur)." },
+    "remembered-stones": { name: "Pierres mémoires", description: "Quand tu descends, tu gardes 5 % des niveaux de chaque autel par niveau (arrondi à l'inférieur)." },
     "frayed-edge": { name: "Lisière effilochée", description: "Les fragments de la Chronique viennent 20 % plus souvent par niveau." },
     "seventh-night": { name: "La Septième Nuit", description: "Débloque le septième pouvoir, Détisser : franchis l'étape où tu te trouves." }
   },
   caravan: {
-    token: { name: "Jeton du Comptoir", description: "Un anneau nommé : -10 % sur les prix en éclats de l'échoppe et de la Roulotte. Vendu une seule fois." },
+    token: { name: "Jeton du Comptoir", description: "Un anneau nommé : -10 % sur les prix en éclats du marché et de la Roulotte. Vendu une seule fois." },
     "sealed-coffer": { name: "Coffre scellé", description: "Une relique, légendaire ou mieux. Le sceau n'est pas celui du Comptoir." },
     "bottled-night": { name: "Nuit en bouteille", description: "Gagne aussitôt 2 h d'or au rythme actuel de ta compagnie." },
     "pips-cheese": { name: "Fromage de Pip", description: `Les rats dorés viennent deux fois plus souvent pendant ${BUFF_MINUTES} min (dans la limite de leur plafond).` },

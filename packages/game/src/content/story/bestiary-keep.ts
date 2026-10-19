@@ -174,7 +174,7 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
       "star-crowned": "Le Couronné d'étoiles",
       "woven-king": "Le Roi tissé",
       "sketched-king": "Le Roi esquissé",
-      "king-name": "Le Nom du roi",
+      "king-name": "Le Nom du Roi",
       "sleeping-king": "Le Roi endormi",
       "window-king": "Le Roi à la fenêtre",
       "hollow-crown": "La Couronne creuse",
@@ -193,29 +193,29 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "Kaelen se souvient de ses couleurs : un mot de lui, et sa quête finirait. Quand elle passe, il regarde ailleurs."
       ],
       "fallen-sentinel": [
-        "Les gardes du roi, toujours à leur poste. Ce sont les frères d'armes de Kaelen : ils le saluent avant d'attaquer.",
+        "Les gardes du Roi, toujours à leur poste. Ce sont les frères d'armes de Kaelen : ils le saluent avant d'attaquer.",
         "Ils tiennent le poste reçu le dernier soir avant la Longue Nuit. Personne n'est venu les relever.",
         "Une place reste toujours vide dans leur rang : celle de Kaelen. Chaque nuit, ils se resserrent autour, avec soin."
       ],
       "hollow-page": [
         "Une livrée de page, vide, qui porte toujours une lettre scellée à travers le donjon.",
-        "Le sceau de la lettre est celui du roi. Le Grand Livre ne l'a pas ouverte : ce courrier n'est pas pour lui.",
+        "Le sceau de la lettre est celui du Roi. Le Grand Livre ne l'a pas ouverte : ce courrier n'est pas pour lui.",
         "La lettre est adressée à Kaelen. Chaque nuit, le page s'arrête près de lui, puis perd courage."
       ],
       "last-hound": [
-        "Les chiens du roi, lâchés la nuit où le donjon s'est tu. Ils suivent toujours une piste.",
+        "Les chiens du Roi, lâchés la nuit où le donjon s'est tu. Ils suivent toujours une piste.",
         "La piste sort du donjon, traverse le marais, entre dans le Bois, puis s'arrête net. Ils tournent autour toute la nuit.",
         "C'est l'odeur de Kaelen. Près de lui, ils cessent de gronder, s'assoient, et attendent un ordre qui ne vient pas."
       ],
       "candle-maid": [
         "Une servante qui allume la grande salle chaque nuit. Personne n'est venu dîner depuis le début de la Longue Nuit.",
-        "Elle dresse deux couverts : celui du roi, et celui d'un invité toujours en retard. La soupe reste au chaud.",
+        "Elle dresse deux couverts : celui du Roi, et celui d'un invité toujours en retard. La soupe reste au chaud.",
         "Elle en est toujours à sa première mèche. Le Grand Livre ignore comment, et a choisi de ne pas demander."
       ],
       "stone-warden": [
         "Une statue de pierre qui garde la porte de la grande salle. Personne n'a franchi cette porte depuis très longtemps.",
         "Tout le monde entre par la brèche du mur est. On l'a prévenu. Il préfère la porte.",
-        "Les derniers à passer sa porte : le roi, et Eldra la tisseuse avec son métier, la nuit où fut tissée la Longue Nuit."
+        "Les derniers à passer sa porte : le Roi, et Eldra la tisseuse avec son métier, la nuit où fut tissée la Longue Nuit."
       ],
       "ruined-king": [
         "Aldemar, dernier roi d'Orvane, qui tombe et se relève chaque nuit. Sa couronne fêlée porte encore un A.",
@@ -223,7 +223,7 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "Il fut le premier marcheur. Après des nuits sans nombre, il s'est assis un instant, et la couronne l'a retenu."
       ],
       "court-jester": [
-        "Le bouffon du roi. Il rit chaque fois qu'un marcheur arrive : tous viennent tuer le roi.",
+        "Le bouffon du Roi. Il rit chaque fois qu'un marcheur arrive : tous viennent tuer le Roi.",
         "La petite tête couronnée de sa marotte connaît toutes ses blagues. Elle ne rit plus. Lui, si.",
         "Il garde une blague qu'il ne raconte jamais, sur un roi qui s'est assis un instant. Elle n'est pas encore drôle, dit-il."
       ],
@@ -253,42 +253,42 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "Si elle touchait la route, celui qui porte Orvane dans son sommeil s'éveillerait. Bats-la : la route continue dessous."
       ],
       "titan-king": [
-        "Le roi déchu tel que s'en souvient le Monde ancien : de pierre jusqu'aux épaules, la couronne soudée au crâne.",
+        "Le Roi déchu tel que s'en souvient le Monde ancien : de pierre jusqu'aux épaules, la couronne soudée au crâne.",
         "À cette profondeur, il est aussi vieux que le sol. Il ne se souvient plus d'avoir été un homme. Le Grand Livre, si.",
         "Sous la pierre, sa main d'épée est encore tiède. Il était Aldemar, un homme, avant que la couronne le garde."
       ],
       "hallowed-king": [
-        "Le roi déchu tel que le voyaient les prêtres du Sacré : un saint voilé aux mains jointes. Il n'a rien demandé.",
+        "Le Roi déchu tel que le voyaient les prêtres du Sacré : un saint voilé aux mains jointes. Il n'a rien demandé.",
         "Il ne prie pas. Le Grand Livre a écouté : il compte les nuits qu'il a marché, et perd le compte.",
         "Sous le voile, ses yeux sont ouverts. Il guette sur la route le marcheur qui s'assiéra un jour après lui."
       ],
       "star-crowned": [
-        "Le roi déchu sous une couronne de petites étoiles froides, venu de la strate où l'on a fait le ciel.",
+        "Le Roi déchu sous une couronne de petites étoiles froides, venu de la strate où l'on a fait le ciel.",
         "Il manque une étoile à sa couronne. Garrick a un éclat exactement de la bonne taille, et refuse de le vendre.",
         "On a allumé ces étoiles pour lui tenir compagnie au fil des nuits. Il n'en a jamais laissé une s'éteindre."
       ],
       "woven-king": [
-        "Le roi déchu fait de fil, comme la Longue Nuit. Ses bouts libres montent dans le noir, jusqu'à un métier.",
+        "Le Roi déchu fait de fil, comme la Longue Nuit. Ses bouts libres montent dans le noir, jusqu'à un métier.",
         "Le fil est celui d'Eldra, la tisseuse qui a fait la Longue Nuit. Elle l'a filé lui aussi, avec grand soin.",
         "À l'endroit du cœur, la trame est nouée et reprise maintes fois. Eldra le raccommode, souvent."
       ],
       "sketched-king": [
-        "Le roi déchu dessiné au fusain, sans ombre, à moitié gommé. L'épée n'est qu'un contour. Elle coupe quand même.",
+        "Le Roi déchu dessiné au fusain, sans ombre, à moitié gommé. L'épée n'est qu'un contour. Elle coupe quand même.",
         "Sous la moitié gommée, une couronne plus petite : celle du roi d'avant, qui a marché avant lui.",
         "Son dernier trait s'arrête en plein geste, comme si la main qui le dessinait, fatiguée, avait posé le fusain."
       ],
       "king-name": [
-        "Le roi déchu devenu un nom : les lettres d'ALDEMAR, debout en forme d'homme.",
+        "Le Roi déchu devenu un nom : les lettres d'ALDEMAR, debout en forme d'homme.",
         "Le Grand Livre sait lire chaque lettre, pas toutes à la fois. Un nom aussi lourd se lit lentement.",
         "Sa première lettre est la même que la tienne : A, pour Aldemar et pour Aldric. Le Grand Livre s'arrête là."
       ],
       "sleeping-king": [
-        "Le roi déchu, endormi sur son trône. Il se bat les yeux fermés, comme on suit une route qu'on connaît par cœur.",
+        "Le Roi déchu, endormi sur son trône. Il se bat les yeux fermés, comme on suit une route qu'on connaît par cœur.",
         "Il parle en dormant. Le Grand Livre a noté un seul mot : « encore ».",
         "Il rêve d'une nuit courte et de blés rentrés. Il est dans le même rêve qu'Orvane. Le Grand Livre le laisse dormir."
       ],
       "window-king": [
-        "Le roi déchu, dos tourné, devant une fenêtre claire. Il se bat sans se retourner.",
+        "Le Roi déchu, dos tourné, devant une fenêtre claire. Il se bat sans se retourner.",
         "Sur la vitre, à côté de son reflet, il y a la place pour un autre visage. Il la laisse libre.",
         "Par la fenêtre, il regarde celui qui rêve Orvane : toi. Une fois, une seule, il t'a fait signe."
       ],
@@ -298,7 +298,7 @@ export const BESTIARY_KEEP_TEXT: Record<Locale, Pick<BestiaryText, "monsters" | 
         "L'anneau va à n'importe quelle tête. Celui qui cessera de marcher pour de bon sera le prochain qu'elle gardera."
       ],
       "blank-king": [
-        "Le roi déchu, presque de la couleur de la page. Le Grand Livre ne l'a trouvé qu'à l'ombre de son épée.",
+        "Le Roi déchu, presque de la couleur de la page. Le Grand Livre ne l'a trouvé qu'à l'ombre de son épée.",
         "Il s'efface depuis les bords, comme Orvane. Le Grand Livre écrit son entrée à l'encre la plus noire, et appuie fort.",
         "Il se lève encore quand tu arrives, alors qu'il ne reste presque rien de lui. Question de politesse."
       ],

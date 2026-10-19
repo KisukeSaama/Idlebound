@@ -24,7 +24,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
     },
     lines: {
       "shade-wolf": [
-        "A wolf made of the shadow between two trees. It hunts walkers who stray from the Wychwood's path.",
+        "A wolf made of the shadow between two trees. It hunts walkers who stray from the Dark Forest's path.",
         "It cannot cross moonlight, so it goes round every clearing, never through. Run across one and you lose it.",
         "Ysolde asked her trees to stop lending it their shadows. They refused: the wolf asked first, and trees are polite."
       ],
@@ -35,7 +35,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       ],
       "grove-spinner": [
         "A spider as big as a cart. It weaves thorns across the paths where walkers have bled.",
-        "Its web holds scraps of cloak from every walker who fell in the Wychwood. The newest scrap matches yours.",
+        "Its web holds scraps of cloak from every walker who fell in the Dark Forest. The newest scrap matches yours.",
         "It never runs out of thread: the forest grows new thorns every night, and it has spun since the night began."
       ],
       "mourning-owl": [
@@ -202,7 +202,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       ],
       "mourning-owl": [
         "Une chouette en deuil. Elle pose à chaque passant la même question, « Qui ? », et attend un nom.",
-        "Elle a pris le deuil la nuit où le donjon s'est tu. Elle pleure le roi, mais personne ne lui a dit son nom.",
+        "Elle a pris le deuil la nuit où le donjon s'est tu. Elle pleure le Roi, mais personne ne lui a dit son nom.",
         "Ysolde prévient : ne lui réponds jamais. Donne-lui un nom, et elle l'appellera chaque nuit, pour toujours."
       ],
       "toadstool-choir": [
@@ -302,7 +302,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       ],
       "mire-heron": [
         "Un héron qui attend sur une patte. Les poissons du marais sont morts dans la crue. Il ne l'a pas remarqué.",
-        "Il change de patte une fois par nuit, toujours juste après la chute du roi. Le Grand Livre a vérifié souvent.",
+        "Il change de patte une fois par nuit, toujours juste après la chute du Roi. Le Grand Livre a vérifié souvent.",
         "Vorn a surpris Biscuit à le fixer une heure durant. Le héron l'a fixé en retour. Personne n'a cillé. Match nul."
       ],
       "bog-colossus": [
@@ -326,7 +326,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       "dark-forest": "Forêt sombre",
       "forgotten-caves": "Cavernes oubliées",
       "corrupted-marsh": "Marais corrompu",
-      "fallen-king-ruins": "Ruines du roi déchu",
+      "fallen-king-ruins": "Ruines du Roi déchu",
       specials: "Hors des routes",
       kings: "Les douze rois"
     }

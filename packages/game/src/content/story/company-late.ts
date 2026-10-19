@@ -162,7 +162,7 @@ export const COMPANY_LATE_TEXT: Record<Locale, CompanyText> = {
       eldra: [
         { by: "Eldra", text: "Eldra, la Tisseuse du temps, tire un fil qui dépasse de ta manche. « Le tien. Chaque nuit est un fil, et le tien est très long. Je le reconnaîtrais entre tous. »" },
         { by: "Eldra", text: "Ta cape est déchirée à l'épaule. Elle la reprise d'un fil de lumière pas tout à fait assorti, et le coupe avec les dents. « Voilà. Ça tiendra cette nuit. »" },
-        { by: "Eldra", text: "Elle ne dit jamais « le roi ». Elle dit « lui », et ses mains cessent de tisser le temps que dure le mot. Elle connaissait Aldemar avant la Longue Nuit." },
+        { by: "Eldra", text: "Elle ne dit jamais « le Roi ». Elle dit « lui », et ses mains cessent de tisser le temps que dure le mot. Elle connaissait Aldemar avant la Longue Nuit." },
         { by: "Eldra", text: "« J'ai tissé cette nuit. Le Roi me l'a demandé, pour garder le Matin hors d'Orvane. Je suis désolée de ce qu'elle te coûte. » La navette repart. « Pas de l'avoir faite. »" },
         { by: "Eldra", text: "Elle te montre son métier, plus haut que le donjon. « Quand la nuit est assez profonde, je la retisse, un fil plus bas. Ça te coûte tes pierres, et ça en vaut la peine. »" }
       ],

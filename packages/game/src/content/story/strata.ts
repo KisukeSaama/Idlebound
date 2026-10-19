@@ -164,7 +164,7 @@ const fr: StrataText = {
   ],
   keystones: [
     // Âge I : le Royaume
-    { by: "Le Grand Livre", text: "Le roi t'a regardé comme si tu étais en retard. Des marcheurs l'affrontent chaque nuit, depuis toujours. Il t'attendait." },
+    { by: "Le Grand Livre", text: "Le Roi t'a regardé comme si tu étais en retard. Des marcheurs l'affrontent chaque nuit, depuis toujours. Il t'attendait." },
     { by: "Le Grand Livre", text: "Les chauves-souris ont crié avant ton coup. Elles avaient déjà entendu ce combat : cette même nuit a été vécue bien des fois." },
     { by: "Frère Cendre", text: "Sous la cendre, ce sont les mêmes champs. Le Bûcher les a brûlés jadis pour rappeler le soleil. Ils prennent encore le Matin pour un soleil." },
     { by: "Lysandre", text: "Il manque un tiers de ma carte. Ni brûlé, ni noyé : oublié en entier. Le Matin est passé tout près, ici, et a effacé ce qu'il touchait." },
@@ -191,7 +191,7 @@ const fr: StrataText = {
     { by: "Le Grand Livre", text: "Des fils courent du sol jusqu'au ciel, tendus, bourdonnants. La Longue Nuit est tissée, et ici on voit ses fils." },
     { by: "Le Grand Livre", text: "L'écriture d'Eldra court sur les fils : des notes minuscules et lasses. Elle raccommode cette nuit à la main depuis qu'elle l'a tissée." },
     { by: "Ysolde", text: "Quelque chose court entre les fils, aller, retour, chaque nuit, et la trame pousse derrière. Ça te ressemble. Ce sont les marcheurs." },
-    { by: "Le Grand Livre", text: "Un nœud gros comme un donjon, où le nom du roi est noué. Toute la Longue Nuit est attachée à Aldemar." },
+    { by: "Le Grand Livre", text: "Un nœud gros comme un donjon, où le nom du Roi est noué. Toute la Longue Nuit est attachée à Aldemar." },
     { by: "Ashka", text: "Ici, la trame est assez usée pour laisser passer la lumière. La Longue Nuit ne tiendra pas toujours." },
     // Âge VI : l'Ébauche
     { by: "Séraphine", text: "Les arbres ne sont ici que des contours, jamais coloriés. Avant qu'Orvane soit achevée, quelqu'un l'a d'abord dessinée." },
@@ -210,19 +210,19 @@ const fr: StrataText = {
     { by: "Maëlle", text: "La route revient sur elle-même, et personne ne s'en plaint. Ici, les choses ont du sens comme quand on est à moitié endormi." },
     { by: "Le Grand Livre", text: "Eldra, tout bas : « Ne réveille personne. Si celui qui dort au-dessus d'Orvane s'éveille, la nuit finit, et nous avec. »" },
     { by: "Nyx", text: "La moitié des étoiles se sont fermées, comme des yeux qui s'alourdissent. Celui qui tient notre ciel s'endort presque." },
-    { by: "Le Grand Livre", text: "Morgrath l'a dit le premier, en crachant : « Orvane est un rêve. Le Matin, c'est le rêveur qui s'éveille. La nuit du roi le garde endormi. »" },
+    { by: "Le Grand Livre", text: "Morgrath l'a dit le premier, en crachant : « Orvane est un rêve. Le Matin, c'est le rêveur qui s'éveille. La nuit du Roi le garde endormi. »" },
     // Âge IX : la Chambre du rêveur
     { by: "Une main inconnue", text: "Loin au-dessus du ciel, une lampe est restée allumée. Quelqu'un veille à côté, et Orvane continue tant qu'il veille." },
     { by: "Frère Cendre", text: "Une chaleur sans direction nous arrive ici. Elle vient de la chambre du rêveur, de l'autre côté du ciel." },
     { by: "Le Grand Livre", text: "Célestine cesse de chanter pour écouter. Le rêveur fredonne son air, en plus lent. Elle le lui renvoyait depuis toujours." },
-    { by: "Le Grand Livre", text: "Le roi se tient à une fenêtre que tu n'as jamais vue du dehors. Par elle, il regarde le rêveur, qui nous regarde." },
+    { by: "Le Grand Livre", text: "Le Roi se tient à une fenêtre que tu n'as jamais vue du dehors. Par elle, il regarde le rêveur, qui nous regarde." },
     { by: "Garrick", text: "Le visage que j'ai trouvé dans un éclat, celui qui cligne des yeux quand tu le fais : c'est le rêveur, derrière la Voûte. C'est toi." },
     // Âge X : le Dénouement
     { by: "Vorn", text: "Ici, les choses ont la forme d'autres choses, parties. C'est là que le rêve lâche ce dont il n'a plus besoin." },
     { by: "Le Grand Livre", text: "Les bruits du combat arrivent en retard, étouffés, comme d'une autre pièce. Le rêveur n'écoute plus qu'à moitié." },
     { by: "Ysolde", text: "Quelqu'un a posé un doigt sur ses lèvres, et toute la strate obéit. Même les arbres font attention à ne réveiller personne." },
     { by: "Le Grand Livre", text: "Tu oublies le nom d'un compagnon, une seconde. Il revient, pas en entier. Si profond, le rêve oublie lui aussi." },
-    { by: "Kaelen", text: "Là où devrait être le roi, un siège vide, encore tiède. Ici, Aldemar s'est enfin levé." },
+    { by: "Kaelen", text: "Là où devrait être le Roi, un siège vide, encore tiède. Ici, Aldemar s'est enfin levé." },
     // Âge XI : le Blanc
     { by: "Morgrath", text: "La nuit s'amincit. On devine derrière la couleur du ciel du matin. Nous sommes tout près du réveil." },
     { by: "Le Grand Livre", text: "Les Vestiges d'ici ont presque disparu, à peine remémorés. Ils se battent quand même. Toi aussi." },
@@ -241,7 +241,7 @@ const fr: StrataText = {
     "ascend-5": { by: "Le Grand Livre", text: "Cinquième crépuscule. Sur le Registre des Liés, d'autres noms à côté du tien. Chacun marche sa propre nuit. Vous ne vous croiserez jamais." },
     "ascend-10": { by: "Kaelen", text: "Kaelen, au dixième crépuscule, sans se retourner : « J'avais un devoir, la nuit où tout s'est arrêté. J'ai fui. Un autre a payé. »" },
     "ascend-25": { by: "Une main inconnue", text: "Gravé sur un autel par un marcheur d'avant : ne donne jamais tous tes souvenirs aux autels. Ceux qui l'ont fait sont devenus des Sans-Nom." },
-    "ascend-50": { by: "Le Grand Livre", text: "Cinquante nuits inscrites. Le marcheur n'a jamais manqué de revenir. Le roi, si, une fois : il s'est assis, et ne s'est jamais relevé." },
+    "ascend-50": { by: "Le Grand Livre", text: "Cinquante nuits inscrites. Le marcheur n'a jamais manqué de revenir. Le Roi, si, une fois : il s'est assis, et ne s'est jamais relevé." },
     "ascend-100": { by: "Eldra", text: "Cent crépuscules. Eldra fait un petit nœud dans ton fil pour te retrouver, comme on corne une page." },
     "descent-1": { by: "Le Grand Livre", text: "Le Sanctuaire se défait en fil. Eldra l'enroule sur son bras et retisse la nuit, une couche plus loin dans son passé." },
     "descent-3": { by: "Eldra", text: "« Troisième fois. Mes doigts connaissent le chemin qui descend mieux que moi. J'ai tissé cette nuit, j'en connais chaque couche. »" },

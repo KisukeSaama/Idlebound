@@ -24,7 +24,7 @@ const s = (count: number, word: string) => (count > 1 ? `${word}s` : word);
 
 const RARITY_ADJECTIVE = {
   common: { m: "", f: "" },
-  rare: { m: "fin", f: "fine" },
+  rare: { m: "ouvragé", f: "ouvragée" },
   epic: { m: "enchanté", f: "enchantée" },
   legendary: { m: "légendaire", f: "légendaire" },
   mythic: { m: "mythique", f: "mythique" }
@@ -75,26 +75,26 @@ export const fr: GameText = {
     ...BESTIARY_TEXT.fr.monsters,
     ...BESTIARY_KEEP_TEXT.fr.monsters
   },
-  eraName: (era) => `Ère ${roman(era + 1)}`,
+  eraName: (era) => `Strate ${roman(era + 1)}`,
   heroes: {
     aldric: { name: "Aldric", title: "L'Aventurier", lore: "C'est toi. Chaque frappe sur un Vestige est la tienne, et chaque niveau d'entraînement rend tes frappes plus fortes." },
     maelle: { name: "Maëlle", title: "Chasseuse des plaines", lore: "Une chasseuse des plaines qui ne rate jamais deux fois. Elle se bat à ton côté à l'arc, t'apprend le Cri de ralliement et, au niveau 50, te rapporte plus d'or." },
     brom: { name: "Brom", title: "Forgeron itinérant", lore: "Le forgeron du carrefour : il répare les lames le matin et brise les crânes le soir. Au niveau 50, il rend tes frappes plus fortes." },
-    ysolde: { name: "Ysolde", title: "Archère sylvestre", lore: "Une archère de la forêt sombre, à qui les arbres prêtent leurs yeux. Elle t'apprend l'Œil de faucon et, au niveau 50, rend tes frappes plus souvent critiques." },
+    ysolde: { name: "Ysolde", title: "Archère sylvestre", lore: "Une archère de la Forêt sombre, à qui les arbres prêtent leurs yeux. Elle t'apprend l'Œil de faucon et, au niveau 50, rend tes frappes plus souvent critiques." },
     cendre: { name: "Frère Cendre", title: "Moine des braises", lore: "Un moine qui a juré de ne jamais porter d'arme : ses poings suffisent. Il t'apprend la Pluie d'or et, au niveau 50, fait frapper plus fort toute la compagnie." },
     nyx: { name: "Nyx", title: "Lame d'ombre", lore: "Personne n'a vu son visage, beaucoup ont vu ses dagues. Elle t'apprend le Rituel de résonance et, au niveau 50, rend tes coups critiques bien plus meurtriers." },
-    garrick: { name: "Garrick", title: "Mineur runique", lore: "Un mineur qui fouille les cavernes oubliées en quête d'éclats d'étoile. Il t'apprend l'Écho temporel et, au niveau 50, fait venir plus souvent les rats dorés." },
+    garrick: { name: "Garrick", title: "Mineur runique", lore: "Un mineur qui fouille les Cavernes oubliées en quête d'éclats d'étoile. Il t'apprend l'Écho temporel et, au niveau 50, fait venir plus souvent les rats dorés." },
     seraphine: { name: "Séraphine", title: "Druidesse des ronces", lore: "Une druidesse qui parle aux racines, et les racines lui obéissent. Au niveau 50, elle fait frapper plus fort toute la compagnie." },
     thorvald: { name: "Thorvald", title: "Briseur de pierre", lore: "Il a abattu une montagne pour un pari, et il a perdu le pari. Au niveau 50, il te donne plus de temps contre les élites et les gardiens." },
     mirelle: { name: "Mirelle", title: "Alchimiste des marais", lore: "Une alchimiste des marais, dont les fioles bouillonnent de choses qu'on préfère ne pas nommer. Au niveau 50, elle te rapporte plus d'or." },
-    kaelen: { name: "Kaelen", title: "Chevalier déchu", lore: "Ancien garde du roi, il cherche la rédemption au bout de sa lame. Au niveau 50, il augmente le bonus de Patience : la compagnie frappe toujours plus fort." },
-    oriane: { name: "Oriane", title: "Oracle d'écho", lore: "Une oracle qui entend ce que les cavernes ont dit il y a mille ans. Au niveau 50, elle rend tes frappes plus souvent critiques." },
+    kaelen: { name: "Kaelen", title: "Chevalier déchu", lore: "Ancien garde du Roi, il cherche la rédemption au bout de sa lame. Au niveau 50, il renforce le bonus de Patience : tes compagnons frappent plus fort, en permanence." },
+    oriane: { name: "Oriane", title: "Oracle d'écho", lore: "Elle entend ce que les cavernes ont dit il y a mille ans. Au niveau 50, elle rend tes frappes plus souvent critiques." },
     vorn: { name: "Vorn", title: "Dompteur de bêtes", lore: "Sa meute : trois loups, un sanglier et quelque chose d'innommable. Au niveau 50, il fait frapper plus fort toute la compagnie." },
     lysandre: { name: "Lysandre", title: "Archimage", lore: "Il a lu tous les grimoires, deux fois, à l'envers. Au niveau 50, il rend tes coups critiques bien plus meurtriers." },
     ashka: { name: "Ashka", title: "Prêtresse de braise", lore: "Une prêtresse du feu : là où elle prie, la terre fume pendant des jours. Au niveau 50, elle te rapporte beaucoup plus d'or." },
     nameless: { name: "Le Sans-Nom", title: "Chevalier errant", lore: "Un chevalier muet dont l'armure serait vide. Il a affronté plus de gardiens que quiconque : au niveau 50, il te donne plus de temps pour les abattre." },
     eldra: { name: "Eldra", title: "Tisseuse du temps", lore: "Elle a vu la fin de cette aventure, et refuse d'en parler. Au niveau 50, elle fait frapper plus fort toute la compagnie." },
-    morgrath: { name: "Morgrath", title: "Seigneur liche", lore: "Allié improbable, il déteste le Roi déchu plus que la vie elle-même. Au niveau 50, il augmente beaucoup le bonus de Patience : la compagnie frappe toujours plus fort." },
+    morgrath: { name: "Morgrath", title: "Seigneur liche", lore: "Allié improbable, il déteste le Roi déchu plus que la vie elle-même. Au niveau 50, il renforce beaucoup le bonus de Patience : tes compagnons frappent bien plus fort, en permanence." },
     celestine: { name: "Célestine", title: "Voix des cristaux", lore: "Les essences chantent pour elle, et elle leur répond. Au niveau 50, elle fait frapper plus fort toute la compagnie." },
     aurelion: { name: "Aurelion", title: "Roi-dragon", lore: "Le dernier dragon, qui a choisi ton camp. Au niveau 50, il te rapporte bien plus d'or." },
     awakened: { name: "L'Éveillé", title: "Héros de la prophétie", lore: "Toi, peut-être, dans une autre vie. Le plus fort de la compagnie : au niveau 50, toute la compagnie frappe plus fort." }
@@ -127,7 +127,7 @@ export const fr: GameText = {
     frenzy: { name: "Frénésie", description: "Ta lame frappe seule 10 fois par seconde pendant 30 s." },
     rally: { name: "Cri de ralliement", description: "Maëlle sonne du cor : tous tes compagnons infligent le double de dégâts pendant 30 s." },
     hawkeye: { name: "Œil de faucon", description: "Ysolde te prête les yeux des arbres : +50 % de chances que tes frappes soient critiques (dix fois les dégâts, ou plus) pendant 30 s." },
-    goldrain: { name: "Pluie d'or", description: "Frère Cendre prie Messire Pip : tout l'or gagné est triplé pendant 30 s." },
+    goldrain: { name: "Pluie d'or", description: "Frère Cendre prie pour une bonne récolte : tout l'or gagné est triplé pendant 30 s." },
     ritual: { name: "Rituel de résonance", description: "Nyx t'accorde au rythme de la nuit : tes compagnons infligent +5 % de dégâts jusqu'à ta prochaine ascension. Chaque usage ajoute 5 % de plus." },
     echo: { name: "Écho temporel", description: "Garrick frappe une veine d'écho : le dernier pouvoir utilisé, s'il se recharge encore, est aussitôt de nouveau prêt." },
     unweave: SYSTEMS_TEXT.fr.unweave
@@ -137,7 +137,7 @@ export const fr: GameText = {
     might: { name: "Autel de puissance", description: "Tes compagnons infligent plus de dégâts : chaque niveau les multiplie par 1,10." },
     blade: { name: "Autel de la lame", description: "Tes frappes font plus mal : chaque niveau multiplie leurs dégâts par 1,10, y compris la part qui vient de tes compagnons." },
     fortune: { name: "Autel de fortune", description: "Tu gagnes plus d'or : chaque niveau multiplie tout l'or gagné par 1,12." },
-    patience: { name: "Autel de la patience", description: "Augmente le bonus de Patience, des dégâts en plus que tes compagnons infligent toujours : +14 % au niveau 1, puis chaque niveau multiplie la part de cet autel par 1,14." },
+    patience: { name: "Autel de la patience", description: "Nourrit le bonus de Patience, un bonus de dégâts permanent de tes compagnons qui s'additionne à ceux de Kaelen et de Morgrath. Sa part vaut +14 % au niveau 1 et grandit de ×1,14 par niveau : au début elle pèse peu, mais à haut niveau chaque niveau rapporte plus que l'Autel de puissance (×1,10), pour un prix qui monte plus vite." },
     time: { name: "Autel du temps", description: "Tu as 1 seconde de plus par niveau pour abattre les élites et les gardiens (30 s au départ)." },
     fate: { name: "Autel du destin", description: "Tes frappes critiques infligent 20 % de dégâts en plus par niveau." },
     precision: { name: "Autel de précision", description: "Tes frappes gagnent +1 % de chances par niveau d'être critiques." },
@@ -197,8 +197,8 @@ export const fr: GameText = {
     skills: (t) => `Utilise ${n(t)} pouvoirs.`,
     ascend: (t) => `Fais ${t} ${s(t, "ascension")}.`,
     essences: (t) => `Récolte ${n(t)} essences au total.`,
-    legend: (t) => `Trouve ${t} ${s(t, "objet")} ${s(t, "légendaire")}.`,
-    mythic: (t) => `Trouve ${t} ${s(t, "objet")} ${s(t, "mythique")}.`,
+    legend: (t) => `Trouve ${t} ${s(t, "relique")} ${s(t, "légendaire")}.`,
+    mythic: (t) => `Trouve ${t} ${s(t, "relique")} ${s(t, "mythique")}.`,
     hit: (t, big) => `Inflige un coup de ${big(t)} dégâts.`,
     time: (t) => `Marche ${Math.round(t / 3600)} h dans la nuit, en tout.`,
     fails: (t) => `Laisse une élite ou un gardien te repousser ${t} fois.`,
@@ -278,7 +278,7 @@ export const fr: GameText = {
       "Un jour, il a demandé son propre numéro au Grand Livre. Pas de réponse : le nombre était trop grand."
     ],
     "golden-rat": [
-      "Messire Pip, le rat doré. Toutes les autres créatures changent d'une strate à l'autre. Pip, jamais.",
+      "Messire Pip, le rat doré. Tous les autres Vestiges changent d'une strate à l'autre. Pip, jamais.",
       "Il n'est jamais là où étaient les autres. Il est toujours là où tu regardes.",
       "Le Grand Livre ne tient qu'une entrée pour Pip. Elle est de la main de Pip."
     ],
@@ -300,8 +300,8 @@ export const fr: GameText = {
       { by: "Maëlle", text: "Chaque nuit, je taille une encoche dans le poteau. Il n'y a plus de place. Quelqu'un en a commencé un deuxième." },
       { by: "Le Grand Livre", text: "Dans la ferme au bord de la route, la table est mise pour quatre. La soupe est chaude. Les chaises sont poussiéreuses." },
       { by: "Un rat des champs", text: "Du grain. Du grain. Du grain. Puis le marcheur. Puis du grain." },
-      { by: "Brom", text: "Le roi m'a commandé un marteau, une fois. J'y travaille encore. Les rois savent attendre." },
-      { by: "Le Grand Livre", text: "Les arpenteurs du roi ont posé les bornes. Chacune s'allume quand la route est dégagée. Aucune n'est restée allumée." },
+      { by: "Brom", text: "Le Roi m'a commandé un marteau, une fois. J'y travaille encore. Les rois savent attendre." },
+      { by: "Le Grand Livre", text: "Les arpenteurs du Roi ont posé les bornes. Chacune s'allume quand la route est dégagée. Aucune n'est restée allumée." },
       { by: "Le Grand Livre", text: "Avant ton arrivée, le vieux sanglier s'est couché dans le blé et a attendu, comme un chien attend derrière une porte." },
       { by: "Maëlle", text: "La fête de la moisson, c'était le lendemain. J'avais un ruban. Je crois que j'avais un ruban." },
       { by: "Le Grand Livre", text: "Dans les Plaines, le crépuscule dure un peu plus qu'ailleurs. Comme si les champs demandaient encore une heure." }
@@ -323,7 +323,7 @@ export const fr: GameText = {
     brom: [
       { by: "Brom", text: "Il retourne ta relique entre ses mains. « C'est mon travail. Je reconnaîtrais mes plis n'importe où. Quand est-ce que je l'ai faite ? »" },
       { by: "Brom", text: "« Qui t'a appris à tenir un marteau comme ça ? C'est ma prise. Personne n'a ma prise. »" },
-      { by: "Brom", text: "Au fond de la forge, un marteau sans manche, la tête encore rouge. « Pour le roi. Il me l'a demandé. Je le finirai. »" },
+      { by: "Brom", text: "Au fond de la forge, un marteau sans manche, la tête encore rouge. « Pour le Roi. Il me l'a demandé. Je le finirai. »" },
       { by: "Brom", text: "Il frappe une nouvelle marque dans son enclume, à côté de la sienne : la tienne. « Pour que le métal te reconnaisse, la prochaine fois. »" },
       { by: "Brom", text: "Il te pose le marteau dans les mains, enfin fini. « Lui n'en a plus besoin. Toi, tu marches encore. Il est à toi. »" }
     ],

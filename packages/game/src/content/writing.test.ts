@@ -17,6 +17,28 @@ const ts = (dir: string) => readdirSync(dir).filter((file) => file.endsWith(".ts
 /** Every file that holds text a walker reads: game content in both languages, and the UI. */
 const FILES = [join(CONTENT, "en.ts"), join(CONTENT, "fr.ts"), ...ts(join(CONTENT, "story")), ...ts(MESSAGES)];
 
+/** The text the game itself shows (the site's pages may say boss, where a search looks for it). */
+const GAME_FILES = [
+  join(CONTENT, "en.ts"),
+  join(CONTENT, "fr.ts"),
+  ...ts(join(CONTENT, "story")),
+  ...["hud", "windows", "night", "sanctum", "chronicle", "account", "api"].map((name) => join(MESSAGES, `${name}.ts`))
+];
+
+/** A whole word, accents included. */
+const word = (words: string) => new RegExp(`(?<!\\p{L})(${words})(?!\\p{L})`, "iu");
+
+/** One word per thing (DESIGN.md, "Voice and copy"): what the game never says, and what it says instead. */
+const SYNONYMS: [string, RegExp][] = [
+  ["era (say stratum, strate)", word("ères?|eras?")],
+  ["item (say relic, relique)", word("objets?|items?")],
+  ["inventory (say bag, sac)", word("inventaires?|inventory")],
+  ["stall (say market, marché)", word("échoppes?|étals?|stalls?")],
+  ["boss (say elite, guardian, King)", word("boss|bosses")],
+  ["creature (say monster or Remnant, monstre ou Vestige)", word("créatures?|creatures?")],
+  ["a biome's BIBLE name (say Verdant Plains, Dark Forest…)", word("Hearthfields|Wychwood|Deepvaults")]
+];
+
 /** The Edge of Sleep: from this Age (era 35, stage 1751) on, the Truth is said plainly. */
 const DEEP_AGE = 7;
 const DEEP_ERA = DEEP_AGE * 5;
@@ -113,6 +135,17 @@ describe("the writing rules", () => {
       }
     }
     expect(scanned).toBeGreaterThan(3_000);
+    expect(problems).toEqual([]);
+  });
+
+  it("keeps one word per thing in the game's text (DESIGN.md, the glossary)", () => {
+    const problems: string[] = [];
+    for (const file of GAME_FILES) {
+      const where = relative(ROOT, file);
+      for (const text of literals(readFileSync(file, "utf8"))) {
+        for (const [word, pattern] of SYNONYMS) if (pattern.test(text)) problems.push(`${where}: "${word}" in "${text}"`);
+      }
+    }
     expect(problems).toEqual([]);
   });
 
