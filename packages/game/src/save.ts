@@ -3,6 +3,7 @@ import { STREAMS, type Stream } from "./fates";
 import { WEAVE_LEVEL_MAX } from "./data/descent";
 import { MAX_STAGE } from "./formulas";
 import { migrateState } from "./migrate";
+import { SAVE_VERSION } from "./state";
 import type { GameState } from "./types";
 
 export { RENAMED_CREATURES, legacyAltarSpend, migrateState } from "./migrate";
@@ -190,6 +191,9 @@ export const gameStateSchema = z.object({
 });
 
 export function parseState(raw: unknown): GameState {
+  // A newer version's save is never read, nor kept, by this one: its fields would be lost.
+  const version = raw && typeof raw === "object" ? (raw as { version?: unknown }).version : undefined;
+  if (typeof version === "number" && version > SAVE_VERSION) throw new Error("This save was written by a newer version.");
   const parsed = gameStateSchema.parse(migrateState(raw));
   if (parsed.stage > parsed.maxStage || parsed.maxStage > parsed.maxStageEver) {
     throw new Error("Inconsistent progression.");

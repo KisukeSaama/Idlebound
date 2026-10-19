@@ -754,7 +754,7 @@ rejects real play.
   voids the previous one. A password reset through the e-mail link also confirms the
   address, unless the address changed since the link was sent: fixing the address voids
   every pending reset link. Fixing the address does not extend the deadline, and each fix
-  sends a link that counts against the resend limit (3 per hour). An account never confirmed is deleted 30 days after sign-up. Accounts created
+  sends a link that counts against the resend limit (3 per hour). An account never confirmed gets two reminders, each with a new link (day 7, day 25; they say the saves are paused and when the account goes), and is deleted 30 days after sign-up, never sooner than 3 days after the second reminder, nor without it sent. One whose game went past stage 50 (its best stage on the leaderboard) is never deleted for it: its reminders say only that the saves wait. Accounts created
   before this rule are considered confirmed.
 - Usernames: 3 to 16 characters (letters, digits, `-`, `_`), at least one letter, unique
   regardless of case and accents, reserved names blocked, strict FR/EN profanity filter that
@@ -777,8 +777,11 @@ rejects real play.
   locks out only their own address; a looser ceiling (60 per 15 min) holds per account
   whatever the address. Once that ceiling is spent, an address that already failed on the
   account waits, while one that never failed still gets a try: the player is never locked
-  out by guesses from elsewhere. Each limiter tracks at most 50,000 keys; when full, a new
-  key waits until old ones expire.
+  out by guesses from elsewhere. Sign-up and login also count per IPv6 /48 (20 sign-ups an
+  hour, 80 logins per 15 min): a site holding a whole /48 has 65,536 addresses of its own.
+  Each limiter tracks at most 50,000 keys; when full, the least recently seen key that is not
+  held back makes room, so a flood of new keys never shuts newcomers out nor frees a key that
+  is being held back (a new key waits only when every key looked at is held back).
 - Forgotten password: single-use link valid 1 h, same answer whether the account exists.
   Requesting a link is limited to 5 per hour per IP (3 per account), using one to 10 per
   hour per IP.
@@ -792,6 +795,11 @@ rejects real play.
 ## Saves
 
 - **Server-side only.** No local save, no import/export, for accounts and guests alike.
+- **A day's snapshot.** The first save an account's game has accepted each day (UTC) is kept
+  apart (`save_snapshots`, 30 days). A person can list them and put one back
+  (`npm run review -w @idlebound/api -- --snapshots <username>`, then `--restore <username> --day
+  YYYY-MM-DD`): it becomes the account's game as a new revision, so every open page is asked to
+  choose, and the server's ledger of the game starts again from its record. Guests have none.
 - **A guest's game is kept without an account** (`guest_saves`, `GET`/`PUT`/`DELETE
   /save/guest`). A new game is begun by the server (`POST /save/guest/new`, see Anti-cheat,
   the fates): a browser without a game gets an httpOnly cookie (`ib_guest`, SameSite Lax, 30
@@ -802,11 +810,14 @@ rejects real play.
   top of it, with the same revisions, conflicts and catch-up as an account's. It goes
   through the same `validation.ts` (see Anti-cheat), is never ranked, and is deleted after
   **30 days without a visit** (a read or a save counts, to the day; the cookie slides with
-  it). No "not kept" warning is left: leaving the page asks for confirmation only when the
+  it). A game saved only once (a page opened, a few blows, then left: under a minute of play)
+  is deleted after **48 hours** without a visit. No "not kept" warning is left: leaving the page asks for confirmation only when the
   last saves failed or the session ended.
 - Guest saves are rate limited: 6 per minute per game (as for an account), 60 per minute
-  per IP for all its games together, and 20 new guest games per hour per IP. A guest's first
-  save may be at most 30 days old.
+  per IP for all its games together, and 20 new guest games per hour per IP (60 per IPv6
+  /48). Every address together, the server begins keeping at most 3,000 guest games an hour
+  (`GUEST_GAMES_PER_HOUR`): past it a new guest still plays, and its game is kept once the
+  hour turns. A guest's first save may be at most 30 days old.
 - On sign-up or login, a fresh guest run (under 90 s of play, no ascension, best stage 3 or
   less) or the same run adopts the account's save; a guest run that differs from it triggers
   an explicit choice, never a silent overwrite. Until the choice is made both games stay
@@ -819,7 +830,7 @@ rejects real play.
   most 30 days. Such a run replacing the account's game may claim no more time (play and
   time away) than the stored game had been credited, plus the time the server saw pass
   since that save. Two first saves sent at once keep the first written; the other gets the
-  conflict. A save never goes back to an older version than the stored one. A game belongs
+  conflict. A save never goes back to an older version than the stored one, and a save written by a newer version than the server's (a build rolled back) is left untouched by the migrations and refused, never relabelled nor stripped of what it carries. A game belongs
   to one account: a game another account already keeps (same creation date) is refused as
   a first save, a replacement or a guest's game (`lineage-taken`), whatever its numbers.
 - When the session ends under an account's game (password changed elsewhere, session
@@ -986,7 +997,12 @@ same replays, for a person to review the boards; nothing is ever refused or hidd
 - A journal holds at most ten minutes of live play (6,000 steps; catch-ups count for
   nothing) and 60,000 entries, 4 MB unpacked; past that it is not replayed. Replays run in
   worker threads (`REPLAY_WORKERS`, the cores but one, four at most; two in the deployment, which
-  shares its host), stopped after 5 s.
+  shares its host), stopped after 5 s. A replay never holds a row lock nor a database
+  connection: the save's rows are read without a lock, the journal replayed, then the rows read
+  again under the lock and the save written; when they moved meanwhile (another save of the
+  same game, another page taking it), it is measured again (three times at most, then a
+  conflict). At most 16 replays wait per worker: past that, or after 5 s waiting, a replay is
+  "busy" (enforced, the save is asked again 5 s later). The API keeps 20 database connections.
   Measured: 9 ms of CPU for 30 s of play at 10 clicks per second (stages 1000, 2800 and
   9950 alike), about 0.3 core for a thousand walkers saving every 30 s; a full journal of ten
   minutes in about 0.2 s. A journal weighs about 0.5 KB gzipped for 30 s of play, 4 KB for
@@ -996,7 +1012,10 @@ same replays, for a person to review the boards; nothing is ever refused or hidd
   skipped, kept 90 days, 30 per game and hour). `REPLAY_MODE=enforce`: the replayed game is
   the one kept and ranked, the page adopts it (the save's answer carries it, and the page
   replays what the walker did since on top of it); a save without a journal the server can
-  replay is refused (`journal`).
+  replay is refused (`journal`). The deployment runs `enforce` on dev and `shadow` on
+  production until the replays say production can decide too: every replay is counted by what
+  it found (`replay_tally`, by day, 90 days), and `review --replays` gives the share of saves
+  enforce would keep, correct or refuse, and the paths that diverge most (deploy/README.md).
 - A journal sent in parts (back from an outage) is held, part after part, to the time since
   the save before the first part, as one save would be; one that builds on an earlier
   revision, to the time since that revision.
@@ -1248,11 +1267,31 @@ language.
   The sitemap states no `lastmod`.
 - Accessibility: every public page opens on a "Skip to content" link, hidden until a
   keyboard reaches it, that jumps to its `main`.
-- Every page renders per request (the CSP nonce requires it), so none is prerendered.
+- Every page renders per request (the CSP nonce requires it), so none is prerendered. A page
+  without a nonce would need `'unsafe-inline'` scripts (the App Router writes its data in
+  inline scripts, which a hash cannot cover per request), so the public pages are not cached
+  at the edge: the security default holds.
+- The art generator and its recipes (about a megabyte) load on demand, the first time a page
+  draws a sprite (`pixel/Art.tsx`, `pixel/artSource.ts`); the palette and the scene's grid are
+  their own entries (`@idlebound/game/palette`, `@idlebound/game/grid`). Every page, the
+  landing and the game included, starts on about 1.3 MB of scripts (430 KB gzipped), down
+  from 2.4 MB (690 KB) when every page carried the recipes.
 - Public, indexable leaderboard. Only production is indexable; the dev environment answers
   `noindex`.
+- **When something breaks.** A game window, a scene, a chest or the Reunion that throws while
+  it renders falls alone, in a small window ("This window could not open": try again, or
+  close it), never the game behind it. A page that breaks shows "The road came apart" with a
+  retry and a way home (`error.tsx`, and `global-error.tsx` when the root layout itself
+  breaks). Every page reports what no boundary caught (uncaught errors, unhandled rejections)
+  and what the boundaries caught to `POST /api/client-error`: the kind, the message, the stack,
+  the path and the release, never who (no account, no cookie, the address used for the rate
+  limit only: 10 a minute per address, 600 for everyone, 5 per page). The API writes one
+  `[client]` line per report to its log.
 - Hosted on the owner's platform (Traefik, GitLab CI). Production:
   `https://idlebound.kisukesaama.com`, development: `https://idlebound-d.kisukesaama.com`.
+- The database is dumped every day (14 days kept on the host, copied off it when a remote is
+  configured) and before every deployment. Operations, restoring and rolling back:
+  [deploy/README.md](deploy/README.md).
 
 ## Non-goals
 

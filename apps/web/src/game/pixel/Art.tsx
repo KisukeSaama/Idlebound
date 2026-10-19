@@ -2,28 +2,13 @@
 
 /**
  * World art described by plain data, so server components (the landing page, the 404) can
- * place pixel sprites: the client generates them.
+ * place pixel sprites: the client generates them. The generator and every recipe (more than
+ * a megabyte) load on demand, the first time a page draws art (see `artSource.ts`): a page
+ * that draws none never downloads them, and none waits for them before it runs.
  */
 import type { AltarId, CaravanWareId, ItemSlot, MarketOfferId, Rarity, SkillId } from "@idlebound/game";
-import type { CSSProperties } from "react";
-import { PixelSprite, type PixelSource } from "./PixelSprite";
-import {
-  altarIconSource,
-  caravanIconSource,
-  creatureSource,
-  crystalSource,
-  satchelSource,
-  emblemSource,
-  marketIconSource,
-  portraitSource,
-  powerIconSource,
-  relicSource,
-  sceneSource,
-  depthSource,
-  placeSource,
-  stageSource,
-  structureSource
-} from "./sources";
+import { useEffect, useState, type CSSProperties } from "react";
+import { PixelSprite } from "./PixelSprite";
 import type { PlaceId } from "./scene";
 import type { Depth } from "./stage";
 
@@ -46,42 +31,29 @@ export type ArtSpec =
   | { kind: "crystal" }
   | { kind: "satchel" };
 
-export function artSource(spec: ArtSpec): PixelSource {
-  switch (spec.kind) {
-    case "creature":
-      return creatureSource(spec.id, spec.era ?? 0, spec.animated ?? true);
-    case "scene":
-      return sceneSource(spec.biome, spec.era ?? 0, spec.darkNight ?? false);
-    case "place":
-      return placeSource(spec.id);
-    case "stage":
-      return stageSource(spec.biome, spec.era ?? 0, spec.guardian ?? true, spec.width, spec.darkNight ?? false);
-    case "depth":
-      return depthSource(spec.biome, spec.era ?? 0, spec.depth, spec.width);
-    case "structure":
-      return structureSource(spec.biome, spec.id, spec.era ?? 0);
-    case "portrait":
-      return portraitSource(spec.hero);
-    case "emblem":
-      return emblemSource(spec.hero);
-    case "relic":
-      return relicSource({ slot: spec.slot, base: spec.base, rarity: spec.rarity, forge: spec.forge ?? 0, named: spec.named });
-    case "altar":
-      return altarIconSource(spec.id);
-    case "power":
-      return powerIconSource(spec.id);
-    case "market":
-      return marketIconSource(spec.id);
-    case "ware":
-      return caravanIconSource(spec.id);
-    case "crystal":
-      return crystalSource();
-    case "satchel":
-      return satchelSource();
-  }
+/** The generator once loaded, shared by every sprite of the page. */
+let generator: typeof import("./artSource") | null = null;
+let loading: Promise<typeof import("./artSource")> | null = null;
+
+export function loadGenerator() {
+  loading ??= import("./artSource").then((module) => (generator = module));
+  return loading;
 }
 
 export function Art({ spec, size, scale, cover, className, style, label }: { spec: ArtSpec; size?: number | "parent"; scale?: number; cover?: boolean; className?: string; style?: CSSProperties; label?: string }) {
+  const [ready, setReady] = useState(generator);
+  useEffect(() => {
+    if (ready) return;
+    let live = true;
+    void loadGenerator().then((module) => {
+      if (live) setReady(module);
+    });
+    return () => {
+      live = false;
+    };
+  }, [ready]);
   const fit = size ?? (spec.kind === "place" && scale === undefined ? "parent" : undefined);
-  return <PixelSprite source={artSource(spec)} size={fit} scale={scale} cover={cover} className={className} style={style} label={label} />;
+  // Until the generator is here, the same empty canvas PixelSprite starts from: nothing moves.
+  if (!ready) return <canvas width={0} height={0} className={className ? `pixel-sprite ${className}` : "pixel-sprite"} style={style} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true} />;
+  return <PixelSprite source={ready.artSource(spec)} size={fit} scale={scale} cover={cover} className={className} style={style} label={label} />;
 }

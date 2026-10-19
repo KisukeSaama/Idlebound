@@ -17,6 +17,15 @@
 #                                 it, links are written to the API log, addresses are not
 #                                 confirmed and inactive accounts are never purged
 #   IDLEBOUND_MAIL_FROM           optional — sender of those e-mails
+#   IDLEBOUND_REPLAY_MODE         optional — shadow or enforce; enforce on dev, shadow on
+#                                 production by default (deploy/README.md, "The replay")
+#   IDLEBOUND_BACKUP_REMOTE       optional — rclone remote, written inline, where the daily
+#                                 database dumps are copied off the host (deploy/README.md);
+#                                 without it, the dumps stay on the host only
+#
+# Images are tagged with the branch and with the commit; a deployment runs the commit's.
+# rollback_dev / rollback_prod (manual) deploy an earlier commit's images: run them with the
+# variable ROLLBACK_SHA set to that commit (deploy/README.md, "Rolling back").
 
 image: docker:29
 
@@ -64,7 +73,18 @@ variables:
         exit 1
       fi
     - export CI_REGISTRY_IMAGE="${CI_REGISTRY_IMAGE:-${CI_REGISTRY}/${CI_PROJECT_PATH}}"
-    - export IMAGE_TAG="${CI_COMMIT_REF_SLUG}"
+    # The commit's own images: a later push to the branch never changes what this job deploys,
+    # and a rollback names the commit it goes back to.
+    - |
+      if [[ -n "${ROLLBACK_SHA:-}" ]]; then
+        if [[ ! "${ROLLBACK_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+          echo "ROLLBACK_SHA must be a full commit hash (40 lowercase hex characters)." >&2
+          exit 1
+        fi
+        export IMAGE_TAG="${ROLLBACK_SHA}"
+      else
+        export IMAGE_TAG="${CI_COMMIT_SHA}"
+      fi
     - set -a; source deploy/paths.env; set +a
     # main means production; anything else that reaches a deploy job is develop.
     - |
@@ -106,10 +126,20 @@ variables:
         # Only production is indexed by search engines; dev answers noindex.
         local indexable=false
         if [[ "${DEPLOY_ENV}" == "prod" ]]; then indexable=true; fi
+        # The replay decides on dev; on production it only reports until the reports say it
+        # can decide there too (deploy/README.md, "The replay"). IDLEBOUND_REPLAY_MODE overrides.
+        local replay_mode=shadow
+        if [[ "${DEPLOY_ENV}" == "dev" ]]; then replay_mode=enforce; fi
+        replay_mode="${IDLEBOUND_REPLAY_MODE:-${replay_mode}}"
+        case "${replay_mode}" in
+          shadow|enforce) ;;
+          *) echo "IDLEBOUND_REPLAY_MODE must be shadow or enforce." >&2; exit 1 ;;
+        esac
 
         mkdir -p "${target}"
         cp deploy/compose.yml "${target}/compose.yml"
         cp deploy/paths.env "${target}/paths.env"
+        cp deploy/backup.sh "${target}/backup.sh"
         # app.env carries credentials, so it is written with a restrictive umask and
         # tightened again on the host below.
         (umask 077; printf '%s\n' \
@@ -123,6 +153,8 @@ variables:
           "SITE_INDEXABLE=${indexable}" \
           "SMTP_URL=${IDLEBOUND_SMTP_URL:-}" \
           "MAIL_FROM=${IDLEBOUND_MAIL_FROM:-Idlebound <no-reply@kisukesaama.com>}" \
+          "BACKUP_REMOTE=${IDLEBOUND_BACKUP_REMOTE:-}" \
+          "REPLAY_MODE=${replay_mode}" \
           > "${target}/app.env")
       }
 
@@ -145,22 +177,25 @@ variables:
             case "$DATA_REL" in ""|/*|*..*) exit 1 ;; esac
             host_target="/host-home/$TARGET_REL"
             host_data="/host-home/$DATA_REL/$DEPLOY_ENV"
-            # One mkdir per bind-mounted data directory in compose.yml (only postgres).
-            mkdir -p "$host_target" "$host_data/postgres"
+            # One mkdir per bind-mounted data directory in compose.yml.
+            mkdir -p "$host_target" "$host_data/postgres" "$host_data/backups"
             tar -C "$host_target" -xf -
             chmod 750 "$host_target" "$host_data" "$host_data/postgres"
-            chmod 640 "$host_target/compose.yml" "$host_target/paths.env"
+            chmod 700 "$host_data/backups"
+            chmod 640 "$host_target/compose.yml" "$host_target/paths.env" "$host_target/backup.sh"
             chmod 600 "$host_target/app.env"
             # web and api are read_only and write only to tmpfs: no chown needed.
           '
       }
 
       validate_paths
-      mkdir -p "${TARGET_DIR}" "${ENV_DATA_DIR}/postgres"
+      mkdir -p "${TARGET_DIR}" "${ENV_DATA_DIR}/postgres" "${ENV_DATA_DIR}/backups"
       write_runtime_files "${TARGET_DIR}"
       stage_on_host "${TARGET_DIR}"
     - echo "${CI_REGISTRY_PASSWORD:-${CI_JOB_TOKEN}}" | docker login --username "${CI_REGISTRY_USER:-gitlab-ci-token}" --password-stdin "${CI_REGISTRY}"
     - |
+      # The off-site copy of the backups runs only when a remote is configured.
+      if [[ -n "${IDLEBOUND_BACKUP_REMOTE:-}" ]]; then export COMPOSE_PROFILES=offsite; fi
       compose() {
         docker compose -p "${APP_SUBDOMAIN}-${DEPLOY_ENV}" \
           --env-file paths.env --env-file app.env -f compose.yml "$@"
@@ -170,7 +205,13 @@ variables:
       # The reason is in the container's own log, on a host the runner cannot shell into.
       # Print it here or every failure costs a trip to the server.
       deploy() {
-        compose pull
+        # A rollback only finds images the registry still keeps.
+        compose pull || { echo "Images ${IMAGE_TAG} not found in the registry." >&2; return 1; }
+        # A dump before every rollout: the API runs its migrations as it starts, and some
+        # drop columns. Skipped on the first deployment, when no database runs yet.
+        if [[ -n "$(compose ps --status running -q postgres 2>/dev/null)" ]]; then
+          compose run --rm --no-deps backup once predeploy
+        fi
         compose up -d --remove-orphans && return 0
         echo "Deployment failed. Container state and recent logs follow." >&2
         compose ps -a >&2 || true
@@ -226,6 +267,11 @@ build:
     - docker build --pull --build-arg IDLEBOUND_RELEASE="${CI_COMMIT_SHA}" -t "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}" -f apps/web/Dockerfile .
     - docker push "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}"
     - docker push "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}"
+    # The commit's own tag: what the deploy jobs run, and what a rollback goes back to.
+    - docker tag "${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}/api:${CI_COMMIT_SHA}"
+    - docker tag "${CI_REGISTRY_IMAGE}/web:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_SHA}"
+    - docker push "${CI_REGISTRY_IMAGE}/api:${CI_COMMIT_SHA}"
+    - docker push "${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_SHA}"
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -245,6 +291,23 @@ deploy_dev:
     - if: '$CI_COMMIT_BRANCH == "develop"'
       when: manual
   script:
+    - cd "${TARGET_DIR}"
+    - deploy
+
+# Back to an earlier commit's images: run by hand with ROLLBACK_SHA. The database keeps
+# the migrations the later release applied; deploy/README.md says when to restore a dump too.
+rollback_dev:
+  stage: deploy
+  <<: *deploy_defaults
+  resource_group: idlebound-dev
+  environment:
+    name: dev
+    url: https://idlebound-d.kisukesaama.com
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: manual
+  script:
+    - '[[ -n "${ROLLBACK_SHA:-}" ]] || { echo "Set ROLLBACK_SHA to the commit to go back to." >&2; exit 1; }'
     - cd "${TARGET_DIR}"
     - deploy
 
@@ -276,6 +339,21 @@ deploy_prod:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
+    - cd "${TARGET_DIR}"
+    - deploy
+
+rollback_prod:
+  stage: deploy
+  <<: *deploy_defaults
+  resource_group: idlebound-prod
+  environment:
+    name: production
+    url: https://idlebound.kisukesaama.com
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - '[[ -n "${ROLLBACK_SHA:-}" ]] || { echo "Set ROLLBACK_SHA to the commit to go back to." >&2; exit 1; }'
     - cd "${TARGET_DIR}"
     - deploy
 

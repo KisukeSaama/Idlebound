@@ -6,13 +6,12 @@
  * ground, at the scene's own scale, who takes the visitor's blows. The world never blurs: every
  * plane shares one whole scale and every shift is a whole number of art pixels.
  */
-import { SCENE_FLOOR, SCENE_HEIGHT, SCENE_WIDTH } from "@idlebound/game/art";
+import { SCENE_FLOOR, SCENE_HEIGHT, SCENE_WIDTH } from "@idlebound/game/grid";
 import { bossHp, formatNumber } from "@idlebound/game";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { Art } from "@/game/pixel/Art";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { Art, loadGenerator } from "@/game/pixel/Art";
 import { hash2 } from "@/game/pixel/pixels";
-import { renderCreature } from "@/game/pixel/creature";
 import { pageRect, pixelRatio, prefersReducedMotion, uiZoom } from "@/game/pixel/surface";
 import "@/game/damage.css";
 
@@ -69,9 +68,17 @@ export function LandingHero({ text, playHref, leaderboardHref }: { text: Text; p
   const blows = useRef(0);
   const nextId = useRef(0);
   const burst = useRef({ x: 0, y: 0, at: -Infinity, count: 0 });
-  const feet = useMemo(() => {
-    const sprite = renderCreature(KING);
-    return { below: sprite.pixels.h - 1 - sprite.feet, width: sprite.pixels.w };
+  // Where the King's feet stand, measured by the generator once it is loaded (see Art.tsx).
+  const [feet, setFeet] = useState<{ below: number; width: number } | null>(null);
+  useEffect(() => {
+    let live = true;
+    void loadGenerator().then(({ renderCreature }) => {
+      const sprite = renderCreature(KING);
+      if (live) setFeet({ below: sprite.pixels.h - 1 - sprite.feet, width: sprite.pixels.w });
+    });
+    return () => {
+      live = false;
+    };
   }, []);
 
   // One whole scale for the whole scene, chosen from the room the screen gives it: the hero
@@ -168,7 +175,7 @@ export function LandingHero({ text, playHref, leaderboardHref }: { text: Text; p
   };
 
   const share = hp / KING_HP;
-  const kingStyle = scale
+  const kingStyle = scale && feet
     ? { bottom: `${(SCENE_HEIGHT - SCENE_FLOOR - feet.below) * scale}px`, left: `calc(50% + ${(view.kingX - Math.round(feet.width / 2)) * scale}px)` }
     : { visibility: "hidden" as const };
   const plane = (depth: keyof typeof TRAVEL) => (scale ? <Art spec={{ kind: "depth", biome: BIOME, depth, width: view.columns }} scale={scale} /> : null);

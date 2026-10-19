@@ -28,6 +28,9 @@ export function migrateState(raw: unknown): unknown {
   (merged.lore as Record<string, unknown>).tongues = { ...base.lore.tongues, ...((input.lore as { tongues?: object } | undefined)?.tongues) };
   merged.trail = { ...base.trail, ...(input.trail as object | undefined) };
   const version = typeof input.version === "number" ? input.version : 0;
+  // Written by a newer version (a build rolled back, a page behind its server): left as it is.
+  // Relabelled as this version, it would run these migrations again once the newer one is back.
+  if (version > SAVE_VERSION) return raw;
   if (version < 4) {
     refundLegacyAltars(merged);
     // The rework notice is for these saves, even when their tutorial came from the defaults.

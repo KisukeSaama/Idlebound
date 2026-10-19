@@ -7,7 +7,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./server": "./src/server.ts",
-    "./art": "./src/data/art/index.ts"
+    "./art": "./src/data/art/index.ts",
+    "./palette": "./src/data/art/palette.ts",
+    "./grid": "./src/data/art/grid.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"

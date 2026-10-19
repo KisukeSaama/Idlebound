@@ -194,10 +194,7 @@ export interface SceneRecipe {
   seed: number;
 }
 
-export const SCENE_WIDTH = 320;
-export const SCENE_HEIGHT = 180;
-/** Row the creature's feet stand on. */
-export const SCENE_FLOOR = 140;
+export { SCENE_FLOOR, SCENE_HEIGHT, SCENE_WIDTH } from "./grid";
 
 export const SCENES: Record<string, SceneRecipe> = {
   "green-plains": {

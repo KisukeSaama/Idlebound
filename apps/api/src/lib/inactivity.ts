@@ -1,9 +1,10 @@
 import { isLocale, type Locale } from "@idlebound/game";
-import { and, eq, isNull, lt } from "drizzle-orm";
+import { and, eq, gte, isNull, lt, not, or, sql } from "drizzle-orm";
 import { db } from "../db/client";
-import { users } from "../db/schema";
+import { leaderboard, users } from "../db/schema";
 import { env } from "../env";
-import { inactivityMail, sendMail } from "./mail";
+import { issueVerificationLink } from "./confirm";
+import { inactivityMail, sendMail, verifyReminderMail } from "./mail";
 import { UNVERIFIED_ACCOUNT_DAYS } from "./verification";
 
 const DAY = 86_400_000;
@@ -55,16 +56,65 @@ export async function purgeInactiveAccounts(now = new Date()) {
   }
 }
 
+/** Reminders to confirm the address, by the day after sign-up they are sent on. */
+export const VERIFY_REMINDER_DAYS = [7, 25] as const;
+/** Days between two reminders, and between the last one and the deletion: never two mails at once. */
+const REMINDER_GAP_DAYS = 3;
 /**
- * Deletes accounts whose address was never confirmed, well after the grace period: the
- * address and the username become free again (typo, or someone else's address).
+ * A never-confirmed account whose game went past this stage is not deleted: its walker is
+ * reminded, and the account stays until it is confirmed (or inactive for 3 years).
+ */
+export const UNVERIFIED_KEPT_STAGE = 50;
+
+/**
+ * Reminds the accounts whose address is still unconfirmed (day 7, then day 25, each with a
+ * new link), then deletes them well after the grace period: the address and the username
+ * become free again (typo, or someone else's address). Never without both reminders sent, and
+ * never an account whose game went past UNVERIFIED_KEPT_STAGE.
  */
 export async function purgeUnverifiedAccounts(now = new Date()) {
-  // Without SMTP nobody can confirm anything: nothing is deleted.
+  // Without SMTP nobody can confirm anything: nothing is sent, nothing is deleted.
   if (!env.SMTP_URL) return;
-  const createdBefore = new Date(now.getTime() - UNVERIFIED_ACCOUNT_DAYS * DAY);
+  const day = (days: number) => new Date(now.getTime() - days * DAY);
+  const kept = sql`exists (select 1 from ${leaderboard} where ${leaderboard.userId} = ${users.id} and ${leaderboard.maxStage} > ${UNVERIFIED_KEPT_STAGE})`;
   const removed = await db.delete(users)
-    .where(and(isNull(users.emailVerifiedAt), lt(users.createdAt, createdBefore)))
+    .where(and(
+      isNull(users.emailVerifiedAt),
+      lt(users.createdAt, day(UNVERIFIED_ACCOUNT_DAYS)),
+      gte(users.verifyReminders, VERIFY_REMINDER_DAYS.length),
+      lt(users.verifyRemindedAt, day(REMINDER_GAP_DAYS)),
+      not(kept)
+    ))
     .returning({ id: users.id });
   if (removed.length > 0) console.log(`[api] ${removed.length} never-confirmed account(s) deleted`);
+
+  for (const [index, after] of VERIFY_REMINDER_DAYS.entries()) {
+    const due = await db
+      .select({ id: users.id, email: users.email, username: users.username, locale: users.locale, createdAt: users.createdAt, kept: sql<boolean>`${kept}` })
+      .from(users)
+      .where(and(
+        isNull(users.emailVerifiedAt),
+        eq(users.verifyReminders, index),
+        lt(users.createdAt, day(after)),
+        or(isNull(users.verifyRemindedAt), lt(users.verifyRemindedAt, day(REMINDER_GAP_DAYS)))
+      ))
+      .orderBy(users.createdAt)
+      .limit(NOTICE_BATCH);
+    for (const user of due) {
+      const locale: Locale = isLocale(user.locale) ? user.locale : "fr";
+      // Deleted no sooner than the usual day, and never sooner than a gap after the last reminder.
+      const lastReminder = now.getTime() + (VERIFY_REMINDER_DAYS.length - 1 - index) * REMINDER_GAP_DAYS * DAY;
+      const deletesAt = user.kept ? null : new Date(Math.max(user.createdAt.getTime() + UNVERIFIED_ACCOUNT_DAYS * DAY, lastReminder + REMINDER_GAP_DAYS * DAY));
+      try {
+        const link = await issueVerificationLink(user, locale);
+        await sendMail(user.email, verifyReminderMail(user.username, link, deletesAt, locale));
+      } catch (error) {
+        // Not counted: the next run retries, and the account cannot be deleted meanwhile.
+        console.error("[mail] confirmation reminder failed", error);
+        continue;
+      }
+      await db.update(users).set({ verifyReminders: index + 1, verifyRemindedAt: now })
+        .where(and(eq(users.id, user.id), eq(users.verifyReminders, index), isNull(users.emailVerifiedAt)));
+    }
+  }
 }

@@ -5,17 +5,21 @@ import { z } from "zod";
 import { db } from "../db/client";
 import { emailVerifications, passwordResets, users } from "../db/schema";
 import { env } from "../env";
+import { issueVerificationLink } from "../lib/confirm";
 import { guestId } from "../lib/guest";
 import { fail } from "../lib/errors";
 import { localeOf } from "../lib/i18n";
 import { resetPasswordMail, sendMail, verifyEmailMail } from "../lib/mail";
 import { checkPasswordStrength, dummyVerify, hashPassword, verifyPassword } from "../lib/password";
-import { clientIp, limiter, tooMany } from "../lib/rate-limit";
+import { clientIp, consumeNetwork, limiter, tooMany } from "../lib/rate-limit";
 import { createSession, currentUser, destroyAllSessions, destroySession, hashToken, newToken } from "../lib/session";
-import { VERIFY_LINK_DAYS, verificationRequired, verifyDeadline } from "../lib/verification";
+import { verificationRequired, verifyDeadline } from "../lib/verification";
 
 const registerIp = limiter(5, 60 * 60_000);
 const loginIp = limiter(20, 15 * 60_000);
+/** The same, per IPv6 /48: a site holding a whole /48 has 65,536 addresses of its own (see `networkKey`). */
+const registerNetwork = limiter(20, 60 * 60_000);
+const loginNetwork = limiter(80, 15 * 60_000);
 /** Guesses at one account from one address. A success clears it, so what it holds are failures. */
 const loginAttempt = limiter(8, 15 * 60_000);
 /**
@@ -88,15 +92,7 @@ function uniqueViolation(error: unknown): boolean {
 
 /** New confirmation link for the account's current address; earlier links stop working. */
 async function sendVerification(user: { id: string; email: string; username: string }, locale: Locale) {
-  const token = newToken();
-  await db.delete(emailVerifications).where(eq(emailVerifications.userId, user.id));
-  await db.insert(emailVerifications).values({
-    id: hashToken(token),
-    userId: user.id,
-    email: user.email,
-    expiresAt: new Date(Date.now() + VERIFY_LINK_DAYS * 86_400_000)
-  });
-  const link = `${env.PUBLIC_SITE_URL}/${locale}/verify-email?token=${encodeURIComponent(token)}`;
+  const link = await issueVerificationLink(user, locale);
   sendMail(user.email, verifyEmailMail(user.username, link, locale)).catch((error) => console.error("[mail] send failed", error));
 }
 
@@ -108,7 +104,7 @@ export const authRoutes = new Hono()
   })
 
   .post("/register", async (c) => {
-    const wait = registerIp.consume(clientIp(c));
+    const wait = consumeNetwork(registerIp, registerNetwork, clientIp(c));
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, registerBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);
@@ -142,7 +138,7 @@ export const authRoutes = new Hono()
   })
 
   .post("/login", async (c) => {
-    const wait = loginIp.consume(clientIp(c));
+    const wait = consumeNetwork(loginIp, loginNetwork, clientIp(c));
     if (wait > 0) return tooMany(c, wait);
     const parsed = await body(c, loginBody);
     if ("error" in parsed) return c.json({ error: parsed.error }, 400);

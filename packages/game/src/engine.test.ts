@@ -594,6 +594,14 @@ describe("save", () => {
     expect(parseState(partial).tutorial.done).toEqual([]);
     expect(createInitialState(T0).tutorial.done).toEqual([ALTAR_REWORK_NOTICE]);
   });
+
+  it("leaves a save written by a newer version untouched, and never reads it as its own", () => {
+    const newer = { ...createInitialState(T0), version: SAVE_VERSION + 1, fieldOfTomorrow: 7 };
+    // Not relabelled: a build rolled back would otherwise run its migrations on it again.
+    expect(migrateState(newer)).toBe(newer);
+    expect(newer.version).toBe(SAVE_VERSION + 1);
+    expect(() => parseState(newer)).toThrow(/newer/);
+  });
 });
 
 describe("anti-cheat", () => {

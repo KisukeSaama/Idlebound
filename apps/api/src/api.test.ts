@@ -178,6 +178,16 @@ suite("API (real Postgres)", () => {
     expect(response.status).toBe(200);
   });
 
+  it("hears what broke on a page, without a word about who", async () => {
+    const client = new Client("10.0.0.50");
+    const report = { kind: "window", message: "Cannot read properties of undefined", stack: "TypeError: at GearWindow", path: "/fr/play", version: "v2.0.1" };
+    expect((await client.call("POST", "/client-error", report)).status).toBe(204);
+    expect((await client.call("POST", "/client-error", { ...report, kind: "anything" })).status).toBe(400);
+    expect((await client.call("POST", "/client-error", { ...report, message: "x".repeat(501) })).status).toBe(400);
+    // A page caught in a loop of errors is heard ten times a minute, then quietly ignored.
+    for (let index = 0; index < 12; index += 1) expect((await client.call("POST", "/client-error", report)).status).toBe(204);
+  });
+
   it("refuses a request without the anti-CSRF header", async () => {
     const response = await app.request("/auth/login", { method: "POST", body: "{}", headers: { "content-type": "application/json" } });
     expect(response.status).toBe(403);
@@ -255,6 +265,38 @@ suite("API (real Postgres)", () => {
     expect((await client.call("DELETE", "/auth/account", { password: "faux" })).status).toBe(401);
     expect((await client.call("DELETE", "/auth/account", { password: "Un-Mot-De-Passe-Solide" })).status).toBe(200);
     expect((await client.call("GET", "/auth/me")).json.user).toBeNull();
+  }, 60_000);
+
+  it("keeps the day's first save of an account as a snapshot a person can put back", async () => {
+    const client = new Client("10.0.0.40");
+    const username = freshName("Snap");
+    expect((await client.call("POST", "/auth/register", { email: `snap${unique}@idlebound.test`, username, password: "Un-Mot-De-Passe-Solide" })).status).toBe(201);
+    const userId = (await sql`select id from users where username = ${username}`)[0].id as string;
+
+    const state = playedState(3);
+    expect((await client.call("PUT", "/save", { state, baseRevision: null })).status).toBe(200);
+    const later = structuredClone(state);
+    later.lastTickAt += 1000;
+    const second = await client.call("PUT", "/save", { state: later, baseRevision: 1 });
+    expect(second.status, JSON.stringify(second.json)).toBe(200);
+
+    // One snapshot a day: the second save of the day leaves the first one's game.
+    const kept = await sql`select revision, max_stage, state from save_snapshots where user_id = ${userId}`;
+    expect(kept).toHaveLength(1);
+    expect(kept[0].revision).toBe(1);
+    expect(kept[0].state.lastTickAt).toBe(state.lastTickAt);
+
+    const { listSnapshots, restoreSnapshot } = await import("./lib/snapshots");
+    const [day] = await listSnapshots(userId);
+    expect(day.maxStage).toBe(state.maxStageEver);
+    expect(await restoreSnapshot(userId, "1999-01-01")).toBeNull();
+    // Put back as a new revision: the open page builds on revision 2 and must choose.
+    expect(await restoreSnapshot(userId, day.day)).toEqual({ revision: 3, maxStage: state.maxStageEver });
+    const cloud = await client.call("GET", "/save");
+    expect(cloud.json.save.revision).toBe(3);
+    expect(cloud.json.save.state.lastTickAt).toBe(state.lastTickAt);
+    const stale = await client.call("PUT", "/save", { state: later, baseRevision: 2 });
+    expect(stale.status).toBe(409);
   }, 60_000);
 
   it("refunds the altars of a version 3 save once, and never for a save relabelled older", async () => {
@@ -637,6 +679,20 @@ suite("API (real Postgres)", () => {
       expect(gone.has("ib_guest")).toBe(false);
     }, 60_000);
 
+    it("lets go of a guest's game saved only once after 48 hours unvisited, never one played on", async () => {
+      const { purgeExpired } = await import("./lib/session");
+      const glimpse = new Client("10.0.1.30");
+      const played = new Client("10.0.1.31");
+      for (const client of [glimpse, played]) expect((await client.call("PUT", "/save/guest", { state: createInitialState(), baseRevision: null })).status).toBe(200);
+      const playedRow = await guestRow(played);
+      await sql`update guest_saves set revision = 2 where id = ${playedRow!.id}`;
+      for (const client of [glimpse, played]) await sql`update guest_saves set last_seen_at = now() - interval '49 hours' where id = ${(await guestRow(client))!.id}`;
+      const glimpseRow = await guestRow(glimpse);
+      await purgeExpired();
+      expect(await sql`select 1 from guest_saves where id = ${glimpseRow!.id}`).toHaveLength(0);
+      expect(await sql`select 1 from guest_saves where id = ${playedRow!.id}`).toHaveLength(1);
+    }, 60_000);
+
     it("rate-limits a guest's saves per game and per address", async () => {
       // One game: six saves a minute.
       const guest = new Client("10.0.1.10");
@@ -920,13 +976,39 @@ suite("API (real Postgres)", () => {
       expect((await client.call("POST", "/auth/verify/resend")).status).toBe(400);
       expect((await client.call("POST", "/auth/email", { email, password })).status).toBe(403);
 
-      // An account never confirmed is deleted after 30 days.
+      // An account never confirmed is reminded on day 7 with a new link, then on day 25, and
+      // deleted after 30 days, never sooner than a few days after the last reminder.
       const ghost = `ghost-${unique}@test.fr`;
       expect((await new Client("10.0.0.22").call("POST", "/auth/register", { email: ghost, username: freshName("Gho"), password })).status).toBe(201);
-      await sql`update users set created_at = now() - interval '31 days' where email = ${ghost}`;
+      const reminders = async (address: string) => (await sql`select verify_reminders as count from users where email = ${address}`)[0]?.count as number | undefined;
+      await sql`update users set created_at = now() - interval '8 days' where email = ${ghost}`;
+      const [before] = await sql`select id from email_verifications where email = ${ghost}`;
+      await purgeExpired();
+      expect(await reminders(ghost)).toBe(1);
+      const [after] = await sql`select id from email_verifications where email = ${ghost}`;
+      expect(after.id).not.toBe(before.id);
+      // Twice in a row the same day: nothing more is sent.
+      await purgeExpired();
+      expect(await reminders(ghost)).toBe(1);
+      // Day 31, the second reminder only just sent: not deleted yet.
+      await sql`update users set created_at = now() - interval '31 days', verify_reminded_at = now() - interval '4 days' where email = ${ghost}`;
+      await purgeExpired();
+      expect(await reminders(ghost)).toBe(2);
+      expect(await sql`select 1 from users where email = ${ghost}`).toHaveLength(1);
+      await sql`update users set verify_reminded_at = now() - interval '4 days' where email = ${ghost}`;
       await purgeExpired();
       expect(await sql`select 1 from users where email = ${ghost}`).toHaveLength(0);
       expect(await sql`select 1 from users where email = ${fixed}`).toHaveLength(1);
+
+      // A walker who went past the Fallen King keeps the account, confirmed or not.
+      const deep = `deep-${unique}@test.fr`;
+      const deepClient = new Client("10.0.0.23");
+      expect((await deepClient.call("POST", "/auth/register", { email: deep, username: freshName("Dee"), password })).status).toBe(201);
+      expect((await deepClient.call("PUT", "/save", { state: playedState(1), baseRevision: null })).status).toBe(200);
+      await sql`update leaderboard set max_stage = 120 where user_id = (select id from users where email = ${deep})`;
+      await sql`update users set created_at = now() - interval '60 days', verify_reminders = 2, verify_reminded_at = now() - interval '20 days' where email = ${deep}`;
+      await purgeExpired();
+      expect(await sql`select 1 from users where email = ${deep}`).toHaveLength(1);
     } finally {
       env.SMTP_URL = previousSmtp;
     }
@@ -1090,6 +1172,12 @@ suite("API (real Postgres)", () => {
       expect(row).toEqual({ seed: true, runtime: true, parent: String(saved.json.revision) });
       const reports = await sql`select outcome from replay_reports where user_id = ${userId}`;
       expect(reports).toEqual([]);
+      // Every replay is counted by what it found, for the share `review --replays` reads.
+      const { flushTally } = await import("./lib/replays");
+      const { replaySummary } = await import("./lib/replay-review");
+      await flushTally();
+      const summary = await replaySummary(1);
+      expect(summary.outcomes.find((row) => row.outcome === "match")?.count).toBeGreaterThanOrEqual(2);
       // What the replay saw of the walker's presence is kept, outside the save.
       const [presence] = await sql`select acts, crystals_seen from presence_days where user_id = ${userId}`;
       expect(presence).toBeDefined();
@@ -1146,6 +1234,55 @@ suite("API (real Postgres)", () => {
       }
     }, 60_000);
 
+    it("keeps an honest game as sent once enforced, and refuses what it cannot replay", async () => {
+      const { env } = await import("./env");
+      env.REPLAY_MODE = "enforce";
+      try {
+        const { client, userId } = await signedUp("10.0.2.20", "Enf");
+        const { page } = await begun(client);
+        page.play(60);
+        const first = page.outgoing();
+        const saved = await client.call("PUT", "/save", { state: first.state, baseRevision: null, journal: first.journal });
+        expect(saved.status, JSON.stringify(saved.json)).toBe(200);
+        // The replay landed on the game sent: nothing to correct.
+        expect(saved.json.replay).toBeUndefined();
+        page.kept(saved.json.revision, saved.json.fates);
+
+        page.play(30);
+        const honest = page.outgoing();
+        // A journal the server cannot read, and one that builds on a revision it never kept.
+        const unreadable = await client.call("PUT", "/save", { state: honest.state, baseRevision: saved.json.revision, journal: "not-a-gzip" });
+        expect(unreadable.status).toBe(422);
+        expect(codes(unreadable)).toContain("journal");
+        const elsewhere = await client.call("PUT", "/save", { state: honest.state, baseRevision: saved.json.revision, journal: { ...honest.journal, base: { ...honest.journal.base, revision: 99 } } });
+        expect(elsewhere.status).toBe(422);
+        expect(codes(elsewhere)).toContain("journal");
+        // Nothing was kept from the refused saves; the honest one still lands.
+        const kept = await client.call("PUT", "/save", { state: honest.state, baseRevision: saved.json.revision, journal: honest.journal });
+        expect(kept.status, JSON.stringify(kept.json)).toBe(200);
+        expect(kept.json.replay).toBeUndefined();
+        const [row] = await sql`select revision, (state->>'gold')::float as gold from saves where user_id = ${userId}`;
+        expect(row).toEqual({ revision: 2, gold: honest.state.gold });
+        const problems = await sql`select outcome from replay_reports where user_id = ${userId} order by id`;
+        expect(problems.map((report) => report.outcome)).toEqual(["journal-invalid", "no-base"]);
+
+        // A guest's game goes through the same replay.
+        const guest = new Client("10.0.2.21");
+        const started = await begun(guest, true);
+        started.page.play(45);
+        const sent = started.page.outgoing();
+        const forged = structuredClone(sent.state);
+        forged.gold += 30;
+        forged.lifetime.goldEarned += 30;
+        forged.run.goldEarned += 30;
+        const guestSaved = await guest.call("PUT", "/save/guest", { state: forged, baseRevision: null, journal: sent.journal });
+        expect(guestSaved.status, JSON.stringify(guestSaved.json)).toBe(200);
+        expect(guestSaved.json.replay.state.gold).toBe(sent.state.gold);
+      } finally {
+        env.REPLAY_MODE = "shadow";
+      }
+    }, 60_000);
+
     it("gives a guest one seed per cookie, and keeps the game under that cookie", async () => {
       const guest = new Client("10.0.2.3");
       const { page, fresh } = await begun(guest, true);
@@ -1161,7 +1298,8 @@ suite("API (real Postgres)", () => {
       expect(guest.value("ib_guest")).toBe(cookie);
       const [row] = await sql`select seed is not null as seed, runtime is not null as runtime from guest_saves where game_created_at = ${fresh.json.createdAt}`;
       expect(row).toEqual({ seed: true, runtime: true });
-      const reports = await sql`select outcome from replay_reports where guest_id is not null and detail->>'base' is null and outcome <> 'no-journal'`;
+      const { hashToken } = await import("./lib/session");
+      const reports = await sql`select outcome from replay_reports where guest_id = ${hashToken(cookie ?? "")} and outcome <> 'no-journal'`;
       expect(reports.filter((report) => report.outcome !== "match")).toEqual([]);
       // Another browser, without the cookie, gets another game: never this one's seed.
       const other = await new Client("10.0.2.4").call("POST", "/save/guest/new");
