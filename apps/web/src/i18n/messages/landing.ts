@@ -69,7 +69,7 @@ export const landing = defineMessages({
         { q: "Faut-il frapper sans arrêt ?", a: "Non. Tes coups portent le début de chaque nuit, puis tes compagnons prennent le relais. Les pouvoirs et les cristaux récompensent les moments où tu es là." },
         { q: "Faut-il créer un compte pour jouer ?", a: `Non, tu peux commencer tout de suite : ta partie est gardée pour ce navigateur, tant que tu y reviens au moins une fois tous les ${GUEST_SAVE_DAYS} jours. Avec un compte (un e-mail, un pseudo et un mot de passe suffisent), elle te suit sur tous tes appareils et tu apparais au classement.` },
         { q: "Le jeu fonctionne-t-il sur mobile ?", a: "Oui. Idlebound s'adapte aux téléphones et aux tablettes, directement dans le navigateur, sans rien installer." },
-        { q: "Comment le classement évite-t-il la triche ?", a: "Chaque progression envoyée au serveur est vérifiée avec le moteur du jeu : or dépensé et gagné, temps écoulé, puissance nécessaire pour vaincre les boss, objets et succès. Une progression impossible est refusée." },
+        { q: "Comment le classement évite-t-il la triche ?", a: "Ta partie est gardée sur nos serveurs, et le serveur rejoue chaque progression avec le moteur du jeu lui-même. Ce qui n'a pas pu se jouer honnêtement est refusé, et le classement ne montre que des parties vérifiées." },
         { q: "Jusqu'où va la route ?", a: "Aussi loin que tu veux. Elle ne s'arrête pas." },
         { q: "L'histoire a-t-elle une fin ?", a: "Elle continue de s'écrire : chaque ascension, chaque roi vaincu, chaque rencontre ajoute un fragment à ta Chronique. Ce qui attend au fond de la nuit, tu le découvriras en marchant." }
       ]
@@ -143,7 +143,7 @@ export const landing = defineMessages({
         { q: "Do I have to strike all the time?", a: "No. Your blows carry the start of each night, then your companions take over. Powers and crystals reward the moments you're there." },
         { q: "Do I need an account to play?", a: `No, you can start right away: your game is kept for this browser, as long as you come back to it at least once every ${GUEST_SAVE_DAYS} days. With an account (an email, a username and a password are all it takes), it follows you on all your devices and you show up on the leaderboard.` },
         { q: "Does the game work on mobile?", a: "Yes. Idlebound adapts to phones and tablets, right in the browser, with nothing to install." },
-        { q: "How does the leaderboard prevent cheating?", a: "All progress sent to the server is checked with the game engine: gold spent and earned, time elapsed, power needed to beat the bosses, items and achievements. Impossible progress is rejected." },
+        { q: "How does the leaderboard prevent cheating?", a: "Your game is kept on our servers, and the server plays every bit of progress again with the game's own engine. What could not have been played honestly is refused, and the leaderboard only shows verified games." },
         { q: "How far does the road go?", a: "As far as you want. It does not stop." },
         { q: "Does the story end?", a: "It keeps writing itself: every ascension, every fallen king, every encounter adds a fragment to your Chronicle. What waits at the bottom of the night, you'll find out by walking." }
       ]

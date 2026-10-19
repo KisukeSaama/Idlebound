@@ -108,7 +108,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "relic-choice", title: "Quelle relique porter ?", blocks: ["Regarde le chiffre **Compagnie ×N** de chaque relique : c'est ce qu'elle multiplie dans les dégâts de ta compagnie, comparé à l'emplacement vide. Plus il est grand, mieux c'est. Les reliques trouvées dans les strates profondes ont de la **Densité** : chaque strate sous la nuit présente ajoute ×1,03 aux dégâts de la compagnie."] },
         { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20) et à acheter au marché du Comptoir : coffres, potions, sabliers. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
         { id: "lost", title: "Vais-je perdre ma partie ?", blocks: ["Non. Elle est gardée sur le serveur, même sans compte : ton navigateur la retrouve pendant 30 jours après ta dernière visite. Crée un compte pour la garder pour toujours et sur tous tes appareils. Voir [Compte et partie gardée](account)."] },
-        { id: "cheat", title: "Peut-on tricher ?", blocks: ["Le serveur vérifie chaque partie envoyée avec le même moteur que le jeu : or gagné, temps joué, boss battables, butin. Une partie impossible est refusée. Le classement ne montre que des parties vérifiées."] },
+        { id: "cheat", title: "Peut-on tricher ?", blocks: ["Le serveur rejoue chaque partie envoyée avec le même moteur que le jeu. Une partie qui n'a pas pu se jouer honnêtement est refusée, et le classement ne montre que des parties vérifiées."] },
         { id: "mistakes", title: "Les erreurs de débutant", blocks: [{ list: ["Dépenser toutes ses essences aux autels.", "Camper des heures devant un mur au lieu de faire son ascension.", "Laisser un compagnon juste sous un palier (niveau 24, 49, 99…).", "Oublier d'acheter les talents : ils doublent ou quadruplent les dégâts.", "Garder des reliques communes au lieu de les recycler en éclats.", "Ignorer les cristaux : une surcharge ×7 ou une frappe ×10 au bon moment fait tomber un boss."] }] }
       ]
     }),
@@ -657,7 +657,7 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "verified",
           title: "Une partie vérifiée",
-          blocks: ["Chaque partie envoyée est recalculée par le serveur avec le même moteur que le jeu : or gagné et dépensé, essences, temps de jeu, vitesse des frappes et des victoires, boss battables, butin, hauts faits. Une partie impossible est refusée. C'est ce qui rend le classement fiable."]
+          blocks: ["Chaque partie envoyée est rejouée par le serveur avec le même moteur que le jeu. Une partie qui n'a pas pu se jouer honnêtement est refusée. C'est ce qui rend le classement fiable."]
         },
         { id: "boards", title: "Le Registre des Liés", blocks: ["Le classement public a quatre tableaux. À égalité, celui qui y est arrivé le premier passe devant.", { slot: "boards" }] },
         {
@@ -762,7 +762,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "relic-choice", title: "Which relic should I wear?", blocks: ["Look at each relic's **Company ×N** figure: what it multiplies in your company's damage, against the slot left empty. The bigger, the better. Relics found in deep strata have **Density**: each stratum below the present night adds ×1.03 to the company's damage."] },
         { id: "shards", title: "What are shards for?", blocks: ["Forging your relics (up to +20) and buying at the Stallkeeper's market: chests, potions, hourglasses. You earn them from guardians, crystals and by salvaging relics you no longer need. The **Golden Hourglass** (an hour of gold right now) is the best buy at the start of a night."] },
         { id: "lost", title: "Will I lose my game?", blocks: ["No. It is kept on the server, even without an account: your browser finds it again for 30 days after your last visit. Create an account to keep it for good and on all your devices. See [Account and kept game](account)."] },
-        { id: "cheat", title: "Can you cheat?", blocks: ["The server checks every game it receives with the same engine as the game: gold earned, time played, bosses beatable, loot. An impossible game is refused. The leaderboard only shows verified games."] },
+        { id: "cheat", title: "Can you cheat?", blocks: ["The server plays every game it receives again with the same engine as the game. A game that could not have been played honestly is refused, and the leaderboard only shows verified games."] },
         { id: "mistakes", title: "Beginner mistakes", blocks: [{ list: ["Spending every essence on altars.", "Camping for hours at a wall instead of ascending.", "Leaving a companion just below a breakpoint (level 24, 49, 99…).", "Forgetting to buy talents: they double or quadruple damage.", "Keeping common relics instead of salvaging them into shards.", "Ignoring crystals: an overcharge ×7 or a strike ×10 at the right moment brings a boss down."] }] }
       ]
     }),
@@ -1241,7 +1241,7 @@ export const wikiArticles = defineMessages<Articles>({
           ]
         },
         { id: "keeping", title: "A game always kept", blocks: ["Nothing is stored in your browser: the game is on the server, kept every 30 s and after every important action. If the server cannot be reached, the game goes on and tries again. Two devices open on the same game? The one that did not see the last version kept lets you choose."] },
-        { id: "verified", title: "A verified game", blocks: ["Every game it receives is recomputed by the server with the same engine as the game: gold earned and spent, essences, play time, the pace of strikes and wins, bosses beatable, loot, deeds. An impossible game is refused. That is what makes the leaderboard trustworthy."] },
+        { id: "verified", title: "A verified game", blocks: ["Every game it receives is played again by the server with the same engine as the game. A game that could not have been played honestly is refused. That is what makes the leaderboard trustworthy."] },
         { id: "boards", title: "The Roll of the Bound", blocks: ["The public leaderboard has four boards. On a tie, whoever got there first ranks higher.", { slot: "boards" }] },
         { id: "settings", title: "Settings", blocks: ["Language, number notation (letters, scientific, engineering), sound and volume, damage numbers, reduced motion, colorblind colors, ascension confirmation. The game also installs as an app on phones."] }
       ]

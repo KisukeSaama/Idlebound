@@ -1127,7 +1127,10 @@ and a page building on a guest's game the server no longer keeps there (another 
 brought it to an account) gets a conflict, never a second copy of that game. Opening a
 guest's game is limited per address too (60 a minute), whatever cookie the page sends.
 Rejections are logged (kept 90 days, 30 per game and hour at most, one entry per code, under
-the account or the guest's game); a refused save returns its first 20 violations. Only an
+the account or the guest's game); a refused save returns its first 20 violations. The page
+tells the walker only what they can act on (a device clock set wrong, a game of another
+device or account, an older version, each with what to do); every other refusal reads the
+same plain line, never what was checked. Only an
 account's accepted saves feed the leaderboard, which keeps each player's best verified
 values: a guest is never ranked. Checks that need no stored save run before the
 save's row is locked.

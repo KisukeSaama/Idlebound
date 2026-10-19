@@ -253,47 +253,20 @@ export const hud = defineMessages({
       sessionExpired: "Session expirée : reconnecte-toi pour garder ta progression.",
       contextMissing: "Le jeu n'a pas pu démarrer. Recharge la page."
     },
-    /** Anti-cheat rejections (HTTP 422), by violation code. */
+    /**
+     * Anti-cheat rejections (HTTP 422), by violation code: only what the walker can act on is
+     * told apart (a device clock, another device, a reload); every other code says the same
+     * plain line, never what the server checks (AGENTS.md, fair play).
+     */
     violations: {
-      generic: "Cette progression ne respecte pas les règles du jeu.",
-      fates: "Des coups du sort déjà tirés ont été tirés une seconde fois.",
-      journal: "Le Grand Livre n'a pas pu refaire le chemin de cette partie depuis la dernière fois.",
-      "stage-order": "Les étapes franchies ne se suivent pas dans l'ordre.",
-      "created-at": "La date de début de cette partie est impossible. L'horloge de ton appareil est peut-être déréglée.",
-      time: "Cette partie compte plus de temps de jeu qu'il ne s'en est écoulé. L'horloge de ton appareil est peut-être déréglée.",
-      kills: "Plus de monstres vaincus que le temps de jeu ne le permet.",
-      clicks: "Plus de frappes par seconde qu'une main ne peut en donner.",
-      gold: "Or gagné plus vite que le jeu ne le permet.",
-      "run-lifetime": "Les statistiques de cette nuit dépassent celles de toute la partie.",
-      crits: "Plus de coups critiques que de coups portés.",
-      hero: "Les niveaux ou les recrues des compagnons sont impossibles.",
-      upgrade: "Un talent est inconnu, acheté deux fois ou acheté trop tôt.",
-      "gold-ledger": "Plus d'or dépensé que gagné.",
-      altar: "Un autel est inconnu, au-delà de son niveau maximal ou élevé trop tôt.",
-      "essence-ledger": "Plus d'essences dépensées que récoltées.",
-      ascension: "L'historique des ascensions est impossible.",
-      "essence-source": "Plus d'essences que tes ascensions et tes cristaux n'en ont donné.",
-      shards: "Plus d'éclats possédés que gagnés.",
-      inventory: "Plus de reliques dans le sac qu'il ne peut en contenir.",
-      item: "Une relique est impossible : trop fort, en double, venu d'une étape jamais atteinte, changé depuis qu'il est tombé, ou plus nombreux que ce que tes gardiens, tes Brèches et tes coffres ont donné.",
-      achievement: "Un haut fait est inscrit sans avoir été accompli.",
-      power: "Une élite ou un gardien a été vaincu avec moins de dégâts qu'il n'en faut.",
+      generic: "Ta dernière progression n'a pas été gardée. Recharge la page pour reprendre ta partie là où le serveur l'a gardée.",
+      "created-at": "L'horloge de ton appareil semble déréglée. Remets-la à l'heure, puis recharge la page.",
+      time: "L'horloge de ton appareil semble déréglée. Remets-la à l'heure, puis recharge la page.",
       identity: "Cette partie n'est pas la suite de celle de ton compte. Recharge la page pour choisir laquelle garder.",
       rollback: "Cette progression est en retard sur celle déjà gardée, peut-être jouée sur un autre appareil. Recharge la page pour reprendre la plus récente.",
-      stage: "Des étapes ont été franchies sans combattre.",
       "lineage-age": "Cette partie est plus ancienne que celle de ton compte. Recharge la page pour reprendre celle du compte.",
-      skills: "Les pouvoirs utilisés ne correspondent pas à leurs effets.",
-      descent: "Les Descentes ou les fils de cette partie sont impossibles : trop de fils, trop de Descentes ou une Descente avant que le Métier d'Eldra soit ouvert.",
-      crystals: "Plus de cristaux attrapés qu'il n'en est apparu dans ce temps.",
-      hourglasses: "Plus de sabliers achetés que tes éclats ne pouvaient en payer.",
-      forge: "Plus de niveaux de forge que tes éclats ne pouvaient en payer.",
-      "shards-earned": "Plus d'éclats gagnés que tes combats et ton recyclage n'en rapportent.",
-      version: "Cette progression vient d'une version du jeu plus ancienne que celle déjà gardée. Recharge la page.",
-      "lineage-time": "Cette partie compte plus de temps de jeu qu'il ne s'en est écoulé depuis la dernière partie du compte.",
       "lineage-taken": "Cette partie appartient déjà à un autre compte. Recharge la page pour commencer celle de ce compte.",
-      record: "Ton record dépasse de loin la plus profonde nuit que le Grand Livre t'a vu marcher. Recharge la page pour reprendre la partie gardée.",
-      powers: "Plus de pouvoirs utilisés que leur temps de recharge ne le permet.",
-      caravan: "La Roulotte est venue une semaine qui n'est pas celle-ci."
+      version: "Cette progression vient d'une version du jeu plus ancienne que celle déjà gardée. Recharge la page."
     } as Record<string, string>
   },
   en: {
@@ -542,45 +515,14 @@ export const hud = defineMessages({
       contextMissing: "The game could not start. Reload the page."
     },
     violations: {
-      generic: "This progress does not follow the rules of the game.",
-      fates: "Fates already drawn were drawn a second time.",
-      journal: "The Ledger could not walk this game's road again since last time.",
-      "stage-order": "The stages cleared are out of order.",
-      "created-at": "This game's start date is impossible. Your device's clock may be wrong.",
-      time: "This game counts more play time than has passed. Your device's clock may be wrong.",
-      kills: "More monsters defeated than the play time allows.",
-      clicks: "More strikes per second than a hand can give.",
-      gold: "Gold earned faster than the game allows.",
-      "run-lifetime": "This night's statistics exceed those of the whole game.",
-      crits: "More critical hits than blows dealt.",
-      hero: "The companions' levels or hires are impossible.",
-      upgrade: "A talent is unknown, bought twice or bought too early.",
-      "gold-ledger": "More gold spent than earned.",
-      altar: "An altar is unknown, above its highest level or raised too early.",
-      "essence-ledger": "More essences spent than collected.",
-      ascension: "The ascension history is impossible.",
-      "essence-source": "More essences than your ascensions and crystals gave.",
-      shards: "More shards owned than earned.",
-      inventory: "More relics in the bag than it can hold.",
-      item: "A relic is impossible: too strong, duplicated, from a stage never reached, changed since it dropped, or more of them than your guardians, Seams and chests gave.",
-      achievement: "A deed is listed without having been done.",
-      power: "An elite or a guardian was beaten with less damage than it takes.",
+      generic: "Your last progress was not kept. Reload the page to pick up your game where the server kept it.",
+      "created-at": "Your device's clock seems to be wrong. Set it right, then reload the page.",
+      time: "Your device's clock seems to be wrong. Set it right, then reload the page.",
       identity: "This game does not follow on from your account's game. Reload the page to choose which one to keep.",
       rollback: "This progress is behind the one already kept, perhaps played on another device. Reload the page to pick up the latest.",
-      stage: "Stages were cleared without fighting.",
       "lineage-age": "This game is older than your account's. Reload the page to pick up the account's game.",
-      skills: "The powers used do not match their effects.",
-      descent: "This game's Descents or threads are impossible: too many threads, too many Descents or a Descent before Eldra's Loom was open.",
-      crystals: "More crystals caught than appeared in that time.",
-      hourglasses: "More hourglasses bought than your shards could pay for.",
-      forge: "More forge levels than your shards could pay for.",
-      "shards-earned": "More shards earned than your fights and salvaging could yield.",
-      version: "This progress comes from an older version of the game than the one already kept. Reload the page.",
-      "lineage-time": "This game counts more play time than has passed since the account's last game.",
       "lineage-taken": "This game already belongs to another account. Reload the page to start this account's own.",
-      record: "Your record lies far past the deepest night the Ledger saw you walk. Reload the page to pick up the kept game.",
-      powers: "More powers used than their cooldowns allow.",
-      caravan: "The Caravan came in a week that is not this one."
+      version: "This progress comes from an older version of the game than the one already kept. Reload the page."
     } as Record<string, string>
   }
 });
