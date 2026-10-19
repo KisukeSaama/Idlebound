@@ -114,8 +114,8 @@ const blow = (at: number): CutsceneBeat[] => [{ at: at + 0.12, sound: "blow" }, 
 
 export const CUTSCENES: readonly CutsceneDef[] = [
   {
-    // The Long Night, at the very first moment of a walk: the fields, the King at the end of
-    // the road, and the word "again" (BIBLE 16, stage 1). Every walker sees one scene at once.
+    // The Long Night, as the first Remnant of a walk falls: the fields, the King at the end of
+    // the road, and the word "again" (BIBLE 16, stage 1). Every walker sees it in the first seconds.
     id: "prologue",
     shots: [
       ink(3, OPENING),

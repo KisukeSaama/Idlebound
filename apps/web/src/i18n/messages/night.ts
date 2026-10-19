@@ -12,7 +12,7 @@ export const night = defineMessages({
     /** Toast text of an element's first appearance (its title is the window's name). */
     reveal: {
       map: "La carte est ouverte : reviens sur une étape déjà franchie pour gagner de l'or sans risque.",
-      gear: "Ta première relique : équipe-la pour ajouter ses bonus à ta compagnie.",
+      gear: "Ta première relique : elle est déjà portée et renforce ta compagnie. Ouvre l'équipement pour voir ce qu'elle donne.",
       market: "Tu as assez d'éclats pour le marché : coffres de reliques, potions et sablier s'y achètent en éclats.",
       ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension te fait recommencer la route contre des essences, que les autels changent en bonus permanents.",
       hall: "Le Grand Livre t'ouvre une page : hauts faits (ils augmentent tes dégâts), Bestiaire et Chronique.",
@@ -84,7 +84,7 @@ export const night = defineMessages({
   en: {
     reveal: {
       map: "The map is open: go back to a stage you already cleared to earn gold safely.",
-      gear: "Your first relic: equip it to add its bonuses to your company.",
+      gear: "Your first relic: it is already worn and strengthens your company. Open the equipment to see what it gives.",
       market: "You have enough shards for the market: relic chests, potions and the hourglass are bought there with shards.",
       ascension: "The Sanctum of Dusk opens: ascending starts the road over for essences, which the altars turn into permanent bonuses.",
       hall: "The Ledger opens a page for you: deeds (they raise your damage), Bestiary and Chronicle.",

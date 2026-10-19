@@ -34,8 +34,8 @@ export const wikiArticles = defineMessages<Articles>({
             {
               steps: [
                 "Frappe le monstre (souris, toucher, ou Entrée/Espace quand la scène a le focus). Chaque monstre vaincu donne de l'or.",
-                "Monte le niveau d'**Aldric** quelques fois : ses niveaux augmentent tes dégâts de frappe. Au niveau 10, son premier talent double ta frappe et débloque la **Frénésie** (touche 1).",
-                "Dès que tu as 50 pièces d'or, recrute **Maëlle**. C'est ta première compagne : elle frappe toute seule, chaque seconde.",
+                "Monte le niveau d'**Aldric** deux ou trois fois : ses niveaux augmentent tes dégâts de frappe. Au niveau 10, son premier talent double ta frappe et débloque la **Frénésie** (touche 1).",
+                `Puis garde ton or : à ${f.maelleCost} pièces, recrute **Maëlle**. C'est ta première compagne : elle frappe toute seule, chaque seconde.`,
                 "Recrute ensuite chaque compagnon dès qu'il apparaît (le suivant se dévoile quand le précédent a rejoint la compagnie), et monte leurs niveaux. Vise les paliers 10 et 25 : chacun double leurs dégâts.",
                 "Avance d'étape en étape. L'Auto est activé par défaut : dès que tu as vaincu 10 monstres, tu passes à l'étape suivante."
               ]
@@ -49,7 +49,7 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             `À l'étape 5, une **élite** (6 fois les PV d'un monstre normal). À l'étape 10, le **gardien** du biome (10 fois les PV). Tu as ${f.bossTimer} secondes pour le vaincre.`,
             "Si le temps s'écoule, tu recules d'une étape et l'Auto se met en pause : c'est le mode **Rester**. Tu continues de gagner de l'or sur l'étape d'avant. Renforce tes compagnons, puis appuie sur **Auto** pour retenter.",
-            `Bonne nouvelle : jusqu'à l'étape ${f.woundLastStage}, un boss **garde ses blessures**. Les dégâts que tu lui as faits restent sur lui (jusqu'à ${f.woundCapPct} % de ses PV) quand tu reviens. Insiste, il finit par tomber.`,
+            `Bonne nouvelle : jusqu'à l'étape ${f.woundLastStage}, un boss **garde ses blessures**. Les dégâts que tu lui as faits restent sur lui (jusqu'à ${f.woundCapPct} % de ses PV) quand tu reviens. Insiste, il finit par tomber. Ta première nuit, la porte du Donjon et le Roi gardent aussi les leurs (le Roi jusqu'à ${f.firstKingWoundPct} % de ses PV).`,
             { tip: "Lance tes pouvoirs juste au début d'un combat de boss, pas avant : leurs 30 secondes couvrent alors tout le chronomètre." }
           ]
         },
@@ -102,7 +102,7 @@ export const wikiArticles = defineMessages<Articles>({
       sections: [
         { id: "free", title: "Faut-il frapper sans arrêt ?", blocks: ["Non. Tes frappes portent le tout début de chaque nuit, puis tes compagnons prennent le relais. Ils frappent même quand la page est en arrière-plan. Ta présence ajoute ce que seule une main peut faire : attraper les cristaux, lancer les pouvoirs, faire l'ascension, gérer l'équipement."] },
         { id: "who-to-level", title: "Quel compagnon monter en priorité ?", blocks: ["Le plus récent, presque toujours : chaque compagnon fait bien plus de dégâts que le précédent. Monte-le jusqu'à son prochain palier (10, 25, 50, 100, 150, puis tous les 25 niveaux à partir de 200), achète le talent, et recommence. Un compagnon arrêté entre deux paliers gaspille de l'or.", { tip: "Le bouton **Max** montre combien de niveaux tu peux t'offrir. Viser le palier suivant vaut presque toujours mieux que saupoudrer." }] },
-        { id: "stuck", title: "Je suis bloqué devant un boss, que faire ?", blocks: [{ list: ["Laisse le mode **Rester** tourner un moment : tu gagnes de l'or sur l'étape d'avant et tes compagnons montent.", "Lance tes pouvoirs au début du combat (Cri de ralliement surtout).", "Jusqu'à l'étape 44, chaque tentative laisse des blessures au boss : réessaie.", "Après la première ascension : si un mur ne cède pas en 20 minutes, fais ton ascension. C'est plus rapide que d'insister."] }] },
+        { id: "stuck", title: "Je suis bloqué devant un boss, que faire ?", blocks: [{ list: ["Laisse le mode **Rester** tourner un moment : tu gagnes de l'or sur l'étape d'avant et tes compagnons montent.", "Lance tes pouvoirs au début du combat (Cri de ralliement surtout).", "Jusqu'à l'étape 44, et jusqu'au Roi ta première nuit, chaque tentative laisse des blessures au boss : réessaie.", "Après la première ascension : si un mur ne cède pas en 20 minutes, fais ton ascension. C'est plus rapide que d'insister."] }] },
         { id: "when-ascend", title: "Quand faire mon ascension ?", blocks: ["Quand ta progression s'arrête. Les simulations sont claires : ascensionner quelques minutes après ta dernière nouvelle étape va bien plus loin qu'attendre une heure devant un mur. Les essences augmentent avec l'étape la plus loin franchie, mais moins vite que les PV des monstres : pousser un peu paie, camper des heures non."] },
         { id: "which-altar", title: "Quels autels acheter ?", blocks: ["Ceux qui suivent ton style. Si tu laisses surtout tourner le jeu, l'**Autel de la patience** est le meilleur. Si tes frappes font l'essentiel de tes dégâts, l'**Autel de la lame**. Entre les deux, **puissance** et **fortune**. Ensuite, les autels plafonnés (temps, trésor, marchandage…) s'ouvrent à la troisième puis à la cinquième nuit. Et garde toujours environ la moitié de tes essences en main. Détails dans [Ascension et autels](ascension#strategy)."] },
         { id: "relic-choice", title: "Quelle relique porter ?", blocks: ["Regarde le chiffre **Compagnie ×N** de chaque relique : c'est ce qu'elle multiplie dans les dégâts de ta compagnie, comparé à l'emplacement vide. Plus il est grand, mieux c'est. Les reliques trouvées dans les strates profondes ont de la **Densité** : chaque strate sous la nuit présente ajoute ×1,03 aux dégâts de la compagnie."] },
@@ -154,7 +154,7 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             `Chaque étape compte ${f.monstersPerStage} monstres. Vaincs-les pour passer à la suivante. Toutes les 5 étapes, un boss t'attend avec un chronomètre de ${f.bossTimer} s :`,
             { slot: "stageKinds" },
-            `Si le chronomètre s'écoule, tu recules d'une étape et l'Auto se met en pause (mode **Rester**). Jusqu'à l'étape ${f.woundLastStage}, élites et gardiens **gardent leurs blessures** (jusqu'à ${f.woundCapPct} % de leurs PV) : chaque tentative compte. La porte du Donjon (étape 45), le Roi et les strates plus profondes guérissent entièrement.`,
+            `Si le chronomètre s'écoule, tu recules d'une étape et l'Auto se met en pause (mode **Rester**). Jusqu'à l'étape ${f.woundLastStage}, élites et gardiens **gardent leurs blessures** (jusqu'à ${f.woundCapPct} % de leurs PV) : chaque tentative compte. La porte du Donjon (étape 45) et le Roi gardent aussi les leurs ta première nuit, le Roi jusqu'à ${f.firstKingWoundPct} % de ses PV ; ensuite, comme les strates plus profondes, ils guérissent entièrement.`,
             "La carte permet de revenir sur n'importe quelle étape déjà franchie. Un boss rejoué depuis la carte ne paie que de l'or : seul le boss le plus loin de la nuit lâche reliques et éclats."
           ]
         },
@@ -688,8 +688,8 @@ export const wikiArticles = defineMessages<Articles>({
             {
               steps: [
                 "Strike the monster (mouse, touch, or Enter/Space when the scene has focus). Every monster beaten gives gold.",
-                "Level **Aldric** a few times: his levels raise your strike damage. At level 10, his first talent doubles your strike and unlocks **Frenzy** (key 1).",
-                "As soon as you have 50 gold, hire **Maëlle**. She is your first companion: she strikes on her own, every second.",
+                "Level **Aldric** two or three times: his levels raise your strike damage. At level 10, his first talent doubles your strike and unlocks **Frenzy** (key 1).",
+                `Then keep your gold: at ${f.maelleCost} coins, hire **Maëlle**. She is your first companion: she strikes on her own, every second.`,
                 "Then hire each companion as soon as they appear (the next shows once the one before joined), and level them. Aim for levels 10 and 25: each doubles their damage.",
                 "Push on stage after stage. Auto is on by default: once you beat 10 monsters, you move to the next stage."
               ]
@@ -703,7 +703,7 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             `At stage 5, an **elite** (6 times a normal monster's HP). At stage 10, the biome's **guardian** (10 times). You have ${f.bossTimer} seconds to beat it.`,
             "If the timer runs out, you go back one stage and Auto pauses: that is **Stay** mode. You keep earning gold on the stage before. Strengthen your companions, then press **Auto** to try again.",
-            `Good news: up to stage ${f.woundLastStage}, a boss **keeps its wounds**. The damage you dealt stays on it (up to ${f.woundCapPct}% of its HP) when you come back. Keep at it, it will fall.`,
+            `Good news: up to stage ${f.woundLastStage}, a boss **keeps its wounds**. The damage you dealt stays on it (up to ${f.woundCapPct}% of its HP) when you come back. Keep at it, it will fall. On your first night, the Keep's gate and the King keep theirs too (the King up to ${f.firstKingWoundPct}% of his HP).`,
             { tip: "Use your powers right at the start of a boss fight, not before: their 30 seconds then cover the whole timer." }
           ]
         },
@@ -756,7 +756,7 @@ export const wikiArticles = defineMessages<Articles>({
       sections: [
         { id: "free", title: "Do I have to strike all the time?", blocks: ["No. Your strikes carry the very start of each night, then your companions take over. They strike even while the page is in the background. Your presence adds what only a hand can do: catching crystals, using powers, ascending, managing gear."] },
         { id: "who-to-level", title: "Which companion should I level first?", blocks: ["The newest, almost always: each companion deals far more damage than the one before. Level them to their next breakpoint (10, 25, 50, 100, 150, then every 25 levels from 200), buy the talent, and repeat. A companion stopped between two breakpoints wastes gold.", { tip: "The **Max** button shows how many levels you can afford. Aiming for the next breakpoint is almost always better than spreading gold around." }] },
-        { id: "stuck", title: "I'm stuck at a boss, what do I do?", blocks: [{ list: ["Let **Stay** mode run for a while: you earn gold on the stage before and your companions grow.", "Use your powers at the start of the fight (Rallying Cry above all).", "Up to stage 44, each attempt leaves wounds on the boss: try again.", "After your first ascension: if a wall does not give within 20 minutes, ascend. It is faster than insisting."] }] },
+        { id: "stuck", title: "I'm stuck at a boss, what do I do?", blocks: [{ list: ["Let **Stay** mode run for a while: you earn gold on the stage before and your companions grow.", "Use your powers at the start of the fight (Rallying Cry above all).", "Up to stage 44, and up to the King on your first night, each attempt leaves wounds on the boss: try again.", "After your first ascension: if a wall does not give within 20 minutes, ascend. It is faster than insisting."] }] },
         { id: "when-ascend", title: "When should I ascend?", blocks: ["When your progress stops. The simulations are clear: ascending a few minutes after your last new stage goes much further than waiting an hour at a wall. Essences grow with the furthest stage cleared, but more slowly than monster HP: pushing a little pays, camping for hours does not."] },
         { id: "which-altar", title: "Which altars should I buy?", blocks: ["Those that match your style. If you mostly let the game run, the **Altar of Patience** is the best. If your strikes deal most of your damage, the **Altar of the Blade**. In between, **Might** and **Fortune**. Then the capped altars (time, treasure, bargains…) open on the third and fifth nights. And always keep about half of your essences in hand. Details in [Ascension and altars](ascension#strategy)."] },
         { id: "relic-choice", title: "Which relic should I wear?", blocks: ["Look at each relic's **Company ×N** figure: what it multiplies in your company's damage, against the slot left empty. The bigger, the better. Relics found in deep strata have **Density**: each stratum below the present night adds ×1.03 to the company's damage."] },
@@ -808,7 +808,7 @@ export const wikiArticles = defineMessages<Articles>({
           blocks: [
             `Each stage holds ${f.monstersPerStage} monsters. Beat them to move on. Every 5 stages, a boss waits with a ${f.bossTimer} s timer:`,
             { slot: "stageKinds" },
-            `If the timer runs out, you go back one stage and Auto pauses (**Stay** mode). Up to stage ${f.woundLastStage}, elites and guardians **keep their wounds** (up to ${f.woundCapPct}% of their HP): every attempt counts. The Keep's gate (stage 45), the King and the deeper strata heal whole.`,
+            `If the timer runs out, you go back one stage and Auto pauses (**Stay** mode). Up to stage ${f.woundLastStage}, elites and guardians **keep their wounds** (up to ${f.woundCapPct}% of their HP): every attempt counts. The Keep's gate (stage 45) and the King keep theirs too on your first night, the King up to ${f.firstKingWoundPct}% of his HP; after that, like the deeper strata, they heal whole.`,
             "The map lets you go back to any stage already cleared. A boss replayed from the map pays gold only: only the furthest boss of the night drops relics and shards."
           ]
         },

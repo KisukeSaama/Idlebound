@@ -34,6 +34,16 @@ describe("progressive interface", () => {
     expect(reveals(state).market).toBe(true);
   });
 
+  it("tells what relics remember with the second relic, never in the first relic's breath", () => {
+    const state = createInitialState();
+    state.lifetime.itemsFound = 1;
+    state.equipment.armor = { uid: "a", slot: "armor", rarity: "epic", level: 5, affixes: [], forge: 0, traits: ["bulwark"] } as never;
+    expect(reveals(state).gear).toBe(true);
+    expect(reveals(state).traits).toBe(false);
+    state.lifetime.itemsFound = 2;
+    expect(reveals(state).traits).toBe(true);
+  });
+
   it("never hides what a walker already used after a new night", () => {
     const state = createInitialState();
     state.lifetime.ascensions = 1;

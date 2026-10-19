@@ -72,6 +72,8 @@ export type Reveals = Record<RevealId, boolean>;
 
 /** The stall opens once the walker has earned the price of its cheapest ware. */
 const FIRST_WARE = Math.min(...MARKET_OFFERS.map((offer) => offer.cost));
+/** What relics remember is told from this relic found on (never with the first one's toast). */
+const TRAITS_FROM_RELIC = 2;
 /** The Hall opens once the first guardian (stage 10) has fallen. */
 const HALL_STAGE = 11;
 
@@ -108,8 +110,9 @@ export function reveals(state: GameState): Reveals {
     essences: state.essences > 0 || reborn,
     buyModes: life.bestLevelSum >= 10 || state.settings.buyMode !== 1 || reborn,
     autoSpend: companionHired || life.bestHired >= 2 || !state.settings.offlineSpending || reborn,
-    // What relics remember: from the first one that keeps a trait.
-    traits: held.some((item) => (item.traits?.length ?? 0) > 0) || announced("traits"),
+    // What relics remember: from the first one that keeps a trait, once a second relic came
+    // (the first already has its own toast; the two together drowned a walker of minute five).
+    traits: (life.itemsFound >= TRAITS_FROM_RELIC && held.some((item) => (item.traits?.length ?? 0) > 0)) || announced("traits"),
     // Brom's awakening: from the first relic a deeper night can take.
     awaken: held.some((item) => awakenDepth(item, state.maxStageEver) > relicDepth(item)) || announced("awaken")
   };

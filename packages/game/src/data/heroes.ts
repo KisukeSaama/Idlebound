@@ -15,7 +15,7 @@ interface HeroSeed {
 }
 
 const SEEDS: HeroSeed[] = [
-  { id: "maelle", strike: "arrow", color: "#8bd46a", baseCost: 50, baseDps: 5, special: { kind: "gold", pct: 0.1 } },
+  { id: "maelle", strike: "arrow", color: "#8bd46a", baseCost: 25, baseDps: 5, special: { kind: "gold", pct: 0.1 } },
   { id: "brom", strike: "blunt", color: "#e0a45a", baseCost: 250, baseDps: 22, special: { kind: "click", mult: 1.5 } },
   { id: "ysolde", strike: "arrow", color: "#4fd1a5", baseCost: 1_000, baseDps: 74, special: { kind: "critChance", pct: 0.03 } },
   { id: "cendre", strike: "magic", color: "#ff8a4c", baseCost: 4_000, baseDps: 245, special: { kind: "globalDps", pct: 0.1 } },

@@ -55,7 +55,7 @@ market is French-speaking, with a full English version.
 |---|---|
 | Stages | 10 monsters per stage. No last stage: the road goes on as deep as the walker walks (see "The deep road"). A save may name a stage up to 10,000,000. |
 | Rout | On a stage under the best stage ever (so never on the first night), when the company would fell one of its monsters in under 0.1 s (companion DPS plus automatic strikes), the whole stage falls at once: its remaining kills, their gold (a golden rat's share at its odds) and the Bestiary, then the next stage, one stage every 0.25 s. Elites and guardians are still fought. The catch-up (hidden tab, closed game) routs the same way. The first Rout is explained once by a toast; each shows "Rout · stage N" and its gold. |
-| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through; the Keep's gate (stage 45), the King and the strata below heal whole. |
+| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through. On the walk's first night (no ascension, no Descent yet), the Keep's gate (stage 45) keeps them too (75%) and the King up to 50% of his HP (`FIRST_NIGHT_KING_WOUND`): the first King is a wall of minutes, not of an hour. From the first dusk on, the gate, the King and the strata below heal whole. |
 | Biomes | 5 biomes of 10 stages, six normal creatures, an elite and a guardian each: the Verdant Plains (Field Rat, Jumpy Boar, Carrion Crow, Hollow Scarecrow, Lantern Moth, Dusk Hare; Last Reaper; Moss Alpha), the Dark Forest (Shade Wolf, Briar Witch, Grove Spinner, Mourning Owl, Toadstool Choir, Whispering Bramble; Root Knight; Heart of the Old Grove), the Forgotten Caves (Blind Crawler, Echo Bat, Crystal Mite, Drip Leech, Haunted Cart, Hollow Canary; Miner's Shade; Stone Devourer), the Corrupted Marsh (Bog Remnant, Rot Toad, Will-o'-Wisp, Drowned Courtier, Peat Cutter, Mire Heron; Mire Colossus; Baron of Rot) and the Fallen King's Ruins (Gargoyle of the Hours, Banner Wraith, Fallen Sentinel, Hollow Page, Hound of the Last Hunt, Candle Maid; Stone Warden; the King). |
 | The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000 the Dawn stands in his place, a milestone: beaten, it lets the walker through. Below it the forms come round again with the Ages (the Fallen King at 3050, the Titan King at 3300…). |
 | Rare wanderers | One per biome (the Lost Shepherd, the Weeping Stag, the Singing Geode, the Ferryman, the Court Jester): 0.5% of the biome's normal spawns that are not a golden rat or an event, once a run at most, ×5 gold, a Chronicle fragment on the first defeat. |
@@ -210,6 +210,16 @@ their base. The Vestment of Cinders makes Golden Rain last 45 s.
   | Wanderer | 10 stages cleared at the start of each run | ×1.8 | 10 |
   | Memory | starting gold of 100 monsters of stage 5 × level | ×1.5 | 20 |
 
+- **The Sanctum's counsel**: every altar card the walker can afford says what one level does
+  once the essences it takes are counted: for an altar of damage (Might, Blade, Patience, Fate,
+  Precision), "With the essences offered: your damage ×N" (in red below ×1); for the others,
+  the share of damage the essences offered cost. A **Distribute** button offers the essences
+  as the bots do (`distributeEssences`, `altarPlan.ts`): capped altars when they cost 3% of the
+  essences held at most, then the open-ended level that adds the most per essence while it
+  beats keeping the essences (the Blade when the walker's strikes lead, Patience when the
+  company does: weighed on the company when there is one, else on the Blade and Patience
+  levels already raised, else on the walker's pace over the walk), the Harvest when it pays
+  more in the nights to come. It offers nothing under the Nameless's word.
 - **Spending versus holding** is the core decision: the open-ended altars multiply at each
   level against an exponential price, so the best split keeps about half the essences in
   hand at every stage of the game, and which altars to feed depends on the play style
@@ -506,6 +516,8 @@ line of text: it stores counters, and the n-th fragment of a source is always th
     frequent.
 - **The King's first refusals**: until the first ascension, the first time a session's King
   fight is lost, the failure toast carries his line "Come back when your hands stop shaking."
+  and says plainly what his fall opens: the Sanctum of Dusk, where the walker walks the road
+  again with essences that strengthen every night after.
 - **The Night list**: the ascension history written as one line per night, with the King's
   Word of that night.
 - **The Ledger's scenes** (BIBLE 12.10): eleven moments told like a film, over everything
@@ -515,7 +527,7 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   them, actors standing on their ground (the guardian, the walker) and beats in time: lines,
   sounds, the Dusk theme, the frame of a blow. A press shows the line coming up whole, then
   moves to the shot's next line or the next shot; Escape or "Skip" ends it. The scenes:
-  **the Long Night** (a new walk, before the first strike, about 24 s), **the First Dusk**
+  **the Long Night** (a new walk, as its first Remnant falls, about 24 s; minute one is the monster, the strike and the gold, with a first hint saying to strike), **the First Dusk**
   (the first ascension, about 40 s; its ascension toast then carries no quote), **Almost**
   (Maëlle hired again after she half remembers), **the Empty Throne**
   (ascension 13), **the Crown in the Ice**, **the Rehearsal**, **the Threshold** and
@@ -733,6 +745,11 @@ rejects real play.
   red-green blindness keeps apart), ascension confirmation.
   Its foot names the version the walker plays (`v0.6.0`): the `version` of the root
   `package.json`, read at build time, the same on the develop server.
+- The first seconds: a hint says to strike the monster (from the very first second, gone with
+  the first strike); after Aldric's third level, a hint tells the walker to keep their gold for
+  Maëlle (25 gold, the first companion) until she joins. What relics remember (traits) is told
+  with the second relic found, never in the same breath as the first relic's toast; the first
+  relic's toast says it is already worn (a relic of the road goes to its empty slot).
 - One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a
   time, each gone for good once the walker did what it says, opened the place it points to,
   read it for 30 s, or pressed "OK" (a closed seam is explained once, not at every failed
