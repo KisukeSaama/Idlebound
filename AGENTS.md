@@ -27,10 +27,21 @@ swings single seeds by ±50 stages):
 | Stage 100       | 4 to 6 h    |
 | The deep road   | at least 5 stages a day at stage 10,000, the active bot (BIBLE 24) |
 
+And for the walker who is not a bot (`realistic.ts`: 2 strikes a second, naive purchases, a
+first hour then four 15-minute sessions a day, the tab open between them, closed at night;
+`walls.ts`: a naive walker playing on):
+
+| Milestone                                   | Target                         |
+| ------------------------------------------- | ------------------------------ |
+| The first King, a naive walker (`walls.ts`) | under 20 min median            |
+| Realistic first ascension                   | 1 to 2 h of play               |
+| Realistic stage at the end of day 1 / day 3 | about 200 / about 1400         |
+
 - After any gameplay change (formula, number, reward, cost, timer, new mechanic), run
   `npm run sims` (about 6 min). It plays at once, sharing six cores, `milestones.ts 9` (the
-  four milestones above), `simulate.ts 24 compare 9` (idle and active styles) and `walls.ts 9`
-  (a naive walker loses a few minutes at most at each guardian before the King). Compare against the targets above and the figures in PRODUCT.md. A change that
+  four milestones above), `simulate.ts 24 compare 9` (idle and active styles), `walls.ts 9`
+  (a naive walker loses a few minutes at most at each guardian before the King, and under
+  20 minutes at the first King) and `realistic.ts 9 3` (the walker who is not a bot). Compare against the targets above and the figures in PRODUCT.md. A change that
   touches the road below the Dawn runs `npm run sims -- 9 deep`, which adds `deep.ts deep
   active 3000 9 20` (from the states `deep.ts reach 9` keeps), and the long run of one seed to
   10,000. Report the numbers. A miss is a bug, not a note.

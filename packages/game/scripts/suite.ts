@@ -5,9 +5,9 @@
  *
  *   npm run sims -- [seeds=9] [deep]
  *
- * Plays `milestones`, `simulate 24 compare` and `walls` with `seeds` seeds (3 while
- * iterating, 9 for the final word), and with `deep` the deep road too (`deep deep active 3000
- * <seeds> 20`, from the states `deep.ts reach` keeps). Prints each script's output in that
+ * Plays `milestones`, `simulate 24 compare`, `walls` and `realistic` (three days) with
+ * `seeds` seeds (3 while iterating, 9 for the final word), and with `deep` the deep road too
+ * (`deep deep active 3000 <seeds> 20`, from the states `deep.ts reach` keeps). Prints each script's output in that
  * order, with the time it took. Under `compare.ts` (`npm run compare -- suite 3`), every
  * script's results are kept and set against the reference seed by seed.
  */
@@ -26,6 +26,7 @@ const SCRIPTS: { name: string; args: string[] }[] = [
   { name: "milestones", args: [seeds] },
   { name: "simulate", args: ["24", "compare", seeds] },
   { name: "walls", args: [seeds] },
+  { name: "realistic", args: [seeds, "3"] },
   ...(deep ? [{ name: "deep", args: ["deep", "active", "3000", seeds, "20"] }] : [])
 ];
 

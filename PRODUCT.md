@@ -108,10 +108,11 @@ late game; mashing the mouse is never required.
   of 9 seeds, every profile giving its word at each dusk to the strongest companion who can
   ask, among the promises its style can keep: a profile that strikes gives no word to
   Ysolde nor to Nyx) every style stands within a quarter of the others (the best over the
-  worst: 1.18 since the relics remember, version 1.3): the occasional player leads (1157,
-  back every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
-  blocks the company, 4 h of real play), then 10 clicks/s (1082), 5/s (1079), 2/s (1038),
-  continuous bursts (1014) and idle (984). Before 1.3 the same runs stood at 898 to 1052
+  worst: 1.22 since the first night's King keeps his wounds, version 2.1): the occasional
+  player leads (1252, back every hour for 10 minutes, the tab left open to the autopilot,
+  ascending when a boss blocks the company, 4 h of real play), then bursts (1117), 10
+  clicks/s (1116), 5/s (1081), idle (1063) and 2/s (1026). Before 2.1 the same runs stood at
+  984 to 1157 (1.18, since the relics remember, version 1.3); before 1.3 at 898 to 1052
   (1.17) on the same seeds; earlier figures: 961 to 1186 (1.23).
   Before the cap on damage to guardians the same runs stood at 936 to 1009 (1.08): every
   style went deeper with the cap, the occasional player most (+179).
@@ -124,9 +125,9 @@ late game; mashing the mouse is never required.
   rule the bursts crept for hours and fell to 736 (1.28). The bot buys the Blade when its
   clicks lead the company (they deal more than the Patience bonus), Patience otherwise:
   at 10 clicks/s the strikes are then almost all the damage (clicks 325 times the company
-  without its bonus), and 8 h away adds only 1 stage to that walker. 8 h in a background tab
-  after 24 h of play adds 15 to 43 stages to the others (median per profile), and the
-  Reunion doubles the first hour back (+13 to +20 stages instead of +5 to +13). The 72 h bot (5 clicks/s, seed 42, a word
+  without its bonus), and 8 h away adds only 2 stages to that walker. 8 h in a background tab
+  after 24 h of play adds 16 to 31 stages to the others (median per profile), and the
+  Reunion doubles the first hour back (+16 to +24 stages instead of +7 to +11). The 72 h bot (5 clicks/s, seed 42, a word
   given each night) reaches stage 1518 after 12 ascensions (500 at 16 h, 1000 at 30 h), and
   in a week 1960 after 26, each ascension adding fewer stages past 1000 (+120, +98, +70,
   +58, +70, then about +25 in the last days): no runaway. Before the Promise the same seed
@@ -709,17 +710,27 @@ opens again, within the same cap as a hidden tab.
 ### Balance targets
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
-(`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 47, stage 50 in
-1 h 24, first ascension at 2 h 52, stage 100 at 3 h 41 (version 1.3, relics that remember;
-before it 1 h 29, 3 h 01 and 3 h 51), then
+(`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 49, stage 50 in
+1 h 50, first ascension at 2 h 53, stage 100 at 3 h 48 (version 2.1: Maëlle at 25 gold, the
+first night's gate and King keeping their wounds; the first ascension now spreads from 1 h 58
+to 3 h 51 by seed, where the seeds held at the King went past 4 h 30 before; version 1.3
+stood at 1 min 47, 1 h 24, 2 h 52 and 3 h 41, before it 1 h 29, 3 h 01 and 3 h 51), then
 steady progress carried by ascensions. Over 30 seeds: 1 min 48, 1 h 33, 3 h 11 and 4 h 08
 (before 1.3: 1 min 48, 1 h 35, 2 h 55 and 3 h 59),
 the same to the minute as before the replay (1 min 48, 1 h 36, 2 h 53, 3 h 59): since the
 engine steps every 100 ms (version 1.1, the bots' cadence), any change sends every seed down
 another road, and nine seeds swing a median by a quarter of an hour either way. A naive walker (it buys the newest companion it can afford, never the best
-value) loses 2 min 27 at the stage 20 guardian, 2 min 33 at the stage 30 guardian and
-3 min 09 at the stage 40 guardian (median of
-9 seeds, `npx tsx packages/game/scripts/walls.ts 9`). The pace of a run is set by the gold a
+value) loses 1 min 55 at the stage 20 guardian, 4 min 22 at the stage 30 guardian, 6 min 07
+at the stage 40 guardian and 20 min 25 at the first King (median of 9 seeds, `npx tsx
+packages/game/scripts/walls.ts 9`; before version 2.1: 2 min 27, 2 min 31, 3 min 09 and
+42 min 08 at the King, who then healed whole). **The walker who is not a bot**
+(`npx tsx packages/game/scripts/realistic.ts 9 3`: 2 strikes a second, the same naive
+purchases, a first hour then four 15-minute sessions a day, the tab open between them,
+closed at night, calling the dusk as soon as it sees the King fallen the first time, then
+once the road stops paying) reaches stage 10 in 3 min 44 and stage 40 after its first hour;
+the company walks on to the King in the open tab, and the first King costs it 6 min (54 min
+before 2.1); it ascends on its first return, after 1 h 02 of play, and stands at stage 207,
+910 and 1390 at the end of days 1, 2 and 3 (22 ascensions). The pace of a run is set by the gold a
 monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to stage 10.
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
 bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
@@ -727,7 +738,7 @@ background tab add and the first hour back with and without the Reunion. The bal
 scripts play each seed (and each profile) in its own process, six at a time at a low
 priority so the machine stays usable (`BALANCE_WORKERS=n` for another count); `npm run sims`
 plays all of them at once on the same six places, in about six minutes, and `npm run compare`
-sets two versions of the game side by side, seed by seed (see AGENTS.md). Over 120 seeds the first ascension comes at 2 h 48
+sets two versions of the game side by side, seed by seed (see AGENTS.md). Before version 2.1, over 120 seeds the first ascension came at 2 h 48
 (median), 80% of walkers between 2 h 01 and 3 h 43. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
