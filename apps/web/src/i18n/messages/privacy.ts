@@ -14,7 +14,7 @@ export const privacy = defineMessages({
     intro: "Idlebound collecte le strict minimum pour faire fonctionner le jeu. Aucune publicité, aucun traceur tiers, aucune revente de données.",
     guestTitle: "Sans compte",
     guestText:
-      "Tu peux jouer sans compte. Ta partie est alors conservée sur nos serveurs, rattachée à un cookie anonyme de ton navigateur : ni e-mail, ni pseudo, rien qui dise qui tu es. Elle n'apparaît pas au classement. Si tu crées un compte ou te connectes, c'est toi qui choisis si elle devient la partie du compte.",
+      "Tu peux jouer sans compte. Ta partie est alors conservée sur nos serveurs, rattachée à un cookie anonyme de ton navigateur : ni e-mail, ni pseudo, rien qui dise qui tu es. Elle n'apparaît pas au classement. Si tu crées un compte ou te connectes, c'est toi qui choisis si elle devient la partie du compte.",
     accountTitle: "Avec un compte",
     accountItems: [
       { label: "Adresse e-mail", text: " : pour te connecter, confirmer ton compte et réinitialiser ton mot de passe. Jamais affichée ni partagée." },
@@ -23,20 +23,20 @@ export const privacy = defineMessages({
       { label: "Progression de jeu", text: " : ta progression, pour la retrouver sur tous tes appareils." },
       {
         label: "Jeu loyal",
-        text: " : à chaque envoi de ta partie, le serveur refait son chemin à partir de ce que tu as fait dans le jeu (achats, pouvoirs, cristaux, frappes comptées par instant), puis l'oublie. Il ne garde, par jour et pendant 90 jours, que quelques comptes de ta présence : cristaux apparus et attrapés et en combien de temps, pouvoirs relancés, ascensions, plus longue période de jeu sans pause. Ces comptes servent seulement à une personne qui vérifie le classement : rien n'est décidé automatiquement."
+        text: " : à chaque envoi de ta partie, le serveur refait son chemin à partir de ce que tu as fait dans le jeu (achats, pouvoirs, cristaux, frappes comptées par instant), puis l'oublie. Il ne garde, par jour et pendant 90 jours, que quelques comptes de ta présence : cristaux apparus et attrapés et en combien de temps, pouvoirs relancés, ascensions, plus longue période de jeu sans pause. Ces comptes servent seulement à une personne qui vérifie le classement : rien n'est décidé automatiquement."
       }
     ],
     cookiesTitle: "Cookies",
     cookiesText:
-      `Trois cookies au plus, tous strictement nécessaires : le cookie de session qui te garde connecté (30 jours), le cookie anonyme qui retrouve ta partie quand tu joues sans compte (${GUEST_SAVE_DAYS} jours, renouvelé à chaque visite, retiré dès qu'un compte reprend la partie) et, seulement si tu choisis une langue dans les paramètres, le cookie qui la retient (1 an). Pas de cookie de mesure d'audience.`,
+      `Trois cookies au plus, tous strictement nécessaires : le cookie de session qui te garde connecté (30 jours), le cookie anonyme qui retrouve ta partie quand tu joues sans compte (${GUEST_SAVE_DAYS} jours, renouvelé à chaque visite, retiré dès qu'un compte reprend la partie) et, seulement si tu choisis une langue dans les paramètres, le cookie qui la retient (1 an). Pas de cookie de mesure d'audience.`,
     securityTitle: "Sécurité",
     securityText:
       "Les échanges sont chiffrés (HTTPS), les tentatives de connexion sont limitées et changer de mot de passe révoque toutes les sessions. Les adresses IP ne servent qu'à limiter les abus et ne sont pas conservées.",
     retentionTitle: "Durée de conservation",
     retentionText:
-      `Tes données sont conservées tant que tu utilises ton compte. Un compte sans aucune connexion ni partie pendant 3 ans est supprimé automatiquement, avec sa partie et sa place au classement. Un e-mail d'avertissement t'est envoyé 30 jours avant la suppression : il suffit de te reconnecter pour garder ton compte. Un compte dont l'adresse e-mail n'a jamais été confirmée est supprimé 30 jours après sa création. Une partie jouée sans compte est supprimée après ${GUEST_SAVE_DAYS} jours sans visite.`,
+      `Tes données sont conservées tant que tu utilises ton compte. Un compte sans aucune connexion ni partie pendant 3 ans est supprimé automatiquement, avec sa partie et sa place au classement. Un e-mail d'avertissement t'est envoyé 30 jours avant la suppression : il suffit de te reconnecter pour garder ton compte. Un compte dont l'adresse e-mail n'a jamais été confirmée est supprimé 30 jours après sa création. Une partie jouée sans compte est supprimée après ${GUEST_SAVE_DAYS} jours sans visite.`,
     rightsTitle: "Tes droits",
-    rightsLead: "Tu peux supprimer définitivement ton compte et toutes ses données à tout moment depuis le jeu : menu ",
+    rightsLead: "Tu peux supprimer définitivement ton compte et toutes ses données à tout moment depuis le jeu : menu ",
     accountMenu: "Compte & progression",
     rightsMiddle: ", puis ",
     deleteAction: "Supprimer mon compte",

@@ -91,8 +91,8 @@ describe("the Reunion's fragment", () => {
 });
 
 describe("stratum label", () => {
-  it("names the era, its tag, and the Age from the second one", () => {
-    expect(stratumLabel(1, "en")).toBe("Era I");
+  it("names the stratum, its tag, and the Age from the second one", () => {
+    expect(stratumLabel(1, "en")).toBe("Stratum I");
     const titan = stratumLabel(301, "fr");
     expect(titan).toContain(stratumTag(6, "fr"));
     expect(titan).toContain(ageName(6, "fr"));

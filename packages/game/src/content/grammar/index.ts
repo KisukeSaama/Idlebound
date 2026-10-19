@@ -3,7 +3,7 @@ import { seededRng, type Rng } from "../../rng";
 import type { LoreLine } from "../types";
 import { EN_BIOMES, EN_KING, EN_SONGS, EN_STRATA } from "./lexicon-en";
 import { FR_BIOMES, FR_KING, FR_SONGS, FR_STRATA } from "./lexicon-fr";
-import { BIOME_COMPANIONS, COMPANIONS, COMPANION_BY_ID, KING_COMPANIONS, REMNANTS, type CompanionName, type RemnantName } from "./names";
+import { BIOME_COMPANIONS, COMPANIONS, COMPANION_BY_ID, KING_COMPANIONS, REMNANTS, SOME_REMNANT, SOMEONE, type CompanionName, type RemnantName } from "./names";
 import { EN_HELPERS, EN_TEMPLATES, FR_HELPERS, FR_TEMPLATES, type TemplateId } from "./templates";
 import type { Helpers, Slots, Template, Voice } from "./types";
 
@@ -216,6 +216,29 @@ function draw(p: Plan, sizes: { objects: number; places: number; verbs: number; 
   return { lexicon, object, object2, place, verb, state, remnant, companion, sound, sound2 };
 }
 
+/**
+ * The doer of the line's deed, fitted to it (BIBLE 20: a reader understands the line the
+ * first time). On the road, a deed only people do goes to a Remnant with hands and a voice,
+ * a beast's deed to a beast, and a companion never does a beast's deed (the next deed of the
+ * place instead). In the strata no creature of the five places belongs: a Remnant, unnamed,
+ * or someone does it. The draw itself never changes, so every other word stays where it was.
+ */
+function fit(p: Plan, id: TemplateId, source: GrammarSource, d: Draw): Draw {
+  const doer = EN_TEMPLATES[id].doer;
+  if (!doer) return d;
+  const road = source.kind === "echo";
+  if (!road) return doer === "remnant" ? { ...d, remnant: SOME_REMNANT } : { ...d, companion: { ...d.companion, ...SOMEONE } };
+  const kinds = (Object.hasOwn(EN_BIOMES, source.biome) ? EN_BIOMES[source.biome] : EN_BIOMES["green-plains"]).kinds;
+  if (doer === "companion") {
+    let verb = d.verb;
+    while (kinds[verb] === "beast") verb = (verb + 1) % kinds.length;
+    return { ...d, verb };
+  }
+  const kind = kinds[d.verb];
+  const fitting = kind === "any" ? p.remnants : p.remnants.filter((entry) => entry.person === (kind === "person"));
+  return { ...d, remnant: fitting[p.remnants.indexOf(d.remnant) % fitting.length] };
+}
+
 interface Words<N, A> {
   objects: readonly N[];
   places: readonly N[];
@@ -301,6 +324,6 @@ export function grammarTemplate(source: GrammarSource): TemplateId {
 export function grammarLine(source: GrammarSource, locale: Locale): LoreLine {
   const p = plan(source);
   const id = templateAt(p.key, p.n, p.pool);
-  const d = draw(p, sizesOf(source), EN_TEMPLATES[id].voice === "companion");
+  const d = fit(p, id, source, draw(p, sizesOf(source), EN_TEMPLATES[id].voice === "companion"));
   return locale === "fr" ? render(LANGUAGES.fr, id, source, p, d, locale) : render(LANGUAGES.en, id, source, p, d, locale);
 }

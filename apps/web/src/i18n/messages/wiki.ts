@@ -13,9 +13,9 @@ const plural: Plural = (count, one, many) => (count > 1 ? many : one);
 export const wiki = defineMessages({
   fr: {
     meta: {
-      title: "Wiki d'Idlebound : le guide complet du jeu",
+      title: "Wiki d'Idlebound : le guide complet du jeu",
       description:
-        "Le wiki complet d'Idlebound : guide du débutant, compagnons, bestiaire, reliques, autels, Promesse, Descente, secrets. Toutes les règles et tous les chiffres, avec un mode sans révélation qui suit ta partie.",
+        "Le wiki complet d'Idlebound : guide du débutant, compagnons, bestiaire, reliques, autels, Promesse, Descente, secrets. Toutes les règles et tous les chiffres, avec un mode sans révélation qui suit ta partie.",
       topic: (title: string) => `${title} · Wiki`,
       topicDescription: (title: string, short: string) => `${title}, le wiki d'Idlebound. ${short}`
     },
@@ -28,28 +28,28 @@ export const wiki = defineMessages({
       groups: { start: "Pour commencer", rules: "Les règles", world: "Le monde", beyond: "Plus loin" } satisfies Record<TopicGroup, string>
     },
     topics: {
-      "getting-started": { title: "Guide du débutant", short: "Tes premières minutes, ta première heure, ta première ascension : pas à pas." },
+      "getting-started": { title: "Guide du débutant", short: "Tes premières minutes, ta première heure, ta première ascension : pas à pas." },
       faq: { title: "Questions et astuces", short: "Les questions qu'on se pose tous, et les erreurs qu'on fait tous." },
       calculator: { title: "Calculateur", short: "Points de vie, or et essences à n'importe quelle étape." },
       combat: { title: "Combat et étapes", short: "Frappes, coups critiques, élites, gardiens, chronomètre, rat doré, cristaux errants." },
-      companions: { title: "Compagnons", short: "Les 20 compagnons et Aldric : coûts, dégâts, talents, pouvoirs." },
+      companions: { title: "Compagnons", short: "Les 20 compagnons et Aldric : coûts, dégâts, talents, pouvoirs." },
       powers: { title: "Pouvoirs", short: "Les sept pouvoirs, ce qu'ils font et quand les lancer." },
-      ascension: { title: "Ascension et autels", short: "Recommencer plus fort : les essences et les 13 autels du Sanctuaire." },
+      ascension: { title: "Ascension et autels", short: "Recommencer plus fort : les essences et les 13 autels du Sanctuaire." },
       promise: { title: "La Promesse", short: "Donner ta parole à un compagnon pour une nuit, et ce qu'elle rapporte." },
-      relics: { title: "Reliques, forge et marché", short: "Équipement, raretés, forge, éclats, l'étal du Comptoir, la Roulotte et les reliques nommées." },
-      idle: { title: "Jouer en arrière-plan", short: "Ce que ta compagnie fait sans toi : page ouverte, page cachée, jeu fermé." },
+      relics: { title: "Reliques, forge et marché", short: "Équipement, raretés, forge, éclats, le marché du Comptoir, la Roulotte et les reliques nommées." },
+      idle: { title: "Jouer en arrière-plan", short: "Ce que ta compagnie fait sans toi : page ouverte, page cachée, jeu fermé." },
       bestiary: { title: "Bestiaire", short: "Chaque créature de la route, ses lignes et où la trouver." },
-      biomes: { title: "Les cinq biomes", short: "Plaines, forêt, cavernes, marais et ruines : la route d'une nuit." },
+      biomes: { title: "Les cinq biomes", short: "Plaines, forêt, cavernes, marais et ruines : la route d'une nuit." },
       strata: { title: "Strates, Âges et rois", short: "Les 60 strates, les 12 Âges et les douze formes du Roi." },
       events: { title: "Événements", short: "Averses de cristaux, Brèches, Pari de Pip, Roulotte et tout ce qui surgit la nuit." },
       chronicle: { title: "Chronique et Reconnaissance", short: "Les fragments de l'histoire, la mémoire des compagnons, les Mots du Roi." },
       deeds: { title: "Hauts faits et secrets", short: "Toutes les séries de hauts faits, leurs bonus, et les 20 secrets." },
-      descent: { title: "La Descente", short: "Le Métier d'Eldra, les fils et les Tissages : la seconde renaissance." },
+      descent: { title: "La Descente", short: "Le Métier d'Eldra, les fils et les Tissages : la seconde renaissance." },
       account: { title: "Compte, partie gardée et classement", short: "Ta partie sur le serveur, invité ou compte, et le Registre des Liés." }
     } satisfies Topics,
     index: {
       title: "Le wiki d'Idlebound",
-      lead: "Tout ce que la route cache, écrit en clair : les règles, les chiffres, chaque compagnon, chaque créature, chaque relique. Commence par le guide si tu débutes, cherche ce qui te manque sinon.",
+      lead: "Tout ce que la route cache, écrit en clair : les règles, les chiffres, chaque compagnon, chaque créature, chaque relique. Commence par le guide si tu débutes, cherche ce qui te manque sinon.",
       start: "Par où commencer",
       all: "Tous les sujets",
       numbers: "Ce que le wiki couvre",
@@ -66,8 +66,8 @@ export const wiki = defineMessages({
       spoilersTitle: "Lire sans se gâcher la route",
       spoilers: [
         "Le wiki dit tout, mais il prévient toujours. Chaque passage qui révèle ce que la route garde pour plus tard (une créature rare, une strate profonde, une ligne de l'histoire, la solution d'un secret) reste caché derrière un avertissement, et ne s'ouvre que si tu le demandes.",
-        "Si tu as une partie, le mode **Selon ma partie** lit ta partie gardée et ouvre tout seul ce que tu as déjà vécu : les créatures que tu as croisées, les strates que tu as atteintes, les souvenirs que tes compagnons t'ont confiés, les secrets que tu as trouvés. Le reste reste caché, avec ce qu'il te faut faire pour le découvrir en jouant.",
-        "Le mode **Tout voir** montre tout. La Vérité du monde, elle, ne s'apprend qu'en marchant : aucune page ne la dit."
+        "Si tu as une partie, le mode **Selon ma partie** lit ta partie gardée et ouvre tout seul ce que tu as déjà vécu : les créatures que tu as croisées, les strates que tu as atteintes, les souvenirs que tes compagnons t'ont confiés, les secrets que tu as trouvés. Le reste reste caché, avec ce qu'il te faut faire pour le découvrir en jouant.",
+        "Le mode **Tout voir** montre tout. La Vérité du monde, elle, ne s'apprend qu'en marchant : aucune page ne la dit."
       ]
     },
     spoilers: {
@@ -75,16 +75,16 @@ export const wiki = defineMessages({
       modes: { veil: "Sans spoil", mine: "Selon ma partie", all: "Tout voir" },
       modeHints: {
         veil: "Chaque révélation reste cachée derrière un avertissement, à ouvrir une par une.",
-        mine: "Ce que ta partie a déjà vécu s'affiche ; le reste reste caché.",
+        mine: "Ce que ta partie a déjà vécu s'affiche ; le reste reste caché.",
         all: "Tout s'affiche, révélations comprises."
       },
       noGame: "Joue une première partie (ou connecte-toi) pour que le wiki sache où tu en es.",
       loading: "Lecture de ta partie…",
       reading: (stage: string, ascensions: number) =>
-        `Ta partie : étape ${stage} au plus loin, ${ascensions} ${plural(ascensions, "ascension", "ascensions")}.`,
+        `Ta partie : étape ${stage} au plus loin, ${ascensions} ${plural(ascensions, "ascension", "ascensions")}.`,
       title: "Révélation",
       notYet: "Pas encore sur ta route",
-      label: (heading: string, condition: string) => `${heading} : ${condition}. Révéler quand même`,
+      label: (heading: string, condition: string) => `${heading} : ${condition}. Révéler quand même`,
       reveal: "Révéler",
       inlineMask: "••••••",
       conditions: {
@@ -114,7 +114,7 @@ export const wiki = defineMessages({
     },
     search: {
       label: "Chercher dans le wiki",
-      placeholder: "Chercher : Maëlle, autel, Brèche…",
+      placeholder: "Chercher : Maëlle, autel, Brèche…",
       none: "Rien trouvé. Essaie un autre mot.",
       results: (count: number) => `${count} ${plural(count, "résultat", "résultats")}`,
       more: (count: number) => `Et ${count} de plus, précise ta recherche.`,
@@ -168,23 +168,23 @@ export const wiki = defineMessages({
       king: "Roi",
       trigger: "Quand",
       what: "Ce qui se passe",
-      seconds: (value: number) => `${value} s`,
-      minutes: (value: number) => `${value} min`,
+      seconds: (value: number) => `${value} s`,
+      minutes: (value: number) => `${value} min`,
       levels: (value: number) => `${value} niv.`,
       instant: "immédiat",
       present: "nuit présente"
     },
     effects: {
       heroDps: (mult: number) => `ses dégâts ×${mult}`,
-      globalDps: (pct: number) => `+${pct} % de dégâts pour toute la compagnie`,
+      globalDps: (pct: number) => `+${pct} % de dégâts pour toute la compagnie`,
       click: (mult: number) => `dégâts de frappe ×${mult}`,
-      clickDps: (pct: number) => `chaque frappe ajoute ${pct} % du DPS de la compagnie`,
-      critChance: (pct: number) => `+${pct} % de chance de coup critique`,
+      clickDps: (pct: number) => `chaque frappe ajoute ${pct} % du DPS de la compagnie`,
+      critChance: (pct: number) => `+${pct} % de chance de coup critique`,
       critDamage: (add: number) => `+${add} au multiplicateur des coups critiques`,
-      gold: (pct: number) => `+${pct} % d'or`,
-      bossTimer: (seconds: number) => `+${seconds} s contre les élites et les gardiens`,
-      treasure: (pct: number) => `+${pct} % de chance de rat doré`,
-      idleDps: (pct: number) => `+${pct} % au bonus de Patience`
+      gold: (pct: number) => `+${pct} % d'or`,
+      bossTimer: (seconds: number) => `+${seconds} s contre les élites et les gardiens`,
+      treasure: (pct: number) => `+${pct} % de chance de rat doré`,
+      idleDps: (pct: number) => `+${pct} % au bonus de Patience`
     },
     kinds: {
       normal: "Vestige",
@@ -196,12 +196,12 @@ export const wiki = defineMessages({
     },
     sources: {
       kills: (monster: string, count: string) => `Sur la ${count}e victoire contre ${monster}`,
-      boss: (monster: string, era: string, pct: string) => `${monster}, à partir de l'${era} : ${pct} par premier passage`,
-      stratum: (era: string, tag: string, pct: string) => `Les gardiens de l'${era} (strate ${tag}) : ${pct} par premier passage`,
-      king: (age: string, pct: string) => `Le Roi, à partir de l'Âge ${age} : ${pct} par chute en tête de nuit`,
+      boss: (monster: string, era: string, pct: string) => `${monster}, à partir de l'${era} : ${pct} par premier passage`,
+      stratum: (era: string, tag: string, pct: string) => `Les gardiens de l'${era} (strate ${tag}) : ${pct} par premier passage`,
+      king: (age: string, pct: string) => `Le Roi, à partir de l'Âge ${age} : ${pct} par chute en tête de nuit`,
       gift: (hero: string) => `Le cadeau de ${hero}, à la Reconnaissance 5`,
-      creature: (monster: string, pct: string) => `${monster} : ${pct} par victoire`,
-      hired: (hero: string, level: number, pct: string) => `Un gardien vaincu pendant que ${hero} est au niveau ${level} ou plus : ${pct}`,
+      creature: (monster: string, pct: string) => `${monster} : ${pct} par victoire`,
+      hired: (hero: string, level: number, pct: string) => `Un gardien vaincu pendant que ${hero} est au niveau ${level} ou plus : ${pct}`,
       stray: "La première victoire sur l'Armure errante",
       caravan: "La Roulotte, une semaine où elle l'apporte (300 éclats)",
       dawn: (descents: number) => `L'Aube vaincue après ${descents} Descentes`
@@ -212,56 +212,56 @@ export const wiki = defineMessages({
       ysolde: "Aucune frappe de ta main de la nuit (la Frénésie et le parchemin de frappe frappent quand même).",
       cendre: "Ashka n'est pas recrutée de la nuit (les compagnons après elle rejoignent quand même).",
       nyx: "Aucun pouvoir de la nuit.",
-      garrick: "Aucun éclat dépensé de la nuit : ni étal, ni Roulotte, ni forge.",
-      seraphine: "Aucun coup pendant 10 s au début de chaque combat contre le Cœur du vieux bosquet, qui doit tomber.",
+      garrick: "Aucun éclat dépensé de la nuit : ni étal, ni Roulotte, ni forge.",
+      seraphine: "Aucun coup pendant 10 s au début de chaque combat contre le Cœur du vieux bosquet, qui doit tomber.",
       thorvald: "Élites et gardiens avec la moitié de leur temps, toute la nuit.",
-      mirelle: "Aucun coup pendant 15 s au début de chaque combat contre le Baron de la pourriture, qui doit tomber.",
+      mirelle: "Aucun coup pendant 15 s au début de chaque combat contre le Baron de la pourriture, qui doit tomber.",
       kaelen: "Personne après lui ne rejoint la compagnie avant la chute du Roi.",
       oriane: "La nuit va plus loin que l'étape atteinte la nuit précédente.",
-      vorn: "Aucun coup pendant 10 s au début de chaque combat contre le Dévorateur de pierre, qui doit tomber.",
+      vorn: "Aucun coup pendant 10 s au début de chaque combat contre le Dévorateur de pierre, qui doit tomber.",
       lysandre: "Deux rois tombent cette nuit.",
       ashka: "Frère Cendre n'est pas recruté de la nuit.",
       nameless: "Aucune essence offerte aux autels de la nuit.",
-      eldra: "Aucune Brèche ne se referme sur toi de la nuit. Seule, la compagnie s'arrête devant un boss qu'elle ne peut battre dans son temps moins une seconde, sans l'affronter.",
+      eldra: "Ne perdre aucun combat contre une élite ou un gardien de la nuit. Seule, la compagnie s'arrête devant un boss qu'elle ne peut battre dans son temps moins une seconde, sans l'affronter.",
       morgrath: "Kaelen n'est pas recruté de la nuit.",
       celestine: "Aucun cristal attrapé de la nuit.",
-      aurelion: "Aucun coup pendant 10 s au début de chaque combat contre le Roi.",
+      aurelion: "Aucun coup pendant 10 s au début de chaque combat contre le Roi.",
       awakened: "L'Éveillé n'est pas recruté de la nuit."
     } as Record<string, string>,
     eventTriggers: {
       storm: "1 cristal errant sur 20.",
-      seam: "Étape normale 60 ou plus : 1 apparition sur 400.",
-      wager: "1 rat doré sur 10, puis 3 min de répit.",
-      walker: "À partir de 5 ascensions : 1 % au premier passage de chaque gardien.",
-      caravan: "À partir de 3 ascensions : une marchandise par semaine, la même pour tout le monde.",
-      quiet: "Strate du Néant (ère IV) et plus bas : 1 apparition sur 1 000.",
-      stray: "Une fois le Sans-Nom recruté : 1 apparition sur 2 000.",
+      seam: "Étape normale 60 ou plus : 1 apparition sur 400.",
+      wager: "1 rat doré sur 10, puis 3 min de répit.",
+      walker: "À partir de 5 ascensions : 1 % au premier passage de chaque gardien.",
+      caravan: "À partir de 3 ascensions : une marchandise par semaine, la même pour tout le monde.",
+      quiet: "Strate du Néant (IV) et plus bas : 1 apparition sur 1 000.",
+      stray: "Une fois le Sans-Nom recruté : 1 apparition sur 2 000.",
       eclipse: "Toutes les 7 ascensions, sur le Roi suivant.",
-      tide: "Au retour après 4 h d'absence ou plus.",
+      tide: "Au retour après 4 h d'absence ou plus.",
       remembrance: "Le 1er octobre et le 21 décembre.",
-      migration: "Ère II et plus bas : 1 nouvelle étape sur 50.",
-      unfinished: "Âge VI (l'Ébauche) et plus bas : 1 apparition sur 200."
+      migration: "Strate II et plus bas : 1 nouvelle étape sur 50.",
+      unfinished: "Âge VI (l'Ébauche) et plus bas : 1 apparition sur 200."
     } satisfies Record<EventId, string>,
     eventEffects: {
-      storm: "La Reine-lanterne traverse le ciel : cinq cristaux tombent tour à tour, 3 s chacun, chacun avec son propre tirage de récompense.",
-      seam: "Un Gardien de la Brèche (PV d'élite, 20 s). Vaincu : le butin d'une élite et un écho d'Âge. S'il s'échappe, tu ne perds rien.",
-      wager: "Pip s'arrête, cerclé d'or : 13 frappes en 5 s et il paie ce que la route t'aurait rapporté en 45 s au rythme de ta compagnie (jamais moins de 30 fois l'or de l'étape). Raté, il s'enfuit.",
-      walker: "L'ombre d'un autre marcheur du Registre se bat à tes côtés : DPS ×1,25 pendant 30 s.",
+      storm: "La Reine-lanterne traverse le ciel : cinq cristaux tombent tour à tour, 3 s chacun, chacun avec son propre tirage de récompense.",
+      seam: "Un Gardien de la Brèche (PV d'élite, 20 s). Vaincu : le butin d'une élite et un écho d'Âge. S'il s'échappe, tu ne perds rien.",
+      wager: "Pip s'arrête, cerclé d'or : 13 frappes en 5 s et il paie ce que la route t'aurait rapporté en 45 s au rythme de ta compagnie (jamais moins de 30 fois l'or de l'étape). Raté, il s'enfuit.",
+      walker: "L'ombre d'un autre marcheur du Registre se bat à tes côtés : DPS ×1,25 pendant 30 s.",
       caravan: "Le Comptoir apporte une marchandise de la semaine, payée en éclats, une fois par semaine.",
-      quiet: "Une créature sans couleur, 10 s, les sons s'éteignent. Vaincue : un écho d'Âge.",
-      stray: "Une armure vide traverse la route (30 s). La première victoire donne le Harnois creux.",
-      eclipse: "Le Roi, dans l'ombre : +50 % de PV, même chronomètre. Il laisse toujours une relique, et en tombant, un mot à lui (sept, tour à tour).",
-      tide: "Le prochain cristal arrive dans les 20 s.",
+      quiet: "Une créature sans couleur, 10 s, les sons s'éteignent. Vaincue : un écho d'Âge.",
+      stray: "Une armure vide traverse la route (30 s). La première victoire donne le Harnois creux.",
+      eclipse: "Le Roi, dans l'ombre : +50 % de PV, même chronomètre. Il laisse toujours une relique, et en tombant, un mot à lui (sept, tour à tour).",
+      tide: "Le prochain cristal arrive dans les 20 s.",
       remembrance: "Les fragments viennent deux fois plus souvent. Aucun pouvoir n'est donné.",
       migration: "Pour cette étape, les Vestiges d'un autre biome la traversent.",
-      unfinished: "Un Vestige à moitié dessiné ; vaincu, un écho de l'Ébauche."
+      unfinished: "Un Vestige à moitié dessiné ; vaincu, un écho de l'Ébauche."
     } satisfies Record<EventId, string>,
     secretSolutions: {
       "let-him-rest": "Laisse le chronomètre du Roi s'écouler trois fois de suite à l'étape 50, sans le frapper une seule fois.",
       even: "Attrape 100 rats dorés dans une même nuit pendant que Thorvald est au niveau 50 ou plus. Un minuscule rat d'or s'installe sur son médaillon.",
       faceless: "Touche le portrait de Nyx sept fois en trois secondes.",
       "small-change": "Recycle une relique mythique.",
-      "night-owl": "Joue une heure entre minuit et 4 h du matin : la lune des Plaines devient pleine.",
+      "night-owl": "Joue une heure entre minuit et 4 h du matin : la lune des Plaines devient pleine.",
       "thousandth-notch": "Fais 1 000 victoires sur les étapes 1 à 10 dans une même nuit.",
       "same-road": "Fais trois ascensions d'affilée depuis la même étape.",
       "keep-some": "Fais ton ascension avec 1 000 essences en main sans avoir rien offert aux autels depuis le dernier crépuscule.",
@@ -288,16 +288,16 @@ export const wiki = defineMessages({
         guardianHp: "PV d'un gardien",
         rows: [
           { rank: "Vestige", stages: "toutes", hp: "×1", timer: "aucun", loot: "Or (1/30 de ses PV)" },
-          { rank: "Élite", stages: "5, 15, 25, 35, 45…", hp: "×6", timer: "30 s", loot: "Relique 15 %, 1 éclat 35 %" },
-          { rank: "Gardien", stages: "10, 20, 30, 40…", hp: "×10", timer: "30 s", loot: "Relique 40 % (garantie la première fois), 1 + étape/25 éclats" },
-          { rank: "Roi", stages: "50, 100, 150…", hp: "×10", timer: "30 s", loot: "Comme un gardien, plus la pierre de voûte de la strate" }
+          { rank: "Élite", stages: "5, 15, 25, 35, 45…", hp: "×6", timer: "30 s", loot: "Relique 15 %, 1 éclat 35 %" },
+          { rank: "Gardien", stages: "10, 20, 30, 40…", hp: "×10", timer: "30 s", loot: "Relique 40 % (garantie la première fois), 1 + étape/25 éclats" },
+          { rank: "Roi", stages: "50, 100, 150…", hp: "×10", timer: "30 s", loot: "Comme un gardien, plus la pierre de voûte de la strate" }
         ],
         crystals: [
-          { name: "Or", odds: "40 %", effect: "L'or de 15 monstres de l'étape." },
-          { name: "Surcharge", odds: "25 %", effect: "DPS de la compagnie ×7 pendant 15 s." },
-          { name: "Tranchant", odds: "20 %", effect: "Frappe ×10 (sa part de DPS comprise) pendant 20 s." },
-          { name: "Éclats", odds: "12 %", effect: "2 à 6 éclats." },
-          { name: "Essences", odds: "3 %", effect: "1 essence, +1 par 100 étapes de ton record. Seulement après une première ascension." }
+          { name: "Or", odds: "40 %", effect: "L'or de 15 monstres de l'étape." },
+          { name: "Surcharge", odds: "25 %", effect: "DPS de la compagnie ×7 pendant 15 s." },
+          { name: "Tranchant", odds: "20 %", effect: "Frappe ×10 (sa part de DPS comprise) pendant 20 s." },
+          { name: "Éclats", odds: "12 %", effect: "2 à 6 éclats." },
+          { name: "Essences", odds: "3 %", effect: "1 essence, +1 par 100 étapes de ton record. Seulement après une première ascension." }
         ]
       },
       powers: {
@@ -306,10 +306,10 @@ export const wiki = defineMessages({
         byWeave: "Le Tissage"
       },
       companions: {
-        aldricNote: (cost: string) => `Aldric coûte ${cost} pièces d'or au niveau 1, et chaque niveau 10 % de plus que le précédent.`
+        aldricNote: (cost: string) => `Aldric coûte ${cost} pièces d'or au niveau 1, et chaque niveau 10 % de plus que le précédent.`
       },
       ascension: {
-        cleared: "Étape la plus loin franchie",
+        cleared: "Étape la plus lointaine franchie",
         dps: "DPS si tu les gardes",
         essencesNote: "Sans Autel de la récolte, Chaîne d'abondance ni relique d'essences, qui multiplient ces chiffres.",
         legends: "Qui a élevé chaque autel"
@@ -325,7 +325,7 @@ export const wiki = defineMessages({
         setTwo: "2 portées",
         setFour: "4 portées"
       },
-      bestiary: { goldPage: "+1 % d'or une fois complète" },
+      bestiary: { goldPage: "+1 % d'or une fois complète" },
       biomes: {
         stages: (from: number, to: number) => `Étapes ${from} à ${to}`,
         echoes: "Échos",
@@ -338,10 +338,10 @@ export const wiki = defineMessages({
       chronicle: {
         rewards: [
           "Un souvenir, un premier anneau d'or",
-          "Un souvenir ; il demande désormais ta parole",
-          "Un souvenir ; il te reconnaît en rejoignant",
+          "Un souvenir ; il demande désormais ta parole",
+          "Un souvenir ; il te reconnaît en rejoignant",
           "Un souvenir (une promesse tenue)",
-          "Un souvenir (une seconde promesse), +10 % de dégâts, et pour huit d'entre eux une relique nommée"
+          "Un souvenir (une seconde promesse), +10 % de dégâts, et pour huit d'entre eux une relique nommée"
         ],
         milestones: {
           "ascend-1": "Première ascension",
@@ -372,7 +372,7 @@ export const wiki = defineMessages({
       account: { board: "Voir le classement" }
     },
     entry: {
-      back: (topic: string) => `Retour : ${topic}`,
+      back: (topic: string) => `Retour : ${topic}`,
       companion: {
         stats: "En bref",
         index: (index: number) => (index === 0 ? "Le marcheur (c'est toi)" : `Compagnon n° ${index}`),
@@ -385,7 +385,7 @@ export const wiki = defineMessages({
         talentsLead: (aldric: boolean): string =>
           aldric
             ? "Les talents d'Aldric renforcent ta frappe. Le premier achat de chacun est aussi une Leçon, gardée dans la Chronique."
-            : "Un talent se débloque au niveau indiqué et s'achète avec de l'or. Coût : le coût de base du compagnon multiplié par 20, 100, 800, 25 000 puis 2 500 000.",
+            : "Un talent se débloque au niveau indiqué et s'achète avec de l'or. Coût : le coût de base du compagnon multiplié par 20, 100, 800, 25 000 puis 2 500 000.",
         lesson: "Leçon",
         power: "Pouvoir enseigné",
         powerAt: (level: number) => `Débloqué au niveau ${level}.`,
@@ -417,7 +417,7 @@ export const wiki = defineMessages({
         lineAt: (count: string) => `après ${count} ${count === "1" ? "victoire" : "victoires"}`,
         fragment: "Le fragment de sa première défaite",
         ages: "À travers les Âges",
-        agesLead: "Chaque Âge transforme la façon dont la nuit dessine les créatures. La même bête, de strate en strate :",
+        agesLead: "Chaque Âge transforme la façon dont la nuit dessine les créatures. La même bête, de strate en strate :",
         drops: "Reliques liées",
         page: "Page du Bestiaire"
       },
@@ -441,7 +441,7 @@ export const wiki = defineMessages({
       monsterHp: "PV d'un Vestige",
       bossHp: "PV du boss",
       gold: "Or par Vestige",
-      summary: (stage: string, hp: string, gold: string) => `Étape ${stage} : ${hp} PV et ${gold} or par Vestige.`,
+      summary: (stage: string, hp: string, gold: string) => `Étape ${stage} : ${hp} PV et ${gold} or par Vestige.`,
       essences: "Essences d'une ascension après l'avoir franchie",
       essencesNone: (stage: number) => `aucune avant l'étape ${stage}`,
       threads: "Fils tissés à cette profondeur",
@@ -477,7 +477,7 @@ export const wiki = defineMessages({
       powers: { title: "Powers", short: "The seven powers, what they do and when to use them." },
       ascension: { title: "Ascension and altars", short: "Starting over stronger: essences and the 13 altars of the Sanctum." },
       promise: { title: "The Promise", short: "Giving your word to a companion for a night, and what it brings." },
-      relics: { title: "Relics, forge and market", short: "Gear, rarities, the forge, shards, the Stallkeeper's stall, the Caravan and the named relics." },
+      relics: { title: "Relics, forge and market", short: "Gear, rarities, the forge, shards, the Stallkeeper's market, the Caravan and the named relics." },
       idle: { title: "Playing in the background", short: "What your company does without you: page open, page hidden, game closed." },
       bestiary: { title: "Bestiary", short: "Every creature of the road, its lines and where to find it." },
       biomes: { title: "The five biomes", short: "Plains, forest, caves, marsh and ruins: one night's road." },
@@ -608,8 +608,8 @@ export const wiki = defineMessages({
       king: "King",
       trigger: "When",
       what: "What happens",
-      seconds: (value: number) => `${value} s`,
-      minutes: (value: number) => `${value} min`,
+      seconds: (value: number) => `${value} s`,
+      minutes: (value: number) => `${value} min`,
       levels: (value: number) => `${value} lv.`,
       instant: "instant",
       present: "present night"
@@ -622,7 +622,7 @@ export const wiki = defineMessages({
       critChance: (pct: number) => `+${pct}% critical chance`,
       critDamage: (add: number) => `+${add} to the critical multiplier`,
       gold: (pct: number) => `+${pct}% gold`,
-      bossTimer: (seconds: number) => `+${seconds} s against elites and guardians`,
+      bossTimer: (seconds: number) => `+${seconds} s against elites and guardians`,
       treasure: (pct: number) => `+${pct}% golden rat chance`,
       idleDps: (pct: number) => `+${pct}% to the Patience bonus`
     },
@@ -652,46 +652,46 @@ export const wiki = defineMessages({
       ysolde: "No strike of your own all night (Frenzy and the striking scroll still strike).",
       cendre: "Ashka is not hired all night (the companions after her still join).",
       nyx: "No power all night.",
-      garrick: "No shard spent all night: no stall, no Caravan, no forge.",
-      seraphine: "No blow for 10 s at the start of every fight with the Heart of the Old Grove, which must fall.",
+      garrick: "No shard spent all night: no market, no Caravan, no forge.",
+      seraphine: "No blow for 10 s at the start of every fight with the Heart of the Old Grove, which must fall.",
       thorvald: "Elites and guardians with half their time, all night.",
-      mirelle: "No blow for 15 s at the start of every fight with the Baron of Rot, who must fall.",
+      mirelle: "No blow for 15 s at the start of every fight with the Baron of Rot, who must fall.",
       kaelen: "Nobody past him joins the company until the King falls.",
       oriane: "The night goes past the stage the last night reached.",
-      vorn: "No blow for 10 s at the start of every fight with the Stone Devourer, which must fall.",
+      vorn: "No blow for 10 s at the start of every fight with the Stone Devourer, which must fall.",
       lysandre: "Two Kings fall this night.",
       ashka: "Brother Cinder is not hired all night.",
       nameless: "No essence offered to the altars all night.",
-      eldra: "No Seam closes on you all night. Alone, the company stops before a boss it cannot beat in its time less a second, without fighting it.",
+      eldra: "Lose no fight to an elite or a guardian all night. Alone, the company stops before a boss it cannot beat in its time less a second, without fighting it.",
       morgrath: "Kaelen is not hired all night.",
       celestine: "No crystal caught all night.",
-      aurelion: "No blow for 10 s at the start of every fight with the King.",
+      aurelion: "No blow for 10 s at the start of every fight with the King.",
       awakened: "The Awakened is not hired all night."
     } as Record<string, string>,
     eventTriggers: {
       storm: "1 wandering crystal in 20.",
       seam: "Normal stage 60 or deeper: 1 spawn in 400.",
-      wager: "1 golden rat in 10, then 3 min of rest.",
+      wager: "1 golden rat in 10, then 3 min of rest.",
       walker: "From 5 ascensions: 1% on each guardian's first clear.",
       caravan: "From 3 ascensions: one ware a week, the same for everyone.",
-      quiet: "The Void stratum (era IV) and deeper: 1 spawn in 1,000.",
+      quiet: "The Void stratum (IV) and deeper: 1 spawn in 1,000.",
       stray: "Once the Nameless is hired: 1 spawn in 2,000.",
       eclipse: "Every 7 ascensions, on the next King.",
-      tide: "Coming back after 4 h away or more.",
+      tide: "Coming back after 4 h away or more.",
       remembrance: "October 1st and December 21st.",
-      migration: "Era II and deeper: 1 new stage in 50.",
+      migration: "Stratum II and deeper: 1 new stage in 50.",
       unfinished: "Age VI (the Draft) and deeper: 1 spawn in 200."
     } satisfies Record<EventId, string>,
     eventEffects: {
-      storm: "The Lantern Queen crosses the sky: five crystals fall in turn, 3 s each, each with its own reward roll.",
-      seam: "A Seam Warden (elite HP, 20 s). Beaten: an elite's drop and an Age echo. If it escapes, you lose nothing.",
-      wager: "Pip stops, ringed in gold: 13 strikes in 5 s and he pays what the road would have paid in 45 s at your company's pace (never less than 30 times the stage's gold). Missed, he runs off.",
-      walker: "The shadow of another walker from the Roll fights beside you: DPS ×1.25 for 30 s.",
+      storm: "The Lantern Queen crosses the sky: five crystals fall in turn, 3 s each, each with its own reward roll.",
+      seam: "A Seam Warden (elite HP, 20 s). Beaten: an elite's drop and an Age echo. If it escapes, you lose nothing.",
+      wager: "Pip stops, ringed in gold: 13 strikes in 5 s and he pays what the road would have paid in 45 s at your company's pace (never less than 30 times the stage's gold). Missed, he runs off.",
+      walker: "The shadow of another walker from the Roll fights beside you: DPS ×1.25 for 30 s.",
       caravan: "The Stallkeeper brings the week's ware, paid in shards, once a week.",
-      quiet: "A colorless creature, 10 s, the sounds drop away. Beaten: an Age echo.",
-      stray: "An empty armor walks across the road (30 s). The first win gives the Hollow Plate.",
+      quiet: "A colorless creature, 10 s, the sounds drop away. Beaten: an Age echo.",
+      stray: "An empty armor walks across the road (30 s). The first win gives the Hollow Plate.",
       eclipse: "The King, shadowed: +50% HP, same timer. He always leaves a relic, and as he falls, a word of his own (seven, in turn).",
-      tide: "The next crystal comes within 20 s.",
+      tide: "The next crystal comes within 20 s.",
       remembrance: "Fragments come twice as often. No power is given.",
       migration: "For that stage, another biome's Remnants cross it.",
       unfinished: "A Remnant half drawn; beaten, an echo of the Draft."
@@ -728,14 +728,14 @@ export const wiki = defineMessages({
         guardianHp: "Guardian HP",
         rows: [
           { rank: "Remnant", stages: "all", hp: "×1", timer: "none", loot: "Gold (1/30 of its HP)" },
-          { rank: "Elite", stages: "5, 15, 25, 35, 45…", hp: "×6", timer: "30 s", loot: "Relic 15%, 1 shard 35%" },
-          { rank: "Guardian", stages: "10, 20, 30, 40…", hp: "×10", timer: "30 s", loot: "Relic 40% (guaranteed the first time), 1 + stage/25 shards" },
-          { rank: "King", stages: "50, 100, 150…", hp: "×10", timer: "30 s", loot: "As a guardian, plus the stratum's keystone" }
+          { rank: "Elite", stages: "5, 15, 25, 35, 45…", hp: "×6", timer: "30 s", loot: "Relic 15%, 1 shard 35%" },
+          { rank: "Guardian", stages: "10, 20, 30, 40…", hp: "×10", timer: "30 s", loot: "Relic 40% (guaranteed the first time), 1 + stage/25 shards" },
+          { rank: "King", stages: "50, 100, 150…", hp: "×10", timer: "30 s", loot: "As a guardian, plus the stratum's keystone" }
         ],
         crystals: [
           { name: "Gold", odds: "40%", effect: "The gold of 15 monsters of the stage." },
-          { name: "Overcharge", odds: "25%", effect: "Company DPS ×7 for 15 s." },
-          { name: "Sharpness", odds: "20%", effect: "Strike ×10 (its DPS share included) for 20 s." },
+          { name: "Overcharge", odds: "25%", effect: "Company DPS ×7 for 15 s." },
+          { name: "Sharpness", odds: "20%", effect: "Strike ×10 (its DPS share included) for 20 s." },
           { name: "Shards", odds: "12%", effect: "2 to 6 shards." },
           { name: "Essences", odds: "3%", effect: "1 essence, +1 per 100 stages of your record. Only after a first ascension." }
         ]
@@ -756,7 +756,7 @@ export const wiki = defineMessages({
       },
       relics: {
         salvage: "Shards when salvaged",
-        oddsNote: "Rarity chance of an ordinary relic. The stall's great chest only gives epic or better.",
+        oddsNote: "Rarity chance of an ordinary relic. The market's great chest only gives epic or better.",
         forgeTo: "Forge up to",
         shards: (cost: number) => `${cost} shards`,
         crown: "From the tenth Descent, a fifth slot appears in the equipment window. Nothing can fill it.",

@@ -24,7 +24,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
     },
     lines: {
       "shade-wolf": [
-        "A wolf made of the shadow between two trees. It hunts walkers who stray from the Wychwood's path.",
+        "A wolf made of the shadow between two trees. It hunts walkers who stray from the Dark Forest's path.",
         "It cannot cross moonlight, so it goes round every clearing, never through. Run across one and you lose it.",
         "Ysolde asked her trees to stop lending it their shadows. They refused: the wolf asked first, and trees are polite."
       ],
@@ -35,7 +35,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       ],
       "grove-spinner": [
         "A spider as big as a cart. It weaves thorns across the paths where walkers have bled.",
-        "Its web holds scraps of cloak from every walker who fell in the Wychwood. The newest scrap matches yours.",
+        "Its web holds scraps of cloak from every walker who fell in the Dark Forest. The newest scrap matches yours.",
         "It never runs out of thread: the forest grows new thorns every night, and it has spun since the night began."
       ],
       "mourning-owl": [
@@ -187,23 +187,23 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
     lines: {
       "shade-wolf": [
         "Un loup fait de l'ombre entre deux arbres. Il chasse les marcheurs qui quittent le sentier du Bois.",
-        "Il ne peut pas traverser le clair de lune : il contourne chaque clairière. Coupe à travers, et tu le sèmes.",
-        "Ysolde a prié ses arbres de ne plus lui prêter leur ombre. Ils ont refusé : le loup avait demandé avant."
+        "Il ne peut pas traverser le clair de lune : il contourne chaque clairière. Coupe à travers, et tu le sèmes.",
+        "Ysolde a prié ses arbres de ne plus lui prêter leur ombre. Ils ont refusé : le loup avait demandé avant."
       ],
       "briar-witch": [
-        "Une druidesse du Bosquet restée trop longtemps en forêt. Les ronces ont poussé en elle : elle fait partie de la haie.",
+        "Une druidesse du Bosquet restée trop longtemps en forêt. Les ronces ont poussé en elle : elle fait partie de la haie.",
         "Elle récite encore les leçons du Bosquet, et se trompe au troisième couplet, au même endroit, chaque nuit.",
         "Elle a été formée avec Séraphine. Séraphine passe sans un mot, mais laisse un peu d'eau à ses racines."
       ],
       "grove-spinner": [
         "Une araignée grande comme une charrette. Elle tend des épines sur les sentiers où des marcheurs ont saigné.",
         "Sa toile garde des lambeaux de cape de chaque marcheur tombé dans le Bois. Le plus récent a la couleur de la tienne.",
-        "Elle ne manque jamais de fil : la forêt refait ses épines chaque nuit, et elle file depuis le début de la nuit."
+        "Elle ne manque jamais de fil : la forêt refait ses épines chaque nuit, et elle file depuis le début de la nuit."
       ],
       "mourning-owl": [
-        "Une chouette en deuil. Elle pose à chaque passant la même question, « Qui ? », et attend un nom.",
-        "Elle a pris le deuil la nuit où le donjon s'est tu. Elle pleure le roi, mais personne ne lui a dit son nom.",
-        "Ysolde prévient : ne lui réponds jamais. Donne-lui un nom, et elle l'appellera chaque nuit, pour toujours."
+        "Une chouette en deuil. Elle pose à chaque passant la même question, « Qui ? », et attend un nom.",
+        "Elle a pris le deuil la nuit où le donjon s'est tu. Elle pleure le Roi, mais personne ne lui a dit son nom.",
+        "Ysolde prévient : ne lui réponds jamais. Donne-lui un nom, et elle l'appellera chaque nuit, pour toujours."
       ],
       "toadstool-choir": [
         "Sept champignons qui chantent ensemble, faux. Ils répètent la même chanson depuis que la nuit dure.",
@@ -212,7 +212,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       ],
       "whisper-bramble": [
         "Une ronce qui murmure le nom de chaque marcheur qui a saigné sur ses épines. Elle vient d'apprendre le tien.",
-        "Le Grand Livre a comparé sa liste au Registre des Liés. Celle de la ronce est plus longue : certains n'ont pas signé.",
+        "Le Grand Livre a comparé sa liste au Registre des Liés. Celle de la ronce est plus longue : certains n'ont pas signé.",
         "Son plus vieux nom est Aldric, celui que porte chaque marcheur. Elle le murmure depuis le premier sang versé ici."
       ],
       "root-knight": [
@@ -228,7 +228,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       "weeping-stag": [
         "Un cerf rare qui pleure de la sève. Il porte dans ses bois un nid d'étoiles tombées.",
         "Les étoiles de son nid sont des éclats de la Voûte de verre, le dôme fêlé d'Orvane. Il les couve comme des œufs.",
-        "Chaque nuit, il ramasse un éclat de plus. Le Grand Livre a compté : une fêlure au ciel, une étoile au nid."
+        "Chaque nuit, il ramasse un éclat de plus. Le Grand Livre a compté : une fêlure au ciel, une étoile au nid."
       ],
       "blind-crawler": [
         "Un rampeur pâle des cavernes, sans yeux. Il trouve les marcheurs au bruit de leur souffle.",
@@ -238,7 +238,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       "echo-bat": [
         "Une chauve-souris qui crie un instant avant que tu frappes. Elle a entendu ce combat d'autres nuits, et s'en souvient.",
         "Elle crie maintenant avant même que tu décides de frapper. Le Grand Livre ne trouve plus ça drôle.",
-        "Oriane en garde une chez elle. Elle crie avant qu'Oriane parle : Oriane n'a jamais à finir ses phrases."
+        "Oriane en garde une chez elle. Elle crie avant qu'Oriane parle : Oriane n'a jamais à finir ses phrases."
       ],
       "crystal-mite": [
         "Un acarien qui mange du verre du ciel, les éclats tombés de la Voûte fêlée. Il en rejette de plus petits.",
@@ -247,22 +247,22 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       ],
       "drip-leech": [
         "Une sangsue pendue au plafond des cavernes, qui boit tout ce qui goutte. Surtout de l'eau. Parfois un marcheur.",
-        "Sa stalactite ne grandit jamais : elle boit chaque goutte avant que la pierre la garde. Les mineurs la détestaient.",
+        "Sa stalactite ne grandit jamais : elle boit chaque goutte avant que la pierre la garde. Les mineurs la détestaient.",
         "Garrick jure qu'une d'elles a bu toute sa pause de midi. Il a demandé au Grand Livre de noter sa plainte. C'est noté."
       ],
       "rune-cart": [
         "Un wagonnet qui fait encore la ligne vers la surface. La ligne finit dans la roche, maintenant. Il y va quand même.",
         "Il s'arrête à chaque ancienne station et attend exactement le temps prévu. Personne ne monte.",
-        "Son dernier chargement : des éclats pour le donjon, partis la veille de la Longue Nuit. Il essaie encore de livrer."
+        "Son dernier chargement : des éclats pour le donjon, partis la veille de la Longue Nuit. Il essaie encore de livrer."
       ],
       "hollow-canary": [
         "Le canari des mineurs. Il s'est tu quand l'air a tourné, et les mineurs ont fui. Il chante à présent pour personne.",
-        "Son chant est un avertissement. Les mineurs sont partis depuis longtemps : il prévient les marcheurs, au cas où.",
+        "Son chant est un avertissement. Les mineurs sont partis depuis longtemps : il prévient les marcheurs, au cas où.",
         "Plus la strate est profonde et la nuit vieille, plus il chante fort. Quelque chose en bas lui fait plus peur que l'air."
       ],
       "miner-shade": [
         "Le fantôme d'un mineur de la Guilde des runes, pioche en main. Il finit son service à l'aube, dit-il.",
-        "L'aube n'est pas revenue depuis le début de la Longue Nuit : son service dure déjà plus longtemps que la mine.",
+        "L'aube n'est pas revenue depuis le début de la Longue Nuit : son service dure déjà plus longtemps que la mine.",
         "Garrick partage son casse-croûte avec lui, en douce. L'ombre lui laisse toujours la croûte, comme le père de Garrick."
       ],
       "stone-devourer": [
@@ -287,7 +287,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       ],
       "will-o-wisp": [
         "Une flamme de lanterne que personne ne tient. Elle flotte sur le marais, en quête de quelqu'un qui la suive.",
-        "Suis-la : elle te mène au manoir, toujours par le chemin sûr. Personne n'a jamais pensé à la remercier.",
+        "Suis-la : elle te mène au manoir, toujours par le chemin sûr. Personne n'a jamais pensé à la remercier.",
         "C'est la lampe que Mirelle a posée à la fenêtre pour Osric, la nuit de la crue. Il était en retard. Elle brûle toujours."
       ],
       "drowned-courtier": [
@@ -296,13 +296,13 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
         "Dans son chapeau, une invitation au premier anniversaire de mariage du baron, prévu le lendemain de la crue."
       ],
       "peat-cutter": [
-        "Un ouvrier des tourbières du baron. Elles ont été noyées, mais ses ordres n'ont pas changé : il coupe sous l'eau.",
+        "Un ouvrier des tourbières du baron. Elles ont été noyées, mais ses ordres n'ont pas changé : il coupe sous l'eau.",
         "Il empile chaque motte sur la berge pour qu'elle sèche. La berge aussi est sous l'eau. Il empile quand même.",
         "Sa lanterne s'est éteinte la nuit de la crue. Il la rallumera à la fin de son service. Le service n'a pas fini."
       ],
       "mire-heron": [
         "Un héron qui attend sur une patte. Les poissons du marais sont morts dans la crue. Il ne l'a pas remarqué.",
-        "Il change de patte une fois par nuit, toujours juste après la chute du roi. Le Grand Livre a vérifié souvent.",
+        "Il change de patte une fois par nuit, toujours juste après la chute du Roi. Le Grand Livre a vérifié souvent.",
         "Vorn a surpris Biscuit à le fixer une heure durant. Le héron l'a fixé en retour. Personne n'a cillé. Match nul."
       ],
       "bog-colossus": [
@@ -311,14 +311,14 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
         "Le jardin de Mirelle est quelque part dans son bras gauche. Elle lui a demandé, poliment, de rendre les roses."
       ],
       "rot-baron": [
-        "Le baron Osric, seigneur du marais, pourri jusqu'à l'os. Seule son alliance reste propre : quelqu'un l'aime encore.",
+        "Le baron Osric, seigneur du marais, pourri jusqu'à l'os. Seule son alliance reste propre : quelqu'un l'aime encore.",
         "Sa femme est Mirelle, l'alchimiste. Chaque nuit, elle essaie sur lui un remède avant ton combat. Aucun n'a marché.",
         "En tombant, il regarde toujours derrière le marcheur, là où se tient Mirelle."
       ],
       ferryman: [
         "Un passeur sans rivière. Il demande une pièce pour traverser le marais. Il n'y a rien à traverser. Paie-le quand même.",
         "Il garde toutes les pièces qu'on lui donne. Deux lui servent d'yeux. Le Grand Livre n'a pas demandé pour les autres.",
-        "Morgrath, la liche, s'incline devant lui. Sur toute la route, c'est le seul qu'il appelle « confrère »."
+        "Morgrath, la liche, s'incline devant lui. Sur toute la route, c'est le seul qu'il appelle « confrère »."
       ]
     },
     pages: {
@@ -326,7 +326,7 @@ export const BESTIARY_TEXT: Record<Locale, BestiaryText> = {
       "dark-forest": "Forêt sombre",
       "forgotten-caves": "Cavernes oubliées",
       "corrupted-marsh": "Marais corrompu",
-      "fallen-king-ruins": "Ruines du roi déchu",
+      "fallen-king-ruins": "Ruines du Roi déchu",
       specials: "Hors des routes",
       kings: "Les douze rois"
     }

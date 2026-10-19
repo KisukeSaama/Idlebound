@@ -1086,11 +1086,35 @@ of the course.
   as a pitch (a factual FAQ answer may stay factual).
 - **Never use an em dash (—)** in any user-facing string, in either language. Use " : " (FR)
   or ": " (EN), " · " or a comma.
-- Game terms are consistent: gold, essences, shards, companions, powers, altars, relics,
-  ascension, stage, era, elite, guardian. The game says guardian (FR *gardien*), never boss;
-  deeds (FR *hauts faits*), never achievements; a run is a night, never a life; the walker
-  who stays on a cleared stage **stays** (FR *Rester*), never farms. Public pages may say boss
-  and achievements where a search looks for them.
+- Game terms are consistent: one word per thing, the same in the game, the wiki and the
+  landing page (the glossary below). A run is a night, never a life; the walker who stays on
+  a cleared stage **stays** (FR *Rester*), never farms. Public pages may say boss and
+  achievements where a search looks for them (the wiki says boss for "an elite or a
+  guardian"); the game never does. `writing.test.ts` refuses the banned words in the game's
+  text.
+
+  | Thing | French | English | Never (in the game) |
+  |---|---|---|---|
+  | A step of the road | étape | stage | niveau, level (levels are the companions') |
+  | Fifty stages, one loop of the five biomes | strate (Strate IV) | stratum, strata (Stratum IV) | ère, era |
+  | Five strata | Âge | Age | |
+  | What the walker fights, counted and in rules | monstre | monster | créature, creature |
+  | The same, in the Ledger's voice | Vestige | Remnant | |
+  | Every 5th stage / every 10th / every 50th | élite / gardien / le Roi | elite / guardian / the King | boss |
+  | What bosses drop and the walker wears | relique | relic | objet, item |
+  | Where relics wait unworn | sac | bag | inventaire, inventory, pack |
+  | Where shards buy chests and potions | le marché, tenu par le Comptoir | the market, kept by the Stallkeeper | échoppe, étal, stall, shop |
+  | Achievements | hauts faits | deeds | succès, achievements |
+  | The window of deeds, Bestiary, Chronicle and Roll | le Hall (Hall des héros) | the Hall (Hall of Heroes) | |
+  | The second rebirth / its place | la Descente / le Métier d'Eldra | the Descent / Eldra's Loom | |
+  | The five biomes | Plaines verdoyantes, Forêt sombre, Cavernes oubliées, Marais corrompu, Ruines du roi déchu (short: les Plaines, le Bois, le Marais, le Donjon) | Verdant Plains, Dark Forest, Forgotten Caves, Corrupted Marsh, Fallen King's Ruins | Hearthfields, Wychwood, Deepvaults (BIBLE names, never shown) |
+  | The event | une Brèche (it opens, the walker closes it) | a Seam | a Seam for a lost fight |
+  | The King | le Roi, capitalised whenever it names him; un roi for any king | the King | |
+
+- **French typography**: a no-break space (U+00A0) before `:` and between a number and its
+  unit (`30 s`, `2 h`), a narrow no-break space (U+202F) before `;`, `!`, `?` and `%` and
+  inside « guillemets ». `×` for a multiplier, `…` for an ellipsis, never `x` or `...`.
+  `writing.test.ts` checks it in the French text.
 - Every user-facing string exists in both languages (see AGENTS.md for where they live).
 - **The Ledger's voice** (account window, save errors, the Roll): a diegetic line in Cinzel
   gold (`.ledger-voice`), its plain meaning always next to it (`.ledger-plain`, or the

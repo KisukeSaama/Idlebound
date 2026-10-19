@@ -9,20 +9,20 @@ export const leaderboard = defineMessages({
   fr: {
     metaTitle: "Classement du clicker fantasy",
     metaDescription:
-      "Le classement officiel d'Idlebound, l'étape la plus haute atteinte, et trois autres : promesses tenues, cristaux attrapés, nuits retissées. Chaque score est vérifié par le serveur.",
+      "Le classement officiel d'Idlebound, l'étape la plus haute atteinte, et trois autres : promesses tenues, cristaux attrapés, nuits retissées. Chaque score est vérifié par le serveur.",
     title: "Le Registre des Liés",
     subtitle: "Classement",
-    intro: "Le Grand Livre n'écrit que ce qui est vraiment arrivé : chaque score est vérifié par le serveur à chaque envoi. ",
+    intro: "Le Grand Livre n'écrit que ce qui est vraiment arrivé : chaque score est vérifié par le serveur à chaque envoi. ",
     introCta: "Crée un compte en jeu",
     introEnd: " pour y inscrire ton nom.",
     tabsLabel: "Classement affiché",
     official: "Officiel",
     boards: { stage: "Profondeur", promises: "Parole tenue", crystals: "La Veille", weavings: "Nuits retissées" },
     rules: {
-      stage: "Le classement officiel : l'étape la plus haute jamais atteinte. Une ascension ou une descente ne la fait pas perdre, elle t'aide à la dépasser. À étape égale, celui qui l'a atteinte en premier passe devant.",
+      stage: "Le classement officiel : l'étape la plus haute jamais atteinte. Une ascension ou une descente ne la fait pas perdre, elle t'aide à la dépasser. À étape égale, celui qui l'a atteinte en premier passe devant.",
       promises: "Les promesses tenues aux compagnons depuis le début de la partie. Une parole par nuit au plus, tenue seulement si le Roi tombe.",
       crystals: "Les cristaux attrapés depuis le début de la partie. Ils ne tombent que pour qui veille, et s'éteignent en quelques secondes.",
-      weavings: "Les Descentes qui ont tissé au moins un fil. Eldra ne tisse que ce que ta nuit a gagné en profondeur depuis la dernière : descendre souvent rapporte peu de fil à chaque fois, descendre rarement en rapporte beaucoup. À toi de choisir ton rythme."
+      weavings: "Les Descentes qui ont tissé au moins un fil. Eldra ne tisse que ce que ta nuit a gagné en profondeur depuis la dernière : descendre souvent rapporte peu de fil à chaque fois, descendre rarement en rapporte beaucoup. À toi de choisir ton rythme."
     },
     ties: "À égalité, l'étape la plus haute passe devant, puis le premier à l'avoir atteinte.",
     values: {
@@ -33,7 +33,7 @@ export const leaderboard = defineMessages({
     },
     unavailable: "Le classement est momentanément indisponible. Réessaie dans un instant.",
     empty: "Aucun nom n'est encore inscrit. ",
-    emptyCta: "Inscris le premier nom !",
+    emptyCta: "Inscris le premier nom !",
     around: "Autour de toi",
     top: "En tête",
     columns: { rank: "#", player: "Marcheur", stage: "Étape la plus haute", reached: "Atteinte le" }

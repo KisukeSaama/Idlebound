@@ -59,7 +59,7 @@ market is French-speaking, with a full English version.
 | Biomes | 5 biomes of 10 stages, six normal creatures, an elite and a guardian each: the Verdant Plains (Field Rat, Jumpy Boar, Carrion Crow, Hollow Scarecrow, Lantern Moth, Dusk Hare; Last Reaper; Moss Alpha), the Dark Forest (Shade Wolf, Briar Witch, Grove Spinner, Mourning Owl, Toadstool Choir, Whispering Bramble; Root Knight; Heart of the Old Grove), the Forgotten Caves (Blind Crawler, Echo Bat, Crystal Mite, Drip Leech, Haunted Cart, Hollow Canary; Miner's Shade; Stone Devourer), the Corrupted Marsh (Bog Remnant, Rot Toad, Will-o'-Wisp, Drowned Courtier, Peat Cutter, Mire Heron; Mire Colossus; Baron of Rot) and the Fallen King's Ruins (Gargoyle of the Hours, Banner Wraith, Fallen Sentinel, Hollow Page, Hound of the Last Hunt, Candle Maid; Stone Warden; the King). |
 | The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000 the Dawn stands in his place, a milestone: beaten, it lets the walker through. Below it the forms come round again with the Ages (the Fallen King at 3050, the Titan King at 3300…). |
 | Rare wanderers | One per biome (the Lost Shepherd, the Weeping Stag, the Singing Geode, the Ferryman, the Court Jester): 0.5% of the biome's normal spawns that are not a golden rat or an event, once a run at most, ×5 gold, a Chronicle fragment on the first defeat. |
-| Eras | Each full loop of the 5 biomes (50 stages) starts a new era, a **stratum** with its own name (60 in all, from the present night to Dawn, in 12 Ages of five: the Kingdom, the Elder World, the Hallowed, the Making of the Stars, the Loom, the Draft, the Words, the Edge of Sleep, the Dreamer's Room, the Unmaking, the Blank, the First Mark): prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial, Titan…), drawn with that era's treatment (each Age transforms creatures and scenes, and every era wears the places down; see DESIGN.md). Below the Dawn (era 60 on) the night draws itself again from the first stratum: the era keeps counting (Era LXI…), its look, tag and King follow era mod 60, and the Age carries the fold's number (the Kingdom II, the Elder World II…). |
+| Eras | Each full loop of the 5 biomes (50 stages) starts a new era, a **stratum** with its own name (60 in all, from the present night to Dawn, in 12 Ages of five: the Kingdom, the Elder World, the Hallowed, the Making of the Stars, the Loom, the Draft, the Words, the Edge of Sleep, the Dreamer's Room, the Unmaking, the Blank, the First Mark): prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial, Titan…), drawn with that era's treatment (each Age transforms creatures and scenes, and every era wears the places down; see DESIGN.md). Below the Dawn (era 60 on) the night draws itself again from the first stratum: the era keeps counting (shown "Stratum LXI", FR "Strate LXI"), its look, tag and King follow era mod 60, and the Age carries the fold's number (the Kingdom II, the Elder World II…). |
 | Golden rat | 1% base spawn chance on normal stages, ×10 gold. Chance capped at 25%. |
 | Wandering crystal | Appears every 90 to 240 s while the tab is visible (sooner with Garrick's Lodestone, the Humming Loom or the Moth Lantern), stays 13 s (18 s with the Singing Stone). Gives gold (40%), overcharge DPS ×7 for 15 s (25%), sharpness click ×10 (DPS share included) for 20 s (20%), 2 to 6 shards (12%) or essences (3%, only after a first ascension). Gold = 15 monsters of the current stage; essences = 1 + 1 per 100 stages of the best stage ever. The first crystal of a new game comes after 75 s. One crystal in 20 is a **Crystal Storm**: the Lantern Queen crosses the sky and five crystals fall in turn, 3 s each, a normal reward roll each (only while the tab is visible). |
 | HP curve | Three segments (steep early, then ×1.15 then ×1.18 per stage) tuned so ascension income never outruns monster HP. |
@@ -346,7 +346,7 @@ The second layer of rebirth, for the long run (it keeps players apart after week
 The road has no last stage (BIBLE 24). The Dawn stands at stage 3000 in the King's place;
 beaten, it lets the walker through, and the night draws itself again from its first stratum.
 
-- **Strata below the Dawn.** The era keeps counting (Era LXI from stage 3001); its look, tag,
+- **Strata below the Dawn.** The era keeps counting (Stratum LXI from stage 3001); its look, tag,
   sounds and King's form are those of era mod 60 (`drawnEra`): era 60 is the present night
   again, the Fallen King guards 3050, the Titan King 3300. The Age carries the fold's number
   (the Kingdom II, the Elder World II…, then III). The Chronicle gains nothing new below the
@@ -1127,7 +1127,10 @@ and a page building on a guest's game the server no longer keeps there (another 
 brought it to an account) gets a conflict, never a second copy of that game. Opening a
 guest's game is limited per address too (60 a minute), whatever cookie the page sends.
 Rejections are logged (kept 90 days, 30 per game and hour at most, one entry per code, under
-the account or the guest's game); a refused save returns its first 20 violations. Only an
+the account or the guest's game); a refused save returns its first 20 violations. The page
+tells the walker only what they can act on (a device clock set wrong, a game of another
+device or account, an older version, each with what to do); every other refusal reads the
+same plain line, never what was checked. Only an
 account's accepted saves feed the leaderboard, which keeps each player's best verified
 values: a guest is never ranked. Checks that need no stored save run before the
 save's row is locked.

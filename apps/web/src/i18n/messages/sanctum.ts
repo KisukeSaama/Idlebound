@@ -14,24 +14,24 @@ export const sanctum = defineMessages({
     /** The Promise (BIBLE 12.11): the word given to one companion at dusk. */
     promise: {
       title: "La Promesse",
-      hint: (pct: number, max: number) => `Au crépuscule, donne ta parole à un compagnon : toute la nuit suivante, tu ne peux pas faire ce que sa règle interdit. Elle est tenue si tu respectes sa règle jusqu'à ton crépuscule et qu'un Roi tombe cette nuit. Chaque parole tenue double les dégâts de ce compagnon pour toujours, ${max} fois au plus (×${2 ** max}). Ses deux derniers souvenirs en demandent aussi une chacun, et le dernier lui donne encore +${pct} % de dégâts.`,
+      hint: (pct: number, max: number) => `Au crépuscule, donne ta parole à un compagnon. Toute la nuit, ce que sa règle interdit t'est refusé. À ta prochaine ascension, la parole est tenue si tu as respecté sa règle et qu'un Roi est tombé cette nuit. Chaque parole tenue double ses dégâts pour toujours, ${max} fois au plus (×${2 ** max}). Ses deux derniers souvenirs en demandent une chacun, et le dernier lui donne +${pct} % de dégâts.`,
       tonight: "Cette nuit",
-      none: "Aucune parole cette nuit : aucune règle ne te limite.",
+      none: "Aucune parole cette nuit : aucune règle ne te limite.",
       choose: "Choisir un compagnon pour la prochaine nuit",
       give: "Donner ma parole",
       giveNext: "Choisir pour la prochaine nuit",
       chosen: "Choisi pour la prochaine nuit",
       takeBack: "Annuler",
-      giveLabel: (name: string, tonight: boolean) => `${name} : ${tonight ? "donner ma parole pour cette nuit" : "donner ma parole au prochain crépuscule"}`,
-      bound: (name: string) => `Ta parole à ${name} :`,
-      noWeapon: "Équipe d'abord une arme : c'est elle qu'il te demande de laisser.",
+      giveLabel: (name: string, tonight: boolean) => `${name} : ${tonight ? "donner ma parole pour cette nuit" : "donner ma parole au prochain crépuscule"}`,
+      bound: (name: string) => `Ta parole à ${name} :`,
+      noWeapon: "Équipe d'abord une arme : c'est elle qu'il te demande de laisser.",
       rested: "Déjà ta parole cette nuit. Un même compagnon ne peut pas l'avoir deux nuits de suite.",
       restedLast: "Déjà ta parole la nuit dernière. Un même compagnon ne peut pas l'avoir deux nuits de suite.",
       doubles: "Tenue, cette nuit compte aussi double pour sa Reconnaissance, si son niveau atteint 100.",
-      reward: (total: number) => `Tenue : ses dégâts doublent pour toujours (×${total} en tout).`,
-      fulfilled: (names: string, total: number) => `Toutes leurs paroles sont tenues, leurs dégâts ×${total} pour toujours : ${names}.`,
+      reward: (total: number) => `Tenue : ses dégâts doublent pour toujours (×${total} en tout).`,
+      fulfilled: (names: string, total: number) => `Toutes leurs paroles sont tenues, leurs dégâts ×${total} pour toujours : ${names}.`,
       breakWord: "Rompre ma parole",
-      breakTitle: "Rompre ta parole ?",
+      breakTitle: "Rompre ta parole ?",
       breakText: "Sa règle ne s'applique plus et tu ne perds aucune force. Mais cette parole ne doublera pas ses dégâts, ne comptera pas pour sa Reconnaissance, et tu ne pourras pas en donner une autre avant le prochain crépuscule.",
       breakLabel: "Rompre",
       status: {
@@ -40,8 +40,8 @@ export const sanctum = defineMessages({
         broken: "Parole rompue"
       },
       statusHint: {
-        given: "Pas encore tenue : fais ce qu'elle demande avant ton crépuscule.",
-        ready: "Respecte encore sa règle jusqu'à ton crépuscule, et elle sera tenue.",
+        given: "Pas encore tenue : fais ce qu'elle demande avant ta prochaine ascension.",
+        ready: "Respecte encore sa règle jusqu'à ta prochaine ascension, et elle sera tenue.",
         broken: "Sa règle ne s'applique plus. Cette nuit compte comme une nuit ordinaire."
       },
       kept: (count: number, max: number, total: number) => `${count} / ${max} parole${count > 1 ? "s" : ""} tenue${count > 1 ? "s" : ""} · dégâts ×${total}`,
@@ -49,18 +49,18 @@ export const sanctum = defineMessages({
       /** What each kind of promise asks, in plain words. */
       rules: {
         without: (name: string) => `Ne pas recruter ${name} de la nuit.`,
-        withoutSelf: "Marcher sans lui : ne pas le recruter de la nuit.",
-        headGuardian: (name: string) => `Ne recruter aucun compagnon venu après ${name} avant d'avoir vaincu le premier gardien.`,
-        headKing: (name: string) => `Ne recruter aucun compagnon venu après ${name} avant d'avoir vaincu le Roi.`,
+        withoutSelf: "Marcher sans lui : ne pas le recruter de la nuit.",
+        headGuardian: (name: string) => `Ne recruter aucun des compagnons placés sous ${name} dans la liste avant la chute du premier gardien de la nuit.`,
+        headKing: (name: string) => `Ne recruter aucun des compagnons placés sous ${name} dans la liste avant la chute du Roi.`,
         wait: (guardian: string, seconds: number) => `Contre ${guardian}, personne ne frappe pendant les ${seconds} premières secondes de chaque combat. Il doit tomber cette nuit.`,
         waitKing: (seconds: number) => `Contre le Roi, personne ne frappe pendant les ${seconds} premières secondes de chaque combat.`,
-        strikes: "Ne pas frapper toi-même de la nuit : seuls tes compagnons attaquent.",
+        strikes: "Ne pas frapper toi-même de la nuit : seuls tes compagnons attaquent.",
         powers: "N'utiliser aucun pouvoir de la nuit.",
         shards: "Ne dépenser aucun éclat de la nuit, ni au marché ni à la forge.",
         crystals: "Ne toucher aucun cristal errant de la nuit.",
         essences: "Ne dépenser aucune essence aux autels de la nuit.",
         unfailing: "Ne perdre aucun combat contre une élite ou un gardien à la fin du chrono. La progression s'arrête d'elle-même devant ceux que la compagnie ne peut pas battre.",
-        seam: (pct: number) => `Toute la nuit, le chrono des élites et gardiens ne dure que ${pct} % de son temps.`,
+        seam: (pct: number) => `Toute la nuit, le chrono des élites et gardiens ne dure que ${pct} % de son temps.`,
         anvil: "Ton arme ne donne aucun bonus de la nuit, et tu ne peux ni la changer ni la forger.",
         further: (stage: number) => `Dépasser l'étape ${stage}, où la dernière nuit s'est arrêtée.`,
         furtherNext: "Dépasser l'étape où s'arrête la nuit en cours.",
@@ -69,43 +69,43 @@ export const sanctum = defineMessages({
       },
       toasts: {
         given: (name: string) => `Parole donnée · ${name}`,
-        ready: "Parole remplie",
-        readyText: "Ce qui t'était demandé est fait. Respecte encore sa règle jusqu'à ton crépuscule, et elle sera tenue.",
+        ready: "Condition remplie",
+        readyText: "Ce qui t'était demandé est fait. Respecte encore sa règle jusqu'à ta prochaine ascension, et elle sera tenue.",
         kept: (name: string) => `Parole tenue · ${name}`,
-        keptText: (total: number) => `Ses dégâts doublent pour toujours : ×${total} en tout. Elle compte aussi pour sa Reconnaissance.`,
+        keptText: (total: number) => `Ses dégâts doublent pour toujours : ×${total} en tout. Elle compte aussi pour sa Reconnaissance.`,
         broken: (name: string) => `Parole rompue · ${name}`,
         brokenText: "Sa règle ne s'applique plus, mais cette parole ne double pas ses dégâts et ne compte pas pour sa Reconnaissance.",
-        held: (name: string) => `Refusé : tu as donné ta parole à ${name}`,
+        held: (name: string) => `Refusé : tu as donné ta parole à ${name}`,
         heldText: (rule: string) => `${rule} Pour le faire quand même, romps ta parole (Ascension, La Promesse).`
       }
     },
     loom: {
       descents: "Descentes",
       threads: "Fils",
-      threadsTotal: (total: string) => `Total tissé : ${total}`,
+      threadsTotal: (total: string) => `Total tissé : ${total}`,
       takesTitle: "La Descente prend",
-      takes: ["Tes essences", "Les niveaux de tous tes autels", "Tout ce que prend une ascension : or, compagnons et talents, étape"],
+      takes: ["Tes essences", "Les niveaux de tous tes autels", "Tout ce que prend une ascension : or, compagnons et talents, étape"],
       keepsTitle: "Elle laisse",
       keeps: ["Ton équipement, tes reliques et tes éclats", "Tes hauts faits, la Chronique et le Bestiaire", "La Reconnaissance de tes compagnons", "Ta meilleure étape, tes fils et tes Tissages"],
-      stonesKept: (pct: number) => `Pierres mémoires : tu gardes ${pct} % des niveaux de chaque autel.`,
+      stonesKept: (pct: number) => `Pierres mémoires : tu gardes ${pct} % des niveaux de chaque autel.`,
       preview: "Descendre maintenant te donnerait",
       threadsCount: (count: string) => `${count} fils`,
       nextThread: (stage: number) => `Prochain fil à l'étape ${stage}. Seule une étape plus profonde que ton record donne de nouveaux fils.`,
       descend: "Descendre",
-      confirmTitle: "Descendre ?",
+      confirmTitle: "Descendre ?",
       confirmText: (threads: string, none: boolean) =>
-        `${none ? "Tu ne gagneras aucun fil : va d'abord plus loin que ton record d'étape." : `Tu gagnes ${threads} fils, à dépenser en Tissages permanents.`} Tu perds tes essences et les niveaux de tous tes autels, et comme à l'ascension ton or, tes compagnons et ton étape. Tu gardes ton équipement, tes éclats, tes hauts faits, la Chronique et la Reconnaissance.`,
+        `${none ? "Tu ne gagneras aucun fil : va d'abord plus loin que ton record d'étape." : `Tu gagnes ${threads} fils, à dépenser en Tissages permanents.`} Tu perds tes essences et les niveaux de tous tes autels, et comme à l'ascension ton or, tes compagnons et ton étape. Tu gardes ton équipement, tes éclats, tes hauts faits, la Chronique et la Reconnaissance.`,
       confirmLabel: "Descendre",
       weaves: "Tissages",
-      weavesHint: "Dépense tes fils ici. Ces améliorations sont permanentes : aucune Descente ne les retire.",
-      weaveLabel: (name: string, cost: string) => `Tisser ${name} : ${cost} fils`,
+      weavesHint: "Dépense tes fils ici. Ces améliorations sont permanentes : aucune Descente ne les retire.",
+      weaveLabel: (name: string, cost: string) => `Tisser ${name} : ${cost} fils`,
       weaveLevel: (level: number, max: number): string => (max ? `niv. ${level} / ${max}` : `niv. ${level}`),
       woven: "Au maximum",
       power: "Nouveau pouvoir"
     },
     stall: {
-      discount: (pct: number) => `Jeton : -${pct} % sur tous les prix ici`,
-      oldPrice: (price: string) => `Prix sans le Jeton : ${price}`
+      discount: (pct: number) => `Jeton : -${pct} % sur tous les prix ici`,
+      oldPrice: (price: string) => `Prix sans le Jeton : ${price}`
     },
     caravan: {
       ware: "Offre de la semaine, un seul achat",
@@ -117,7 +117,7 @@ export const sanctum = defineMessages({
     },
     armory: {
       regalia: "Regalia d'Orvane",
-      regaliaWorn: (pct: number) => `Les trois pièces portées ensemble : +${pct} % de dégâts contre le Roi.`,
+      regaliaWorn: (pct: number) => `Les trois pièces portées ensemble : +${pct} % de dégâts contre le Roi.`,
       crownSlot: "Cinquième emplacement"
     }
   },
@@ -128,7 +128,7 @@ export const sanctum = defineMessages({
     legendSummary: "Altar legend",
     promise: {
       title: "The Promise",
-      hint: (pct: number, max: number) => `At dusk, give your word to one companion: for the whole next night, you cannot do what their rule forbids. It is kept if you hold to their rule until your dusk and a King falls that night. Every word kept doubles that companion's damage for good, ${max} times at most (×${2 ** max}). Their last two memories also ask for one each, and the last one gives them another +${pct}% damage.`,
+      hint: (pct: number, max: number) => `At dusk, give your word to one companion. All night, what their rule forbids is refused to you. At your next ascension, the word is kept if you held to their rule and a King fell that night. Every word kept doubles their damage for good, ${max} times at most (×${2 ** max}). Their last two memories ask for one each, and the last gives them +${pct}% damage.`,
       tonight: "Tonight",
       none: "No word given tonight: no rule limits you.",
       choose: "Choose a companion for the next night",
@@ -154,8 +154,8 @@ export const sanctum = defineMessages({
         broken: "Word broken"
       },
       statusHint: {
-        given: "Not kept yet: do what it asks before your dusk.",
-        ready: "Keep to its rule until your dusk, and it is kept.",
+        given: "Not kept yet: do what it asks before your next ascension.",
+        ready: "Keep to its rule until your next ascension, and it is kept.",
         broken: "Their rule no longer applies. This night counts as an ordinary one."
       },
       kept: (count: number, max: number, total: number) => `${count} / ${max} word${count === 1 ? "" : "s"} kept · damage ×${total}`,
@@ -163,8 +163,8 @@ export const sanctum = defineMessages({
       rules: {
         without: (name: string) => `Do not hire ${name} all night.`,
         withoutSelf: "Walk without them: do not hire them all night.",
-        headGuardian: (name: string) => `Hire no companion who comes after ${name} until you beat the first guardian.`,
-        headKing: (name: string) => `Hire no companion who comes after ${name} until you beat the King.`,
+        headGuardian: (name: string) => `Hire none of the companions listed below ${name} until the night's first guardian falls.`,
+        headKing: (name: string) => `Hire none of the companions listed below ${name} until the King falls.`,
         wait: (guardian: string, seconds: number) => `Against ${guardian}, nobody strikes for the first ${seconds}s of every fight. It must fall this night.`,
         waitKing: (seconds: number) => `Against the King, nobody strikes for the first ${seconds}s of every fight.`,
         strikes: "Do not strike yourself all night: only your companions attack.",
@@ -182,8 +182,8 @@ export const sanctum = defineMessages({
       },
       toasts: {
         given: (name: string) => `Word given · ${name}`,
-        ready: "Word fulfilled",
-        readyText: "What was asked of you is done. Keep to its rule until your dusk, and it is kept.",
+        ready: "Condition met",
+        readyText: "What was asked of you is done. Keep to its rule until your next ascension, and it is kept.",
         kept: (name: string) => `Word kept · ${name}`,
         keptText: (total: number) => `Their damage doubles for good: ×${total} in all. It also counts toward their Recognition.`,
         broken: (name: string) => `Word broken · ${name}`,
@@ -226,7 +226,7 @@ export const sanctum = defineMessages({
       bought: "Bought. The Caravan moves on and comes back next week with another offer.",
       left: "The Caravan left. It comes back next week with a new offer.",
       tokenOwned: "You already have the Token. You can only own one.",
-      packFull: (room: number) => `You need ${room} free ${room > 1 ? "spaces" : "space"} in your pack.`
+      packFull: (room: number) => `You need ${room} free ${room > 1 ? "spaces" : "space"} in your bag.`
     },
     armory: {
       regalia: "Regalia of Orvane",
