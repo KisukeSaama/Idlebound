@@ -14,7 +14,7 @@ export const sanctum = defineMessages({
     /** The Promise (BIBLE 12.11): the word given to one companion at dusk. */
     promise: {
       title: "La Promesse",
-      hint: (pct: number, max: number) => `Au crépuscule, donne ta parole à un compagnon : toute la nuit suivante, tu ne peux pas faire ce que sa règle interdit. Elle est tenue si tu respectes sa règle jusqu'à ton crépuscule et qu'un Roi tombe cette nuit. Chaque parole tenue double les dégâts de ce compagnon pour toujours, ${max} fois au plus (×${2 ** max}). Ses deux derniers souvenirs en demandent aussi une chacun, et le dernier lui donne encore +${pct} % de dégâts.`,
+      hint: (pct: number, max: number) => `Au crépuscule, donne ta parole à un compagnon. Toute la nuit, ce que sa règle interdit t'est refusé. À ta prochaine ascension, la parole est tenue si tu as respecté sa règle et qu'un Roi est tombé cette nuit. Chaque parole tenue double ses dégâts pour toujours, ${max} fois au plus (×${2 ** max}). Ses deux derniers souvenirs en demandent une chacun, et le dernier lui donne +${pct} % de dégâts.`,
       tonight: "Cette nuit",
       none: "Aucune parole cette nuit : aucune règle ne te limite.",
       choose: "Choisir un compagnon pour la prochaine nuit",
@@ -40,8 +40,8 @@ export const sanctum = defineMessages({
         broken: "Parole rompue"
       },
       statusHint: {
-        given: "Pas encore tenue : fais ce qu'elle demande avant ton crépuscule.",
-        ready: "Respecte encore sa règle jusqu'à ton crépuscule, et elle sera tenue.",
+        given: "Pas encore tenue : fais ce qu'elle demande avant ta prochaine ascension.",
+        ready: "Respecte encore sa règle jusqu'à ta prochaine ascension, et elle sera tenue.",
         broken: "Sa règle ne s'applique plus. Cette nuit compte comme une nuit ordinaire."
       },
       kept: (count: number, max: number, total: number) => `${count} / ${max} parole${count > 1 ? "s" : ""} tenue${count > 1 ? "s" : ""} · dégâts ×${total}`,
@@ -50,8 +50,8 @@ export const sanctum = defineMessages({
       rules: {
         without: (name: string) => `Ne pas recruter ${name} de la nuit.`,
         withoutSelf: "Marcher sans lui : ne pas le recruter de la nuit.",
-        headGuardian: (name: string) => `Ne recruter aucun compagnon venu après ${name} avant d'avoir vaincu le premier gardien.`,
-        headKing: (name: string) => `Ne recruter aucun compagnon venu après ${name} avant d'avoir vaincu le Roi.`,
+        headGuardian: (name: string) => `Ne recruter aucun des compagnons placés sous ${name} dans la liste avant la chute du premier gardien de la nuit.`,
+        headKing: (name: string) => `Ne recruter aucun des compagnons placés sous ${name} dans la liste avant la chute du Roi.`,
         wait: (guardian: string, seconds: number) => `Contre ${guardian}, personne ne frappe pendant les ${seconds} premières secondes de chaque combat. Il doit tomber cette nuit.`,
         waitKing: (seconds: number) => `Contre le Roi, personne ne frappe pendant les ${seconds} premières secondes de chaque combat.`,
         strikes: "Ne pas frapper toi-même de la nuit : seuls tes compagnons attaquent.",
@@ -70,7 +70,7 @@ export const sanctum = defineMessages({
       toasts: {
         given: (name: string) => `Parole donnée · ${name}`,
         ready: "Condition remplie",
-        readyText: "Ce qui t'était demandé est fait. Respecte encore sa règle jusqu'à ton crépuscule, et elle sera tenue.",
+        readyText: "Ce qui t'était demandé est fait. Respecte encore sa règle jusqu'à ta prochaine ascension, et elle sera tenue.",
         kept: (name: string) => `Parole tenue · ${name}`,
         keptText: (total: number) => `Ses dégâts doublent pour toujours : ×${total} en tout. Elle compte aussi pour sa Reconnaissance.`,
         broken: (name: string) => `Parole rompue · ${name}`,
@@ -128,7 +128,7 @@ export const sanctum = defineMessages({
     legendSummary: "Altar legend",
     promise: {
       title: "The Promise",
-      hint: (pct: number, max: number) => `At dusk, give your word to one companion: for the whole next night, you cannot do what their rule forbids. It is kept if you hold to their rule until your dusk and a King falls that night. Every word kept doubles that companion's damage for good, ${max} times at most (×${2 ** max}). Their last two memories also ask for one each, and the last one gives them another +${pct}% damage.`,
+      hint: (pct: number, max: number) => `At dusk, give your word to one companion. All night, what their rule forbids is refused to you. At your next ascension, the word is kept if you held to their rule and a King fell that night. Every word kept doubles their damage for good, ${max} times at most (×${2 ** max}). Their last two memories ask for one each, and the last gives them +${pct}% damage.`,
       tonight: "Tonight",
       none: "No word given tonight: no rule limits you.",
       choose: "Choose a companion for the next night",
@@ -154,8 +154,8 @@ export const sanctum = defineMessages({
         broken: "Word broken"
       },
       statusHint: {
-        given: "Not kept yet: do what it asks before your dusk.",
-        ready: "Keep to its rule until your dusk, and it is kept.",
+        given: "Not kept yet: do what it asks before your next ascension.",
+        ready: "Keep to its rule until your next ascension, and it is kept.",
         broken: "Their rule no longer applies. This night counts as an ordinary one."
       },
       kept: (count: number, max: number, total: number) => `${count} / ${max} word${count === 1 ? "" : "s"} kept · damage ×${total}`,
@@ -163,8 +163,8 @@ export const sanctum = defineMessages({
       rules: {
         without: (name: string) => `Do not hire ${name} all night.`,
         withoutSelf: "Walk without them: do not hire them all night.",
-        headGuardian: (name: string) => `Hire no companion who comes after ${name} until you beat the first guardian.`,
-        headKing: (name: string) => `Hire no companion who comes after ${name} until you beat the King.`,
+        headGuardian: (name: string) => `Hire none of the companions listed below ${name} until the night's first guardian falls.`,
+        headKing: (name: string) => `Hire none of the companions listed below ${name} until the King falls.`,
         wait: (guardian: string, seconds: number) => `Against ${guardian}, nobody strikes for the first ${seconds}s of every fight. It must fall this night.`,
         waitKing: (seconds: number) => `Against the King, nobody strikes for the first ${seconds}s of every fight.`,
         strikes: "Do not strike yourself all night: only your companions attack.",
@@ -183,7 +183,7 @@ export const sanctum = defineMessages({
       toasts: {
         given: (name: string) => `Word given · ${name}`,
         ready: "Condition met",
-        readyText: "What was asked of you is done. Keep to its rule until your dusk, and it is kept.",
+        readyText: "What was asked of you is done. Keep to its rule until your next ascension, and it is kept.",
         kept: (name: string) => `Word kept · ${name}`,
         keptText: (total: number) => `Their damage doubles for good: ×${total} in all. It also counts toward their Recognition.`,
         broken: (name: string) => `Word broken · ${name}`,

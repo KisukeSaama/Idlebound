@@ -84,7 +84,7 @@ export const PROMISES_TEXT: Record<Locale, Record<string, PromiseText>> = {
       broken: "He watches the altar take what you gave it, and bows anyway. Lower than before."
     },
     eldra: {
-      ask: "\"Every time a guardian's seam closes on you, I mend the tear before dusk. Tonight, spare me. Don't let a single seam close.\"",
+      ask: "\"Every time a guardian pushes you back, its stitch closes over you and I mend the tear before dusk. Tonight, spare me: lose no fight.\"",
       kept: "She holds a thread up to the light. No knot in it. \"A whole night with nothing to mend. I had forgotten what that looks like.\"",
       broken: "She is already threading the needle. \"It is nothing. I have mended worse. I have mended this one before.\""
     },
@@ -186,7 +186,7 @@ export const PROMISES_TEXT: Record<Locale, Record<string, PromiseText>> = {
       broken: "Il regarde l'autel prendre ce que tu lui donnes, et s'incline quand même. Plus bas qu'avant."
     },
     eldra: {
-      ask: "« Chaque fois que la couture d'un gardien se referme sur toi, je reprise la déchirure avant le crépuscule. Cette nuit, épargne-moi. Qu'aucune ne se referme. »",
+      ask: "« Chaque fois qu'un gardien te repousse, sa couture se referme sur toi, et je reprise la déchirure avant le crépuscule. Cette nuit, épargne-moi : ne perds aucun combat. »",
       kept: "Elle lève un fil dans la lumière. Pas un nœud. « Toute une nuit sans rien à repriser. J'avais oublié à quoi ça ressemble. »",
       broken: "Elle enfile déjà son aiguille. « Ce n'est rien. J'ai reprisé pire. J'ai déjà reprisé celle-ci. »"
     },

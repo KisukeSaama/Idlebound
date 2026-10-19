@@ -22,7 +22,7 @@ export const night = defineMessages({
       altars2: "Trois nouveaux autels au Sanctuaire : le Temps, le Marchandage et le Trésor.",
       altars3: "Les six derniers autels du Sanctuaire s'éveillent : treize en tout, à présent.",
       traits: "Tes reliques se souviennent : une épique ou mieux garde un trait, un effet qui change ta route ; une légendaire ou une mythique, le compagnon qui la portait. Les reliques d'un même lieu portées ensemble éveillent une parure.",
-      awaken: "Brom peut réveiller une relique à ta nuit la plus profonde : elle garde ce dont elle se souvient et prend la densité de cette profondeur. Contre des éclats, à l'équipement."
+      awaken: "Brom peut réveiller une relique au plus profond de ta route, dans son lieu : elle garde ce dont elle se souvient, et sa Densité (le multiplicateur de dégâts de sa strate) et ses bonus grandissent. Contre des éclats, dans l'équipement."
     },
     /** How a timed event ends, won or not. */
     results: {
@@ -94,7 +94,7 @@ export const night = defineMessages({
       altars2: "Three new altars in the Sanctum: Time, Bargain and Treasure.",
       altars3: "The last six altars of the Sanctum wake: thirteen in all, now.",
       traits: "Your relics remember: an epic or better keeps a trait, an effect that changes your road; a legendary or a mythic, the companion who carried it. Relics of one place worn together wake a set.",
-      awaken: "Brom can awaken a relic at your deepest night: it keeps what it remembers and takes the density of that depth. For shards, in your equipment."
+      awaken: "Brom can awaken a relic as deep as your road goes, in its own place: it keeps what it remembers, and its Density (its stratum's damage multiplier) and bonuses grow. For shards, in your equipment."
     },
     results: {
       seam: { won: "Seam closed: its gold, a fragment, sometimes a shard or a relic.", escaped: "The Seam closes without you. You lose nothing." },
