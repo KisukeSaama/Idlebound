@@ -32,7 +32,7 @@ export const FR_STRATA: readonly FrLexicon[] = [
   fr("fuseau:m|fil:m|étoile basse:f|tabouret:m", "à@fond du ciel:m|creux du ciel:m|sur@dernière marche:f|revers du ciel:m", "a tissé|a mis un genou à terre|a baissé la tête|a tiré un fil", "bas/basse|profond|patient", "indigo="),
   fr("ruban de lumière:m|voile:m|lanterne pâle:f|miroitement:m", "à@horizon:me|grand nord:m|à@bord du ciel:m|fausse aube:f", "a répété|a miroité|a pointé trop tôt|a pâli", "précoce|tremblant|fugace", "vert"),
   // Âge V : le Métier
-  fr("fil de chaîne:m|poids de métier:m|lisse:f|corde tendue:f", "métier:m|chaîne:f|haut cadre:m|fils:mp", "a bourdonné|a tendu un fil|a grimpé à un fil|a pincé une corde", "tendu|bourdonnant|sans fin=", "écru"),
+  fr("fil d'argent:m|poids de métier:m|lisse:f|corde tendue:f", "métier:m|chaîne:f|haut cadre:m|atelier:m", "a bourdonné|a tendu un fil|a grimpé à un fil|a pincé une corde", "tendu|bourdonnant|sans fin=", "écru"),
   fr("fil de trame:m|petite étiquette:f|aiguille:f|bobine:f", "tissage:m|étoffe:f|lisière:f|panier:m", "a cousu|a reprisé|a écrit tout petit|a soupiré", "las/lasse|minuscule|soigneux/soigneuse", "bleu passé="),
   fr("navette:f|dévidoir:m|cordelette nouée:f|ombre empruntée:f", "interstice:m|croisement:m|passage:m|chemin étroit:m", "a filé|a fait l'aller-retour|a traversé|a recommencé", "familier/familière|rapide|infatigable", "cuivré"),
   fr("nœud:m|nom noué:m|pelote:f|bout de corde:m", "grand nœud:m|fouillis:m|cœur du nœud:m|boucle:f", "a fait un nœud|a serré fort|a tenu bon|a tiré sur un nœud", "serré|emmêlé|têtu", "rouge sombre="),
@@ -66,7 +66,7 @@ export const FR_STRATA: readonly FrLexicon[] = [
   fr("cloche assourdie:f|flocon de laine:m|coton:mM|gant:m", "laine:f|brouillard:m|silence épais:m|pièce du fond:f", "a parlé trop tard|a sonné tout bas|a appelé de loin|a frappé sans bruit", "sourd|tardif/tardive|lointain", "taupe="),
   fr("doigt levé:m|horloge arrêtée:fe|livre fermé:m|souffle retenu:m", "grand silence:m|immobilité:f|maison muette:f|sur@escalier vide:m", "a fait silence|a cessé de bouger|a levé un doigt|a obéi", "muet/muette|immobile|obéissant", "ivoire="),
   fr("nom coupé en deux:m|lettre sans signature:f|portrait vide:m|clé perdue:f", "oubli:m|trou dans un nom:m|à@fond de l'esprit:m|blanc dans l'histoire:m", "a oublié|a presque retrouvé|a perdu un nom|a dit le mauvais nom", "oublié|flou|perdu", "délavé"),
-  fr("chaise vide:f|tasse tiède:f|manteau au crochet:m|couvert:m", "absence:f|trône vide:m|pièce déserte:f|à@place du roi:f", "a quitté la pièce|a reculé une chaise|a laissé la porte ouverte|a attendu quelqu'un", "encore tiède=|vide|inoccupé", "gris pâle="),
+  fr("chaise vide:f|tasse tiède:f|manteau au crochet:m|couvert:m", "absence:f|trône vide:m|pièce déserte:f|à@place du Roi:f", "a quitté la pièce|a reculé une chaise|a laissé la porte ouverte|a attendu quelqu'un", "encore tiède=|vide|inoccupé", "gris pâle="),
   // Âge XI : le Blanc
   fr("craie:fM|fil pâle:m|lune mince:f|plume blanche:f", "ciel pâle:m|nuit mince:f|poussière de lumière:f|à@bord lointain:m", "a pâli|a blêmi|a transparu|a laissé partir la nuit", "pâle|mince|lavé", "lilas="),
   fr("trait léger:m|ombre d'épée:f|marque de craie:f|flocon de neige:m", "neige:f|champ blanc:m|sentier effacé:m|presque-rien:m", "a lutté quand même|a vacillé|a tenu|a persisté", "ténu|presque effacé|obstiné", "blanc d'os="),
@@ -83,14 +83,14 @@ export const FR_STRATA: readonly FrLexicon[] = [
 
 /** Lexiques des lieux, pour les échos au-delà des échos écrits. */
 export const FR_BIOMES: Record<string, FrLexicon> = {
-  "green-plains": fr("gerbe:f|faux:f|ruban:m|chapeau d'épouvantail:m", "blé:m|grange:f|haie:f|ferme:f", "a regardé en arrière|a mis la table|a compté les gerbes|a sonné la fin des moissons", "encore debout=|poussiéreux/poussiéreuse|tiède", "doré"),
+  "green-plains": fr("gerbe:f|faux:f|ruban:m|chapeau d'épouvantail:m", "blé:m|grange:f|haie:f|ferme:f", "a regardé en arrière|^a compté les gerbes|a attendu la moisson|~a fouillé le chaume", "encore debout=|poussiéreux/poussiéreuse|tiède", "doré"),
   "dark-forest": fr("épine:f|plume de chouette:f|racine:f|nom gravé:m", "ronces:fp|chêne creux:m|clairière:f|racines:fp", "a murmuré un nom|a fait pousser une épine|a saigné|a demandé qui", "épineux/épineuse|moussu|attentif/attentive", "vert sombre="),
   "forgotten-caves": fr("pioche:f|éclat de ciel:m|lampe runique:f|cage à canari:f", "caveau:m|galerie:f|puits de mine:m|veine profonde:f", "a creusé|a fait écho|a touché un filon|a entendu demain", "gelé|résonnant|profond", "bleu glacier="),
-  "corrupted-marsh": fr("anneau de mariage:m|flamme vacillante:f|motte de tourbe:f|lettre noyée:f", "marais:m|sur@route noyée:f|manoir qui s'enfonce:m|roseaux:mp", "a coulé d'un pouce|a fait la révérence|a coassé|a essayé un remède", "détrempé|pourrissant|fidèle", "vert-de-gris="),
-  "fallen-king-ruins": fr("bannière délavée:f|cloche fêlée:f|lance de garde:f|collier de chien:m", "grande salle:f|salle du trône:f|escalier:m|à@fenêtre:f", "a salué|a monté la garde|a gravi l'escalier|a regardé par la fenêtre", "sans couleur=|fêlé|loyal/loyale/loyaux/loyales", "violet/violette")
+  "corrupted-marsh": fr("anneau de mariage:m|flamme vacillante:f|motte de tourbe:f|lettre noyée:f", "marais:m|sur@route noyée:f|manoir qui s'enfonce:m|roseaux:mp", "a coulé d'un pouce|^a fait la révérence|~a coassé|^a essayé un remède", "détrempé|pourrissant|fidèle", "vert-de-gris="),
+  "fallen-king-ruins": fr("bannière délavée:f|cloche fêlée:f|lance de garde:f|collier de chien:m", "grande salle:f|salle du trône:f|escalier:m|à@fenêtre:f", "^a salué|a monté la garde|a gravi l'escalier|a regardé par la fenêtre", "sans couleur=|fêlé|loyal/loyale/loyaux/loyales", "violet/violette")
 };
 
-/** Les mots du roi (40). Ses gestes sont dits par lui, à la première personne. */
+/** Les mots du Roi (40). Ses gestes sont dits par lui, à la première personne. */
 export const FR_KING: KingLexicon<FrNoun, FrAdj> = frKing(
   "couronne:f|coupe:f|bougie:f|clé:f|manteau:m|anneau:m|épée:f|marteau:m|bottes:fp|lettre:f",
   "grande salle:f|escalier:m|jardin:m|cuisines:fp|chapelle:f|verger:m|écuries:fp|tour:f|cour:f|salle du trône:f",

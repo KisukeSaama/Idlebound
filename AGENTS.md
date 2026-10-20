@@ -7,6 +7,18 @@ Durable rules for every session that touches this repository. Read before writin
 - [docs/CHANGES.md](docs/CHANGES.md): what each version changes, gathered for the next major's patch note.
 - The code is the source of truth. Change a documented behaviour, update its doc in the same change.
 
+## Pending checks
+
+Dated reminders. At the start of a session, if today is on or after a date below, do the check,
+report it to the user, and remove its line once they have decided.
+
+- **2026-10-27, the replay in production.** 2.1 went to production on 2026-10-20 with the replay
+  still in `shadow`. A week of it is then on record: read it as deploy/README.md, "The replay"
+  says (`node review.js --replays --days 7` in the production `api` container), report the
+  shares kept, corrected and refused and their causes, and recommend `enforce` (the CI variable
+  `IDLEBOUND_REPLAY_MODE`) only if the refused share is near zero and the corrections come from
+  cheats, not from games the engine replays differently. The user switches the variable.
+
 ## Foundations
 
 - Saves live on the server only. Browser storage holds UI conveniences, never game state.
@@ -22,15 +34,30 @@ swings single seeds by ±50 stages):
 | Milestone       | Target      |
 | --------------- | ----------- |
 | Stage 10        | about 2 min |
-| Stage 50        | 1.5 to 2 h  |
-| First ascension | about 3 h   |
-| Stage 100       | 4 to 6 h    |
+| Stage 50        | 1 h 15 to 2 h |
+| First ascension | 2 to 3 h    |
+| Stage 100       | 3 to 5 h    |
 | The deep road   | at least 5 stages a day at stage 10,000, the active bot (BIBLE 24) |
+
+The first night was shortened on purpose in 2.1 (the first King keeps his wounds, the audit
+of 2026-10-19 found a first ascension near 3 h too long for a newcomer): the bot's stage 50,
+first ascension and stage 100 moved earlier, and their targets with them.
+
+And for the walker who is not a bot (`realistic.ts`: 2 strikes a second, naive purchases, a
+first hour then four 15-minute sessions a day, the tab open between them, closed at night;
+`walls.ts`: a naive walker playing on):
+
+| Milestone                                   | Target                         |
+| ------------------------------------------- | ------------------------------ |
+| The first King, a naive walker (`walls.ts`) | under 20 min median            |
+| Realistic first ascension                   | 1 to 2 h of play               |
+| Realistic stage at the end of day 1 / day 3 | 200 to 300 / about 1400        |
 
 - After any gameplay change (formula, number, reward, cost, timer, new mechanic), run
   `npm run sims` (about 6 min). It plays at once, sharing six cores, `milestones.ts 9` (the
-  four milestones above), `simulate.ts 24 compare 9` (idle and active styles) and `walls.ts 9`
-  (a naive walker loses a few minutes at most at each guardian before the King). Compare against the targets above and the figures in PRODUCT.md. A change that
+  four milestones above), `simulate.ts 24 compare 9` (idle and active styles), `walls.ts 9`
+  (a naive walker loses a few minutes at most at each guardian before the King, and under
+  20 minutes at the first King) and `realistic.ts 9 3` (the walker who is not a bot). Compare against the targets above and the figures in PRODUCT.md. A change that
   touches the road below the Dawn runs `npm run sims -- 9 deep`, which adds `deep.ts deep
   active 3000 9 20` (from the states `deep.ts reach 9` keeps), and the long run of one seed to
   10,000. Report the numbers. A miss is a bug, not a note.

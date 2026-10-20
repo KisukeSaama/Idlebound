@@ -16,6 +16,8 @@ interface Named {
 export interface RemnantName extends Named {
   id: string;
   biome: string;
+  /** Has hands and a voice (the Reaper, a drowned courtier): may do what only people do. */
+  person: boolean;
 }
 
 export interface CompanionName extends Named {
@@ -27,44 +29,51 @@ export interface CompanionName extends Named {
   speaks: boolean;
 }
 
-function remnant(id: string, biome: string, en: string, fr: string): RemnantName {
-  return { id, biome, en, fr };
+function remnant(id: string, biome: string, en: string, fr: string, person = false): RemnantName {
+  return { id, biome, en, fr, person };
 }
 
 export const REMNANTS: readonly RemnantName[] = [
   remnant("field-rat", "green-plains", "a field rat", "un rat des champs"),
   remnant("wild-boar", "green-plains", "a jumpy boar", "un sanglier nerveux"),
   remnant("carrion-crow", "green-plains", "a carrion crow", "un corbeau charognard"),
-  remnant("hollow-scarecrow", "green-plains", "a hollow scarecrow", "un épouvantail creux"),
+  remnant("hollow-scarecrow", "green-plains", "a hollow scarecrow", "un épouvantail creux", true),
   remnant("lantern-moth", "green-plains", "a lantern moth", "une phalène-lanterne"),
   remnant("dusk-hare", "green-plains", "a dusk hare", "un lièvre du crépuscule"),
-  remnant("last-reaper", "green-plains", "the Last Reaper", "le Dernier Faucheur"),
+  remnant("last-reaper", "green-plains", "the Last Reaper", "le Dernier Faucheur", true),
   remnant("moss-alpha", "green-plains", "the Moss Alpha", "l'Alpha moussu"),
   remnant("shade-wolf", "dark-forest", "a shade wolf", "un loup de l'ombre"),
-  remnant("briar-witch", "dark-forest", "a briar witch", "une sorcière des ronces"),
+  remnant("briar-witch", "dark-forest", "a briar witch", "une sorcière des ronces", true),
   remnant("grove-spinner", "dark-forest", "a grove spinner", "une fileuse du bosquet"),
   remnant("mourning-owl", "dark-forest", "a mourning owl", "une chouette endeuillée"),
   remnant("toadstool-choir", "dark-forest", "a toadstool choir", "un chœur de champignons"),
-  remnant("root-knight", "dark-forest", "the Root Knight", "le Chevalier-racine"),
+  remnant("root-knight", "dark-forest", "the Root Knight", "le Chevalier-racine", true),
   remnant("old-grove", "dark-forest", "the Heart of the Old Grove", "le Cœur du vieux bosquet"),
   remnant("blind-crawler", "forgotten-caves", "a blind crawler", "un rampeur aveugle"),
   remnant("echo-bat", "forgotten-caves", "an echo bat", "une chauve-souris d'écho"),
   remnant("crystal-mite", "forgotten-caves", "a crystal mite", "un acarien de cristal"),
   remnant("drip-leech", "forgotten-caves", "a drip leech", "une sangsue des gouttes"),
-  remnant("miner-shade", "forgotten-caves", "the Miner's Shade", "l'Ombre de mineur"),
+  remnant("miner-shade", "forgotten-caves", "the Miner's Shade", "l'Ombre de mineur", true),
   remnant("stone-devourer", "forgotten-caves", "the Stone Devourer", "le Dévorateur de pierre"),
-  remnant("bog-remnant", "corrupted-marsh", "a bog remnant", "un vestige fangeux"),
+  remnant("bog-remnant", "corrupted-marsh", "a bog Remnant", "un Vestige fangeux", true),
   remnant("rot-toad", "corrupted-marsh", "a rot toad", "un crapaud putride"),
   remnant("will-o-wisp", "corrupted-marsh", "a will-o'-wisp", "un feu follet"),
-  remnant("drowned-courtier", "corrupted-marsh", "a drowned courtier", "un courtisan noyé"),
+  remnant("drowned-courtier", "corrupted-marsh", "a drowned courtier", "un courtisan noyé", true),
   remnant("bog-colossus", "corrupted-marsh", "the Mire Colossus", "le Colosse de la fange"),
-  remnant("rot-baron", "corrupted-marsh", "the Baron of Rot", "le Baron de la pourriture"),
+  remnant("rot-baron", "corrupted-marsh", "the Baron of Rot", "le Baron de la pourriture", true),
   remnant("hour-gargoyle", "fallen-king-ruins", "a gargoyle of the hours", "une gargouille des heures"),
-  remnant("banner-wraith", "fallen-king-ruins", "a banner wraith", "un spectre-bannière"),
-  remnant("fallen-sentinel", "fallen-king-ruins", "a fallen sentinel", "une sentinelle déchue"),
-  remnant("hollow-page", "fallen-king-ruins", "a hollow page", "un page creux"),
-  remnant("stone-warden", "fallen-king-ruins", "the Stone Warden", "le Gardien de pierre")
+  remnant("banner-wraith", "fallen-king-ruins", "a banner wraith", "un spectre-bannière", true),
+  remnant("fallen-sentinel", "fallen-king-ruins", "a fallen sentinel", "une sentinelle déchue", true),
+  remnant("hollow-page", "fallen-king-ruins", "a hollow page", "un page creux", true),
+  remnant("stone-warden", "fallen-king-ruins", "the Stone Warden", "le Gardien de pierre", true)
 ];
+
+/**
+ * Who does a deed in the strata, where no creature of the road belongs: a Remnant, unnamed,
+ * or someone. Never a companion or a creature of the five places.
+ */
+export const SOME_REMNANT: RemnantName = { id: "remnant", biome: "", en: "a Remnant", fr: "un Vestige", person: true };
+export const SOMEONE: Named = { en: "someone", fr: "quelqu'un" };
 
 function companion(id: string, en: string, fr: string, speaks = true, byEn = en, byFr = fr): CompanionName {
   return { id, en, fr, byEn, byFr, speaks };

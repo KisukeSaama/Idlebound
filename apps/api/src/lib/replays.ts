@@ -3,7 +3,7 @@ import { GUEST_SAVE_DAYS, REACTION_BUCKETS, type PresenceTally } from "@idleboun
 import { parseJournal, type ParsedJournal } from "@idlebound/game/server";
 import { and, eq, inArray, lt, sql as raw } from "drizzle-orm";
 import { db } from "../db/client";
-import { pendingSeeds, presenceDays, presenceSpans, replayReports } from "../db/schema";
+import { pendingSeeds, presenceDays, presenceSpans, replayReports, replayTally } from "../db/schema";
 import { newSecret } from "./fates";
 import { limiter } from "./rate-limit";
 
@@ -67,6 +67,30 @@ export async function findPending(tx: Tx, owners: string[], createdAt: number): 
 export async function consumePending(tx: Tx, owner: string) {
   await tx.delete(pendingSeeds).where(eq(pendingSeeds.owner, owner));
 }
+
+/** Replays counted since the last flush, by day and what they found. */
+const counted = new Map<string, number>();
+/** The counts go to the database this often: one write a minute, never one row locked by every save. */
+const TALLY_FLUSH_MS = 60_000;
+
+/** Counts a replay under what it found, for the day: `review --replays` reads the shares. */
+export function tally(outcome: string, now: number) {
+  const key = `${new Date(now).toISOString().slice(0, 10)}|${outcome}`;
+  counted.set(key, (counted.get(key) ?? 0) + 1);
+}
+
+/** Writes the counts gathered since the last flush (each minute, and as the API stops). */
+export async function flushTally() {
+  const entries = [...counted];
+  counted.clear();
+  for (const [key, count] of entries) {
+    const [day, outcome] = key.split("|");
+    await db.insert(replayTally).values({ day, outcome, count })
+      .onConflictDoUpdate({ target: [replayTally.day, replayTally.outcome], set: { count: raw`${replayTally.count} + ${count}` } });
+  }
+}
+
+setInterval(() => flushTally().catch((error) => console.error("[api] replay tally", error)), TALLY_FLUSH_MS).unref();
 
 /** Reports kept per game: a page looping on a diverging journal cannot flood the table. */
 const reportLog = limiter(30, 60 * 60_000);
@@ -134,6 +158,7 @@ export async function recordPresence(tx: Tx, userId: string, tally: PresenceTall
 export async function purgeReplayRecords(now = new Date()) {
   const old = new Date(now.getTime() - RECORD_DAYS * DAY);
   await db.delete(replayReports).where(lt(replayReports.createdAt, old));
+  await db.delete(replayTally).where(lt(replayTally.day, old.toISOString().slice(0, 10)));
   await db.delete(presenceDays).where(lt(presenceDays.day, old.toISOString().slice(0, 10)));
   await db.delete(presenceSpans).where(lt(presenceSpans.lastAt, old.getTime()));
   await db.delete(pendingSeeds).where(lt(pendingSeeds.issuedAt, new Date(now.getTime() - GUEST_SAVE_DAYS * DAY)));

@@ -55,11 +55,11 @@ market is French-speaking, with a full English version.
 |---|---|
 | Stages | 10 monsters per stage. No last stage: the road goes on as deep as the walker walks (see "The deep road"). A save may name a stage up to 10,000,000. |
 | Rout | On a stage under the best stage ever (so never on the first night), when the company would fell one of its monsters in under 0.1 s (companion DPS plus automatic strikes), the whole stage falls at once: its remaining kills, their gold (a golden rat's share at its odds) and the Bestiary, then the next stage, one stage every 0.25 s. Elites and guardians are still fought. The catch-up (hidden tab, closed game) routs the same way. The first Rout is explained once by a toast; each shows "Rout · stage N" and its gold. |
-| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through; the Keep's gate (stage 45), the King and the strata below heal whole. |
+| Bosses | Every 5th stage: elite (mini-boss, ×6 HP). Every 10th stage: biome guardian (×10 HP). 30 s timer by default. Failing sends the player back one stage and pauses auto-advance ("farm" mode). Up to stage 44, a guardian or an elite keeps its wounds: after a failed fight, the damage it took stays on it (up to 75% of its HP) until it falls, so a walker who keeps trying gets through. On the walk's first night (no ascension, no Descent yet), the Keep's gate (stage 45) keeps them too (75%) and the King up to 50% of his HP (`FIRST_NIGHT_KING_WOUND`): the first King is a wall of minutes, not of an hour. From the first dusk on, the gate, the King and the strata below heal whole. |
 | Biomes | 5 biomes of 10 stages, six normal creatures, an elite and a guardian each: the Verdant Plains (Field Rat, Jumpy Boar, Carrion Crow, Hollow Scarecrow, Lantern Moth, Dusk Hare; Last Reaper; Moss Alpha), the Dark Forest (Shade Wolf, Briar Witch, Grove Spinner, Mourning Owl, Toadstool Choir, Whispering Bramble; Root Knight; Heart of the Old Grove), the Forgotten Caves (Blind Crawler, Echo Bat, Crystal Mite, Drip Leech, Haunted Cart, Hollow Canary; Miner's Shade; Stone Devourer), the Corrupted Marsh (Bog Remnant, Rot Toad, Will-o'-Wisp, Drowned Courtier, Peat Cutter, Mire Heron; Mire Colossus; Baron of Rot) and the Fallen King's Ruins (Gargoyle of the Hours, Banner Wraith, Fallen Sentinel, Hollow Page, Hound of the Last Hunt, Candle Maid; Stone Warden; the King). |
 | The King | The guardian of every 50th stage is the King, in the form of the stratum's Age: the Fallen King, the Titan King, the Hallowed King, the Star-Crowned, the Woven King, the Sketched King, the King's Name, the Sleeping King, the King at the Window, the Hollow Crown, the Blank King, then Aldemar. Same strength in every form. At stage 3000 the Dawn stands in his place, a milestone: beaten, it lets the walker through. Below it the forms come round again with the Ages (the Fallen King at 3050, the Titan King at 3300…). |
 | Rare wanderers | One per biome (the Lost Shepherd, the Weeping Stag, the Singing Geode, the Ferryman, the Court Jester): 0.5% of the biome's normal spawns that are not a golden rat or an event, once a run at most, ×5 gold, a Chronicle fragment on the first defeat. |
-| Eras | Each full loop of the 5 biomes (50 stages) starts a new era, a **stratum** with its own name (60 in all, from the present night to Dawn, in 12 Ages of five: the Kingdom, the Elder World, the Hallowed, the Making of the Stars, the Loom, the Draft, the Words, the Edge of Sleep, the Dreamer's Room, the Unmaking, the Blank, the First Mark): prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial, Titan…), drawn with that era's treatment (each Age transforms creatures and scenes, and every era wears the places down; see DESIGN.md). Below the Dawn (era 60 on) the night draws itself again from the first stratum: the era keeps counting (Era LXI…), its look, tag and King follow era mod 60, and the Age carries the fold's number (the Kingdom II, the Elder World II…). |
+| Eras | Each full loop of the 5 biomes (50 stages) starts a new era, a **stratum** with its own name (60 in all, from the present night to Dawn, in 12 Ages of five: the Kingdom, the Elder World, the Hallowed, the Making of the Stars, the Loom, the Draft, the Words, the Edge of Sleep, the Dreamer's Room, the Unmaking, the Blank, the First Mark): prefixed and much tougher monsters (Echo, Ash, Void, Astral, Primordial, Titan…), drawn with that era's treatment (each Age transforms creatures and scenes, and every era wears the places down; see DESIGN.md). Below the Dawn (era 60 on) the night draws itself again from the first stratum: the era keeps counting (shown "Stratum LXI", FR "Strate LXI"), its look, tag and King follow era mod 60, and the Age carries the fold's number (the Kingdom II, the Elder World II…). |
 | Golden rat | 1% base spawn chance on normal stages, ×10 gold. Chance capped at 25%. |
 | Wandering crystal | Appears every 90 to 240 s while the tab is visible (sooner with Garrick's Lodestone, the Humming Loom or the Moth Lantern), stays 13 s (18 s with the Singing Stone). Gives gold (40%), overcharge DPS ×7 for 15 s (25%), sharpness click ×10 (DPS share included) for 20 s (20%), 2 to 6 shards (12%) or essences (3%, only after a first ascension). Gold = 15 monsters of the current stage; essences = 1 + 1 per 100 stages of the best stage ever. The first crystal of a new game comes after 75 s. One crystal in 20 is a **Crystal Storm**: the Lantern Queen crosses the sky and five crystals fall in turn, 3 s each, a normal reward roll each (only while the tab is visible). |
 | HP curve | Three segments (steep early, then ×1.15 then ×1.18 per stage) tuned so ascension income never outruns monster HP. |
@@ -94,6 +94,12 @@ late game; mashing the mouse is never required.
   add up; the Briar Mantle, Quietus and Morgrath's Phylactery multiply the sum. The walker's
   strikes add on top of it, whatever their pace (until this rule, they stood in for the
   bonus blow for blow and only added past it). A chip shows the bonus.
+  Patience and Might stay two altars (audit of 2026-10-19, kept on purpose): Might multiplies
+  the company's damage before the strikes take their share of it, so it raises the strikes
+  too; Patience multiplies the company alone, never a strike, and grows faster (×1.14 a level
+  at ×1.7). A walker who lets the company walk feeds Patience, one who strikes feeds Might
+  and the Blade: a real choice, so merging them would take one away. Their cards say it
+  plainly since version 19 (they read as the same thing before).
 - **Active bonus**: powers, crystals, crit investments and the Blade reward being there,
   within bounds: Altar of Fate capped at 5 levels (+100% crit damage), relic totals capped
   at +50% crit damage and +16% crit chance.
@@ -108,10 +114,11 @@ late game; mashing the mouse is never required.
   of 9 seeds, every profile giving its word at each dusk to the strongest companion who can
   ask, among the promises its style can keep: a profile that strikes gives no word to
   Ysolde nor to Nyx) every style stands within a quarter of the others (the best over the
-  worst: 1.18 since the relics remember, version 1.3): the occasional player leads (1157,
-  back every hour for 10 minutes, the tab left open to the autopilot, ascending when a boss
-  blocks the company, 4 h of real play), then 10 clicks/s (1082), 5/s (1079), 2/s (1038),
-  continuous bursts (1014) and idle (984). Before 1.3 the same runs stood at 898 to 1052
+  worst: 1.14 since the first night's King keeps his wounds, version 2.1): 5 clicks/s
+  leads (1097), then the occasional player (1093, back every hour for 10 minutes, the tab
+  left open to the autopilot, ascending when a boss blocks the company, 4 h of real play),
+  10 clicks/s (1090), 2/s (990), idle (983) and bursts (960). Before 2.1 the same runs stood
+  at 984 to 1157 (1.18, since the relics remember, version 1.3); before 1.3 at 898 to 1052
   (1.17) on the same seeds; earlier figures: 961 to 1186 (1.23).
   Before the cap on damage to guardians the same runs stood at 936 to 1009 (1.08): every
   style went deeper with the cap, the occasional player most (+179).
@@ -123,10 +130,10 @@ late game; mashing the mouse is never required.
   stages in more than twice the stagnation time), not only once it stalls: without that
   rule the bursts crept for hours and fell to 736 (1.28). The bot buys the Blade when its
   clicks lead the company (they deal more than the Patience bonus), Patience otherwise:
-  at 10 clicks/s the strikes are then almost all the damage (clicks 325 times the company
-  without its bonus), and 8 h away adds only 1 stage to that walker. 8 h in a background tab
-  after 24 h of play adds 15 to 43 stages to the others (median per profile), and the
-  Reunion doubles the first hour back (+13 to +20 stages instead of +5 to +13). The 72 h bot (5 clicks/s, seed 42, a word
+  at 10 clicks/s the strikes are then almost all the damage (clicks 375 times the company
+  without its bonus), and 8 h away adds only 2 stages to that walker. 8 h in a background tab
+  after 24 h of play adds 16 to 22 stages to the others (median per profile), and the
+  Reunion doubles the first hour back (+14 to +23 stages instead of +6 to +12). The 72 h bot (5 clicks/s, seed 42, a word
   given each night) reaches stage 1518 after 12 ascensions (500 at 16 h, 1000 at 30 h), and
   in a week 1960 after 26, each ascension adding fewer stages past 1000 (+120, +98, +70,
   +58, +70, then about +25 in the last days): no runaway. Before the Promise the same seed
@@ -210,6 +217,16 @@ their base. The Vestment of Cinders makes Golden Rain last 45 s.
   | Wanderer | 10 stages cleared at the start of each run | ×1.8 | 10 |
   | Memory | starting gold of 100 monsters of stage 5 × level | ×1.5 | 20 |
 
+- **The Sanctum's counsel**: every altar card the walker can afford says what one level does
+  once the essences it takes are counted: for an altar of damage (Might, Blade, Patience, Fate,
+  Precision), "With the essences offered: your damage ×N" (in red below ×1); for the others,
+  the share of damage the essences offered cost. A **Distribute** button offers the essences
+  as the bots do (`distributeEssences`, `altarPlan.ts`): capped altars when they cost 3% of the
+  essences held at most, then the open-ended level that adds the most per essence while it
+  beats keeping the essences (the Blade when the walker's strikes lead, Patience when the
+  company does: weighed on the company when there is one, else on the Blade and Patience
+  levels already raised, else on the walker's pace over the walk), the Harvest when it pays
+  more in the nights to come. It offers nothing under the Nameless's word.
 - **Spending versus holding** is the core decision: the open-ended altars multiply at each
   level against an exponential price, so the best split keeps about half the essences in
   hand at every stage of the game, and which altars to feed depends on the play style
@@ -273,6 +290,8 @@ whole night (BIBLE 12.11).
   per companion: one for the fourth memory, one for the fifth). Otherwise it counts 1: a
   word kept to a companion who stayed under level 100, or a third word to one who has had
   their two.
+- **Eldra's Hourglass** (a Weave) may call the dusk while the walker is away: a word not kept
+  yet is lost with that dusk, as if the walker had called it too early (its card says so).
 - **Broken**: no power is lost and nothing is forbidden any more; the word doubles nothing,
   the night counts like any other, the companion says one line and their medallion keeps an undone knot until dusk.
   Nothing goes to the Chronicle.
@@ -303,41 +322,83 @@ whole night (BIBLE 12.11).
 | Aurelion | No blow for 10 s at the start of every fight with the King |
 | The Awakened | The Awakened is not hired all night |
 
+Kept as it is at the audit of 2026-10-19 (three asks drawn a night, or a reward indexed on
+the real cost, were weighed and left out): the choice is already among every companion who
+can ask tonight, each with one ask in their own voice that a walker learns once; the reward
+is the same ×2 for everyone, so the cost of the ask is the whole choice (a striker gives
+Ysolde their word on a night they mean to let the company walk). A draw would hide asks a
+walker can keep, and an indexed reward would make the words already kept worth different
+amounts. Nothing changes for the words kept.
+
 ### The Descent
 
 The second layer of rebirth, for the long run (it keeps players apart after weeks of play).
+Reworked in save version 19 (the audit of 2026-10-19): it took every essence, left the walker
+more than a day under the record it left, and only paid after almost a week.
 
-- **Unlock**: a best stage of 2000 ever: Eldra shows her Loom, where the first Descent weaves
-  32 threads, announced once by a toast. Without a Descent the bot reaches it in about a
-  week, where the road flattens. Opened at stage 1500 (day 2), the Descents came every other
-  day and the bot stood at 2948 on day 14, the Dawn in sight. Before save version 12 the Loom opened at stage 1000
-  with Eldra's Recognition 5; a walker she showed it to that way keeps it.
-- **A Descent** resets everything an ascension resets, plus the essences and the altars;
-  it keeps relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime
-  statistics and the best stage ever.
+- **Unlock**: a best stage of 1500 ever (the Draft): Eldra shows her Loom, where the first
+  Descent weaves 8 threads, announced once by a toast. From save version 12 to 18 it opened
+  at 2000 (32 threads); before version 12 at stage 1000 with Eldra's Recognition 5, and a
+  walker she showed it to that way keeps it.
+- **A Descent** resets everything an ascension resets, plus the altars and nine essences in
+  ten: it leaves a tenth of the essences held (`DESCENT_KEEP`, rounded down). It keeps
+  relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime statistics and the
+  best stage ever. The server refuses a Descent that kept more than its tenth.
+- **What it does, measured** (`scripts/descent.ts`, the active bot from each seed's own
+  state, the same walker never descending beside it, median of 5 seeds; the Warp of Plenty
+  at its version 19 price):
+
+  | | Before (version 18) | Now |
+  |---|---|---|
+  | Record regained, Descents 1 to 4, from stage 2000 | 30 to 43 h of play | 5 to 6 h |
+  | Record regained, later Descents (5 to 9) | 41 h and more | 9 to 15 h |
+  | Ahead of the walker who never descends, from 2000 | from day 6 | from day 2 |
+  | Stages gained in 12 days from 2000 (never descending: +1223) | +1640 (×1.34) | +2400 (×1.96) |
+  | From stage 1500, the Loom open there: depth on day 3 / 5 / 10 against never descending | | +5% / +14% / +26% |
+  | The Dawn (stage 3000), the active bot from a new game (`deep.ts reach`) | day 13 to 14 | day 5 to 6 |
+
+  The bot descends once an Age, about once a day. From 1500, the stages it gains since the
+  Loom opened stand ×1.10 against never descending by day 3, ×1.28 by day 5, ×1.49 by day 10:
+  about +4% a cycle, compounding. From the third day on, each day gains 1.5 to 5 times the
+  stages of the same day never descending (the walker who never descends nearly stops past
+  the Dawn). Keeping a twentieth or a thirtieth walks almost the same road, an
+  hour or two slower to come back each time. Tried and dropped: a weight of the threads on
+  the company's damage (threads^2.5): the record still took 14 to 31 h to come back, then the
+  road ran away past the Dawn (400 stages a day); and the Warp of Plenty at its old price
+  (×1.2 a level) with the tenth kept: the long run reached stage 10,000 on day 29, its pace
+  rising from 200 to 467 a day past 7500. At ×1.22 it still sped up past 7000; at ×1.3 it
+  stalled near 5850. ×1.25 holds between the two.
 - **Threads**: the thread is as long as the night has gone deep. Woven in all,
   `floor(2^((best stage − 750) / 250))`: 2 at stage 1000, twice as many with every Age (250
-  stages), 32 at stage 2000, 64 at 2250, 512 at the Dawn. A Descent weaves what the best
+  stages), 8 at 1500, 32 at stage 2000, 512 at the Dawn. A Descent weaves what the best
   stage adds to the threads already woven, so a night that went no deeper than the last
   weaves nothing, and the Loom tells the stage of the next thread. (Until save version 10
   each Descent wove `floor(2 × (log10(E) − 5))` threads from its own essences: a shallow
   night paid as much as a deep one, and descending often and shallow was the best way
   down.)
-- **Weaves** at Eldra's Loom, permanent, bought with threads (price `ceil(base × growth^level)`):
+- **Weaves** at Eldra's Loom, permanent, bought with threads (price `ceil(base × growth^level)`).
+  Three change how the game plays rather than adding a percentage: the Hourglass and the
+  Habits (save version 19) and the Seventh Night. No weave was removed or repriced: the
+  threads and weaves of older saves keep their value.
 
-  | Weave | Effect per level | Cap |
-  |---|---|---|
-  | Warp of Plenty | Essences ×1.25 (multiplies); price `ceil(4 × 1.2^level)` | none |
-  | Knot of Dusk | Altar of the Wanderer +10 levels of cap | 5 |
-  | The Long Thread | Catch-up cap +1 h (background tab or closed game) | 4 |
-  | Humming Loom | Crystals come 10% sooner | 5 |
-  | Kinship | Recognition tiers ask one run less | 3 |
-  | Remembered Stones | 5% of each altar level survives a Descent | 5 |
-  | Frayed Edge | Fragment chance +20% | 5 |
-  | The Seventh Night | The seventh power, Unweave | 1 |
+  | Weave | Effect per level | Price | Cap |
+  |---|---|---|---|
+  | Warp of Plenty | Essences ×1.25 (multiplies); levels woven before version 19 keep the price they were paid, `ceil(4 × 1.2^level)` | `ceil(4 × 1.25^level)` | none |
+  | Eldra's Hourglass | While the walker is away (closed game, hidden tab or no input), once the head of the night has stood still for 15 min before an elite or a guardian the company cannot beat, the company calls the dusk itself and walks the next night; the Reunion tells the dusks and their essences | 8 | 1 |
+  | Woven Habits | The powers are used again the moment they are ready (an open game; never Time Echo nor Unweave, never against a word that forbids powers) | 8 | 1 |
+  | Knot of Dusk | Altar of the Wanderer +10 levels of cap | `3 × 2^level` | 5 |
+  | The Long Thread | Catch-up cap +1 h (background tab or closed game) | `4 × 2^level` | 4 |
+  | Humming Loom | Crystals come 10% sooner | `2 × 1.7^level` | 5 |
+  | Kinship | Recognition tiers ask one run less | `5 × 3^level` | 3 |
+  | Remembered Stones | 5% of each altar level survives a Descent | `3 × 2^level` | 5 |
+  | Frayed Edge | Fragment chance +20% | `1 × 1.5^level` | 5 |
+  | The Seventh Night | The seventh power, Unweave | 10 | 1 |
 
-- The Warp of Plenty is the one weave that compounds. Its price grows by a fifth a level
-  (it was `2 × 1.6^level`) while the thread doubles with every Age, so each Age buys fewer
+- The Hourglass watches when the head of the night last moved (`trail.frontierAt`, kept in
+  the save, never past the last tick). Its dusks are ascensions like any other, bounded by
+  the same checks.
+- The Warp of Plenty is the one weave that compounds. Its price grows by a quarter a level
+  (`2 × 1.6^level` until version 10, `4 × 1.2^level` until version 18) while the thread doubles with every Age, so each Age buys fewer
   levels than the last: the Descents carry the walker down without running away.
 - Each Descent reopens the strata's keystones in a second reading.
 
@@ -346,7 +407,7 @@ The second layer of rebirth, for the long run (it keeps players apart after week
 The road has no last stage (BIBLE 24). The Dawn stands at stage 3000 in the King's place;
 beaten, it lets the walker through, and the night draws itself again from its first stratum.
 
-- **Strata below the Dawn.** The era keeps counting (Era LXI from stage 3001); its look, tag,
+- **Strata below the Dawn.** The era keeps counting (Stratum LXI from stage 3001); its look, tag,
   sounds and King's form are those of era mod 60 (`drawnEra`): era 60 is the present night
   again, the Fallen King guards 3050, the Titan King 3300. The Age carries the fold's number
   (the Kingdom II, the Elder World II…, then III). The Chronicle gains nothing new below the
@@ -369,7 +430,13 @@ beaten, it lets the walker through, and the night draws itself again from its fi
   - final curve, 9 seeds, 30 days: the active bot 3000 to 4381 (about 46 a day), the idle
     company alike (4388 at ×1.155, the gap a twentieth), the realistic leader of `deep.ts`
     (four hours a day) about 15 a day (3455 at ×1.155);
-  - the long run of seed 1, every day's save checked: stage 10,000 on day 272 (742 nights,
+  - since save version 19 (the Descent leaving a tenth, the Warp of Plenty at ×1.25 a level),
+    the active bot reaches the Dawn on day 5 to 6; 9 seeds, 20 days from 3000: 5234 (from 296
+    stages on the first day to about 65 a day by days 15 to 20); the long runs of seeds 1 to 3:
+    about 38 a day at 5500, 15 to 27 at 6500 to 7500, then 19 to 31 a day near 9000 to 10,000,
+    seed 3 at 10,000 on day 176: past 7500 the pace rises a little, as before, the one target
+    not held;
+  - before it, the long run of seed 1, every day's save checked: stage 10,000 on day 272 (742 nights,
     30 Descents), about 44 stages a day at 3000, 37 at 4000, 27 at 5000, 16 at 7500, then up
     again, about 40 a day near 9500: past 7500 the deep road speeds up a little (it did at
     ×1.15 too), the one target not held.
@@ -394,6 +461,12 @@ beaten, it lets the walker through, and the night draws itself again from its fi
   what one of the First Mark weighs (since 1.3; before, density kept growing past the Dawn,
   and with the relics that remember it carried the deep road off). The Ledger bounds it with
   the depth (never deeper than the best stage).
+- **Layers, kept as they are** (audit of 2026-10-19): main stat, affixes, density, traits,
+  memory and place stay apart. Traits and places were weighed for a merge and kept: a trait
+  is the relic's own (it travels with it to any depth), a place is the land it came from and
+  only pays with others of that land, two choices a walker makes differently. The pack sums
+  every layer into one number, what the relic is worth to the company, so the walker never
+  has to add them up. They shipped in save version 17; no conversion was needed.
 - **What a relic remembers** (`data/traits.ts`, BIBLE 11.0, save version 17):
   - **Traits**, from epic up (one; two for a mythic): one effect of the slot's role, its
     value by rarity (epic, legendary, mythic). Weapon: Vanguard (company damage ×1.1 / 1.3 /
@@ -506,6 +579,8 @@ line of text: it stores counters, and the n-th fragment of a source is always th
     frequent.
 - **The King's first refusals**: until the first ascension, the first time a session's King
   fight is lost, the failure toast carries his line "Come back when your hands stop shaking."
+  and says plainly what his fall opens: the Sanctum of Dusk, where the walker walks the road
+  again with essences that strengthen every night after.
 - **The Night list**: the ascension history written as one line per night, with the King's
   Word of that night.
 - **The Ledger's scenes** (BIBLE 12.10): eleven moments told like a film, over everything
@@ -515,7 +590,7 @@ line of text: it stores counters, and the n-th fragment of a source is always th
   them, actors standing on their ground (the guardian, the walker) and beats in time: lines,
   sounds, the Dusk theme, the frame of a blow. A press shows the line coming up whole, then
   moves to the shot's next line or the next shot; Escape or "Skip" ends it. The scenes:
-  **the Long Night** (a new walk, before the first strike, about 24 s), **the First Dusk**
+  **the Long Night** (a new walk, as its first Remnant falls, about 24 s; minute one is the monster, the strike and the gold, with a first hint saying to strike), **the First Dusk**
   (the first ascension, about 40 s; its ascension toast then carries no quote), **Almost**
   (Maëlle hired again after she half remembers), **the Empty Throne**
   (ascension 13), **the Crown in the Ice**, **the Rehearsal**, **the Threshold** and
@@ -698,16 +773,30 @@ opens again, within the same cap as a hidden tab.
 
 Validated by the bot simulation, median of 9 seeds at 5 clicks/s
 (`npx tsx packages/game/scripts/milestones.ts 9`): stage 10 in 1 min 47, stage 50 in
-1 h 24, first ascension at 2 h 52, stage 100 at 3 h 41 (version 1.3, relics that remember;
+1 h 20, first ascension at 2 h 20, stage 100 at 3 h 04 (version 2.1, the first night's gate
+and King keeping their wounds: the bot no longer waits at the King, so the first dusk comes
+about half an hour sooner and spreads from 1 h 37 to 2 h 50 by seed, where the seeds held at
+the King went past 4 h 30 before; a King keeping 30% of his wounds gives 2 h 40 and 3 h 39,
+none gives 2 h 52 and 3 h 41; version 1.3 stood at 1 min 47, 1 h 24, 2 h 52 and 3 h 41,
 before it 1 h 29, 3 h 01 and 3 h 51), then
 steady progress carried by ascensions. Over 30 seeds: 1 min 48, 1 h 33, 3 h 11 and 4 h 08
 (before 1.3: 1 min 48, 1 h 35, 2 h 55 and 3 h 59),
 the same to the minute as before the replay (1 min 48, 1 h 36, 2 h 53, 3 h 59): since the
 engine steps every 100 ms (version 1.1, the bots' cadence), any change sends every seed down
 another road, and nine seeds swing a median by a quarter of an hour either way. A naive walker (it buys the newest companion it can afford, never the best
-value) loses 2 min 27 at the stage 20 guardian, 2 min 33 at the stage 30 guardian and
-3 min 09 at the stage 40 guardian (median of
-9 seeds, `npx tsx packages/game/scripts/walls.ts 9`). The pace of a run is set by the gold a
+value) loses 2 min 27 at the stage 20 guardian, 2 min 31 at the stage 30 guardian, 3 min 09
+at the stage 40 guardian and 13 min 05 at the first King (median of 9 seeds, `npx tsx
+packages/game/scripts/walls.ts 9`; before version 2.1, 42 min 08 at the King, who then
+healed whole; Maëlle at 25 gold was tried and dropped: it slowed the first night by a
+third for the bot and the naive walker alike, the stage 50 seed by seed +39%). **The walker who is not a bot**
+(`npx tsx packages/game/scripts/realistic.ts 9 3`: 2 strikes a second, the same naive
+purchases, a first hour then four 15-minute sessions a day, the tab open between them,
+closed at night, calling the dusk as soon as it sees the King fallen the first time, then
+once the road stops paying) reaches stage 10 in 4 min 11 and stage 41 after its first hour;
+the company walks on to the King in the open tab (the autopilot only goes back to a boss it
+can beat, so the wounds of one fight help it, 54 min at the King as before); it ascends on
+its first return, after 1 h 00 of play, and stands at stage 280, 960 and 1450 at the end of
+days 1, 2 and 3 (24 ascensions; 230, 890 and 1380 before 2.1). The pace of a run is set by the gold a
 monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to stage 10.
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
 bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
@@ -715,24 +804,46 @@ background tab add and the first hour back with and without the Reunion. The bal
 scripts play each seed (and each profile) in its own process, six at a time at a low
 priority so the machine stays usable (`BALANCE_WORKERS=n` for another count); `npm run sims`
 plays all of them at once on the same six places, in about six minutes, and `npm run compare`
-sets two versions of the game side by side, seed by seed (see AGENTS.md). Over 120 seeds the first ascension comes at 2 h 48
+sets two versions of the game side by side, seed by seed (see AGENTS.md). Before version 2.1, over 120 seeds the first ascension came at 2 h 48
 (median), 80% of walkers between 2 h 01 and 3 h 43. A test plays 6 h honestly with 24 saves to guarantee the anti-cheat never
 rejects real play.
 
 ## Game screen
 
-- A navigation rail opens the windows: map (stage selector and auto-advance), equipment and
-  inventory, altars and ascension, market, Hall (achievements, statistics, leaderboard),
-  account and settings. Badges (`!`, `+` or a count) flag an available ascension or altar,
-  a nearly full inventory, enough shards for the market, an unconfirmed e-mail and the
-  number of unread Chronicle fragments.
+- A navigation rail opens the windows: map (stage selector and auto-advance), equipment
+  (the worn relics and the pack, one key), altars and ascension, market, Hall (achievements,
+  statistics, leaderboard), account and settings. A badge lights for something new, then
+  goes out once its window is opened: an ascension ready (`!`), essences gathered since the
+  Sanctum was last opened while an altar is within reach (`+`), the relics come into the
+  pack since it was last opened (a count; the key then opens on the pack), a ware of the
+  stall the shards newly reach (`+`), and the unread Chronicle fragments (a count). Only a
+  nearly full pack and an unconfirmed e-mail stay lit (`!`). What was last seen is kept in
+  this browser, per game: a view convenience, never game state.
 - The inventory sort and the board picked on the in-game Roll are remembered in this browser
   (closing the window or reloading keeps them); they are view conveniences, never game state.
-- Settings: language, number notation (letters, scientific, engineering), sound and its volume,
-  damage numbers, reduced motion, colorblind colors (rarities, gains and losses in hues that
-  red-green blindness keeps apart), ascension confirmation.
+- Settings: language, number notation (letters, scientific, engineering), sound, the volume
+  of the effects and, apart, of the music of the Ledger's scenes, damage numbers, reduced
+  motion (the game's own setting cuts every animation short, as the system's preference
+  does), colorblind colors (rarities, gains and losses in hues that red-green blindness keeps
+  apart), ascension confirmation, and, once the Chronicle is open, whether its lines
+  (fragments, Bestiary lines, memories) are announced by a toast (on by default; off, they
+  only wait in the Chronicle). Save version 18 adds the music volume and that choice
+  (`musicVolume`, `loreToasts`), defaulted for older saves.
+- Keyboard: 1 to 7 for the powers, M the map, E the equipment, A the Sanctum, H the Hall
+  (each opens once its window is in the rail, and closes it again), B the next buy amount, F
+  advance or stay, Enter and Space strike, Escape closes. Letters are read as typed, so they
+  hold on every keyboard; nothing answers while a field, a scene, a question, a chest or the
+  Reunion has the keys. The Settings list the keys the walker can use.
+- Under a finger, the first tap on a talent or a power shows what it does (its card, "Tap
+  again"), the second learns or uses it; a mouse, a pen and the keyboard keep their single
+  press.
   Its foot names the version the walker plays (`v0.6.0`): the `version` of the root
   `package.json`, read at build time, the same on the develop server.
+- The first seconds: a hint says to strike the monster (from the very first second, gone with
+  the first strike); after Aldric's second level, a hint tells the walker to keep their gold for
+  Maëlle (50 gold, the first companion) until she joins. What relics remember (traits) is told
+  with the second relic found, never in the same breath as the first relic's toast; the first
+  relic's toast says it is already worn (a relic of the road goes to its empty slot).
 - One-time tutorial hints guide the first minutes (`apps/web/src/game/hints.ts`): one at a
   time, each gone for good once the walker did what it says, opened the place it points to,
   read it for 30 s, or pressed "OK" (a closed seam is explained once, not at every failed
@@ -754,7 +865,7 @@ rejects real play.
   voids the previous one. A password reset through the e-mail link also confirms the
   address, unless the address changed since the link was sent: fixing the address voids
   every pending reset link. Fixing the address does not extend the deadline, and each fix
-  sends a link that counts against the resend limit (3 per hour). An account never confirmed is deleted 30 days after sign-up. Accounts created
+  sends a link that counts against the resend limit (3 per hour). An account never confirmed gets two reminders, each with a new link (day 7, day 25; they say the saves are paused and when the account goes), and is deleted 30 days after sign-up, never sooner than 3 days after the second reminder, nor without it sent. One whose game went past stage 50 (its best stage on the leaderboard) is never deleted for it: its reminders say only that the saves wait. Accounts created
   before this rule are considered confirmed.
 - Usernames: 3 to 16 characters (letters, digits, `-`, `_`), at least one letter, unique
   regardless of case and accents, reserved names blocked, strict FR/EN profanity filter that
@@ -777,8 +888,11 @@ rejects real play.
   locks out only their own address; a looser ceiling (60 per 15 min) holds per account
   whatever the address. Once that ceiling is spent, an address that already failed on the
   account waits, while one that never failed still gets a try: the player is never locked
-  out by guesses from elsewhere. Each limiter tracks at most 50,000 keys; when full, a new
-  key waits until old ones expire.
+  out by guesses from elsewhere. Sign-up and login also count per IPv6 /48 (20 sign-ups an
+  hour, 80 logins per 15 min): a site holding a whole /48 has 65,536 addresses of its own.
+  Each limiter tracks at most 50,000 keys; when full, the least recently seen key that is not
+  held back makes room, so a flood of new keys never shuts newcomers out nor frees a key that
+  is being held back (a new key waits only when every key looked at is held back).
 - Forgotten password: single-use link valid 1 h, same answer whether the account exists.
   Requesting a link is limited to 5 per hour per IP (3 per account), using one to 10 per
   hour per IP.
@@ -792,6 +906,11 @@ rejects real play.
 ## Saves
 
 - **Server-side only.** No local save, no import/export, for accounts and guests alike.
+- **A day's snapshot.** The first save an account's game has accepted each day (UTC) is kept
+  apart (`save_snapshots`, 30 days). A person can list them and put one back
+  (`npm run review -w @idlebound/api -- --snapshots <username>`, then `--restore <username> --day
+  YYYY-MM-DD`): it becomes the account's game as a new revision, so every open page is asked to
+  choose, and the server's ledger of the game starts again from its record. Guests have none.
 - **A guest's game is kept without an account** (`guest_saves`, `GET`/`PUT`/`DELETE
   /save/guest`). A new game is begun by the server (`POST /save/guest/new`, see Anti-cheat,
   the fates): a browser without a game gets an httpOnly cookie (`ib_guest`, SameSite Lax, 30
@@ -802,11 +921,14 @@ rejects real play.
   top of it, with the same revisions, conflicts and catch-up as an account's. It goes
   through the same `validation.ts` (see Anti-cheat), is never ranked, and is deleted after
   **30 days without a visit** (a read or a save counts, to the day; the cookie slides with
-  it). No "not kept" warning is left: leaving the page asks for confirmation only when the
+  it). A game saved only once (a page opened, a few blows, then left: under a minute of play)
+  is deleted after **48 hours** without a visit. No "not kept" warning is left: leaving the page asks for confirmation only when the
   last saves failed or the session ended.
 - Guest saves are rate limited: 6 per minute per game (as for an account), 60 per minute
-  per IP for all its games together, and 20 new guest games per hour per IP. A guest's first
-  save may be at most 30 days old.
+  per IP for all its games together, and 20 new guest games per hour per IP (60 per IPv6
+  /48). Every address together, the server begins keeping at most 3,000 guest games an hour
+  (`GUEST_GAMES_PER_HOUR`): past it a new guest still plays, and its game is kept once the
+  hour turns. A guest's first save may be at most 30 days old.
 - On sign-up or login, a fresh guest run (under 90 s of play, no ascension, best stage 3 or
   less) or the same run adopts the account's save; a guest run that differs from it triggers
   an explicit choice, never a silent overwrite. Until the choice is made both games stay
@@ -819,7 +941,7 @@ rejects real play.
   most 30 days. Such a run replacing the account's game may claim no more time (play and
   time away) than the stored game had been credited, plus the time the server saw pass
   since that save. Two first saves sent at once keep the first written; the other gets the
-  conflict. A save never goes back to an older version than the stored one. A game belongs
+  conflict. A save never goes back to an older version than the stored one, and a save written by a newer version than the server's (a build rolled back) is left untouched by the migrations and refused, never relabelled nor stripped of what it carries. A game belongs
   to one account: a game another account already keeps (same creation date) is refused as
   a first save, a replacement or a guest's game (`lineage-taken`), whatever its numbers.
 - When the session ends under an account's game (password changed elsewhere, session
@@ -986,7 +1108,12 @@ same replays, for a person to review the boards; nothing is ever refused or hidd
 - A journal holds at most ten minutes of live play (6,000 steps; catch-ups count for
   nothing) and 60,000 entries, 4 MB unpacked; past that it is not replayed. Replays run in
   worker threads (`REPLAY_WORKERS`, the cores but one, four at most; two in the deployment, which
-  shares its host), stopped after 5 s.
+  shares its host), stopped after 5 s. A replay never holds a row lock nor a database
+  connection: the save's rows are read without a lock, the journal replayed, then the rows read
+  again under the lock and the save written; when they moved meanwhile (another save of the
+  same game, another page taking it), it is measured again (three times at most, then a
+  conflict). At most 16 replays wait per worker: past that, or after 5 s waiting, a replay is
+  "busy" (enforced, the save is asked again 5 s later). The API keeps 20 database connections.
   Measured: 9 ms of CPU for 30 s of play at 10 clicks per second (stages 1000, 2800 and
   9950 alike), about 0.3 core for a thousand walkers saving every 30 s; a full journal of ten
   minutes in about 0.2 s. A journal weighs about 0.5 KB gzipped for 30 s of play, 4 KB for
@@ -996,7 +1123,10 @@ same replays, for a person to review the boards; nothing is ever refused or hidd
   skipped, kept 90 days, 30 per game and hour). `REPLAY_MODE=enforce`: the replayed game is
   the one kept and ranked, the page adopts it (the save's answer carries it, and the page
   replays what the walker did since on top of it); a save without a journal the server can
-  replay is refused (`journal`).
+  replay is refused (`journal`). The deployment runs `enforce` on dev and `shadow` on
+  production until the replays say production can decide too: every replay is counted by what
+  it found (`replay_tally`, by day, 90 days), and `review --replays` gives the share of saves
+  enforce would keep, correct or refuse, and the paths that diverge most (deploy/README.md).
 - A journal sent in parts (back from an outage) is held, part after part, to the time since
   the save before the first part, as one save would be; one that builds on an earlier
   revision, to the time since that revision.
@@ -1127,7 +1257,10 @@ and a page building on a guest's game the server no longer keeps there (another 
 brought it to an account) gets a conflict, never a second copy of that game. Opening a
 guest's game is limited per address too (60 a minute), whatever cookie the page sends.
 Rejections are logged (kept 90 days, 30 per game and hour at most, one entry per code, under
-the account or the guest's game); a refused save returns its first 20 violations. Only an
+the account or the guest's game); a refused save returns its first 20 violations. The page
+tells the walker only what they can act on (a device clock set wrong, a game of another
+device or account, an older version, each with what to do); every other refusal reads the
+same plain line, never what was checked. Only an
 account's accepted saves feed the leaderboard, which keeps each player's best verified
 values: a guest is never ranked. Checks that need no stored save run before the
 save's row is locked.
@@ -1245,11 +1378,31 @@ language.
   The sitemap states no `lastmod`.
 - Accessibility: every public page opens on a "Skip to content" link, hidden until a
   keyboard reaches it, that jumps to its `main`.
-- Every page renders per request (the CSP nonce requires it), so none is prerendered.
+- Every page renders per request (the CSP nonce requires it), so none is prerendered. A page
+  without a nonce would need `'unsafe-inline'` scripts (the App Router writes its data in
+  inline scripts, which a hash cannot cover per request), so the public pages are not cached
+  at the edge: the security default holds.
+- The art generator and its recipes (about a megabyte) load on demand, the first time a page
+  draws a sprite (`pixel/Art.tsx`, `pixel/artSource.ts`); the palette and the scene's grid are
+  their own entries (`@idlebound/game/palette`, `@idlebound/game/grid`). Every page, the
+  landing and the game included, starts on about 1.3 MB of scripts (430 KB gzipped), down
+  from 2.4 MB (690 KB) when every page carried the recipes.
 - Public, indexable leaderboard. Only production is indexable; the dev environment answers
   `noindex`.
+- **When something breaks.** A game window, a scene, a chest or the Reunion that throws while
+  it renders falls alone, in a small window ("This window could not open": try again, or
+  close it), never the game behind it. A page that breaks shows "The road came apart" with a
+  retry and a way home (`error.tsx`, and `global-error.tsx` when the root layout itself
+  breaks). Every page reports what no boundary caught (uncaught errors, unhandled rejections)
+  and what the boundaries caught to `POST /api/client-error`: the kind, the message, the stack,
+  the path and the release, never who (no account, no cookie, the address used for the rate
+  limit only: 10 a minute per address, 600 for everyone, 5 per page). The API writes one
+  `[client]` line per report to its log.
 - Hosted on the owner's platform (Traefik, GitLab CI). Production:
   `https://idlebound.kisukesaama.com`, development: `https://idlebound-d.kisukesaama.com`.
+- The database is dumped every day (14 days kept on the host, copied off it when a remote is
+  configured) and before every deployment. Operations, restoring and rolling back:
+  [deploy/README.md](deploy/README.md).
 
 ## Non-goals
 

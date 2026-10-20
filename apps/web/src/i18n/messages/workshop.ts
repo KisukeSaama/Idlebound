@@ -5,7 +5,7 @@ export const workshop = defineMessages({
   fr: {
     metaTitle: "Atelier de pixels",
     title: "Atelier de pixels",
-    intro: "Tout ce que le moteur de pixel art sait dessiner : palettes, créatures, animations, effets, décors et icônes. Chaque image de cette page est générée par du code, à la volée, et la même recette donne les mêmes pixels partout.",
+    intro: "Tout ce que le moteur de pixel art sait dessiner : palettes, créatures, animations, effets, décors et icônes. Chaque image de cette page est générée par du code, à la volée, et la même recette donne les mêmes pixels partout.",
     nav: "Sections de l'atelier",
     controls: {
       label: "Réglages",
@@ -29,7 +29,7 @@ export const workshop = defineMessages({
     },
     palette: {
       title: "Palette",
-      text: "L'Orvane 64 : les seules couleurs du monde. Rampes décalées en teinte, ombres froides, lumières chaudes, jamais de noir pur.",
+      text: "L'Orvane 64 : les seules couleurs du monde. Rampes décalées en teinte, ombres froides, lumières chaudes, jamais de noir pur.",
       colors: "Orvane 64",
       materials: "Matériaux",
       ramps: "Rampes de lumière"
@@ -40,13 +40,13 @@ export const workshop = defineMessages({
     },
     eras: {
       title: "Ères et Âges",
-      text: "Chaque strate transforme la recette : Écho, Cendre, Néant, Astral, puis un traitement par Âge. Plus on descend, moins le monde a l'air achevé.",
+      text: "Chaque strate transforme la recette : Écho, Cendre, Néant, Astral, puis un traitement par Âge. Plus on descend, moins le monde a l'air achevé.",
       creature: "Créature",
       age: (roman: string) => `Âge ${roman}`
     },
     scenes: {
       title: "Décors",
-      text: "Chaque biome se construit en trois profondeurs : au loin le ciel, les reliefs et le repère au bout de la route ; au milieu le sol, l'eau et les bâtiments ; devant, le cadre sombre. Une lumière raconte le lieu, et le gardien reste ce qui se lit le mieux.",
+      text: "Chaque biome se construit en trois profondeurs : au loin le ciel, les reliefs et le repère au bout de la route ; au milieu le sol, l'eau et les bâtiments ; devant, le cadre sombre. Une lumière raconte le lieu, et le gardien reste ce qui se lit le mieux.",
       guardian: "Gardien au premier plan",
       phone: "Vue téléphone"
     },
@@ -60,22 +60,22 @@ export const workshop = defineMessages({
     },
     buildings: {
       title: "Bâtiments",
-      text: "Bâtis pièce par pièce comme les créatures : volumes ombrés selon la lune, pierres, planches et chaume posés en amas, contour, liseré de lune, mousse et lierre. Chaque ère les use à sa façon."
+      text: "Bâtis pièce par pièce comme les créatures : volumes ombrés selon la lune, pierres, planches et chaume posés en amas, contour, liseré de lune, mousse et lierre. Chaque ère les use à sa façon."
     },
     wear: {
       title: "Usure du monde",
-      text: "Le même lieu, strate après strate : l'Écho le double, la Cendre le brûle, le Néant en arrache des morceaux, l'Astral y fait pousser des éclats. Viennent ensuite les ruines de l'Ancien Monde et les marques de chaque Âge.",
+      text: "Le même lieu, strate après strate : l'Écho le double, la Cendre le brûle, le Néant en arrache des morceaux, l'Astral y fait pousser des éclats. Viennent ensuite les ruines de l'Ancien Monde et les marques de chaque Âge.",
       biome: "Biome"
     },
     marks: {
       title: "Marques des Âges",
-      text: "Chaque Âge laisse sa marque sur le lieu, en pixels pleins : les os d'un géant et une mer gelée, des temples ouverts au ciel, le ciel coulé comme du verre, les fils de la chaîne, le papier, les murs de runes, la lune basse dans la brume, une lampe et une fenêtre, le gris, le contour, puis un seul point de lumière.",
+      text: "Chaque Âge laisse sa marque sur le lieu, en pixels pleins : les os d'un géant et une mer gelée, des temples ouverts au ciel, le ciel coulé comme du verre, les fils de la chaîne, le papier, les murs de runes, la lune basse dans la brume, une lampe et une fenêtre, le gris, le contour, puis un seul point de lumière.",
       biome: "Biome",
       darkNight: "Garder le ciel du Royaume"
     },
     places: {
       title: "Lieux",
-      text: "Les lieux de l'histoire, dessinés comme les biomes : le Sanctuaire du Crépuscule et ses treize autels, le Métier d'Eldra et sa nuit tissée, l'Aube au bout de la route.",
+      text: "Les lieux de l'histoire, dessinés comme les biomes : le Sanctuaire du Crépuscule et ses treize autels, le Métier d'Eldra et sa nuit tissée, l'Aube au bout de la route.",
       sanctum: "Sanctuaire du Crépuscule",
       loom: "Métier d'Eldra",
       dawn: "L'Aube"
@@ -87,13 +87,13 @@ export const workshop = defineMessages({
     },
     relics: {
       title: "Reliques",
-      text: "Vingt formes de base, chacune dessinée cinq fois : du fer terne et du cuir pour une relique commune, du laiton et une pierre sertie pour une rare, des gravures et des gemmes pour une épique, de l'or filigrané pour une légendaire, un éclat de la Voûte de verre et une lumière vivante pour une mythique. La forge grave une rune de feu tous les cinq niveaux ; l'interface écrit le niveau exact.",
+      text: "Vingt formes de base, chacune dessinée cinq fois : du fer terne et du cuir pour une relique commune, du laiton et une pierre sertie pour une rare, des gravures et des gemmes pour une épique, de l'or filigrané pour une légendaire, un éclat de la Voûte de verre et une lumière vivante pour une mythique. La forge grave une rune de feu tous les cinq niveaux ; l'interface écrit le niveau exact.",
       named: "Reliques nommées",
       forge: "Forge"
     },
     icons: {
       title: "Icônes du monde",
-      text: "Pour les lieux du monde : les autels du Sanctuaire, les pouvoirs, l'échoppe et la Roulotte, chacun avec sa silhouette. À côté, le picto de l'interface pour la même chose.",
+      text: "Pour les lieux du monde : les autels du Sanctuaire, les pouvoirs, l'échoppe et la Roulotte, chacun avec sa silhouette. À côté, le picto de l'interface pour la même chose.",
       altars: "Autels",
       powers: "Pouvoirs",
       market: "Échoppe",
@@ -102,9 +102,9 @@ export const workshop = defineMessages({
     performance: {
       title: "Performance",
       measure: "Mesurer",
-      result: (count: number, average: string, worst: string) => `${count} créatures générées : ${average} ms en moyenne, ${worst} ms au pire.`,
-      scenes: (count: number, average: string, worst: string) => `${count} décors générés : ${average} ms en moyenne, ${worst} ms au pire.`,
-      cache: (size: number) => `Cache : ${size} créatures sur 32 au plus.`
+      result: (count: number, average: string, worst: string) => `${count} créatures générées : ${average} ms en moyenne, ${worst} ms au pire.`,
+      scenes: (count: number, average: string, worst: string) => `${count} décors générés : ${average} ms en moyenne, ${worst} ms au pire.`,
+      cache: (size: number) => `Cache : ${size} créatures sur 32 au plus.`
     }
   },
   en: {
@@ -207,8 +207,8 @@ export const workshop = defineMessages({
     performance: {
       title: "Performance",
       measure: "Measure",
-      result: (count: number, average: string, worst: string) => `${count} creatures generated: ${average} ms on average, ${worst} ms at worst.`,
-      scenes: (count: number, average: string, worst: string) => `${count} scenes generated: ${average} ms on average, ${worst} ms at worst.`,
+      result: (count: number, average: string, worst: string) => `${count} creatures generated: ${average} ms on average, ${worst} ms at worst.`,
+      scenes: (count: number, average: string, worst: string) => `${count} scenes generated: ${average} ms on average, ${worst} ms at worst.`,
       cache: (size: number) => `Cache: ${size} creatures out of 32 at most.`
     }
   }

@@ -1,4 +1,4 @@
-import type { EnLexicon, EnNoun, FrAdj, FrLexicon, FrNoun, KingLexicon } from "./types";
+import type { DeedKind, EnLexicon, EnNoun, FrAdj, FrLexicon, FrNoun, KingLexicon } from "./types";
 
 /**
  * Compact notation for the lexicons, so sixty strata stay readable as data.
@@ -12,6 +12,9 @@ import type { EnLexicon, EnNoun, FrAdj, FrLexicon, FrNoun, KingLexicon } from ".
  *
  * French adjective: `m[/f[/mp[/fp]]]`, the missing forms regular; a trailing `=` makes it
  * invariable ("bleu pâle=").
+ *
+ * Deed: `[^|~]deed`; `^` only someone with hands and a voice may do it, `~` only a beast or a
+ * thing ("^laid the table", "~croaked"). No mark: anyone.
  */
 
 const FR_VOWEL = /^[aeiouyàâäéèêëîïôöùûüœæ]/i;
@@ -64,12 +67,20 @@ function split(list: string, count: number, what: string): string[] {
 type Four<T> = readonly [T, T, T, T];
 type Three<T> = readonly [T, T, T];
 
+/** Deeds without their marks, and who may do each. */
+function deeds(list: string): { verbs: Four<string>; kinds: Four<DeedKind> } {
+  const marked = split(list, 4, "deeds");
+  const kinds = marked.map((deed): DeedKind => (deed.startsWith("^") ? "person" : deed.startsWith("~") ? "beast" : "any"));
+  const verbs = marked.map((deed) => deed.replace(/^[\^~]/, ""));
+  return { verbs: verbs as unknown as Four<string>, kinds: kinds as unknown as Four<DeedKind> };
+}
+
 /** One English stratum or biome: "objects", "places", "deeds", "states", "color". */
 export function en(objects: string, places: string, verbs: string, states: string, color: string): EnLexicon {
   return {
     objects: split(objects, 4, "objects").map(enNoun) as unknown as Four<EnNoun>,
     places: split(places, 4, "places").map(enNoun) as unknown as Four<EnNoun>,
-    verbs: split(verbs, 4, "deeds") as unknown as Four<string>,
+    ...deeds(verbs),
     states: split(states, 3, "states") as unknown as Three<string>,
     color
   };
@@ -77,12 +88,12 @@ export function en(objects: string, places: string, verbs: string, states: strin
 
 /** One French stratum or biome, same order. Every deed starts with "a " (passé composé with avoir). */
 export function fr(objects: string, places: string, verbs: string, states: string, color: string): FrLexicon {
-  const deeds = split(verbs, 4, "deeds");
-  for (const deed of deeds) if (!deed.startsWith("a ")) throw new Error(`French deed must use avoir: ${deed}`);
+  const done = deeds(verbs);
+  for (const deed of done.verbs) if (!deed.startsWith("a ")) throw new Error(`French deed must use avoir: ${deed}`);
   return {
     objects: split(objects, 4, "objects").map(frNoun) as unknown as Four<FrNoun>,
     places: split(places, 4, "places").map(frNoun) as unknown as Four<FrNoun>,
-    verbs: deeds as unknown as Four<string>,
+    ...done,
     states: split(states, 3, "states").map(frAdj) as unknown as Three<FrAdj>,
     color: frAdj(color)
   };

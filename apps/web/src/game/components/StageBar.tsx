@@ -3,7 +3,7 @@
 import { isBiomeBossStage, isBossStage } from "@idlebound/game";
 import { useI18n } from "@/i18n/client";
 import { useGame, useReveals } from "../context";
-import { Picto, TEXT_PRESENTATION } from "../icons";
+import { Picto } from "../icons";
 
 export function StageBar() {
   const { state, store } = useGame();
@@ -17,7 +17,9 @@ export function StageBar() {
 
   return (
     <div className="stage-bar" onPointerDown={(event) => event.stopPropagation()}>
-      <button type="button" className="stage-arrow" aria-label={m.previous} disabled={current <= 1} onClick={() => travel(current - 1)}>‹</button>
+      <button type="button" className="stage-arrow" aria-label={m.previous} disabled={current <= 1} onClick={() => travel(current - 1)}>
+        <Picto name="chevronLeft" size={16} />
+      </button>
       <ol className="stage-pips">
         {pips.map((stage) => {
           const locked = stage > state.maxStage;
@@ -27,14 +29,16 @@ export function StageBar() {
           return (
             <li key={stage}>
               <button type="button" className={classes} disabled={locked} onClick={() => travel(stage)} aria-label={m.stage(stage, isBossStage(stage))} aria-current={stage === current ? "step" : undefined}>
-                {isBossStage(stage) ? <span className="pip-crown" aria-hidden="true">{isBiomeBossStage(stage) ? "♛" : "☠"}{TEXT_PRESENTATION}</span> : null}
+                {isBossStage(stage) ? <Picto name={isBiomeBossStage(stage) ? "crownMark" : "skull"} size={12} className="pip-crown" /> : null}
                 <span>{stage}</span>
               </button>
             </li>
           );
         })}
       </ol>
-      <button type="button" className="stage-arrow" aria-label={m.next} disabled={current >= state.maxStage} onClick={() => travel(current + 1)}>›</button>
+      <button type="button" className="stage-arrow" aria-label={m.next} disabled={current >= state.maxStage} onClick={() => travel(current + 1)}>
+        <Picto name="chevronRight" size={16} />
+      </button>
       {shown.autoToggle ? (
       <button
         type="button"

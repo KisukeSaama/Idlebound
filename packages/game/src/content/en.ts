@@ -18,7 +18,7 @@ const n = (value: number) => value.toLocaleString("en-US");
 const clock = (seconds: number) => {
   const total = Math.round(seconds);
   const parts = [[Math.floor(total / 3600), "h"], [Math.floor(total / 60) % 60, "min"], [total % 60, "s"]] as const;
-  return parts.filter(([value]) => value > 0).map(([value, unit]) => `${value} ${unit}`).join(" ") || "0 s";
+  return parts.filter(([value]) => value > 0).map(([value, unit]) => `${value} ${unit}`).join(" ") || "0 s";
 };
 const s = (count: number, word: string, plural = `${word}s`) => (count > 1 ? plural : word);
 
@@ -63,26 +63,26 @@ export const en: GameText = {
     ...BESTIARY_TEXT.en.monsters,
     ...BESTIARY_KEEP_TEXT.en.monsters
   },
-  eraName: (era) => `Era ${roman(era + 1)}`,
+  eraName: (era) => `Stratum ${roman(era + 1)}`,
   heroes: {
     aldric: { name: "Aldric", title: "The Adventurer", lore: "That's you. Every strike on a Remnant is yours, and each level you train makes your strikes hit harder." },
     maelle: { name: "Maëlle", title: "Plains Huntress", lore: "A huntress of the plains who never misses twice. She fights beside you with her bow, teaches the Rallying Cry, and at level 50 brings you more gold." },
     brom: { name: "Brom", title: "Wandering Smith", lore: "The crossroads smith: he mends blades in the morning and breaks skulls at night. He fights beside you, and at level 50 makes your strikes hit harder." },
-    ysolde: { name: "Ysolde", title: "Sylvan Archer", lore: "An archer of the dark forest, whose trees lend her their eyes. She teaches Hawkeye, and at level 50 makes your strikes critical more often." },
+    ysolde: { name: "Ysolde", title: "Sylvan Archer", lore: "An archer of the Dark Forest, whose trees lend her their eyes. She teaches Hawkeye, and at level 50 makes your strikes critical more often." },
     cendre: { name: "Brother Cinder", title: "Ember Monk", lore: "A monk sworn never to carry a weapon: his fists are enough. He teaches Golden Rain, and at level 50 makes the whole company hit harder." },
     nyx: { name: "Nyx", title: "Shadow Blade", lore: "No one has seen her face; many have seen her daggers. She teaches the Resonance Ritual, and at level 50 makes your critical strikes far deadlier." },
-    garrick: { name: "Garrick", title: "Rune Miner", lore: "A miner who digs the forgotten caves for shards of fallen stars. He teaches Time Echo, and at level 50 makes golden rats come more often." },
+    garrick: { name: "Garrick", title: "Rune Miner", lore: "A miner who digs the Forgotten Caves for shards of fallen stars. He teaches Time Echo, and at level 50 makes golden rats come more often." },
     seraphine: { name: "Séraphine", title: "Bramble Druid", lore: "A druid who speaks to the roots, and the roots obey. At level 50, she makes the whole company hit harder." },
     thorvald: { name: "Thorvald", title: "Stonebreaker", lore: "He felled a mountain on a bet, and lost the bet. At level 50, he gives you more time to beat elites and guardians." },
     mirelle: { name: "Mirelle", title: "Marsh Alchemist", lore: "An alchemist of the marsh whose flasks bubble with things best left unnamed. At level 50, she brings you more gold." },
-    kaelen: { name: "Kaelen", title: "Fallen Knight", lore: "Once the King's own guard, he seeks redemption at the tip of his blade. At level 50, he raises the Patience bonus: the company always hits harder." },
-    oriane: { name: "Oriane", title: "Echo Oracle", lore: "An oracle who hears what the caves said a thousand years ago. At level 50, she makes your strikes critical more often." },
+    kaelen: { name: "Kaelen", title: "Fallen Knight", lore: "Once the King's own guard, he seeks redemption at the tip of his blade. At level 50, his talent strengthens the Patience bonus: your companions hit harder for the rest of the night." },
+    oriane: { name: "Oriane", title: "Echo Oracle", lore: "She hears what the caves said a thousand years ago. At level 50, she makes your strikes critical more often." },
     vorn: { name: "Vorn", title: "Beastmaster", lore: "His pack: three wolves, a boar and something unspeakable. At level 50, he makes the whole company hit harder." },
     lysandre: { name: "Lysandre", title: "Archmage", lore: "He has read every grimoire, twice, backwards. At level 50, he makes your critical strikes far deadlier." },
     ashka: { name: "Ashka", title: "Ember Priestess", lore: "A priestess of fire: wherever she prays, the ground smokes for days. At level 50, she brings you much more gold." },
     nameless: { name: "The Nameless", title: "Errant Knight", lore: "A silent knight whose armor may be empty. He has faced more guardians than anyone: at level 50, he gives you more time to beat them." },
     eldra: { name: "Eldra", title: "Timeweaver", lore: "She has seen how this adventure ends, and refuses to talk about it. At level 50, she makes the whole company hit harder." },
-    morgrath: { name: "Morgrath", title: "Lich Lord", lore: "An unlikely ally who hates the Fallen King more than life itself. At level 50, he raises the Patience bonus a lot: the company always hits harder." },
+    morgrath: { name: "Morgrath", title: "Lich Lord", lore: "An unlikely ally who hates the Fallen King more than life itself. At level 50, his talent strengthens the Patience bonus a lot: your companions hit far harder for the rest of the night." },
     celestine: { name: "Célestine", title: "Voice of the Crystals", lore: "The essences sing for her, and she sings back. At level 50, she makes the whole company hit harder." },
     aurelion: { name: "Aurelion", title: "Dragon King", lore: "The last dragon, who chose your side. At level 50, he brings you far more gold." },
     awakened: { name: "The Awakened", title: "Hero of the Prophecy", lore: "You, perhaps, in another life. The strongest of the company: at level 50, the whole company hits harder." }
@@ -112,21 +112,21 @@ export const en: GameText = {
     "awakened-10": "First Step", "awakened-25": "Destiny", "awakened-50": "Awakening", "awakened-100": "Transcendence", "awakened-150": "Infinity"
   },
   skills: {
-    frenzy: { name: "Frenzy", description: "Your blade strikes on its own 10 times per second for 30 s." },
-    rally: { name: "Rallying Cry", description: "Maëlle sounds her horn: every companion deals double damage for 30 s." },
-    hawkeye: { name: "Hawkeye", description: "Ysolde lends you the trees' eyes: +50% chance for your strikes to be critical (ten times the damage or more) for 30 s." },
-    goldrain: { name: "Golden Rain", description: "Brother Cinder prays to Pip: all gold you earn is tripled for 30 s." },
+    frenzy: { name: "Frenzy", description: "Your blade strikes on its own 10 times per second for 30 s." },
+    rally: { name: "Rallying Cry", description: "Maëlle sounds her horn: every companion deals double damage for 30 s." },
+    hawkeye: { name: "Hawkeye", description: "Ysolde lends you the trees' eyes: +50% chance for your strikes to be critical (ten times the damage or more) for 30 s." },
+    goldrain: { name: "Golden Rain", description: "Brother Cinder prays for a good harvest: all gold you earn is tripled for 30 s." },
     ritual: { name: "Resonance Ritual", description: "Nyx ties you to the night's rhythm: companions deal +5% damage until your next ascension. Each use adds another 5%." },
     echo: { name: "Time Echo", description: "Garrick strikes an echo vein: the last power you used, if it is still recharging, is ready again at once." },
     unweave: SYSTEMS_TEXT.en.unweave
   },
   skillRecharge: (seconds) => `Recharge: ${clock(seconds)}.`,
   altars: {
-    might: { name: "Altar of Might", description: "Your companions deal more damage: each level multiplies it by 1.10." },
+    might: { name: "Altar of Might", description: "Your companions deal more damage, and so do your strikes through the share of the company's damage they carry: ×1.10 per level." },
     blade: { name: "Altar of the Blade", description: "Your strikes hit harder: each level multiplies their damage by 1.10, the part that comes from your companions included." },
     fortune: { name: "Altar of Fortune", description: "You earn more gold: each level multiplies all the gold you earn by 1.12." },
-    patience: { name: "Altar of Patience", description: "Raises the Patience bonus, extra damage your companions always deal: +14% at level 1, and each level multiplies this altar's part by 1.14." },
-    time: { name: "Altar of Time", description: "You get 1 more second per level to beat elites and guardians (30 s at the start)." },
+    patience: { name: "Altar of Patience", description: "Feeds the Patience bonus, a lasting damage bonus of your companions (never of your strikes) that adds to Kaelen's and Morgrath's. Its part is +14% at level 1 and grows ×1.14 per level: it weighs little at first, but at high levels each level is worth more than the Altar of Might (×1.10, which raises your strikes too), at a price that climbs faster." },
+    time: { name: "Altar of Time", description: "You get 1 more second per level to beat elites and guardians (30 s at the start)." },
     fate: { name: "Altar of Fate", description: "Your critical strikes deal 20% more damage per level." },
     precision: { name: "Altar of Precision", description: "Your strikes get +1% chance per level to be critical." },
     treasure: { name: "Altar of Treasure", description: "+0.5% chance per level to meet a golden rat, which drops ten times the gold (1% at the start, 25% at most)." },
@@ -139,10 +139,10 @@ export const en: GameText = {
   market: {
     chest: { name: "Relic Chest", description: "A random relic at the level of your best stage." },
     "great-chest": { name: "Great Chest", description: "An epic relic or better, with a higher chance of legendary, at the level of your best stage." },
-    rage: { name: "Rage Potion", description: "Your companions deal double damage for 10 min. Each potion adds 10 min." },
-    fortune: { name: "Fortune Elixir", description: "All the gold you earn is doubled for 10 min. Each elixir adds 10 min." },
-    autoclick: { name: "Striking Scroll", description: "Your blade strikes on its own 5 times per second for 10 min." },
-    hourglass: { name: "Golden Hourglass", description: "Instantly earn 1 h of gold at your current rate." }
+    rage: { name: "Rage Potion", description: "Your companions deal double damage for 10 min. Each potion adds 10 min." },
+    fortune: { name: "Fortune Elixir", description: "All the gold you earn is doubled for 10 min. Each elixir adds 10 min." },
+    autoclick: { name: "Striking Scroll", description: "Your blade strikes on its own 5 times per second for 10 min." },
+    hourglass: { name: "Golden Hourglass", description: "Instantly earn 1 h of gold at your current rate." }
   },
   achievementNames: {
     clicks: ["Steel in Hand", "Sore Wrist", "Ten Thousand Cuts", "Brom Sharpens It Again", "A Blade the Night Did Not Forge"],
@@ -183,13 +183,13 @@ export const en: GameText = {
     // The threshold counts Aldric (the walker), who is not a companion.
     hired: (t) => `Have ${t - 1} companions in your company in a single night.`,
     skills: (t) => `Use ${n(t)} powers.`,
-    ascend: (t) => `Ascend ${t} ${s(t, "time")}.`,
+    ascend: (t) => (t === 1 ? "Ascend once." : `Ascend ${t} times.`),
     essences: (t) => `Collect ${n(t)} essences in total.`,
-    legend: (t) => `Find ${t} legendary ${s(t, "item")}.`,
-    mythic: (t) => `Find ${t} mythic ${s(t, "item")}.`,
+    legend: (t) => `Find ${t} legendary ${s(t, "relic")}.`,
+    mythic: (t) => `Find ${t} mythic ${s(t, "relic")}.`,
     hit: (t, big) => `Deal a single hit of ${big(t)} damage.`,
-    time: (t) => `Walk the night for ${Math.round(t / 3600)} h in total.`,
-    fails: (t) => `Be pushed back by an elite or a guardian ${t} ${s(t, "time")}.`,
+    time: (t) => `Walk the night for ${Math.round(t / 3600)} h in total.`,
+    fails: (t) => `Be pushed back by an elite or a guardian ${t === 1 ? "once" : `${t} times`}.`,
     ...SYSTEMS_TEXT.en.achievementDescriptions
   },
   slots: { weapon: "Weapon", armor: "Armor", amulet: "Amulet", ring: "Ring" },
@@ -265,7 +265,7 @@ export const en: GameText = {
       "He once asked the Ledger for his own number. The Ledger did not answer. It was too large."
     ],
     "golden-rat": [
-      "Pip, the golden rat. Every other creature changes from one stratum to the next. Pip never does.",
+      "Pip, the golden rat. Every other Remnant changes from one stratum to the next. Pip never does.",
       "It is never where the others were. It is always where you are looking.",
       "The Ledger keeps a single entry for Pip. It is in Pip's handwriting."
     ],
@@ -291,7 +291,7 @@ export const en: GameText = {
       { by: "The Ledger", text: "The King's surveyors set the milestone stones. Each one lights when the road is cleared. None has ever stayed lit." },
       { by: "The Ledger", text: "Before you came, the old boar lay down in the wheat and waited, the way a dog waits by a door." },
       { by: "Maëlle", text: "The harvest festival was the next day. I had a ribbon. I think I had a ribbon." },
-      { by: "The Ledger", text: "In the Hearthfields, dusk lasts a little longer than anywhere else. As if the fields were asking for one more hour." }
+      { by: "The Ledger", text: "In the Verdant Plains, dusk lasts a little longer than anywhere else. As if the fields were asking for one more hour." }
     ],
     ...PLACES_TEXT.en.echoes
   },

@@ -16,6 +16,86 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+### New
+
+- First minutes: a hint says to strike the monster from the very first second, and the Long
+  Night is now told as your first monster falls instead of before your first strike.
+- First minutes: once Aldric reaches level 2, a hint tells you to keep your gold for Maëlle
+  (50 gold), the first companion who fights while you do not strike.
+- The King's first refusal now also says what his fall opens: the Sanctum of Dusk.
+- Sanctum: every altar you can afford shows what one level does to your damage once the
+  essences it takes are counted, in red when you would lose damage.
+- Sanctum: a new Distribute button offers your essences only where an altar gives more than
+  keeping them.
+- Touch screens: the first tap on a talent or a power shows what it does; a second tap learns
+  or uses it.
+- Settings: the music of the scenes has its own volume, and the Chronicle's lines can wait in
+  the Chronicle instead of being announced.
+- Keys: M map, E equipment, A Sanctum, H Hall, B buy amount, F advance or stay.
+- Toasts: each stays long enough to read, a mouse resting on them holds them, and a Chronicle
+  line leads to the Chronicle.
+- Account: an address never confirmed gets two reminders before the account goes, and an
+  account whose game is past stage 50 is never deleted for it.
+- Eldra's Loom: a new Weave, Eldra's Hourglass (8 threads). While you are away, once the
+  company has stood still for 15 min before an elite or a guardian too strong for it, it calls
+  the dusk itself and walks the next night; the essences wait for you, and the company's
+  account tells the dusks it called. A word not kept yet is lost with that dusk.
+- Eldra's Loom: a new Weave, Woven Habits (8 threads). Your powers are used again the moment
+  they are ready, unless your word forbids them; Time Echo and Unweave still wait for you.
+
+### Balance
+
+- The first King: on your first night, the Keep's gate (stage 45) keeps up to 75% of its
+  wounds and the King up to 50% of his, like the guardians before them. From your first dusk
+  on they heal whole again.
+- The Descent: it now leaves you a tenth of your essences (the altars still go). You stand
+  again on the record you left within a few hours of play instead of more than a day, and
+  each Descent carries you ahead of the walker who never descends from the next day on.
+- The Descent: Eldra shows her Loom at stage 1500 (was 2000); the first Descent weaves 8
+  threads there. A walker past stage 1500 sees it at once. Threads and Weaves already woven
+  keep all their value.
+- Warp of Plenty: each level now costs 25% more than the last (was 20%), so the Descents keep
+  carrying you down without running away. The levels you already wove keep the price you paid.
+- Altars of Might and Patience: their cards say what tells them apart. Might raises your
+  companions and, through the share of their damage your strikes carry, your strikes too;
+  Patience raises only your companions, and grows faster. Kaelen's and Morgrath's talents
+  say they last the night.
+
+### Fixes
+
+- Words: the game says one word for one thing: a stratum (no more "era"), a relic (no more
+  "item"), the bag, the market, elites and guardians. The top-left label now reads "Stratum
+  IV" instead of "Era IV".
+- First relic: its toast now says it is already worn. What relics remember is explained with
+  your second relic, no longer in the same breath.
+- Companion hits: a struck creature now lights a step paler with a rim in the striker's color,
+  instead of flashing one flat color.
+- Wandering crystal: it now falls inside its own light, drawn in the world's pixels (gold
+  during the Lantern Queen's storm), and floats without blur or tilt.
+- Badges: the rail lights a badge only for something new and puts it out once you open its
+  window; only a nearly full bag and an address to confirm stay lit. The equipment and the bag
+  share one key.
+- Reduced motion: the game's own setting now stills every animation.
+- Readability: faint text, violet and red labels, badges and field edges are easier to read;
+  small keys answer a larger touch.
+- Companions not yet hired, and Aldric gone grey, keep the night's own colors.
+- If one window of the game fails, only that window closes, with a way to open it again; the
+  road goes on.
+
+- The Empty Throne: the scene of the thirteenth night now tells how the Long Night was woven,
+  plainly, and keeps the King's own secret for later.
+- Promises: the help says when a word is kept (at your next ascension) in fewer words, and the
+  rules that hold the company back name the companions concerned plainly. Eldra no longer
+  speaks of a Seam for a lost fight.
+- Relics: awakening and Density say what they do; the Rout and Homecoming traits say plainly
+  when they apply.
+- Events: the Seam and the King's Eclipse say what they give and how much tougher the King is.
+- French: lines spoken to the walker now read the same for every walker; French punctuation no
+  longer leaves a colon, a question mark or a percent sign alone at the start of a line.
+- The Chronicle: generated fragments no longer give a creature a deed it cannot do, and what
+  stays after an absence opens in more than one way.
+- Saves refused by the Ledger now say what to do (fix the device clock, reload) in plain words.
+
 ## v2.0.1
 
 ### Fixes

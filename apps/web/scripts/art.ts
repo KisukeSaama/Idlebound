@@ -42,9 +42,10 @@ function blend(x: number, y: number, r: number, g: number, b: number, a: number)
   og.data[at + 3] = 255;
 }
 
-// The Keep at night, a veil of the night ink for the logo to read on.
+// The Keep at night, a veil of the night ink thick behind the logo and thin over the King,
+// so both still read on a thumbnail.
 place(toRgba(flattenScene(renderScene("fallen-king-ruins"))), -40, -80, SCALE);
-for (let y = 0; y < HEIGHT; y += 1) for (let x = 0; x < WIDTH; x += 1) blend(x, y, 11, 10, 20, (90 + 120 * (y / HEIGHT)) / 255);
+for (let y = 0; y < HEIGHT; y += 1) for (let x = 0; x < WIDTH; x += 1) blend(x, y, 11, 10, 20, (40 + 150 * Math.max(0, 1 - x / (WIDTH * 0.62)) + 40 * (y / HEIGHT)) / 255);
 
 // The Fallen King and a shade wolf, standing on the road.
 const floor = 606;

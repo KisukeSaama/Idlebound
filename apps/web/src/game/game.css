@@ -293,7 +293,8 @@ button.resource:hover .resource-label {
   padding: 0 4px;
   border-radius: var(--radius-sm);
   border: 1px solid #000;
-  background: var(--violet);
+  /* White on this violet reads at 6:1 (on --violet it fell to 3.5:1). */
+  background: #6f45d6;
   color: #fff;
   font-size: 0.76rem;
   font-weight: 800;
@@ -303,7 +304,8 @@ button.resource:hover .resource-label {
 .nav-badge.urgent {
   background: var(--gold);
   color: #1a1204;
-  animation: badge-pop 1.4s steps(2, jump-none) infinite;
+  /* It hops three times when it lights, then holds still: a badge that never stops says nothing. */
+  animation: badge-pop 1.4s steps(2, jump-none) 3;
 }
 
 @keyframes badge-pop {
@@ -422,14 +424,16 @@ button.resource:hover .resource-label {
 }
 
 .stage-arrow {
+  display: inline-grid;
+  place-items: center;
   width: 30px;
   height: 30px;
+  padding: 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: var(--panel-2);
   box-shadow: var(--bevel);
-  font-size: 1.2rem;
-  line-height: 1;
+  color: var(--text);
 }
 
 .stage-arrow:disabled {
@@ -492,12 +496,11 @@ button.resource:hover .resource-label {
 }
 
 .pip-crown {
-  font-variant-emoji: text;
   position: absolute;
   top: -9px;
-  font-size: 0.75rem;
+  left: 50%;
+  margin-left: -6px;
   color: #ff8fa4;
-  text-shadow: 0 1px 2px #000;
 }
 
 .biome-boss .pip-crown {
@@ -667,58 +670,37 @@ button.resource:hover .resource-label {
 
 /* ------------------------------------------------ wandering crystal */
 
+/*
+ * The crystal and its light are one sprite of the world (pixel/objects.ts): no blur, no
+ * glow, no tilt. It floats by whole art pixels (--crystal-px, the sprite's scale), its box
+ * placed on whole CSS pixels by CrystalView, and blinks out whole as it fades.
+ */
 .crystal {
+  --crystal-px: 3px;
   position: absolute;
   z-index: 6;
-  width: 70px;
-  height: 77px;
+  margin: -54px 0 0 -48px;
   padding: 0;
   border: 0;
   background: none;
-  transform: translate(-50%, -50%);
-  display: grid;
-  place-items: center;
-  animation: crystal-float 3s ease-in-out infinite, crystal-in 400ms ease-out;
-  filter: drop-shadow(0 0 16px rgba(195, 139, 255, 0.9));
+  display: block;
+  line-height: 0;
+  animation: crystal-float 2.4s steps(1, end) infinite;
   cursor: pointer;
 }
 
-.crystal .pixel-sprite {
-  animation: crystal-shine 1.2s ease-in-out infinite;
-}
-
-.crystal::after {
-  content: "";
-  position: absolute;
-  inset: -30%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(195, 139, 255, 0.35), transparent 65%);
-  z-index: -1;
-}
-
-.crystal.storm {
-  filter: drop-shadow(0 0 16px rgba(255, 226, 154, 0.9));
-}
-
 .crystal.fading {
-  animation: crystal-float 3s ease-in-out infinite, crystal-blink 0.4s steps(2) infinite;
+  animation: crystal-float 2.4s steps(1, end) infinite, crystal-blink 0.4s steps(1, end) infinite;
 }
 
 @keyframes crystal-float {
-  0%, 100% { transform: translate(-50%, -50%) rotate(-6deg); }
-  50% { transform: translate(-50%, -62%) rotate(6deg); }
-}
-
-@keyframes crystal-in {
-  from { opacity: 0; scale: 0.3; }
-}
-
-@keyframes crystal-shine {
-  50% { filter: brightness(1.45); }
+  0%, 100% { translate: 0 0; }
+  25%, 75% { translate: 0 calc(-1 * var(--crystal-px)); }
+  50% { translate: 0 calc(-2 * var(--crystal-px)); }
 }
 
 @keyframes crystal-blink {
-  50% { opacity: 0.45; }
+  50% { visibility: hidden; }
 }
 
 /* ------------------------------------------------ tutorial */
@@ -1042,6 +1024,7 @@ button.resource:hover .resource-label {
 
 .talent-tip em {
   font-style: normal;
+  font-family: var(--font-body);
   color: var(--violet-2);
   font-weight: 700;
 }
@@ -1273,18 +1256,15 @@ button.resource:hover .resource-label {
   background: var(--bg-2);
 }
 
-/* The walker gave all of themselves away: Aldric's face and name go grey, until an essence is held again. */
-.hero-row.is-fading .medallion-clip {
-  filter: grayscale(1) brightness(0.8);
-}
-
+/* The walker gave all of themselves away: Aldric's face (drawn grey, HeroPanel) and name go grey, until an essence is held again. */
 .hero-row.is-fading .hero-name {
   color: var(--faint);
   letter-spacing: 0.08em;
 }
 
+/* A companion not yet hired: the face is drawn faded (HeroPanel), the frame dims with it. */
 .hero-row.unhired .hero-medallion {
-  filter: grayscale(0.7) brightness(0.8);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-deep) 50%, #000), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 /* The portrait's frame: the world object frame, its thread in the companion's color. */
@@ -1908,6 +1888,18 @@ button.resource:hover .resource-label {
   scrollbar-width: none;
 }
 
+.modal-tabs[data-more="end"] {
+  mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+}
+
+.modal-tabs[data-more="start"] {
+  mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent);
+}
+
+.modal-tabs[data-more="start end"] {
+  mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+}
+
 .modal-tabs button {
   flex: none;
   margin-bottom: 1px;
@@ -2088,19 +2080,24 @@ button.resource:hover .resource-label {
   background: linear-gradient(180deg, transparent 30%, rgba(6, 5, 12, 0.95) 85%);
 }
 
+/* Sprites centered on whole pixels: the anchor is rounded down (round() where the browser has
+   it), and a sprite's width is a whole scale of an even grid, so its half is whole too. */
 .map-scene {
   position: absolute;
   left: 50%;
+  left: round(down, 50%, 1px);
   top: 50%;
+  top: round(down, 50%, 1px);
   translate: -50% -50%;
 }
 
 .map-boss {
   position: absolute;
   top: 14%;
+  top: round(down, 14%, 1px);
   left: 50%;
-  transform: translateX(-50%);
-  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.6));
+  left: round(down, 50%, 1px);
+  translate: -50% 0;
 }
 
 .map-card-body {
@@ -2358,6 +2355,7 @@ button.resource:hover .resource-label {
   margin: 0;
   font-size: 0.76rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -2638,6 +2636,24 @@ button.resource:hover .resource-label {
   color: var(--text);
 }
 
+/* The level's net effect on damage once the essences it takes are counted. */
+.altar .altar-net {
+  color: var(--success-soft);
+  font-weight: 700;
+}
+
+.altar .altar-net-loss {
+  color: var(--danger-soft);
+}
+
+.altar-distribute {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 4px 0 10px;
+}
+
 .altar .btn {
   margin-top: auto;
 }
@@ -2794,6 +2810,7 @@ button.resource:hover .resource-label {
   margin: 4px 0 0;
   font-size: 0.8rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -2829,6 +2846,7 @@ button.resource:hover .resource-label {
   margin: 0;
   font-size: 0.88rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.5;
   color: var(--text);
 }
@@ -3647,6 +3665,23 @@ kbd {
   color: var(--muted);
 }
 
+/* A line of the Chronicle leads there, to be read again. */
+.toast-link {
+  margin-top: 4px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--gold-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.toast-link:hover {
+  color: var(--gold);
+}
+
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(-14px) scale(0.95); }
 }
@@ -3749,17 +3784,35 @@ kbd {
   }
 }
 
-/* Touch screens have no hover: tooltips would stick after a tap. A talent out of reach (or
-   learned) does nothing when touched, so a tap opens its card; one to buy is bought at once. */
+/* Touch screens have no hover: tooltips would stick after a tap. A finger never buys blind:
+   the first tap on a talent or a power opens its card and arms it, the second does what it
+   says (touchArm.ts). A talent out of reach (or learned) does nothing, so a tap opens its card. */
 @media (hover: none) {
   .skill-tip {
     display: none;
   }
+  .skill.armed .skill-tip {
+    display: grid;
+  }
+  .skill.armed .skill-tip,
+  .talent.armed .talent-tip,
   .talent:disabled:hover .talent-tip {
     opacity: 1;
     visibility: visible;
     transform: translate(-50%, 0);
   }
+}
+
+.tip-again {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--gold-2);
+}
+
+/* The list item holds its talent's key; display: contents would drop its role in some readers. */
+.talent-item {
+  display: inline-flex;
 }
 
 /* Under a finger, a key answers the moment it is touched: it sinks and gives a little. A
@@ -3792,6 +3845,43 @@ kbd {
   .resource-essence:active,
   .resource-shard:active {
     scale: 0.95;
+  }
+}
+
+/* Under a finger, every small key answers a 44 px touch: an invisible pad around it, the
+   drawing unchanged. Neighbours in a row only grow up and down, never over each other. */
+@media (pointer: coarse) {
+  .modal-close,
+  .stage-arrow,
+  .stage-pip,
+  .skill,
+  .talent,
+  .buy-modes button {
+    position: relative;
+  }
+  .modal-close::after,
+  .stage-arrow::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2));
+  }
+  .stage-pip::after,
+  .skill::after,
+  .talent::after,
+  .buy-modes button::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2)) 0;
+  }
+  /* The strip lets its keys' pads out; its ends keep their round corners themselves. */
+  .buy-modes {
+    overflow: visible;
+  }
+  .buy-modes button:first-child {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  }
+  .buy-modes button:last-child {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   }
 }
 
@@ -3851,7 +3941,6 @@ kbd {
   }
   .pip-crown {
     top: -8px;
-    font-size: 0.66rem;
   }
   .stage-arrow {
     width: 26px;
@@ -3944,8 +4033,8 @@ kbd {
     display: none;
   }
   .crystal {
-    width: 56px;
-    height: 62px;
+    --crystal-px: 2px;
+    margin: -36px 0 0 -32px;
   }
   .hero-panel-head {
     padding: 8px 10px;
@@ -4375,6 +4464,24 @@ kbd {
   animation: none !important;
 }
 
+/* The game's own setting reaches as far as the system's preference (globals.css): every
+   animation and transition cut short, the lines told in the band keeping their time. */
+:root.reduced-motion *,
+:root.reduced-motion *::before,
+:root.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+:root.reduced-motion .scene-line {
+  animation-duration: 7s !important;
+}
+
+:root.reduced-motion .scene-dream {
+  animation-duration: 6s !important;
+}
+
 /* ------------------------------------------------ sanctum, loom, stall, armory (places past the King) */
 
 /* A place's heading: its pixel scene, cropped, under its name and one line. */
@@ -4401,6 +4508,7 @@ kbd {
 .place-art {
   position: absolute;
   left: 50%;
+  left: round(down, 50%, 1px);
   bottom: 0;
   translate: -50% 0;
   image-rendering: pixelated;
@@ -4429,6 +4537,7 @@ kbd {
   max-width: 60ch;
   font-size: 0.82rem;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--text);
   text-shadow: 0 1px 6px rgba(11, 10, 20, 0.95);
 }
@@ -4459,6 +4568,7 @@ kbd {
   margin: 0;
   font-size: 0.8rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--text);
 }
@@ -4469,6 +4579,7 @@ kbd {
   margin-top: 3px;
   font-size: 0.72rem;
   font-style: normal;
+  font-family: var(--font-body);
   color: var(--faint);
 }
 
@@ -4552,6 +4663,7 @@ kbd {
   margin: 0 0 14px;
   font-size: 0.82rem;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--faint);
 }
 
@@ -4592,6 +4704,7 @@ kbd {
 .crown-hover {
   font-size: 0.8rem;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--violet-2);
   opacity: 0;
   transition: opacity 300ms ease;
@@ -4752,6 +4865,7 @@ kbd {
 /* What stays after an absence: the opening line's band, paler, and six seconds long. */
 .scene-dream {
   font-style: italic;
+  font-family: var(--font-italic);
   font-weight: 500;
   color: var(--violet-2);
   animation-duration: 6s;
@@ -4822,25 +4936,13 @@ kbd {
   pointer-events: none;
 }
 
+/* The night is a sprite of the world (pixel/objects.ts), shown whole while it lasts. */
 .medallion-stars {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 30% 28%, #fff 0 1px, transparent 1.5px),
-    radial-gradient(circle at 68% 40%, #e6d0ff 0 1px, transparent 1.5px),
-    radial-gradient(circle at 44% 70%, #fff 0 1.2px, transparent 1.7px),
-    radial-gradient(circle at 76% 72%, #c9d8ff 0 0.8px, transparent 1.3px),
-    radial-gradient(circle at 22% 58%, #ffe9a8 0 0.8px, transparent 1.3px),
-    radial-gradient(circle at 55% 18%, #fff 0 0.8px, transparent 1.3px),
-    radial-gradient(circle at 50% 50%, #1b1640, #07060f 75%);
-  animation: medallion-stars 1s ease-out forwards;
+  overflow: hidden;
+  border-radius: inherit;
   pointer-events: none;
-}
-
-@keyframes medallion-stars {
-  0% { opacity: 0; }
-  20%, 70% { opacity: 1; }
-  100% { opacity: 0; }
 }
 
 /* The Promise: a knot on the medallion of the companion who holds the walker's word for the
@@ -4874,12 +4976,7 @@ kbd {
 
 /* Not hired (left behind, or still to come): the portrait dims, the knot stays lit. */
 .hero-row.unhired.has-promise .hero-medallion {
-  filter: none;
-}
-
-.hero-row.unhired.has-promise .medallion-clip,
-.party-member.is-absent .medallion-clip {
-  filter: grayscale(0.7) brightness(0.8);
+  box-shadow: 0 0 0 1px var(--gold-deep), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .hero-promise {
@@ -4908,6 +5005,7 @@ kbd {
 .promise-none {
   margin: 0;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--muted);
 }
 
@@ -4995,6 +5093,7 @@ kbd {
   margin: 4px 0;
   font-size: 0.88rem;
   font-style: italic;
+  font-family: var(--font-italic);
   line-height: 1.45;
   color: var(--text);
 }

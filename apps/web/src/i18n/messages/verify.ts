@@ -6,7 +6,7 @@ export const verify = defineMessages({
     metaTitle: "Confirmation de l'e-mail",
     title: "Confirmation",
     pending: "Confirmation en cours…",
-    success: (username: string) => `C'est fait, ${username} : ton adresse est confirmée.`,
+    success: (username: string) => `C'est fait, ${username} : ton adresse est confirmée.`,
     invalidLink: "Lien invalide. Demande un nouvel e-mail depuis la fenêtre Compte du jeu.",
     play: "Retour au jeu"
   },

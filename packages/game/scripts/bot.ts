@@ -1,5 +1,5 @@
 /** A "reasonable" automatic player, shared by the balance simulation and the tests. */
-import { ALTAR_BY_ID } from "../src/data/altars";
+import { CLICKER_ALTARS as CLICKER_MILESTONES, IDLE_ALTARS as IDLE_MILESTONES, damageRate, distributeEssences, strikesLead } from "../src/altarPlan";
 import { WEAVES, weaveCost, type WeaveId } from "../src/data/descent";
 import { CLICK_HERO_ID, HERO_BY_ID, HEROES } from "../src/data/heroes";
 import { awakenDepth, relicDepth } from "../src/data/traits";
@@ -7,9 +7,9 @@ import { RECOGNITION_HEROES } from "../src/data/lore";
 import { PROMISE_BY_HERO, promiseHolds, promiseOf, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
-import { ESSENCE_DPS_BONUS, altarPrice, awakenPrice, damageAt, relicCompanyGain, derive, deriveAt, deriveBase, heroCost, heroCostMultiplier, milestoneMultiplier, promiseWhen, type DeriveBase } from "../src/formulas";
+import { awakenPrice, damageAt, relicCompanyGain, derive, deriveAt, deriveBase, heroCost, heroCostMultiplier, milestoneMultiplier, promiseWhen, type DeriveBase } from "../src/formulas";
 import { runBits } from "../src/scale";
-import type { AltarId, Derived, GameState, Item } from "../src/types";
+import type { AltarId, GameState, Item } from "../src/types";
 
 export interface BotOptions {
   clicksPerSecond: number;
@@ -94,41 +94,18 @@ export interface DescentPlan {
   growth: number;
 }
 
+/** How the bot descends in the long runs: once an Age, when the Descent weaves 8 threads at least. */
+export const DESCENT_PLAN: DescentPlan = { minThreads: 8, growth: 1 };
+
 export interface AltarPlan {
   /** Capped altars bought whenever cheap. */
-  milestones: AltarId[];
+  milestones: readonly AltarId[];
 }
 
-export const CLICKER_ALTARS: AltarPlan = {
-  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "fate", "precision", "echoes"]
-};
-export const IDLE_ALTARS: AltarPlan = {
-  milestones: ["time", "bargain", "memory", "treasure", "wanderer", "echoes"]
-};
+export const CLICKER_ALTARS: AltarPlan = { milestones: CLICKER_MILESTONES };
+export const IDLE_ALTARS: AltarPlan = { milestones: IDLE_MILESTONES };
 
-type Weights = Partial<Record<AltarId, number>>;
-/**
- * Open-ended altars, weighted by how much of their effect reaches the walker: the Blade when
- * the strikes lead (they deal more than the Patience bonus adds), Patience when the company
- * does.
- */
-const STRIKE_WEIGHTS: Weights = { might: 1, blade: 0.9, fortune: 0.7 };
-const COMPANY_WEIGHTS: Weights = { might: 1, patience: 0.9, fortune: 0.7 };
-
-/** Whether the walker's strikes, at this pace, deal more than the Patience bonus adds to the company. */
-export function strikesLead(d: Derived, clicksPerSecond: number): boolean {
-  const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
-  return strikes > d.patienceDps;
-}
-
-/**
- * Damage a second of the company with a walker striking `clicksPerSecond` times a second
- * (crits averaged): the company's damage, Patience bonus included, and every strike on top.
- */
-export function damageRate(d: Pick<Derived, "dps" | "click" | "critChance" | "critMultiplier">, clicksPerSecond: number): number {
-  const strikes = clicksPerSecond * d.click * (1 + d.critChance * (d.critMultiplier - 1));
-  return d.dps + strikes;
-}
+export { damageRate, strikesLead };
 
 /** Average strikes a second of a play style over a whole run. */
 export function averageClicks(options: BotOptions): number {
@@ -346,43 +323,12 @@ export function buyWeaves(engine: GameEngine, now: number) {
   }
 }
 
-/** Capped altars bought as soon as they cost little next to the owned essences. */
-const MILESTONE_SHARE = 0.03;
-
 /**
- * Essence spending after an ascension: capped altars when cheap, then the open-ended level
- * that adds the most log-power per essence (the Blade if the strikes led the last run,
- * Patience if the company did), as long as it beats keeping the essences (each one owned
- * gives +10% DPS).
+ * Essence spending after an ascension, as the Sanctum's "Distribute" button does
+ * (`distributeEssences`): capped altars when cheap, then the open-ended level that adds the
+ * most per essence (the Blade if the strikes led the last run, Patience if the company did),
+ * as long as it beats keeping the essences.
  */
 export function buyAltars(engine: GameEngine, now: number, { milestones }: AltarPlan, strikesLed: boolean) {
-  const weights = strikesLed ? STRIKE_WEIGHTS : COMPANY_WEIGHTS;
-  const s = engine.state;
-  for (let guard = 0; guard < 2000; guard += 1) {
-    let bought = false;
-    for (const id of milestones) {
-      // The walker's own price: the Knot of Dusk lets the Wanderer's altar grow past its cap.
-      const cost = altarPrice(s, id);
-      if (Number.isFinite(cost) && cost <= s.essences * MILESTONE_SHARE && engine.perform({ type: "altar", id }, now)) bought = true;
-    }
-    const hold = ESSENCE_DPS_BONUS / (1 + ESSENCE_DPS_BONUS * s.essences);
-    let best: { id: AltarId; ratio: number } | null = null;
-    for (const [id, weight] of Object.entries(weights) as [AltarId, number][]) {
-      const cost = altarPrice(s, id);
-      if (cost > s.essences) continue;
-      const ratio = (Math.log(1 + ALTAR_BY_ID[id].valuePerLevel) * weight) / cost;
-      if (ratio > hold && (!best || ratio > best.ratio)) best = { id, ratio };
-    }
-    // The Harvest pays in the nights to come: a level is worth the essences it adds to every
-    // later dusk, weighed like the others against keeping the essences.
-    const harvest = s.altars.harvest ?? 0;
-    const harvestCost = altarPrice(s, "harvest");
-    if (harvestCost <= s.essences) {
-      const step = ALTAR_BY_ID.harvest.valuePerLevel;
-      const ratio = Math.log((1 + step * (harvest + 1)) / (1 + step * harvest)) / harvestCost;
-      if (ratio > hold && (!best || ratio > best.ratio)) best = { id: "harvest", ratio };
-    }
-    if (best && engine.perform({ type: "altar", id: best.id }, now)) bought = true;
-    if (!bought) return;
-  }
+  for (const id of distributeEssences(engine.state, strikesLed, milestones)) engine.perform({ type: "altar", id }, now);
 }

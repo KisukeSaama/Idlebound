@@ -53,10 +53,24 @@ export function resetPasswordMail(username: string, link: string, locale: Locale
   return render(locale, { subject: m.subject, preheader: m.preheader, title: m.title, body: [m.body(username)], button: m.button, link, note: m.note });
 }
 
+/**
+ * Reminder to confirm the address, with a new link. `deletesAt`: when the account goes if it
+ * stays unconfirmed; null for one whose game went far enough to be kept anyway.
+ */
+export function verifyReminderMail(username: string, link: string, deletesAt: Date | null, locale: Locale): Mail {
+  const m = messagesFor(locale).verifyReminder;
+  const body = deletesAt ? m.body(username, longDate(deletesAt, locale)) : m.bodyKept(username);
+  return render(locale, { subject: m.subject, preheader: m.preheader, title: m.title, body: [body], button: m.button, link, note: m.note });
+}
+
+function longDate(at: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", { dateStyle: "long", timeZone: "UTC" }).format(at);
+}
+
 /** Warning sent 30 days before an inactive account is deleted. */
 export function inactivityMail(username: string, link: string, deletesAt: Date, locale: Locale): Mail {
   const m = messagesFor(locale).inactivityMail;
-  const date = new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", { dateStyle: "long", timeZone: "UTC" }).format(deletesAt);
+  const date = longDate(deletesAt, locale);
   return render(locale, { subject: m.subject, preheader: m.preheader(date), title: m.title, body: [m.body(username, date)], button: m.button, link, note: m.note });
 }
 

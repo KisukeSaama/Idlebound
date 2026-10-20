@@ -34,6 +34,16 @@ describe("progressive interface", () => {
     expect(reveals(state).market).toBe(true);
   });
 
+  it("tells what relics remember with the second relic, never in the first relic's breath", () => {
+    const state = createInitialState();
+    state.lifetime.itemsFound = 1;
+    state.equipment.armor = { uid: "a", slot: "armor", rarity: "epic", level: 5, affixes: [], forge: 0, traits: ["bulwark"] } as never;
+    expect(reveals(state).gear).toBe(true);
+    expect(reveals(state).traits).toBe(false);
+    state.lifetime.itemsFound = 2;
+    expect(reveals(state).traits).toBe(true);
+  });
+
   it("never hides what a walker already used after a new night", () => {
     const state = createInitialState();
     state.lifetime.ascensions = 1;
@@ -91,8 +101,8 @@ describe("the Reunion's fragment", () => {
 });
 
 describe("stratum label", () => {
-  it("names the era, its tag, and the Age from the second one", () => {
-    expect(stratumLabel(1, "en")).toBe("Era I");
+  it("names the stratum, its tag, and the Age from the second one", () => {
+    expect(stratumLabel(1, "en")).toBe("Stratum I");
     const titan = stratumLabel(301, "fr");
     expect(titan).toContain(stratumTag(6, "fr"));
     expect(titan).toContain(ageName(6, "fr"));

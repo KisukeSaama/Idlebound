@@ -3,6 +3,7 @@ import { STREAMS, type Stream } from "./fates";
 import { WEAVE_LEVEL_MAX } from "./data/descent";
 import { MAX_STAGE } from "./formulas";
 import { migrateState } from "./migrate";
+import { SAVE_VERSION } from "./state";
 import type { GameState } from "./types";
 
 export { RENAMED_CREATURES, legacyAltarSpend, migrateState } from "./migrate";
@@ -125,6 +126,7 @@ export const gameStateSchema = z.object({
     notation: z.enum(["letters", "scientific", "engineering"]),
     sound: z.boolean(),
     volume: z.number().min(0).max(1),
+    musicVolume: z.number().min(0).max(1),
     damageNumbers: z.boolean(),
     reducedMotion: z.boolean(),
     confirmAscension: z.boolean(),
@@ -132,7 +134,8 @@ export const gameStateSchema = z.object({
     offlineSpending: z.boolean(),
     darkNight: z.boolean(),
     colorblind: z.boolean(),
-    salvageOnArrival: z.enum(["none", "common", "rare"])
+    salvageOnArrival: z.enum(["none", "common", "rare"]),
+    loreToasts: z.boolean()
   }),
   tutorial: z.object({ done: z.array(z.string().max(40)).max(50) }),
   bestiary: idRecord(count, 300),
@@ -177,19 +180,24 @@ export const gameStateSchema = z.object({
       released: z.boolean().optional(),
       goal: stageNumber.optional()
     }).optional(),
-    eclipse: z.boolean().optional()
+    eclipse: z.boolean().optional(),
+    frontierAt: positive.optional()
   }),
   descents: count,
   threads: large,
   weaves: idRecord(z.number().int().min(0).max(WEAVE_LEVEL_MAX), 20),
   legacyThreads: count.optional(),
   legacyHarvest: z.number().int().min(0).max(1_000).optional(),
+  legacyPlenty: z.number().int().min(0).max(WEAVE_LEVEL_MAX).optional(),
   caravanWeek: z.string().max(10),
   fates: z.object(Object.fromEntries(STREAMS.map((stream) => [stream, z.number().int().min(0).max(2 ** 40)])) as Record<Stream, z.ZodNumber>).strict(),
   zone: z.number().int().min(-14 * 60).max(14 * 60).optional()
 });
 
 export function parseState(raw: unknown): GameState {
+  // A newer version's save is never read, nor kept, by this one: its fields would be lost.
+  const version = raw && typeof raw === "object" ? (raw as { version?: unknown }).version : undefined;
+  if (typeof version === "number" && version > SAVE_VERSION) throw new Error("This save was written by a newer version.");
   const parsed = gameStateSchema.parse(migrateState(raw));
   if (parsed.stage > parsed.maxStage || parsed.maxStage > parsed.maxStageEver) {
     throw new Error("Inconsistent progression.");

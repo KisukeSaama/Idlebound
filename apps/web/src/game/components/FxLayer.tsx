@@ -162,8 +162,8 @@ export function FxLayer({ pointer, renderer }: { pointer: RefObject<PointerMemo>
 
     /** Where the gold motes of a kill fly: the gold counter of the header. */
     const goldCounter = () => sceneCenter(document.querySelector(".resource-gold"));
-    /** Where a relic found on the road flies: the pack of the rail (hidden on small screens: up and away). */
-    const pack = () => sceneCenter(document.querySelector('.nav-button[data-window="inventory"]'));
+    /** Where a relic found on the road flies: the equipment key of the rail, which holds the pack. */
+    const pack = () => sceneCenter(document.querySelector('.nav-button[data-window="gear"]'));
     /**
      * Relics told in this batch of events, waiting for their kill: the engine tells a relic just
      * before the kill that left it. A chest's or a gift's has no kill after it, and is forgotten.

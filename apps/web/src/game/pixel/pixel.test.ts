@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { renderCreature } from "./creature";
 import { AGE_COUNT, ERAS_PER_AGE, ageOf } from "./eras";
 import { renderEmblem } from "./mask";
-import { forgeRunes, RELIC_SIZE, renderCrystal, renderIcon, renderRelic } from "./objects";
+import { CRYSTAL_LIT_H, CRYSTAL_LIT_W, forgeRunes, RELIC_SIZE, renderCrystal, renderCrystalLit, renderIcon, renderRelic } from "./objects";
 import { bounds, EMPTY, MAX_COLORS, hashBitmap, toRgba, type Pixels } from "./pixels";
 import { awakenedRecipe, PORTRAIT_SIZE, renderPortrait } from "./portrait";
 import { gradeForNight } from "./night";
@@ -13,7 +13,7 @@ import { LANDMARKS } from "./backdrop";
 import { compositeLayers, flattenScene, MAX_SCENE_COLORS, PLACE_IDS, renderScene, type Scene } from "./scene";
 import { eclipsePixels, eclipseRing, GREY_TABLE, GREYS, greyPixels, greyScene, lanternPlaces, remembrancePixels, seamPixels, unfinishedOrder, unfinishedPixels, unfinishedShare } from "./events";
 import { placeFrames } from "./stage";
-import { flashPixels } from "./sprites";
+import { flashPixels, LIGHTER_TABLE } from "./sprites";
 
 const hash = (pixels: Pixels) => hashBitmap(toRgba(pixels));
 /** Every Age's mark: the first era of each Age, the Ink of the Blank and the Dawn's line. */
@@ -221,7 +221,7 @@ describe("pixel generator", () => {
     }
   });
 
-  it("lights a hit inside the outline: the whole body in one color, eyes and outline untouched", () => {
+  it("lights a hit inside the outline: the body a step lighter in its own colors, a rim of the striker's, eyes and outline untouched", () => {
     for (const id of Object.keys(CREATURE_RECIPES)) {
       const still = renderCreature(id).pixels;
       const edge = (at: number) => {
@@ -232,10 +232,17 @@ describe("pixel generator", () => {
       const drawn = [...still.idx.keys()].filter((at) => still.idx[at] !== EMPTY);
       const kept = drawn.filter((at) => still.emit[at] || edge(at));
       const inside = drawn.filter((at) => !still.emit[at] && !edge(at));
-      const lit = flashPixels(still, C.lilac);
+      const lit = flashPixels(still, C.mint);
       expect(kept.filter((at) => lit.idx[at] !== still.idx[at]).length, `${id} outline and eyes kept`).toBe(0);
-      expect(inside.every((at) => lit.idx[at] === C.lilac), `${id} filled`).toBe(true);
+      expect(inside.every((at) => lit.idx[at] === C.mint || lit.idx[at] === LIGHTER_TABLE[still.idx[at]]), `${id} lit`).toBe(true);
+      // Never a flat silhouette: the body keeps more than its rim's single color.
+      const colors = new Set(inside.map((at) => lit.idx[at]));
+      if (inside.length > 40) expect(colors.size, `${id} keeps its shapes`).toBeGreaterThan(2);
     }
+  });
+
+  it("lightens every palette entry within its hue, never darker", () => {
+    for (let pal = 0; pal < 64; pal += 1) expect(palLab(LIGHTER_TABLE[pal])[0]).toBeGreaterThanOrEqual(palLab(pal)[0]);
   });
 
   it("draws every creature in solid pixels and 4 to 12 colors, at every era", () => {
@@ -650,8 +657,29 @@ describe("pixel generator", () => {
     for (const [id, icon] of Object.entries(MARKET_ICONS)) snapshot[`market ${id}`] = hash(renderIcon(icon));
     for (const [id, icon] of Object.entries(CARAVAN_ICONS)) snapshot[`ware ${id}`] = hash(renderIcon(icon));
     snapshot.crystal = [0, 1, 2].map((frame) => hash(renderCrystal(frame))).join(" ");
+    snapshot["crystal lit"] = [false, true].flatMap((storm) => [0, 1, 2].map((frame) => hash(renderCrystalLit(frame, storm)))).join(" ");
     expect(snapshot).toMatchSnapshot();
   }, 60_000);
+});
+
+describe("the wandering crystal", () => {
+  it("draws its light in the world's pixels: opaque dotted rings, a few colors, the crystal whole inside", () => {
+    for (const storm of [false, true]) {
+      for (let frame = 0; frame < 3; frame += 1) {
+        const lit = renderCrystalLit(frame, storm);
+        expect([lit.w, lit.h]).toEqual([CRYSTAL_LIT_W, CRYSTAL_LIT_H]);
+        expect([...lit.idx].every((pal, at) => pal === EMPTY || lit.alpha[at] === 255)).toBe(true);
+        const colors = new Set([...lit.idx].filter((pal) => pal !== EMPTY));
+        expect(colors.size).toBeGreaterThanOrEqual(4);
+        expect(colors.size).toBeLessThanOrEqual(12);
+        const crystal = renderCrystal(frame);
+        const drawn = (pixels: Pixels) => [...pixels.idx].filter((pal) => pal !== EMPTY).length;
+        expect(drawn(lit)).toBeGreaterThan(drawn(crystal));
+        expect(hash(renderCrystalLit(frame, storm))).toBe(hash(lit));
+      }
+    }
+    expect(hash(renderCrystalLit(0, true))).not.toBe(hash(renderCrystalLit(0, false)));
+  });
 });
 
 describe("events of the Long Night in the arena", () => {

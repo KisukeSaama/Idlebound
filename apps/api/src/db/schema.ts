@@ -42,7 +42,10 @@ export const users = pgTable("users", {
   /** Language of the player's last visit, for e-mails sent outside of any request. */
   locale: text("locale").notNull().default("fr"),
   /** When the "account about to be deleted" warning was sent; cleared by any new activity. */
-  inactivityNoticeAt: timestamp("inactivity_notice_at", { withTimezone: true })
+  inactivityNoticeAt: timestamp("inactivity_notice_at", { withTimezone: true }),
+  /** Reminders sent to confirm the address (see lib/inactivity.ts), and when the last one left. */
+  verifyReminders: integer("verify_reminders").notNull().default(0),
+  verifyRemindedAt: timestamp("verify_reminded_at", { withTimezone: true })
 }, (table) => [index("users_last_seen_idx").on(table.lastSeenAt)]);
 
 export const sessions = pgTable("sessions", {
@@ -107,6 +110,20 @@ export const saves = pgTable("saves", {
   parent: jsonb("parent").$type<Branch>(),
   chain: jsonb("chain").$type<Chain>()
 }, (table) => [index("saves_game_created_at_idx").on(table.gameCreatedAt)]);
+
+/**
+ * An account's game as it stood at its first accepted save of a day (UTC), kept 30 days (see
+ * lib/snapshots.ts): `saves` holds one row rewritten every 30 s, so a game a faulty page sent
+ * back, or a walker's mistake, can be put back by a person from the day before.
+ */
+export const saveSnapshots = pgTable("save_snapshots", {
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  day: date("day", { mode: "string" }).notNull(),
+  state: jsonb("state").$type<GameState>().notNull(),
+  revision: integer("revision").notNull(),
+  maxStage: integer("max_stage").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.userId, table.day] }), index("save_snapshots_day_idx").on(table.day)]);
 
 /**
  * A guest's game: no account, no e-mail. The browser holds an httpOnly cookie, the row is
@@ -193,6 +210,17 @@ export const replayReports = pgTable("replay_reports", {
   detail: jsonb("detail").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [index("replay_reports_user_idx").on(table.userId), index("replay_reports_created_idx").on(table.createdAt)]);
+
+/**
+ * Every replay a day, by what it found ("match", "diverged", a problem): the share of saves
+ * the replay would correct or refuse once enforced, beside the reports that say why (see
+ * `review --replays`). Kept 90 days, like the reports.
+ */
+export const replayTally = pgTable("replay_tally", {
+  day: date("day", { mode: "string" }).notNull(),
+  outcome: text("outcome").notNull(),
+  count: integer("count").notNull().default(0)
+}, (table) => [primaryKey({ columns: [table.day, table.outcome] })]);
 
 /**
  * What the replays saw of an account's presence, a row per day (kept 90 days), outside its

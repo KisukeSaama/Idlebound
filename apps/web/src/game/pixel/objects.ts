@@ -285,3 +285,99 @@ export function renderCrystal(frame: number): Pixels {
   const legend = { ...CRYSTAL_MASK.legend, [lit]: 3 };
   return outline(paintMask({ rows: CRYSTAL_MASK.rows, legend }, RAMPS.essence, lit));
 }
+
+export const STARFIELD_SIZE = 24;
+export const STARFIELD_FRAMES = 2;
+/** The stars Nyx's medallion shows: [x, y, color, twinkles]. */
+const STARS: readonly (readonly [number, number, Pal, boolean])[] = [
+  [7, 6, C.moon, true],
+  [16, 9, C.lilac, false],
+  [10, 17, C.moon, false],
+  [18, 17, C.pale, true],
+  [5, 14, C.goldLight, false],
+  [13, 4, C.moon, false]
+];
+
+/**
+ * The night Nyx's medallion opens on when her face is found (the Faceless): the deep sky in
+ * rings dithered darker outward, and six stars, two of them twinkling into a cross.
+ */
+export function renderStarfield(frame: number): Pixels {
+  const out = createPixels(STARFIELD_SIZE, STARFIELD_SIZE);
+  const middle = (STARFIELD_SIZE - 1) / 2;
+  const sky = [C.night2, C.night1, C.ink] as const;
+  for (let y = 0; y < STARFIELD_SIZE; y += 1) {
+    for (let x = 0; x < STARFIELD_SIZE; x += 1) {
+      const d = Math.hypot(x - middle, y - middle) / (STARFIELD_SIZE / 2);
+      const band = Math.min(sky.length - 1, Math.floor(d * 2.4));
+      const next = Math.min(sky.length - 1, band + 1);
+      const between = d * 2.4 - band;
+      const at = y * STARFIELD_SIZE + x;
+      out.idx[at] = between > 0.5 && (x + y) % 2 === 0 ? sky[next] : sky[band];
+      out.alpha[at] = 255;
+    }
+  }
+  const lit = (x: number, y: number, pal: Pal) => {
+    const at = y * STARFIELD_SIZE + x;
+    out.idx[at] = pal;
+    out.emit[at] = 1;
+  };
+  for (const [x, y, pal, twinkles] of STARS) {
+    lit(x, y, pal);
+    if (!twinkles || frame % STARFIELD_FRAMES === 0) continue;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) lit(x + dx, y + dy, C.lilac);
+  }
+  return out;
+}
+
+/** The wandering crystal's frame: wide enough for its light around it. */
+export const CRYSTAL_LIT_W = 32;
+export const CRYSTAL_LIT_H = 36;
+/** Its light: rings of dots around the crystal, sparser outward, [radius, step from the top of the ramp, gap]. */
+const CRYSTAL_RINGS = [
+  [10, 0, 2],
+  [12.5, 1, 3],
+  [15, 2, 5]
+] as const;
+
+/**
+ * The wandering crystal as it falls: the crystal and its light, drawn in the world's pixels.
+ * The light is three dotted rings around it, sparser outward (never a blur), that breathe a
+ * pixel out on one frame in three; a crystal of the Lantern Queen's storm glows gold.
+ */
+export function renderCrystalLit(frame: number, storm: boolean): Pixels {
+  const out = createPixels(CRYSTAL_LIT_W, CRYSTAL_LIT_H);
+  const ramp = storm ? RAMPS.gold : RAMPS.essence;
+  const crystal = renderCrystal(frame);
+  const left = Math.floor((CRYSTAL_LIT_W - crystal.w) / 2);
+  const top = Math.floor((CRYSTAL_LIT_H - crystal.h) / 2);
+  const cx = CRYSTAL_LIT_W / 2 - 0.5;
+  const cy = CRYSTAL_LIT_H / 2 - 0.5;
+  const breath = ((frame % CRYSTAL_FRAMES) + CRYSTAL_FRAMES) % CRYSTAL_FRAMES === 1 ? 1 : 0;
+  for (let y = 0; y < CRYSTAL_LIT_H; y += 1) {
+    for (let x = 0; x < CRYSTAL_LIT_W; x += 1) {
+      const d = Math.hypot(x - cx, (y - cy) * 0.85);
+      for (const [radius, step, gap] of CRYSTAL_RINGS) {
+        if (Math.abs(d - radius - breath) > 0.5) continue;
+        const along = Math.round(Math.atan2(y - cy, x - cx) * radius);
+        if (((along % gap) + gap) % gap !== 0) continue;
+        const at = y * CRYSTAL_LIT_W + x;
+        out.idx[at] = ramp[ramp.length - 1 - step];
+        out.alpha[at] = 255;
+        out.emit[at] = 1;
+        break;
+      }
+    }
+  }
+  for (let y = 0; y < crystal.h; y += 1) {
+    for (let x = 0; x < crystal.w; x += 1) {
+      const from = y * crystal.w + x;
+      if (crystal.idx[from] === EMPTY) continue;
+      const at = (top + y) * CRYSTAL_LIT_W + left + x;
+      out.idx[at] = crystal.idx[from];
+      out.alpha[at] = 255;
+      out.emit[at] = crystal.emit[from];
+    }
+  }
+  return out;
+}

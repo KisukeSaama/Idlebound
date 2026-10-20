@@ -28,6 +28,9 @@ export function migrateState(raw: unknown): unknown {
   (merged.lore as Record<string, unknown>).tongues = { ...base.lore.tongues, ...((input.lore as { tongues?: object } | undefined)?.tongues) };
   merged.trail = { ...base.trail, ...(input.trail as object | undefined) };
   const version = typeof input.version === "number" ? input.version : 0;
+  // Written by a newer version (a build rolled back, a page behind its server): left as it is.
+  // Relabelled as this version, it would run these migrations again once the newer one is back.
+  if (version > SAVE_VERSION) return raw;
   if (version < 4) {
     refundLegacyAltars(merged);
     // The rework notice is for these saves, even when their tutorial came from the defaults.
@@ -91,6 +94,17 @@ export function migrateState(raw: unknown): unknown {
   // Version 17 lets relics remember (traits, the companion who carried them): every relic an
   // older save holds remembers now, drawn from the relic alone, the same on every device.
   if (version < 17) rememberRelics(merged);
+  // Version 18 adds two settings, the music's own volume and whether the Chronicle's lines are
+  // told by a toast: the defaults merged above fill them, nothing else moves.
+  // Version 19 reworks the Descent: it leaves a tenth of the essences, opens earlier, and the
+  // Loom weaves Eldra's Hourglass and Woven Habits; the night remembers when its head last
+  // moved (`trail.frontierAt`, absent until the Hourglass is woven). The Warp of Plenty costs
+  // more a level: the levels already woven keep the price they were paid (`legacyPlenty`).
+  if (version < 19) {
+    const weaves = merged.weaves && typeof merged.weaves === "object" ? (merged.weaves as Record<string, unknown>) : {};
+    const plenty = Object.hasOwn(weaves, "plenty") && typeof weaves.plenty === "number" && Number.isInteger(weaves.plenty) ? weaves.plenty : 0;
+    if (plenty > 0 && plenty <= WEAVE_LEVEL_MAX) merged.legacyPlenty = plenty;
+  }
   merged.version = SAVE_VERSION;
   return merged;
 }
@@ -231,9 +245,9 @@ function rethread(merged: Record<string, unknown>) {
   if (plenty <= 0 || plenty > WEAVE_LEVEL_MAX || typeof merged.threads !== "number") return;
   const purse = merged.threads + legacyPlentySpend(plenty);
   let level = plenty;
-  while (level > 0 && weaveTotalCost("plenty", level) > purse) level -= 1;
+  while (level > 0 && weaveTotalCost("plenty", level, level) > purse) level -= 1;
   merged.weaves = { ...weaves, plenty: level };
-  merged.threads = purse - weaveTotalCost("plenty", level);
+  merged.threads = purse - weaveTotalCost("plenty", level, level);
 }
 
 /** The fourth and fifth tiers companions held under the rule of runs alone (before version 10). */

@@ -215,6 +215,8 @@ export interface Settings {
   sound: boolean;
   /** Volume of the sound effects, 0 to 1. */
   volume: number;
+  /** Volume of the music of the Ledger's scenes, 0 to 1. */
+  musicVolume: number;
   damageNumbers: boolean;
   reducedMotion: boolean;
   confirmAscension: boolean;
@@ -227,6 +229,8 @@ export interface Settings {
   colorblind: boolean;
   /** Relics found at this rarity or below are salvaged as they arrive (never a named relic). */
   salvageOnArrival: "none" | "common" | "rare";
+  /** Lines of the Chronicle (fragments, Bestiary, memories) are told by a toast as they come; off, they only wait in the Chronicle. */
+  loreToasts: boolean;
 }
 
 export interface TutorialState {
@@ -291,6 +295,8 @@ export interface RunTrail {
   wound?: { stage: number; share: number };
   /** The word given at this dusk (BIBLE 12.11). */
   promise?: PromiseState;
+  /** When the head of the night last moved (ms): Eldra's Hourglass turns once it has stood still. */
+  frontierAt?: number;
 }
 
 /** A promise given for the night: to whom, and how far it has been kept. */
@@ -394,6 +400,11 @@ export interface GameState {
    * Absent from a game begun since.
    */
   legacyHarvest?: number;
+  /**
+   * Levels of the Warp of Plenty a save older than version 19 had woven, paid at the price of
+   * then (`LEGACY_PLENTY`): its threads are checked against it. Absent from a game begun since.
+   */
+  legacyPlenty?: number;
   /** ISO week of the last Caravan purchase (one ware a week). */
   caravanWeek: string;
   /**
@@ -531,6 +542,12 @@ export interface AbsenceAccount {
   walls: number[];
   /** The boss stage that still bars the road, if any. */
   blockedAt: number | null;
+  /**
+   * Dusks Eldra's Hourglass called while the walker was away, and the essences they brought.
+   * With dusks, the stages are those of the night walking now, from where it began.
+   */
+  dusks?: number;
+  essences?: number;
 }
 
 export interface OfflineSummary {

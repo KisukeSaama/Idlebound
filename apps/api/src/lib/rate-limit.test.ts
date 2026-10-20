@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RateLimiter, resolveClientIp } from "./rate-limit";
+import { RateLimiter, networkKey, resolveClientIp } from "./rate-limit";
 
 const headers = (values: Record<string, string>) => (name: string) => values[name];
 
@@ -22,6 +22,15 @@ describe("resolveClientIp", () => {
     expect(a).toBe(b);
   });
 
+  it("names the /48 of an IPv6 key, and nothing wider for IPv4", () => {
+    const key = resolveClientIp(headers({ "x-forwarded-for": "2606:4700::1", "cf-connecting-ip": "2001:db8:1:2:aaaa::1" }));
+    const neighbour = resolveClientIp(headers({ "x-forwarded-for": "2606:4700::1", "cf-connecting-ip": "2001:db8:1:ffff::9" }));
+    expect(key).not.toBe(neighbour);
+    expect(networkKey(key)).toBe("2001:db8:1::/48");
+    expect(networkKey(neighbour)).toBe(networkKey(key));
+    expect(networkKey("203.0.113.7")).toBeNull();
+  });
+
   it("rejects a value that is not an IP", () => {
     expect(resolveClientIp(headers({ "x-forwarded-for": "162.158.1.2", "cf-connecting-ip": "not an ip" }))).toBe("162.158.1.2");
     expect(resolveClientIp(headers({}))).toBe("local");
@@ -37,18 +46,28 @@ describe("RateLimiter", () => {
     expect(limiter.consume("k", 1500)).toBe(0);
   });
 
-  it("refuses new keys once full, keeps the tracked ones working, and makes room as keys expire", () => {
-    const limiter = new RateLimiter(5, 1000, 3);
+  it("makes room once full by letting go of the least recently seen key that is not held back", () => {
+    const limiter = new RateLimiter(2, 1000, 3);
     for (const key of ["a", "b", "c"]) expect(limiter.consume(key, 0)).toBe(0);
-    // Full and nothing expired: a new key waits, without being stored.
-    expect(limiter.consume("d", 100)).toBeGreaterThan(0);
-    expect(limiter.consume("e", 200)).toBeGreaterThan(0);
-    expect(limiter.count("d", 200)).toBe(0);
-    // The keys already tracked still count normally.
-    expect(limiter.consume("a", 300)).toBe(0);
-    expect(limiter.count("a", 300)).toBe(2);
-    // Once the window has passed, the sweep frees room for a new key.
-    expect(limiter.consume("d", 1500)).toBe(0);
+    // "a" seen again: "b" is now the least recently seen, and makes room for "d".
+    expect(limiter.consume("a", 100)).toBe(0);
+    expect(limiter.consume("d", 200)).toBe(0);
+    expect(limiter.count("b", 200)).toBe(0);
+    expect(limiter.count("a", 200)).toBe(2);
+    // A key held back is never let go: a flood of new keys cannot free it.
+    expect(limiter.consume("a", 300)).toBeGreaterThan(0);
+    for (const key of ["e", "f", "g", "h"]) expect(limiter.consume(key, 400)).toBe(0);
+    expect(limiter.consume("a", 500)).toBeGreaterThan(0);
+  });
+
+  it("makes a new key wait only when every key is held back", () => {
+    const limiter = new RateLimiter(1, 1000, 2);
+    expect(limiter.consume("a", 0)).toBe(0);
+    expect(limiter.consume("b", 0)).toBe(0);
+    expect(limiter.consume("c", 100)).toBeGreaterThan(0);
+    expect(limiter.count("c", 100)).toBe(0);
+    // Once the window has passed, the sweep frees room.
+    expect(limiter.consume("c", 1500)).toBe(0);
   });
 
   it("counts a key's hits without recording one", () => {

@@ -505,11 +505,13 @@
 .wiki-keystone {
   display: block;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--text);
 }
 
 .wiki-keystone small {
   font-style: normal;
+  font-family: var(--font-body);
 }
 
 /* ------------------------------------------------------------------ cards and tiles */
@@ -771,6 +773,7 @@ a.wiki-tile:hover .wiki-tile-art {
 .wiki-quote p {
   margin: 0;
   font-style: italic;
+  font-family: var(--font-italic);
 }
 
 .wiki-quote footer {
@@ -788,10 +791,12 @@ a.wiki-tile:hover .wiki-tile-art {
   break-inside: avoid;
   padding: 0.2rem 0;
   font-style: italic;
+  font-family: var(--font-italic);
 }
 
 .wiki-scene-lines li p {
   font-style: italic;
+  font-family: var(--font-italic);
 }
 
 /* ------------------------------------------------------------------ biomes, events, secrets */
@@ -876,6 +881,7 @@ a.wiki-tile:hover .wiki-tile-art {
 .wiki-riddle {
   margin: 0.3rem 0 0.7rem;
   font-style: italic;
+  font-family: var(--font-italic);
   color: var(--muted);
 }
 

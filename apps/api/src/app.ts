@@ -5,6 +5,7 @@ import { sql } from "./db/client";
 import { env } from "./env";
 import { fail } from "./lib/errors";
 import { authRoutes } from "./routes/auth";
+import { clientErrorRoutes } from "./routes/client-error";
 import { leaderboardRoutes } from "./routes/leaderboard";
 import { saveRoutes } from "./routes/save";
 
@@ -29,6 +30,10 @@ export function createApp() {
     await next();
   });
 
+  // The process answers at all: its event loop turns. Nothing else is asked, so a database
+  // that is down never makes the watchdog of compose.yml restart a sound API.
+  app.get("/live", (c) => c.json({ ok: true }));
+
   app.get("/health", async (c) => {
     try {
       await sql`select 1`;
@@ -41,6 +46,7 @@ export function createApp() {
   app.route("/auth", authRoutes);
   app.route("/save", saveRoutes);
   app.route("/leaderboard", leaderboardRoutes);
+  app.route("/client-error", clientErrorRoutes);
 
   app.notFound((c) => c.json(fail("not_found"), 404));
   app.onError((error, c) => {

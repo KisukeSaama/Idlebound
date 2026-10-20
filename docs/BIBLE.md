@@ -274,6 +274,7 @@ Every existing system, what it is in the world, and the word the UI can lean on.
 | Boss timer (30 s) | The **seam** of the hour: a guardian can only be beaten while the seam it holds is open. When it closes, the night pushes the walker back. |
 | Failing a boss, one stage back, farm mode | "The night pushes back." The walker trains on the previous stretch until strong enough. |
 | A guardian of the present night keeps its wounds (shipped) | A Remnant remembers the blows of the night too: the walker who comes back finds it still bleeding light. Deeper memories are too dense to keep a wound, and the King's seam closes whole. |
+| On the first night, the Keep's gate and the King keep their wounds too (shipped) | The King has never met this walker: his seam is still thin, and the Keep remembers the first blows as the fields do. From the first dusk on he knows them, and his seam closes whole again. |
 | The Rout (shipped, save version 12) | **Rout** (FR: *Débandade*). On a stretch of road the walker already walked on an earlier night, Remnants the company would unmake in a blink do not wait to be struck one by one: worn-out memories that know how this ends, they all come apart at once and the whole stage falls. Never on the first night, never an elite or a guardian, never past the best stage: the road the walker has not walked yet is fought. |
 | Auto-advance | The walker's will to go on. Turning it off is choosing to stay a while. |
 | HP curve (steeper by segment) | Older memories are denser. The Remnants of deeper strata are heavier to unmake. |
@@ -1211,14 +1212,20 @@ PRODUCT.md notes the known limit: progress flattens after two weeks, and keeping
 apart needs a second prestige layer. The Descent is that layer, told as the story's
 deepest act.
 
-- **Unlock** (shipped, save version 12): best stage ever 2000. Eldra shows her loom once the
-  night has gone past the Edge of Sleep, where the road slows for good without her. Before, it
-  asked for stage 1000 and her Recognition 5, a gate nobody could see coming; a walker she
-  showed it to that way keeps it.
+- **Unlock** (shipped, save version 19): best stage ever 1500. Eldra shows her loom once the
+  night reaches the Draft, where the world starts to come undone and the late Ages are paced
+  by Descents (section 16). From save version 12 to 18 it waited for stage 2000, past the Edge
+  of Sleep: a Descent then cost more than a day under the record, and sooner it set the walker
+  back for longer. Before version 12 it asked for stage 1000 and her Recognition 5, a gate
+  nobody could see coming; a walker she showed it to that way keeps it.
 - **In the world:** Eldra unweaves the whole Sanctum and weaves the Long Night again, one
-  thread deeper. The walker loses the stones (altars) and the memories (essences) and
+  thread deeper. The walker loses the stones (altars) and most of the memories (essences) and
   keeps what cannot be unwoven: relics, shards, deeds, the Chronicle, Recognition.
-- **Resets:** everything an ascension resets, plus essences and altar levels.
+- **A tenth of the memories stays** (shipped, save version 19): Eldra unweaves the stones, not
+  every memory; a tenth of the essences held comes down with the walker. In the world: the
+  oldest rule of the Bound, "Never spend all of yourself", holds even at the Loom. In play: the
+  walker stands again on the record they left within hours, not a day and a half.
+- **Resets:** everything an ascension resets, plus the altar levels and nine essences in ten.
 - **Keeps:** relics, shards, achievements, fragments, bestiary, Recognition, lifetime
   statistics, best stage ever.
 - **Gives:** **Threads** (FR: *Fils*). Shipped: the thread is as long as the night has gone
@@ -1228,11 +1235,15 @@ deepest act.
   no new thread for a night that went no deeper than the last. (The first shape, threads
   from the essences of each Descent, paid the same for a shallow night as for a deep one:
   descending often and shallow was the best way down.)
-- **Spends at Eldra's Loom** on eight **Weaves** (FR: *Tissages*), permanent:
+- **Spends at Eldra's Loom** on ten **Weaves** (FR: *Tissages*), permanent. In the world:
+  the Hourglass is the one she keeps by the loom, turned for a walker who is not there; the
+  Habits are the gestures of every night walked, woven into the hands so they come alone.
 
   | Weave EN / FR | Effect per level | Cap |
   |---|---|---|
-  | Warp of Plenty / Chaîne d'abondance | Essences ×1.25 (multiplies) | none |
+  | Warp of Plenty / Chaîne d'abondance | Essences ×1.25 (multiplies); price ×1.25 a level since version 19 (×1.2 before, the levels woven then keep it) | none |
+  | Eldra's Hourglass / Sablier d'Eldra (shipped, version 19) | While the walker is away, a night stood still for 15 min before a boss the company cannot beat ends on its own: the company calls the dusk and walks the next night | 1 |
+  | Woven Habits / Gestes tissés (shipped, version 19) | The powers are used again the moment they are ready (never Time Echo nor Unweave, never against a word) | 1 |
   | Knot of Dusk / Nœud du crépuscule | Altar of the Wanderer +10 levels of cap | 5 |
   | The Long Thread / Le Long Fil | Catch-up cap +1 h (background tab or closed game) | 4 |
   | Humming Loom / Métier bourdonnant | Crystals come 10% sooner | 5 |
@@ -1284,10 +1295,10 @@ the scene, a road walked alone) is told once, in a toast, when the Hall that kee
 
 | Scene | When | What it shows |
 |---|---|---|
-| **The Long Night** | A new walk, before the first strike | The fields at dusk and the walker in them; the Keep at the end of the road, its King waiting; "Dusk again." |
+| **The Long Night** | A new walk, as its first Remnant falls | The fields at dusk and the walker in them; the Keep at the end of the road, its King waiting; "Dusk again." |
 | **The First Dusk** | Ascension 1 | The Keep and its King; "Night one."; "You're early."; one blow and the King going up in violet lights; the Sanctum's thirteen stones; "Dusk again." |
 | **Almost** | Maëlle hired again after she first half remembers (~3 h) | The road at dusk; Maëlle's face in the dark: "You again? No. I'd remember. Wouldn't I?"; she keeps looking back. |
-| **The Empty Throne** | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; the hall left to the walker. |
+| **The Empty Throne** | Ascension 13 | The King speaks before the sword is raised: "I sat down for a moment."; then the Binding, said plainly (layer 3): Aldemar had Eldra weave the night against the Morning, his knight was to walk it first, ran, and the King walked instead. The crown (layer 4) waits for its own milestones. |
 | **The Crown in the Ice** | Past stage 500 | The Rime's hall, a smaller crown frozen in its floor, Kaelen's keystone. There were other kings. |
 | **The Rehearsal** | Past stage 1,000 | The sky alight over the Keep; the walker takes it for the Dawn; Ashka's keystone: its rehearsal. |
 | **The Loom** | Descent 1 | The room below every stratum; Eldra at her loom, the night on its beam; "Mind the threads." |
@@ -1513,10 +1524,10 @@ is what carries players, so the late Ages are paced by Descents.
 | Kaelen R4 | ~week 1 | Recognition | The night he ran. The Binding had a price. | 3 |
 | Ascension 25 | ~week 1 | King's Words: warning (the Nameless asks "How many?" at R3, ~ascension 7; "Keep some." at R4) | "Never spend all of yourself." | 4 |
 | Stage 750 | ~week 1 | Eclipse keystone | Priests prayed for a night that would never end. Someone answered. | 3 |
-| Stage 1,000 | ~day 3 (engaged) to week 2 | Aurora keystone; Descent possible | "Not the Dawn. Its rehearsal." The word Dawn appears. | 5 |
+| Stage 1,000 | ~day 3 (engaged) to week 2 | Aurora keystone | "Not the Dawn. Its rehearsal." The word Dawn appears. | 5 |
 | Eldra R4, then R5 / Descent 1 | week 2 | Recognition, then the Loom | She wove the Long Night. "I am sorry. I am not sorry." (R4) | 3 |
 | Stage 1,250 | week 2 | Frayed keystone | The weave is thin enough to see light through. | 5 |
-| Stage 1,300 to 1,500 | weeks 2 to 3 | Age VI, the Draft | The world as a drawing; art turns to charcoal. | 5 |
+| Stage 1,300 to 1,500 | weeks 2 to 3 | Age VI, the Draft; at 1,500 Eldra's Loom, the Descent possible (save version 19) | The world as a drawing; art turns to charcoal. | 5 |
 | The Nameless R5 | weeks 2 to 4 | Recognition | His helmet bears your name. | 4 |
 | Stage 1,500 to 1,750 | Descents 1 to 3 | Age VII, the Words | The world is being told to itself so it will not stop. | 5 |
 | Ascension 50 | month 1 | King's Word 50 | "Don't stop. I did." / « Ne t'arrête pas. Moi, je l'ai fait. » | 4 |
@@ -1581,7 +1592,12 @@ A fragment past an authored pool is built from:
 
 Rules: at most 140 characters; never generate a Truth-level noun (dream, dreamer, player,
 screen, tab) outside Age VIII and deeper; never repeat the same template twice in a row;
-seed = hash(source, n, descent). The grammar is a writer's tool: authored pools are always
+seed = hash(source, n, descent). The doer fits the deed: a deed of a place's lexicon may
+be marked for people only (`^laid the table`) or for beasts and things only (`~croaked`), a
+Remnant with hands and a voice (the Reaper, a drowned courtier) does the first, a beast the
+second, and a companion never croaks; in the strata, where no creature of the five places
+belongs, a Remnant, unnamed, or someone does the deed. What stays after an absence opens in
+more than one way ("Far from the road", "You were seven", "A voice called you"). The grammar is a writer's tool: authored pools are always
 used first, and every Remembrance Night adds authored lines.
 
 ### 17.4 Pacing
@@ -2155,6 +2171,12 @@ about 40 near 9500. The pace never falls to nothing, but past 7500 it rises agai
 walker gains every Age outgrows the Remnants a little more each Age. The next step, if the
 Roll shows it, is a growth that rises again slowly below 7500 rather than a constant one. Nothing new was added to grow stronger: the
 open altars and the Warp of Plenty already have no last level, and carry the walker down.
+
+Save version 19 reworked the Descent (section 12.7): it leaves a tenth of the essences and
+pays within hours, so the bot descends once an Age far below the Dawn too. With the Warp of
+Plenty at its old price (×1.2 a level) the road ran away (stage 10,000 on day 29); at ×1.3 it
+stalled near 5850; at ×1.25 it holds 15 to 30 stages a day from 6000 to 10,000, seed 3 at
+10,000 on day 176, the pace rising a little past 7500 as it did before.
 
 The target: the active bot, whose pace just below the Dawn matches the leaders of the Roll
 (2820 to 3000 in a few days), still gains at least 5 stages a day at stage 10,000. The

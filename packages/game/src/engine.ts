@@ -2,7 +2,7 @@ import { ACHIEVEMENTS, type AchievementDef } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID } from "./data/altars";
 import { TREASURE_MONSTER, BIOMES, biomeForStage, bossForStage, eraForStage, guardianForStage, isBiomeBossStage, isBossStage, isKingStage, THE_DAWN } from "./data/biomes";
 import { CARAVAN_BUFF_SECONDS, caravanWare, isoWeek } from "./data/caravan";
-import { DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, LEGACY_LOOM_HERO, WEAVE_BY_ID, threadsFor, weaveCost, type WeaveId } from "./data/descent";
+import { DESCENT_KEEP, DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, HABITS_LEAVE, HOURGLASS_STALL_SECONDS, LEGACY_LOOM_HERO, WEAVE_BY_ID, threadsFor, weaveCost, type WeaveId } from "./data/descent";
 import {
   CARAVAN_MIN_ASCENSIONS,
   ECLIPSE_EVERY,
@@ -261,6 +261,9 @@ export interface AbsenceMark {
   gold: number;
   /** Boss stages that stopped the company since. */
   walls: number[];
+  /** Nights walked and essences of ascensions when the walker left: what Eldra's Hourglass called since. */
+  nights?: number;
+  essences?: number;
 }
 
 /** A purchase the company weighs while away: levels up to a breakpoint, the talents it unlocks. */
@@ -885,6 +888,9 @@ export class GameEngine {
       }
     }
 
+    // Woven Habits, at every whole second: the powers that are ready are used again.
+    if (Math.floor(now / 1000) !== Math.floor((now - STEP_MS) / 1000)) this.habits(now);
+
     this.companionTimer += dt;
     if (this.companionTimer >= 1) {
       if (this.companionDamage > 0) this.emit({ type: "dps", damage: this.companionDamage });
@@ -955,7 +961,9 @@ export class GameEngine {
       talents: s.heroUpgrades.length,
       goldEarned: s.lifetime.goldEarned,
       gold: s.gold,
-      walls: blocked === null ? [] : [blocked]
+      walls: blocked === null ? [] : [blocked],
+      nights: s.lifetime.ascensions,
+      essences: s.lifetime.ascensionEssences
     };
   }
 
@@ -973,9 +981,28 @@ export class GameEngine {
   private account(seconds: number): AbsenceAccount {
     const s = this.state;
     const mark = this.absence!;
+    const gold = rescale(s.lifetime.goldEarned - mark.goldEarned, lifeBits(s), runBits(s));
+    // Eldra's Hourglass called the dusk while the walker was away: the account tells the
+    // dusks, then the night walking now, from where it began.
+    const dusks = s.lifetime.ascensions - (mark.nights ?? s.lifetime.ascensions);
+    if (dusks > 0) {
+      return {
+        seconds,
+        fromStage: s.runStartStage,
+        toStage: s.maxStage,
+        gold,
+        spent: 0,
+        hired: [],
+        levels: [],
+        talents: [],
+        walls: [],
+        blockedAt: this.blockedAt(),
+        dusks,
+        essences: s.lifetime.ascensionEssences - (mark.essences ?? s.lifetime.ascensionEssences)
+      };
+    }
     const levels = HEROES.filter((hero) => (s.heroLevels[hero.id] ?? 0) > (mark.heroLevels[hero.id] ?? 0))
       .map((hero) => ({ heroId: hero.id, from: mark.heroLevels[hero.id] ?? 0, to: s.heroLevels[hero.id] }));
-    const gold = rescale(s.lifetime.goldEarned - mark.goldEarned, lifeBits(s), runBits(s));
     return {
       seconds,
       fromStage: mark.maxStage,
@@ -1037,6 +1064,29 @@ export class GameEngine {
       s.autoAdvance = true;
       if (s.stage < s.maxStage && !s.monster) this.setStage(s.maxStage);
     }
+    if (this.hourglassTurns(now, this.blockedAt() !== null)) this.callDusk(now);
+  }
+
+  /**
+   * Eldra's Hourglass: the walker is away, the company stands before a boss it cannot beat
+   * (`blocked`), and the head of the night has not moved for `HOURGLASS_STALL_SECONDS`.
+   */
+  private hourglassTurns(now: number, blocked: boolean): boolean {
+    const s = this.state;
+    if (weaveLevel(s, "hourglass") === 0 || !blocked || !this.canAscend()) return false;
+    s.trail.frontierAt ??= now;
+    return now - s.trail.frontierAt >= HOURGLASS_STALL_SECONDS * 1000;
+  }
+
+  /**
+   * The dusk the company calls on its own (Eldra's Hourglass): an ascension the walker did not
+   * ask for, told at their return (the company's account) rather than as it happens. Only the
+   * fragments it brings stay to be told.
+   */
+  private callDusk(now: number) {
+    const eventMark = this.events.length;
+    this.ascend(now);
+    this.events = [...this.events.slice(0, eventMark), ...this.events.slice(eventMark).filter((event) => event.type === "fragment" || event.type === "skillUnlocked")];
   }
 
   /** Whether companions alone beat the boss ahead in time (true when no boss blocks the way). */
@@ -1119,7 +1169,9 @@ export class GameEngine {
     let blockedAt: number | null = null;
     // The boss the company last lost to: the autopilot only goes back once it can win.
     let failedAt: number | null = s.autoAdvance ? null : s.maxStage;
-    const unfailing = promiseOf(s, "unfailing") !== undefined;
+    let unfailing = promiseOf(s, "unfailing") !== undefined;
+    // Eldra's Hourglass may call the dusk on the way: the time goes by slices to see it turn.
+    const hourglass = weaveLevel(s, "hourglass") > 0;
     const holds = promiseHolds(s);
     // The spoils of the road while the walker is away, all drawn from one occasion of the fates.
     let spoils: Rng | null = null;
@@ -1137,8 +1189,11 @@ export class GameEngine {
         break;
       }
       // Without spending the power never changes: one slice is enough.
-      const slice = spending ? Math.min(remaining, OFFLINE_SLICE_SECONDS) : remaining;
+      const slice = spending || hourglass ? Math.min(remaining, OFFLINE_SLICE_SECONDS) : remaining;
       remaining -= slice;
+      // When this slice ends, in the time the catch-up lives.
+      const sliceEnd = now - remaining * 1000;
+      const headBefore = s.maxStage;
       let time = slice + carry;
       let sliceGold = 0;
       blockedAt = null;
@@ -1150,7 +1205,8 @@ export class GameEngine {
           const fight = grace + this.bossLeft(stage) / (d.dps * this.stageFactor(stage, d));
           if (fight > d.bossTimer - (unfailing ? UNFAILING_MARGIN_SECONDS : 0)) {
             // Reaching a boss too strong, the company fights it once anyway, as in an open
-            // tab, and the wounds it leaves stay (up to stage 44). Then it trains and waits.
+            // tab, and the wounds it leaves stay (up to stage 44, to the King on the first
+            // night). Then it trains and waits.
             // The night the walker promised never to be pushed back, it does not try.
             if (stage === failedAt || unfailing) { blockedAt = stage; break; }
             if (d.bossTimer > time) break;
@@ -1232,6 +1288,17 @@ export class GameEngine {
       carry = time;
       gold += sliceGold;
       this.earnGold(sliceGold);
+      if (hourglass && s.maxStage > headBefore) s.trail.frontierAt = sliceEnd;
+      // Stopped long enough before a boss it cannot beat: Eldra's Hourglass calls the dusk,
+      // and the next night is walked with the time left.
+      if (blockedAt !== null && this.hourglassTurns(sliceEnd, true)) {
+        this.callDusk(sliceEnd);
+        s.stage = s.maxStage;
+        failedAt = null;
+        blockedAt = null;
+        carry = 0;
+        unfailing = promiseOf(s, "unfailing") !== undefined;
+      }
     }
 
     // Blocked: train on the stage before the boss, as after a failed boss online; the next
@@ -1732,6 +1799,8 @@ export class GameEngine {
     s.maxStage += 1;
     s.kills = 0;
     if (s.maxStage > s.maxStageEver) s.maxStageEver = s.maxStage;
+    // Eldra's Hourglass watches the head of the night move.
+    if (weaveLevel(s, "hourglass") > 0) s.trail.frontierAt = s.lastTickAt;
     // Wounds stay with the boss at the head of the run: the road left behind heals them.
     if (s.trail.wound && s.trail.wound.stage < s.maxStage) delete s.trail.wound;
     this.deepened(run, life, s.lastTickAt);
@@ -1901,6 +1970,22 @@ export class GameEngine {
   }
 
   // ---------------------------------------------------------------- powers
+
+  /**
+   * Woven Habits (a Weave of the Loom): the company knows the powers by heart and uses each
+   * the moment it is ready, unless the walker gave their word to go without. Time Echo and
+   * Unweave wait for the walker (`HABITS_LEAVE`). Only in the steps of an open game: a
+   * catch-up lives no power.
+   */
+  private habits(now: number) {
+    const s = this.state;
+    if (weaveLevel(s, "habits") === 0 || promiseAbstains(s, "powers")) return;
+    for (const skill of SKILLS) {
+      if (HABITS_LEAVE.includes(skill.id) || !isSkillUnlocked(s, skill.id)) continue;
+      const current = s.skills[skill.id];
+      if (!current || current.readyAt <= now) this.useSkill(skill.id, now);
+    }
+  }
 
   useSkill(id: SkillId, now: number): boolean {
     const s = this.state;
@@ -2182,9 +2267,9 @@ export class GameEngine {
 
   /**
    * The Descent (BIBLE 12.7): Eldra unweaves the Sanctum and weaves the Long Night again, one
-   * thread deeper. The run, the essences and the stones go; the thread grows by what the
-   * walker's deepest stage adds to it; relics, shards, deeds, the Chronicle and Recognition
-   * stay. A few stones survive with the Remembered Stones.
+   * thread deeper. The run and the stones go, and nine essences in ten (`DESCENT_KEEP`); the
+   * thread grows by what the walker's deepest stage adds to it; relics, shards, deeds, the
+   * Chronicle and Recognition stay. A few stones survive with the Remembered Stones.
    */
   descend(now: number): number {
     const s = this.state;
@@ -2196,7 +2281,7 @@ export class GameEngine {
     s.threads += threads;
     s.lifetime.threads += threads;
     if (threads > 0) s.lifetime.weavings += 1;
-    s.essences = 0;
+    s.essences = Math.floor(s.essences * DESCENT_KEEP);
     const altars: GameState["altars"] = {};
     for (const altar of ALTARS) {
       const kept = Math.floor(altarLevel(s, altar.id) * keep);

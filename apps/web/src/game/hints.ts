@@ -8,7 +8,7 @@ import type { WindowId } from "./context";
  * on screen long enough to have read it (`HINT_READ_MS`). The notices tell of something given
  * back: they wait for the walker's "OK".
  */
-export type HintId = "hire" | "companion" | "boss" | "skill" | "farm" | "ascend" | typeof ALTAR_REWORK_NOTICE | typeof HARVEST_NOTICE_TOLD;
+export type HintId = "strike" | "hire" | "companion" | "boss" | "skill" | "farm" | "ascend" | typeof ALTAR_REWORK_NOTICE | typeof HARVEST_NOTICE_TOLD;
 
 export interface Hint {
   id: HintId;
@@ -19,18 +19,32 @@ export interface Hint {
   skill?: SkillDef;
 }
 
+/** From this level of Aldric's, the walker is told to keep their gold for the first companion. */
+const SAVE_FOR_COMPANION_FROM = 2;
+
+/** What Maëlle asks to join, the first companion of every night. */
+export function maelleCost(state: GameState): number {
+  return heroCost(HERO_BY_ID.maelle, 0, 1, 1, runBits(state));
+}
+
 /** A hint shown this long under the walker's eyes has been read: it goes. */
 export const HINT_READ_MS = 30_000;
 
 /** The hints of the first night, in the order they are weighed. */
-const LESSONS = ["hire", "companion", "boss", "skill", "farm", "ascend"] as const;
+const LESSONS = ["strike", "hire", "companion", "boss", "skill", "farm", "ascend"] as const;
 type Lesson = (typeof LESSONS)[number];
 
-const POSITION: Record<Lesson, Hint["position"]> = { hire: "right", companion: "right", boss: "bottom", skill: "bottom", farm: "center", ascend: "center" };
+const POSITION: Record<Lesson, Hint["position"]> = { strike: "center", hire: "right", companion: "right", boss: "bottom", skill: "bottom", farm: "center", ascend: "center" };
 
 /** Whether the first night's hints are over: they teach a walker who has never seen a dusk. */
 function taught(state: GameState): boolean {
   return state.lifetime.ascensions > 0 || state.tutorial.done.includes("all");
+}
+
+/** A walk where nothing has happened yet: not a strike, not a Remnant down, not a coin. */
+function untouched(state: GameState): boolean {
+  const life = state.lifetime;
+  return life.clicks === 0 && life.kills === 0 && life.bosses === 0 && state.maxStageEver <= 1 && state.maxStage <= 1 && state.gold === 0 && Object.values(state.heroLevels).every((level) => !level);
 }
 
 /** Whether a companion has joined the walker this night or any other. */
@@ -41,9 +55,13 @@ function companyJoined(state: GameState): boolean {
 /** Whether the moment a hint speaks of is there. */
 function applies(state: GameState, id: Lesson): boolean {
   switch (id) {
+    // The very first second of a walk: nothing has been struck yet.
+    case "strike": return untouched(state);
     // Only before the company: once someone has joined, the walker's own blade is a choice.
     case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) === 0 && !companyJoined(state) && state.gold >= heroCost(HERO_BY_ID[CLICK_HERO_ID], 0, 1, 1, runBits(state));
-    case "companion": return (state.heroLevels.maelle ?? 0) === 0 && state.gold >= heroCost(HERO_BY_ID.maelle, 0, 1, 1, runBits(state));
+    // As soon as she is in reach, or once Aldric has trained a little: every coin spent on
+    // the walker's own blade would keep her from the road a while longer.
+    case "companion": return (state.heroLevels.maelle ?? 0) === 0 && (state.gold >= maelleCost(state) || (state.heroLevels[CLICK_HERO_ID] ?? 0) >= SAVE_FOR_COMPANION_FROM);
     case "boss": return isBossStage(state.stage) && state.monster !== null && state.monster.kind !== "normal" && state.lifetime.bosses === 0;
     case "skill": return state.lifetime.skillsUsed === 0 && SKILLS.some((skill) => isSkillUnlocked(state, skill.id));
     case "farm": return !state.autoAdvance && state.lifetime.bossFails > 0;
@@ -54,6 +72,7 @@ function applies(state: GameState, id: Lesson): boolean {
 /** Whether the walker has done what a hint says: it has nothing left to teach. */
 function learned(state: GameState, id: Lesson): boolean {
   switch (id) {
+    case "strike": return state.lifetime.clicks > 0 || state.lifetime.kills > 0;
     case "hire": return (state.heroLevels[CLICK_HERO_ID] ?? 0) > 0 || companyJoined(state);
     case "companion": return (state.heroLevels.maelle ?? 0) > 0;
     case "boss": return state.lifetime.bosses > 0;

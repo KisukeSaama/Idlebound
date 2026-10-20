@@ -22,6 +22,11 @@ const schema = z.object({
    * the replayed game is the one kept, a save without a journal it can replay is refused.
    */
   REPLAY_MODE: z.enum(["shadow", "enforce"]).default("shadow"),
+  /**
+   * Guest games the server begins keeping per hour, all addresses together (see routes/save.ts):
+   * the disk a flood of new guests can take is bounded by it.
+   */
+  GUEST_GAMES_PER_HOUR: z.coerce.number().int().min(1).default(3000),
   /** Replay worker threads; 0 replays inline. Default: the cores but one, four at most. */
   REPLAY_WORKERS: z.coerce.number().int().min(0).max(32).optional()
 });

@@ -295,6 +295,14 @@ describe("named relics", () => {
     expect(engine.state.named).toContain("mosshide");
     expect(engine.state.inventory.length).toBe(49);
     expect(verifyState(engine.state, T0 + 500 * 3600_000).map((violation) => violation.code)).not.toContain("inventory");
+    // Worn, it leaves the armor it replaced in the pack, one past the limit still: accepted.
+    const worn = engineWith(structuredClone(engine.state));
+    expect(worn.equip(worn.state.inventory.find((item) => item.named === "mosshide")!.uid, T0)).toBe(true);
+    expect(worn.state.inventory.length).toBe(49);
+    expect(verifyState(worn.state, T0 + 500 * 3600_000).map((violation) => violation.code)).not.toContain("inventory");
+    const fuller = structuredClone(worn.state);
+    fuller.inventory.push(generateItem(seededRng(99), 10));
+    expect(verifyState(fuller, T0 + 500 * 3600_000).map((violation) => violation.code)).toContain("inventory");
     const equipped = structuredClone(engine.state);
     equipped.equipment.armor = equipped.inventory.find((item) => item.named === "mosshide");
     expect(derive(equipped, T0).guardianGold).toBeCloseTo(1.1);

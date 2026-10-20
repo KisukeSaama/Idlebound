@@ -34,6 +34,17 @@ const MESSAGES = define({
       button: "Changer mon mot de passe",
       note: "Lien valable une heure. Ce n'était pas toi ? Ignore ce message, rien ne change."
     },
+    verifyReminder: {
+      subject: "Ta partie attend la confirmation de ton e-mail",
+      preheader: "Un clic, et ta partie est de nouveau sauvegardée.",
+      title: "Confirme ton e-mail",
+      body: (username: string, date: string) =>
+        `${username}, ton adresse n'est pas encore confirmée : ta partie n'est plus sauvegardée depuis le troisième jour. Confirme-la avant le ${date}, sinon ton compte et ta partie seront supprimés.`,
+      bodyKept: (username: string) =>
+        `${username}, ton adresse n'est pas encore confirmée : ta partie n'est plus sauvegardée depuis le troisième jour. Confirme-la pour que la route reprenne là où tu l'as laissée.`,
+      button: "Confirmer mon e-mail",
+      note: `Lien valable ${VERIFY_LINK_DAYS} jours. Tu n'as pas créé de compte ? Ignore ce message.`
+    },
     inactivityMail: {
       subject: "Ton compte Idlebound va être supprimé",
       preheader: (date: string) => `Connecte-toi avant le ${date} pour le garder.`,
@@ -64,6 +75,17 @@ const MESSAGES = define({
       body: (username: string) => `${username}, here is your link to choose a new password.`,
       button: "Change my password",
       note: "This link is valid for one hour. Wasn't you? Ignore this message, nothing changes."
+    },
+    verifyReminder: {
+      subject: "Your game is waiting for you to confirm your e-mail",
+      preheader: "One click, and your game is saved again.",
+      title: "Confirm your e-mail",
+      body: (username: string, date: string) =>
+        `${username}, your address is not confirmed yet: your game has not been saved since the third day. Confirm it before ${date}, or your account and your game will be deleted.`,
+      bodyKept: (username: string) =>
+        `${username}, your address is not confirmed yet: your game has not been saved since the third day. Confirm it and the road picks up where you left it.`,
+      button: "Confirm my e-mail",
+      note: `This link is valid for ${VERIFY_LINK_DAYS} days. Didn't create an account? Just ignore this message.`
     },
     inactivityMail: {
       subject: "Your Idlebound account is about to be deleted",

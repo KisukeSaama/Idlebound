@@ -33,17 +33,20 @@ export function Party() {
   if (members.length === 0) return null;
   return (
     <ul className="party" aria-hidden="true">
-      {members.map((hero) => (
+      {members.map((hero) => {
+        const absent = (derived.heroDps[hero.id] ?? 0) <= 0;
+        return (
         <li
           key={hero.id}
-          className={`party-member${hero === promised && status ? ` has-promise promise-${status}` : ""}${(derived.heroDps[hero.id] ?? 0) > 0 ? "" : " is-absent"}`}
+          className={`party-member${hero === promised && status ? ` has-promise promise-${status}` : ""}${absent ? " is-absent" : ""}`}
           data-hero={hero.id}
           style={{ "--hero": hero.color } as CSSProperties}
         >
-          <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, hero.id === "awakened" ? seed : undefined)} size={42} nearest /></span>
+          <span className="medallion-clip"><PixelSprite source={portraitSource(hero.id, hero.id === "awakened" ? seed : undefined, absent ? "faded" : undefined)} size={42} nearest /></span>
           {hero === promised && status ? <span className="medallion-promise"><Picto name={status === "broken" ? "frayed" : "knot"} size={12} /></span> : null}
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }

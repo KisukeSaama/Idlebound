@@ -8,18 +8,20 @@
   --panel-3: #28253a;
   --border: #2c2938;
   --border-strong: #3e3a50;
+  /* The edge of a field the walker types in: 3:1 at least on the panels (3.22:1 on #1d1a27). */
+  --border-field: #6e6787;
   --text: #ece8f3;
   --muted: #a8a2b8;
-  /* Small print: at least 4.5:1 on every panel it sits on (#1d1a27 is the lightest, 4.91:1). */
-  --faint: #8c86a0;
+  /* Small print: at least 4.5:1 on every panel it sits on (#28253a, a hovered key, is the lightest: 4.79:1). */
+  --faint: #958fa9;
   --gold: #e8b949;
   --gold-2: #f7d98b;
   --gold-deep: #8f6a20;
-  --violet: #9b6bff;
+  --violet: #a67dff;
   --violet-2: #c9a6ff;
   --essence: #c38bff;
   --shard: #7fd8ff;
-  --danger: #e8566f;
+  --danger: #ef6d83;
   --success: #5fcf80;
   --success-soft: #c4f5d2;
   /* A loss or a warning in small print: softer than --danger, readable on every panel. */
@@ -35,6 +37,8 @@
   --bevel: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
   /* --font-display (Cinzel) and --font-body (Alegreya Sans) come from next/font on <html> ([locale]/layout.tsx): defined here too, they would name families that do not exist. */
+  /* Italic text names the italic family first: its faces live apart, never preloaded. */
+  --font-italic: var(--font-body-italic), var(--font-body), sans-serif;
   color-scheme: dark;
   /*
    * Screens today run from phones to 4K: past a laptop's size the whole interface grows, laid
@@ -320,7 +324,7 @@ button {
   min-height: 42px;
   padding: 0.55rem 0.8rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-field);
   background: #07060c;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
   transition: border-color 120ms ease, box-shadow 120ms ease;
@@ -827,4 +831,10 @@ button {
   display: grid;
   place-items: center;
   margin: 2rem auto 1rem;
+}
+
+/* Emphasis and citations take the italic family (lore lines, quotes); an override back to
+   upright text names the body family again. */
+:where(em, i, cite) {
+  font-family: var(--font-italic);
 }

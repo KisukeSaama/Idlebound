@@ -33,13 +33,13 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
     },
     echoes: {
       "dark-forest": [
-        { by: "The Ledger", text: "In the Wychwood, roots hang from the branches like ropes. The druids trained the trees to grow that way, for climbing." },
+        { by: "The Ledger", text: "In the Dark Forest, roots hang from the branches like ropes. The druids trained the trees to grow that way, for climbing." },
         { by: "Ysolde", text: "Stand still. That owl has asked the same question since before I was born. Whatever you do, don't answer it." },
         { by: "A whispering bramble", text: "Aldric. We know that name. Many walkers who carried it have bled on our thorns before you." },
         { by: "The Ledger", text: "A druid's lantern hangs from a low branch, still lit. Nobody has filled it since the night began. It does not need it." },
         { by: "A toadstool", text: "La. La. La. We have nearly learned the song. Come back tomorrow night and hear it. Everyone comes back." },
         { by: "Séraphine", text: "I trained in this wood, under the old mother-tree. I asked the roots nicely, once. They still obey me." },
-        { by: "The Ledger", text: "Nyx is always first seen at the Wychwood's edge, where the road's last lantern goes out. Nobody has seen her arrive." },
+        { by: "The Ledger", text: "Nyx is always first seen at the Dark Forest's edge, where the road's last lantern goes out. Nobody has seen her arrive." },
         { by: "Ysolde", text: "The trees show me other nights. In one of them, you fell by that stump. Tonight you didn't. Keep it that way." },
         { by: "The Ledger", text: "Ysolde's parents walked into the east wood the year it vanished into the Void. Séraphine raised her after that." },
         { by: "Séraphine", text: "The old tree taught me every root by name. She was kind, before the long night soured her. I still bring you to her." },
@@ -47,7 +47,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
         { by: "The Ledger", text: "The mother-tree's rings were counted: more rings than Orvane has years. She has grown through every repeated night." }
       ],
       "forgotten-caves": [
-        { by: "The Ledger", text: "The Deepvaults were the Runeguild's mines. Their rails are still lit with runes, down to where the carts stopped." },
+        { by: "The Ledger", text: "The Forgotten Caves were the Runeguild's mines. Their rails are still lit with runes, down to where the carts stopped." },
         { by: "Garrick", text: "Mind the drip, the leeches drink it. I dig here for fallen stars: shards of the sky. The Stallkeeper pays well." },
         { by: "A haunted cart", text: "Next stop, the surface. Next stop, the surface. Next stop." },
         { by: "The Ledger", text: "A voice down the gallery shouts \"Left!\" and something comes from the left. It was Garrick's voice, from another night." },
@@ -126,7 +126,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
     biomes: {
       "green-plains": {
         name: "Plaines verdoyantes",
-        description: "Les terres à blé d'Orvane. La nuit est tombée avant la dernière moisson, et ne s'est jamais levée : les gerbes sont encore debout."
+        description: "Les terres à blé d'Orvane. La nuit est tombée avant la dernière moisson, et ne s'est jamais levée : les gerbes sont encore debout."
       },
       "dark-forest": {
         name: "Forêt sombre",
@@ -141,8 +141,8 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
         description: "Les tourbières du baron Osric, asséchées pour la tourbe et le riz, noyées la nuit où la Longue Nuit a commencé. Son manoir s'enfonce chaque nuit."
       },
       "fallen-king-ruins": {
-        name: "Ruines du roi déchu",
-        description: "Le donjon royal d'Orvane, où le roi déchu attend sur son trône. Chaque nuit de la route finit ici, devant lui."
+        name: "Ruines du Roi déchu",
+        description: "Le donjon royal d'Orvane, où le Roi déchu attend sur son trône. Chaque nuit de la route finit ici, devant lui."
       }
     },
     echoes: {
@@ -158,21 +158,21 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
         { by: "Le Grand Livre", text: "Les parents d'Ysolde sont entrés dans le bois de l'est l'année où il a sombré dans le Néant. Séraphine l'a élevée ensuite." },
         { by: "Séraphine", text: "Le vieil arbre m'a appris chaque racine par son nom. Elle était bonne, avant que la longue nuit l'aigrisse. Je te mène encore à elle." },
         { by: "Le Grand Livre", text: "Quand le Cœur du vieux bosquet tombe, Nyx lève les yeux vers le ciel nocturne, par la trouée des feuilles, comme on regarde chez soi." },
-        { by: "Le Grand Livre", text: "On a compté les cernes de l'arbre-mère : plus qu'Orvane n'a d'années. Elle a poussé à travers chaque nuit recommencée." }
+        { by: "Le Grand Livre", text: "On a compté les cernes de l'arbre-mère : plus qu'Orvane n'a d'années. Elle a poussé à travers chaque nuit recommencée." }
       ],
       "forgotten-caves": [
         { by: "Le Grand Livre", text: "Les cavernes étaient les mines de la Guilde des runes. Leurs rails luisent encore de runes, jusqu'où les wagonnets se sont arrêtés." },
-        { by: "Garrick", text: "Attention à la goutte, les sangsues la boivent. Moi, je creuse pour des étoiles tombées : des éclats de ciel. Le Comptoir paie bien." },
+        { by: "Garrick", text: "Attention à la goutte, les sangsues la boivent. Moi, je creuse pour des étoiles tombées : des éclats de ciel. Le Comptoir paie bien." },
         { by: "Un wagonnet hanté", text: "Prochain arrêt, la surface. Prochain arrêt, la surface. Prochain arrêt." },
-        { by: "Le Grand Livre", text: "Une voix crie « À gauche ! » au fond de la galerie, et quelque chose surgit à gauche. C'était la voix de Garrick, d'une autre nuit." },
+        { by: "Le Grand Livre", text: "Une voix crie « À gauche ! » au fond de la galerie, et quelque chose surgit à gauche. C'était la voix de Garrick, d'une autre nuit." },
         { by: "Thorvald", text: "J'ai abattu une montagne ici, une fois, sur un pari. Perdu quand même. Ne demande pas contre qui. Ne regarde pas le rat doré." },
         { by: "Garrick", text: "Le canari s'est tu, alors nous, les mineurs, on est partis. Il chante de nouveau. Aucun de nous n'est revenu l'écouter." },
-        { by: "Le Grand Livre", text: "Le tableau de la Guilde : quarante ans d'éclats extraits, à la craie. Éclats tombés du ciel depuis : la craie a manqué." },
+        { by: "Le Grand Livre", text: "Le tableau de la Guilde : quarante ans d'éclats extraits, à la craie. Éclats tombés du ciel depuis : la craie a manqué." },
         { by: "Oriane", text: "J'entends ce que ces caves ont dit d'autres nuits. Tu descends cette galerie et tu t'arrêtes à la troisième rune. Toujours." },
         { by: "Garrick", text: "Polis un éclat, tu y vois ta tête. Certains me montrent plus jeune, d'une nuit dont je ne me souviens pas. J'ai arrêté de polir." },
         { by: "Thorvald", text: "Le Dévorateur a mangé une montagne pour atteindre le ciel tombé. Il l'a trouvé. Il l'a pas digéré. Je connais ça." },
         { by: "Oriane", text: "Le caveau le plus profond est calme. D'ici, j'entends la nuit de demain. Elle ressemble trait pour trait à celle-ci." },
-        { by: "Le Grand Livre", text: "La cellule d'Oriane a deux tabourets. Elle s'assied sur l'un et répond à l'autre : elle entend les questions avant qu'on les pose." }
+        { by: "Le Grand Livre", text: "La cellule d'Oriane a deux tabourets. Elle s'assied sur l'un et répond à l'autre : elle entend les questions avant qu'on les pose." }
       ],
       "corrupted-marsh": [
         { by: "Le Grand Livre", text: "La chaussée passe sous l'eau et ressort plus loin. Dans le marais, les marcheurs apprennent à retenir leur souffle." },
@@ -182,25 +182,25 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
         { by: "Un courtisan noyé", text: "Monseigneur va te recevoir sous peu. Monseigneur reçoit sous peu depuis très, très longtemps." },
         { by: "Vorn", text: "J'ai trouvé Biscuit par ici. Enfin. C'est lui qui m'a trouvé. Ne le caresse pas. Ne l'ignore pas non plus." },
         { by: "Un tourbier", text: "Couper la tourbe. Empiler la tourbe. Le baron voudra du feu ce soir. Le baron veut toujours du feu." },
-        { by: "Mirelle", text: "Le remède de ce soir pour le baron : belladone, sel, une cuillère de mon sang. Celui de demain : tout ce que celui-ci n'était pas." },
+        { by: "Mirelle", text: "Le remède de ce soir pour le baron : belladone, sel, une cuillère de mon sang. Celui de demain : tout ce que celui-ci n'était pas." },
         { by: "Le Grand Livre", text: "Le marais avait été asséché pour la tourbe et le riz. L'eau est revenue en une seule nuit, la première de la Longue Nuit." },
         { by: "Vorn", text: "Les bêtes sentent quand le temps va tourner. Les miennes attendent le matin depuis très longtemps. Elles sont patientes. Pas moi." },
         { by: "Mirelle", text: "Osric est mon mari. Cet anneau, c'est moi qui le lui ai donné. L'or ne pourrit pas. Une promesse non plus, apparemment." },
-        { by: "Le Grand Livre", text: "Dans la chapelle de la dernière butte sèche, un registre des mariages. Dernière ligne : Osric, Mirelle. L'encre n'a pas séché." }
+        { by: "Le Grand Livre", text: "Dans la chapelle de la dernière butte sèche, un registre des mariages. Dernière ligne : Osric, Mirelle. L'encre n'a pas séché." }
       ],
       "fallen-king-ruins": [
         { by: "Le Grand Livre", text: "Les bannières du donjon ont perdu leurs couleurs pendant l'Année pâle. Elles pendent encore bien droites, prêtes pour une revue." },
-        { by: "Kaelen", text: "J'étais le chevalier du roi. Ses sentinelles me saluent encore, et je leur rends le salut. Ne demande pas lequel de nous est le fantôme." },
+        { by: "Kaelen", text: "J'étais le chevalier du Roi. Ses sentinelles me saluent encore, et je leur rends le salut. Ne demande pas lequel de nous est le fantôme." },
         { by: "Une servante aux chandelles", text: "Le dîner est servi. Le dîner est servi. S'il vous plaît. Quelqu'un. Le dîner est servi." },
         { by: "Morgrath", text: "J'attendrai dehors. Je n'entre pas chez l'homme qui a volé le Matin. J'ai des principes." },
         { by: "Le Grand Livre", text: "Les limiers de la dernière chasse suivent encore une piste hors du donjon. Quelqu'un a fui d'ici, la nuit où la Longue Nuit a commencé." },
         { by: "Le Grand Livre", text: "Le Sans-Nom s'arrête toujours à la porte de la grande salle, comme s'il connaissait la pièce. Nul n'a affronté son roi plus que lui." },
-        { by: "Kaelen", text: "La troisième marche bouge. Le roi disait toujours qu'il la ferait réparer. Il le disait en l'enjambant." },
+        { by: "Kaelen", text: "La troisième marche bouge. Le Roi disait toujours qu'il la ferait réparer. Il le disait en l'enjambant." },
         { by: "Le Roi", text: "J'ai fait tourner le trône vers la fenêtre, pour voir venir le Matin. Un roi doit voir ce qui vient." },
         { by: "Morgrath", text: "Il a volé le Matin, la fin que chaque nuit doit. À moi, son intendant. Ma liste de griefs fait une ligne." },
         { by: "Kaelen", text: "Un hiver, il a donné son propre manteau à une sentinelle sur le rempart. La sentinelle, c'était moi. Je l'ai gardé. Je ne le porte pas." },
         { by: "Le Grand Livre", text: "Le sol de la grande salle est rayé en cercle, là où se dressait le métier d'Eldra quand elle a tissé la Longue Nuit. Personne n'y balaie." },
-        { by: "Le Roi", text: "Kaelen est toujours avec toi ? Il a fui, la nuit où j'avais besoin de lui, et j'ai marché à sa place. Dis-lui que je l'ai fait de bon cœur." }
+        { by: "Le Roi", text: "Kaelen est toujours avec toi ? Il a fui, la nuit où j'avais besoin de lui, et j'ai marché à sa place. Dis-lui que je l'ai fait de bon cœur." }
       ]
     },
     wanderers: {
@@ -210,7 +210,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
       },
       "singing-geode": {
         by: "La Géode chantante",
-        text: "Cé-les-tine. Cé-les-tine. Elle n'est pas encore avec toi ? Alors on fredonnera son nom demain. Les pierres sont patientes."
+        text: "Cé-les-tine. Cé-les-tine. Elle n'est pas encore avec toi ? Alors on fredonnera son nom demain. Les pierres sont patientes."
       },
       ferryman: {
         by: "Le Passeur",
@@ -218,7 +218,7 @@ export const PLACES_TEXT: Record<Locale, PlacesText> = {
       },
       "court-jester": {
         by: "Le Bouffon de la cour",
-        text: "Encore toi ! Laisse-moi deviner : tu viens tuer le roi. Quelle coïncidence. Tout le monde aussi."
+        text: "Encore toi ! Laisse-moi deviner : tu viens tuer le Roi. Quelle coïncidence. Tout le monde aussi."
       }
     },
     places: {

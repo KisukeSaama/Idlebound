@@ -6,7 +6,9 @@
  * Everything here is pure and deterministic: integer hashing and plain arithmetic, no
  * Math.random, no trigonometry, so the same recipe gives the same pixels on every engine.
  */
-import { ORVANE_64, palRgb, type Pal } from "@idlebound/game/art";
+// The palette alone, not the art index: every sprite of a page needs it, the recipes only
+// once a sprite is drawn (see Art.tsx).
+import { ORVANE_64, palRgb, type Pal } from "@idlebound/game/palette";
 
 export const EMPTY = 255;
 

@@ -6,7 +6,7 @@ export const site = defineMessages({
     meta: {
       tagline: "Le clicker fantasy dans ton navigateur",
       description:
-        "Idlebound est un idle clicker fantasy : terrasse des monstres, recrute des compagnons, affronte le Roi déchu, nuit après nuit. Sans téléchargement.",
+        "Idlebound est un idle clicker fantasy : terrasse des monstres, recrute des compagnons, affronte le Roi déchu, nuit après nuit. Sans téléchargement.",
       keywords: ["idle game", "clicker", "jeu incrémental", "jeu navigateur", "idle clicker", "fantasy", "clicker heroes", "jeu idle français", "jeu sans téléchargement"],
       ogImageAlt: "Idlebound, clicker fantasy"
     },
@@ -38,10 +38,22 @@ export const site = defineMessages({
       text: "Ce rat des champs a dévoré la page que tu cherchais.",
       back: "Retour à l'accueil"
     },
+    error: {
+      title: "La route s'est effacée",
+      text: "Une erreur a interrompu cette page. Le Grand Livre garde ta partie : réessaie, ou reviens à l'accueil.",
+      retry: "Réessayer",
+      back: "Retour à l'accueil"
+    },
+    windowError: {
+      title: "Cette fenêtre n'a pas pu s'ouvrir",
+      text: "Une erreur l'a interrompue. La route continue derrière, et le Grand Livre garde ta partie.",
+      retry: "Réessayer",
+      close: "Fermer"
+    },
     play: {
       title: "Jouer au clicker fantasy",
       description:
-        "Lance Idlebound dans ton navigateur : frappe, recrute des compagnons, affronte les boss et fais ton ascension. Sans téléchargement, ta partie te suit partout.",
+        "Lance Idlebound dans ton navigateur : frappe, recrute des compagnons, affronte les boss et fais ton ascension. Sans téléchargement, ta partie te suit partout.",
       noscript: "Idlebound a besoin de JavaScript pour fonctionner.",
       loading: "Réveil des compagnons…"
     }
@@ -81,6 +93,18 @@ export const site = defineMessages({
       title: "Page not found",
       text: "This field rat ate the page you were looking for.",
       back: "Back to home"
+    },
+    error: {
+      title: "The road came apart",
+      text: "An error broke this page. The Ledger keeps your game: try again, or go back home.",
+      retry: "Try again",
+      back: "Back to home"
+    },
+    windowError: {
+      title: "This window could not open",
+      text: "An error broke it. The road goes on behind it, and the Ledger keeps your game.",
+      retry: "Try again",
+      close: "Close"
     },
     play: {
       title: "Play the fantasy clicker",

@@ -8,6 +8,7 @@ import { audio } from "../audio";
 import { useGame } from "../context";
 import { haptics } from "../haptics";
 import { Picto, SKILL_PICTO } from "../icons";
+import { useTouchArm } from "../touchArm";
 import { gameNow } from "@/lib/clock";
 
 /** How long a key shines when its power comes back. */
@@ -22,6 +23,7 @@ export function SkillBar() {
   // Only a cooldown seen running ends in a shine, never a key found ready at load.
   const cooled = useRef(new Map<string, boolean>());
   const shine = useRef(new Map<string, number>());
+  const { armed, gate } = useTouchArm();
   // Only the powers the walker holds: the others appear the day they are earned.
   const skills = SKILLS.filter((skill) => isSkillUnlocked(state, skill.id));
   if (skills.length === 0) return null;
@@ -43,17 +45,21 @@ export function SkillBar() {
         const cooldownRatio = cooling ? remaining / total : 0;
         const activeLeft = active && skillState ? Math.ceil((skillState.activeUntil - now) / 1000) : 0;
         const text = skillText(skill.id, locale, state);
+        const isArmed = armed === skill.id;
         const label = m.ready(text.name, skill.hotkey, text.description) + (cooling ? m.cooldown(formatCooldown(remaining, m)) : "");
         return (
           <button
             key={skill.id}
             type="button"
-            className={`skill ${active ? "active" : ""} ${cooling && !active ? "cooling" : ""} ${!cooling ? "ready" : ""}${shining ? " just-ready" : ""}`}
+            className={`skill ${active ? "active" : ""} ${cooling && !active ? "cooling" : ""} ${!cooling ? "ready" : ""}${shining ? " just-ready" : ""}${isArmed ? " armed" : ""}`}
+            data-arm={skill.id}
             aria-label={label}
-            onClick={() => {
-              const used = store.act<boolean>({ type: "skill", id: skill.id });
-              if (!used) audio.play("error");
-            }}
+            onClick={() =>
+              gate(skill.id, () => {
+                const used = store.act<boolean>({ type: "skill", id: skill.id });
+                if (!used) audio.play("error");
+              })
+            }
           >
             <Picto name={SKILL_PICTO[skill.id]} className="skill-icon" />
             <span className="skill-key" aria-hidden="true">{skill.hotkey}</span>
@@ -67,6 +73,7 @@ export function SkillBar() {
             <span className="skill-tip" role="tooltip">
               <strong>{text.name}</strong>
               <span>{text.description}</span>
+              {isArmed ? <em className="tip-again">{m.tapAgain}</em> : null}
             </span>
           </button>
         );

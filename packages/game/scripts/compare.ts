@@ -8,7 +8,7 @@
  *   npm run compare -- <script> [args...]        plays and compares
  *
  * `<script>` is a balance script of this folder that plays through `pool` (`milestones`,
- * `simulate`, `walls`, `deep`, `longrun`), or `suite` for all of AGENTS.md's at
+ * `simulate`, `walls`, `realistic`, `deep`, `longrun`), or `suite` for all of AGENTS.md's at
  * once (`suite 3`), its arguments as it takes them. The
  * reference goes to `SIM_DIR` (the system's temporary folder by default), one per script and
  * arguments. Prints the script's own output, then every number of the results that moved: the
