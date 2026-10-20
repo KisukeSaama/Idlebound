@@ -7,6 +7,18 @@ Durable rules for every session that touches this repository. Read before writin
 - [docs/CHANGES.md](docs/CHANGES.md): what each version changes, gathered for the next major's patch note.
 - The code is the source of truth. Change a documented behaviour, update its doc in the same change.
 
+## Pending checks
+
+Dated reminders. At the start of a session, if today is on or after a date below, do the check,
+report it to the user, and remove its line once they have decided.
+
+- **2026-10-27, the replay in production.** 2.1 went to production on 2026-10-20 with the replay
+  still in `shadow`. A week of it is then on record: read it as deploy/README.md, "The replay"
+  says (`node review.js --replays --days 7` in the production `api` container), report the
+  shares kept, corrected and refused and their causes, and recommend `enforce` (the CI variable
+  `IDLEBOUND_REPLAY_MODE`) only if the refused share is near zero and the corrections come from
+  cheats, not from games the engine replays differently. The user switches the variable.
+
 ## Foundations
 
 - Saves live on the server only. Browser storage holds UI conveniences, never game state.
