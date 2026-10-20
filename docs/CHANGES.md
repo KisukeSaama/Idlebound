@@ -16,6 +16,18 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+### Fixes
+
+- The market: buying several of a ware is now a counter set at 1, raised with + and lowered
+  with -, and the one buy button shows the whole price (was a second "×3" button beside the
+  price).
+- The creatures of the First Mark (strata LVI to LX): they keep their silhouette to the last
+  stratum (a bat its wings and ears, a wolf its legs) and their bodies settle into a few broad
+  flat tones, where they had melted into mottled blobs streaked with light. Art change: its
+  before and after are rendered at the commit before this fix and at it.
+
+## v2.2.0
+
 ### New
 
 - The market: the Stallkeeper now sells what the road brings. New wares come every 6 hours

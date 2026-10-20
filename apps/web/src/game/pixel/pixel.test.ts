@@ -319,6 +319,22 @@ describe("pixel generator", () => {
     expect(drawn(renderCreature("ruined-king", { era: 58 }).pixels)).toBeLessThan(drawn(renderCreature("ruined-king", { era: 55 }).pixels));
   });
 
+  it("keeps the First Mark's creatures readable: most of the silhouette, the eyes, fewer lights", () => {
+    const drawn = (pixels: Pixels) => [...pixels.idx].filter((pal) => pal !== EMPTY).length;
+    for (const id of ["echo-bat", "shade-wolf", "weeping-stag"]) {
+      const whole = renderCreature(id).pixels;
+      const last = renderCreature(id, { era: 59 }).pixels;
+      expect(drawn(last) * 3, id).toBeGreaterThanOrEqual(drawn(whole) * 2);
+      expect([...last.emit].some((lit, at) => lit && last.idx[at] !== EMPTY), `${id} eyes`).toBe(true);
+    }
+    // The bat's wings are veined with light at the surface; at the last stratum the thin veins are gone.
+    const light = (era: number) => {
+      const bat = renderCreature("echo-bat", { era }).pixels;
+      return [...bat.emit].filter((lit, at) => lit === 2 && bat.idx[at] !== EMPTY).length;
+    };
+    expect(light(59)).toBeLessThan(light(0));
+  });
+
   it("keeps every scene flat: 20 colors at most, no translucent pixel, 24 with any creature of its biome", () => {
     for (const biome of BIOMES) {
       for (const fullMoon of [false, true]) {

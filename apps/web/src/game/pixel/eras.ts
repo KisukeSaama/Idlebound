@@ -2,7 +2,8 @@
  * Era and Age treatments (BIBLE 18.6): how each stratum transforms a base recipe. The
  * deeper the night, the less finished the world looks. Every treatment stays inside the
  * Orvane 64 (colors are remapped to palette entries, never computed), and emissive pixels
- * (eyes, flames) are never touched: a Remnant's eyes are always its own.
+ * (eyes, flames) are never recolored: a Remnant's eyes are always its own. Only the First
+ * Mark takes some away, the thin lines of light with the other thin parts.
  */
 import { C, palLuma, type CreatureRank, type MaterialId, type Pal, type ResolvedRecipe } from "@idlebound/game/art";
 import { bayer, clonePixels, createPixels, EMPTY, hash2, type Pixels } from "./pixels";
@@ -481,31 +482,41 @@ function morph(mask: Uint8Array, w: number, h: number, grow: boolean, square: bo
   return out;
 }
 
-/** Clears the crumbs an opening leaves behind: pieces under a twentieth of the largest one. */
-function dropCrumbs(mask: Uint8Array, w: number, h: number) {
-  const label = new Int32Array(mask.length);
-  const sizes = [0];
+/**
+ * The 4-connected pieces of `cells`, each of a single value (a negative cell is empty):
+ * every pixel's piece (-1 where empty) and the size of each piece.
+ */
+function pieces(cells: Int16Array, w: number, h: number): { piece: Int32Array; sizes: number[] } {
+  const piece = new Int32Array(cells.length).fill(-1);
+  const sizes: number[] = [];
   const stack: number[] = [];
-  for (let start = 0; start < mask.length; start += 1) {
-    if (!mask[start] || label[start]) continue;
+  for (let start = 0; start < cells.length; start += 1) {
+    if (cells[start] < 0 || piece[start] >= 0) continue;
     const id = sizes.length;
+    const value = cells[start];
     let size = 0;
-    label[start] = id;
+    piece[start] = id;
     stack.push(start);
     while (stack.length) {
       const at = stack.pop()!;
       size += 1;
       const x = at % w;
       for (const next of [x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, at >= w ? at - w : -1, at + w < w * h ? at + w : -1]) {
-        if (next < 0 || !mask[next] || label[next]) continue;
-        label[next] = id;
+        if (next < 0 || cells[next] !== value || piece[next] >= 0) continue;
+        piece[next] = id;
         stack.push(next);
       }
     }
     sizes.push(size);
   }
-  const largest = Math.max(...sizes);
-  for (let at = 0; at < mask.length; at += 1) if (mask[at] && sizes[label[at]] * 20 < largest) mask[at] = 0;
+  return { piece, sizes };
+}
+
+/** Clears the crumbs an opening leaves behind: pieces under a twentieth of the largest one. */
+function dropCrumbs(mask: Uint8Array, w: number, h: number) {
+  const { piece, sizes } = pieces(Int16Array.from(mask, (on) => (on ? 1 : -1)), w, h);
+  const largest = Math.max(0, ...sizes);
+  for (let at = 0; at < mask.length; at += 1) if (mask[at] && sizes[piece[at]] * 20 < largest) mask[at] = 0;
 }
 
 /**
@@ -540,9 +551,80 @@ function flatTones(source: Pixels, count: number): Map<number, number> {
 }
 
 /**
+ * Each cell takes the value most of its neighbours within `reach` hold (empty and unknown
+ * cells, below 0, give no vote); a tie keeps its own. With `unknownOnly`, only the unknown
+ * cells (-2) are filled.
+ */
+function majority(cells: Int16Array, w: number, h: number, reach: number, kinds: number, unknownOnly = false): Int16Array {
+  const out = cells.slice();
+  const votes = new Int32Array(kinds);
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      const at = y * w + x;
+      if (cells[at] === -1 || (unknownOnly && cells[at] !== -2)) continue;
+      votes.fill(0);
+      for (let dy = -reach; dy <= reach; dy += 1) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= h) continue;
+        for (let dx = -reach; dx <= reach; dx += 1) {
+          const nx = x + dx;
+          if (nx < 0 || nx >= w) continue;
+          const value = cells[ny * w + nx];
+          if (value >= 0) votes[value] += 1;
+        }
+      }
+      let best = cells[at];
+      for (let kind = 0; kind < kinds; kind += 1) if (votes[kind] > (best >= 0 ? votes[best] : 0)) best = kind;
+      out[at] = best;
+    }
+  }
+  return out;
+}
+
+/**
+ * Pieces of one value under `least` pixels join the value that borders them most; the largest
+ * piece of each value stays, so no tone leaves the body.
+ */
+function mergeIslands(cells: Int16Array, w: number, h: number, least: number, kinds: number) {
+  const { piece, sizes } = pieces(cells, w, h);
+  const largest = new Int32Array(kinds).fill(-1);
+  for (let at = 0; at < cells.length; at += 1) {
+    const kind = cells[at];
+    if (piece[at] >= 0 && (largest[kind] < 0 || sizes[piece[at]] > sizes[largest[kind]])) largest[kind] = piece[at];
+  }
+  const merged = (at: number) => piece[at] >= 0 && sizes[piece[at]] < least && largest[cells[at]] !== piece[at];
+  const borders = new Int32Array(sizes.length * kinds);
+  for (let at = 0; at < cells.length; at += 1) {
+    if (!merged(at)) continue;
+    const x = at % w;
+    for (const next of [x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, at >= w ? at - w : -1, at + w < w * h ? at + w : -1]) {
+      if (next >= 0 && cells[next] >= 0 && piece[next] !== piece[at]) borders[piece[at] * kinds + cells[next]] += 1;
+    }
+  }
+  const merges = Uint8Array.from(cells, (_, at) => (merged(at) ? 1 : 0));
+  for (let at = 0; at < cells.length; at += 1) {
+    if (!merges[at]) continue;
+    let best = cells[at];
+    let most = 0;
+    for (let kind = 0; kind < kinds; kind += 1) {
+      if (borders[piece[at] * kinds + kind] > most) {
+        most = borders[piece[at] * kinds + kind];
+        best = kind;
+      }
+    }
+    cells[at] = best;
+  }
+}
+
+/** The most pixels a point of light holds (an eye, a spark); a longer light is a line. */
+const LIGHT_POINT = 9;
+
+/**
  * First Mark: fewer and fewer pixels, at the same size. Thin parts fall away era by era
- * (whiskers, then tails and claws, then limbs), the masses merge into a few flat tones inside
- * a fresh outline; the eyes stay, even where the body has gone from around them.
+ * (whiskers and veins, then tails and claws), the masses merge into a few flat tones inside a
+ * fresh outline, broader with every era; what the creature is stays readable to the last
+ * stratum (a bat keeps its wings, a wolf its legs). The eyes stay with what is left of the
+ * body; thin lines of light (veins, threads, runes) fall away with the other thin parts.
  */
 function fewer(source: Pixels, { step }: TreatContext): Pixels {
   const { w, h } = source;
@@ -552,32 +634,53 @@ function fewer(source: Pixels, { step }: TreatContext): Pixels {
     drawn[at] = source.idx[at] === EMPTY ? 0 : 1;
     total += drawn[at];
   }
-  // At least half the drawing stays: a thin one loses less, one already down to lines and dots nothing.
+  // At least two thirds of the drawing stay: a thin one loses less, one already down to lines and dots nothing.
   let mask: Uint8Array | null = null;
-  for (let passes = 1 + step; passes > 0 && !mask; passes -= 1) {
+  for (let passes = 1 + (step >> 1); passes > 0 && !mask; passes -= 1) {
     let open = drawn;
     for (let pass = 0; pass < passes; pass += 1) open = morph(open, w, h, false, (pass & 1) === 1);
     for (let pass = passes - 1; pass >= 0; pass -= 1) open = morph(open, w, h, true, (pass & 1) === 1);
     let kept = 0;
     for (let at = 0; at < open.length; at += 1) kept += open[at];
-    if (kept * 2 >= total) mask = open;
+    if (kept * 3 >= total * 2) mask = open;
   }
   if (!mask) return source;
   dropCrumbs(mask, w, h);
-  const tones = flatTones(source, step < 2 ? 3 : 2);
-  const out = createPixels(w, h);
   const shape = mask;
   const inside = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && shape[y * w + x] === 1;
+  // The eyes (1) stay on what is left of the body. Of the lights (2), the points stay (an eye
+  // that never closes, a spark), and of the longer ones what is broad enough to survive an
+  // opening: a flame, not a vein.
+  const near = morph(shape, w, h, true, true);
+  const lights = Uint8Array.from(source.emit, (lit, at) => (lit === 2 && source.idx[at] !== EMPTY ? 1 : 0));
+  const broad = morph(morph(lights, w, h, false, false), w, h, true, false);
+  const { piece: light, sizes: lightSizes } = pieces(Int16Array.from(lights, (on) => (on ? 1 : -1)), w, h);
+  const kept = (at: number) => (source.emit[at] === 1 ? near[at] === 1 : lights[at] === 1 && shape[at] === 1 && (broad[at] === 1 || lightSizes[light[at]] <= LIGHT_POINT));
+  const lit = (at: number) => source.idx[at] !== EMPTY && source.emit[at] !== 0 && kept(at);
+  // The masses: each pixel's flat tone (0 is the ink), then the tones gathered into broad areas.
+  const tones = flatTones(source, step < 2 ? 3 : 2);
+  const kinds = [C.ink as number, ...new Set([...tones.values()].sort((a, b) => palLuma(a) - palLuma(b) || a - b))];
+  let cells: Int16Array = new Int16Array(w * h).fill(-1);
+  for (let at = 0; at < cells.length; at += 1) {
+    if (!shape[at]) continue;
+    const tone = source.emit[at] ? undefined : tones.get(source.idx[at]);
+    cells[at] = source.idx[at] === C.ink ? 0 : tone === undefined ? -2 : kinds.indexOf(tone);
+  }
+  // The first stratum only loses its specks; the areas then broaden era by era.
+  const reach = (step + 1) >> 1;
+  cells = majority(cells, w, h, 2, kinds.length, true);
+  for (let pass = 0; reach && pass < 2; pass += 1) cells = majority(cells, w, h, reach, kinds.length);
+  mergeIslands(cells, w, h, 6 + step * 6, kinds.length);
+  const out = createPixels(w, h);
   for (let y = 0; y < h; y += 1) {
     for (let x = 0; x < w; x += 1) {
       const at = y * w + x;
-      const pal = source.idx[at];
-      if (pal !== EMPTY && source.emit[at]) {
-        out.idx[at] = pal;
+      if (lit(at)) {
+        out.idx[at] = source.idx[at];
         out.emit[at] = source.emit[at];
       } else if (!shape[at]) continue;
       else if (!inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)) out.idx[at] = C.ink;
-      else out.idx[at] = tones.get(pal) ?? C.ink;
+      else out.idx[at] = cells[at] >= 0 ? kinds[cells[at]] : C.ink;
       out.alpha[at] = 255;
     }
   }
