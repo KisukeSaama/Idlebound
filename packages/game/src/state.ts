@@ -1,7 +1,7 @@
 import { emptyFates } from "./fates";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 /**
@@ -10,6 +10,13 @@ export const ALTAR_REWORK_NOTICE = "altars-v4";
  */
 export const HARVEST_NOTICE = "harvest-v11";
 export const HARVEST_NOTICE_TOLD = "harvest-v11:ok";
+/**
+ * Tutorial id written by the migration to a save whose stall boons ran past a day before
+ * version 20 (the time past it came back as shards, `boonRefund`); `BOON_REFUND_NOTICE_TOLD`
+ * once the walker was told.
+ */
+export const BOON_REFUND_NOTICE = "boons-v20";
+export const BOON_REFUND_NOTICE_TOLD = "boons-v20:ok";
 
 export function emptyStats(): StatBlock {
   return { clicks: 0, crits: 0, kills: 0, bosses: 0, treasures: 0, goldEarned: 0, crystals: 0, skillsUsed: 0, maxHit: 0, playTime: 0 };

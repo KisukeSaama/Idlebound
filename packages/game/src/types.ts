@@ -111,6 +111,8 @@ export interface Item {
   memory?: string;
   /** The stage it was awakened at (Brom, at the forge): its density, never its place. */
   depth?: number;
+  /** Times Brom rekindled one of its traits (save version 20): the shards it cost, for the Ledger. */
+  rekindled?: number;
 }
 
 /** A creature of the road. Its look is the art recipe of the same id (`data/art/`). */
@@ -405,6 +407,16 @@ export interface GameState {
    * then (`LEGACY_PLENTY`): its threads are checked against it. Absent from a game begun since.
    */
   legacyPlenty?: number;
+  /**
+   * Shards paid back to a save older than version 20 for the stall boons it held past a day
+   * (`MARKET_BUFF_MAX_SECONDS`), for the notice that tells it. Absent from any other save.
+   */
+  boonRefund?: number;
+  /**
+   * What the walker bought from the stall of the last six hours they bought from (save version
+   * 20): the window's number (`stallWindow`) and, per place, how many. Absent until then.
+   */
+  stall?: { window: number; bought: number[] };
   /** ISO week of the last Caravan purchase (one ware a week). */
   caravanWeek: string;
   /**
@@ -472,6 +484,7 @@ export type GameEvent =
   | { type: "inventoryFull"; item: Item; shards: number }
   /** A relic brought down to the walker's deepest night. */
   | { type: "awakened"; item: Item }
+  | { type: "rekindled"; item: Item; trait: string }
   | { type: "hourglass"; kills: number }
   /** A Bestiary entry unlocked its `tier`-th line. */
   | { type: "bestiary"; id: string; tier: number }

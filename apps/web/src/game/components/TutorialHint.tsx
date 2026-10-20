@@ -1,9 +1,9 @@
 "use client";
 
-import { ALTAR_REWORK_NOTICE, HARVEST_NOTICE_TOLD } from "@idlebound/game";
+import { ALTAR_REWORK_NOTICE, BOON_REFUND_NOTICE_TOLD, HARVEST_NOTICE_TOLD } from "@idlebound/game";
 import { useEffect, useRef } from "react";
 import { useI18n } from "@/i18n/client";
-import { useGame, useMagnitude } from "../context";
+import { useFormat, useGame, useMagnitude } from "../context";
 import { HINT_READ_MS, currentHint, hintLearned, maelleCost, type Hint, type HintId } from "../hints";
 
 /** How often the time a hint has spent under the walker's eyes is counted. */
@@ -18,6 +18,7 @@ export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
   const { state, store } = useGame();
   const { t, g } = useI18n();
   const magnitude = useMagnitude();
+  const fmt = useFormat();
   const m = t.hud.tutorial;
   const hint = currentHint(state);
   if (!hint) return null;
@@ -39,6 +40,7 @@ export function TutorialHint({ placement }: { placement: "arena" | "below" }) {
       case "ascend": return m.ascend;
       case ALTAR_REWORK_NOTICE: return m.altarRework;
       case HARVEST_NOTICE_TOLD: return m.harvestCap;
+      case BOON_REFUND_NOTICE_TOLD: return m.boonRefund(fmt(state.boonRefund ?? 0));
     }
   }
 }

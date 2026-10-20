@@ -5,7 +5,7 @@ import {
   EQUIPMENT_CAP,
   HEROES,
   HERO_BY_ID,
-  MARKET_OFFERS,
+  STALL_WARES,
   NAMED_RELICS,
   PLACES,
   PLACE_BONUS,
@@ -26,7 +26,9 @@ import {
   stageHp,
   upgradeCost,
   type AffixStat,
-  type HeroEffect
+  type HeroEffect,
+  type MarketOfferId,
+  type StallWareId
 } from "@idlebound/game";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -306,6 +308,20 @@ export function promiseSlots(ctx: WikiContext): Slots {
   };
 }
 
+/** The picture of each stall ware: the rare place's pieces open as a great chest, a crate as a chest. */
+const WARE_ART: Record<StallWareId, MarketOfferId> = {
+  chest: "chest",
+  "great-chest": "great-chest",
+  rage: "rage",
+  fortune: "fortune",
+  autoclick: "autoclick",
+  hourglass: "hourglass",
+  crate: "chest",
+  "set-piece": "great-chest",
+  "trait-piece": "great-chest",
+  "star-coffer": "great-chest"
+};
+
 const FORGE_LEVELS = [0, 5, 10, 15, 19];
 const CAPPED: AffixStat[] = ["critChance", "critDamage", "bossDamage", "essence"];
 
@@ -368,12 +384,13 @@ export function relicSlots(ctx: WikiContext): Slots {
     ),
     market: (
       <div className="wiki-cards">
-        {MARKET_OFFERS.map((offer) => (
-          <article key={offer.id} className="wiki-card">
-            <span className="wiki-card-art pixel-frame" aria-hidden="true"><Art spec={{ kind: "market", id: offer.id }} size={48} /></span>
+        {STALL_WARES.map((ware) => (
+          <article key={ware.id} className="wiki-card">
+            <span className="wiki-card-art pixel-frame" aria-hidden="true"><Art spec={{ kind: "market", id: WARE_ART[ware.id] }} size={48} /></span>
             <div>
-              <h3>{g.market[offer.id].name} <span className="wiki-price">{w.slots.relics.shards(offer.cost)}</span></h3>
-              <p>{g.market[offer.id].description}</p>
+              <h3>{g.market[ware.id].name} <span className="wiki-price">{w.slots.relics.from(ware.cost)}</span></h3>
+              <p className="wiki-ware" style={{ color: RARITY_INFO[ware.rarity].color }}>{w.slots.relics.ware(t.windows.market.wareRarity[ware.rarity], ware.stock)}</p>
+              <p>{g.market[ware.id].description}</p>
             </div>
           </article>
         ))}

@@ -8,6 +8,7 @@ import { PIECES, schedulePiece, type MusicCue } from "./music";
  * with a rate limit so that frenzy doesn't overwhelm the ears.
  */
 type Sound =
+  | "rare"
   | "hit"
   | "crit"
   | "kill"
@@ -416,6 +417,12 @@ class AudioEngine {
         this.burst(0.3, 1200, 0.4, 0.1, 300);
         this.tone(1244, 1.4, { type: "triangle", gain: 0.05, delay: 0.12 });
         this.tone(1661, 1.1, { type: "sine", gain: 0.03, delay: 0.14 });
+        break;
+      case "rare":
+        // The rare place: a low lantern hum, and two bells over it.
+        this.tone(131, 1.6, { type: "sine", gain: 0.1, attack: 0.3 });
+        this.tone(988, 1.2, { type: "sine", gain: 0.07, delay: 0.25 });
+        this.tone(1319, 1.5, { type: "sine", gain: 0.06, delay: 0.5 });
         break;
       case "found":
         // The reel stops: a chord rises, one note longer for each rarity up.

@@ -15,6 +15,10 @@ export interface SeenMarks {
   essences: number;
   /** Shards held the last time the stall was opened. */
   shards: number;
+  /** The stall's six hours (`stallWindow`) the last time it was opened. */
+  stall?: number;
+  /** The Caravan's week (`isoWeek`) the last time the stall was opened. */
+  caravan?: string;
 }
 
 const kept = new Map<string, SeenMarks>();
@@ -32,7 +36,7 @@ export function readSeen(game: number, fallback: () => SeenMarks): SeenMarks {
     if (stored) {
       const parsed = JSON.parse(stored) as Partial<SeenMarks>;
       if (Array.isArray(parsed.relics) && typeof parsed.essences === "number" && typeof parsed.shards === "number") {
-        marks = { relics: parsed.relics.filter((uid) => typeof uid === "string"), essences: parsed.essences, shards: parsed.shards };
+        marks = { relics: parsed.relics.filter((uid) => typeof uid === "string"), essences: parsed.essences, shards: parsed.shards, stall: typeof parsed.stall === "number" ? parsed.stall : undefined, caravan: typeof parsed.caravan === "string" ? parsed.caravan : undefined };
       }
     }
   } catch {

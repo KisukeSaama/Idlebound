@@ -5,14 +5,15 @@
 import { ALTAR_BY_ID, legacyHarvestCost, legacyHarvestPrice } from "./data/altars";
 import { WEAVE_LEVEL_MAX, weaveTotalCost } from "./data/descent";
 import { LEGACY_RECOGNITION_TIERS, recognitionTierByRuns } from "./data/lore";
+import { BUFF_DURATION_SECONDS, isMarketBuff, MARKET_BUFF_MAX_SECONDS, MARKET_BY_ID, type MarketOfferId } from "./data/market";
 import { NAMED_BY_ID } from "./data/relics";
 import { crystalEssenceReward } from "./formulas";
 import { emptyFates } from "./fates";
 import { generateItem, rememberRelic } from "./loot";
 import { seededRng } from "./rng";
-import { ALTAR_REWORK_NOTICE, HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
+import { ALTAR_REWORK_NOTICE, BOON_REFUND_NOTICE, HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 import { pow as dPow } from "./dmath";
-import type { Item } from "./types";
+import type { BuffId, Item } from "./types";
 
 /** Fills a save with the fields added since it was written. */
 export function migrateState(raw: unknown): unknown {
@@ -105,8 +106,41 @@ export function migrateState(raw: unknown): unknown {
     const plenty = Object.hasOwn(weaves, "plenty") && typeof weaves.plenty === "number" && Number.isInteger(weaves.plenty) ? weaves.plenty : 0;
     if (plenty > 0 && plenty <= WEAVE_LEVEL_MAX) merged.legacyPlenty = plenty;
   }
+  // Version 20 makes a Descent leave a hundredth of the essences (a tenth before): nothing
+  // already held moves, the next Descent takes more.
+  // Version 20 caps the stall's boons at a day: the time an older save had bought past it
+  // comes back as shards, and the walker is told once.
+  if (version < 20 && refundBoons(merged)) {
+    const tutorial = merged.tutorial as { done?: unknown };
+    if (Array.isArray(tutorial.done) && !tutorial.done.includes(BOON_REFUND_NOTICE)) merged.tutorial = { ...tutorial, done: [...tutorial.done, BOON_REFUND_NOTICE] };
+  }
   merged.version = SAVE_VERSION;
   return merged;
+}
+
+/**
+ * The stall's boons piled up without end before version 20: what runs past a day from the
+ * save's last tick is cut, and paid back at the price of the draught (the Stallkeeper's Token
+ * off, when the walker ever held it: never more than was paid). Kept in `boonRefund` for the
+ * notice. Returns whether anything came back.
+ */
+function refundBoons(merged: Record<string, unknown>): boolean {
+  if (!Array.isArray(merged.buffs) || typeof merged.lastTickAt !== "number" || typeof merged.shards !== "number") return false;
+  const cap = merged.lastTickAt + MARKET_BUFF_MAX_SECONDS * 1000;
+  const token = Array.isArray(merged.named) && merged.named.includes("stallkeeper-band");
+  let refund = 0;
+  for (const buff of merged.buffs as { id?: unknown; until?: unknown }[]) {
+    if (!buff || typeof buff.until !== "number" || !Number.isFinite(buff.until) || buff.until <= cap) continue;
+    if (!isMarketBuff(buff.id as BuffId)) continue;
+    const draughts = Math.floor((buff.until - cap) / (BUFF_DURATION_SECONDS * 1000));
+    const offer = MARKET_BY_ID[buff.id as MarketOfferId];
+    refund += draughts * (token ? Math.max(1, Math.ceil(offer.cost * (1 - NAMED_BY_ID["stallkeeper-band"].effect.pct))) : offer.cost);
+    buff.until = cap;
+  }
+  if (refund <= 0) return false;
+  merged.shards += refund;
+  merged.boonRefund = refund;
+  return true;
 }
 
 /** The marks the scenes of the Count and the Morning left in a save of versions 14 and 15. */

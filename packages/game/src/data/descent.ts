@@ -27,7 +27,7 @@ export const DESCENT_MIN_STAGE = 1000;
  * come undone (BIBLE 16 paces the late Ages by Descents from here). The first Descent weaves
  * 8 threads there. From save version 12 to 18 it opened at stage 2000, when a Descent still
  * took every essence and cost more than a day under the record: opened sooner, it set the
- * walker back for longer. Keeping a tenth of the essences, it pays from the second day after
+ * walker back for longer. Keeping a tenth of the essences (a hundredth since version 20), it pays from the second or third day after
  * it opens (`scripts/descent.ts`, from stage 1500).
  */
 export const DESCENT_OPEN_STAGE = 1500;
@@ -113,11 +113,15 @@ export function threadsFor(deepest: number): number {
  * Share of the essences held that a Descent leaves the walker (rounded down): Eldra unweaves
  * the stones, not every memory. Before save version 19 a Descent took them all, and the walker
  * spent a day and a half of play or more under the record it left (measured with
- * `scripts/descent.ts`, from stage 2000); with a tenth kept, five to six hours for the first
- * four (up to fifteen later), and the Descent pays from the second day. Keeping a twentieth or a thirtieth walks almost the same
- * road, an hour or two slower to come back each time.
+ * `scripts/descent.ts`, from stage 2000). Version 19 left a tenth: the altars cost ×1.6 a
+ * level, so a tenth bought back all but five levels, and the Descent was no longer felt
+ * (player feedback after 2.1). A hundredth since version 20 (about ten levels lost); measured
+ * from stage 1500, 9 seeds, 14 days: the record stands again in 5.0 / 5.6 / 8.8 / 10.8 h for
+ * the first four Descents (a tenth: 2.8 / 3.0 / 3.9 / 5.7 h), the walker who descends is
+ * ahead from day 3 (a tenth: day 2) and 1.54 times as far on day 14 (a tenth: 1.68; a
+ * thirtieth: 4.4 to 7.8 h, 1.68).
  */
-export const DESCENT_KEEP = 0.1;
+export const DESCENT_KEEP = 0.01;
 
 /** The shallowest stage whose thread is `threads` long: `threadsFor` inverted. */
 export function stageForThreads(threads: number): number {

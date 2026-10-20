@@ -4,7 +4,7 @@ import type { CutsceneId } from "../data/cutscenes";
 import type { WeaveId } from "../data/descent";
 import type { EventId } from "../data/events";
 import type { AffixStat, AltarId, ItemSlot, Rarity, SkillId } from "../types";
-import type { MarketOfferId } from "../data/market";
+import type { StallWareId } from "../data/market";
 import type { BestiaryPage, SecretId } from "../data/lore";
 import type { NamedEffect } from "../data/relics";
 import type { PlaceId, TraitId } from "../data/traits";
@@ -102,7 +102,7 @@ export interface GameText {
   /** How long a power takes to come back, after the walker's cooldown reductions. */
   skillRecharge: (seconds: number) => string;
   altars: Record<AltarId, NameText>;
-  market: Record<MarketOfferId, NameText>;
+  market: Record<StallWareId, NameText>;
   /** Achievement names per series (id prefix), one per tier, in tier order. */
   achievementNames: Record<string, readonly string[]>;
   achievementCategories: Record<AchievementCategory, string>;

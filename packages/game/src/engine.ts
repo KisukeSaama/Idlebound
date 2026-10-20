@@ -36,7 +36,7 @@ import {
 } from "./data/events";
 import { CLICK_HERO_ID, HEROES, HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { DROUGHT_DROPS, FORGE_MAX, INVENTORY_LIMIT, RARITIES, RARITY_INFO } from "./data/items";
-import { awakenDepth, relicDepth } from "./data/traits";
+import { awakenDepth, relicDepth, shardScale, TRAIT_COUNT } from "./data/traits";
 import {
   BESTIARY_BY_ID,
   DREAM_MIN_SECONDS,
@@ -79,7 +79,7 @@ import {
 } from "./data/lore";
 import { PROMISE_BY_HERO, PROMISE_RUNS, UNFAILING_MARGIN_SECONDS, hireBarred, promiseAbstains, promiseHolds, promiseKings, promiseOf, promisesKept, standingPromise } from "./data/promises";
 import { NAMED_BY_ID, NAMED_RELICS, namedEffect, namedSourceReached, wearing, wearsRegalia, type NamedRelicDef } from "./data/relics";
-import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BY_ID, type MarketOfferId } from "./data/market";
+import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, boonFits, isMarketBuff, MARKET_BUFF_MAX_SECONDS, placeLevel, RARE_PLACE_ASCENSIONS, RARE_WARES, stallAt, stallBought, stallWindow, wareCost } from "./data/market";
 import { SKILLS, SKILL_BY_ID } from "./data/skills";
 import { ERA_COUNT, ageForEra, ageForStage, MILESTONES } from "./data/strata";
 import { milestoneReached } from "./chronicle";
@@ -94,6 +94,7 @@ import {
   altarLevel,
   altarPrice,
   awakenPrice,
+  rekindlePrice,
   guardianShardsAt,
   relicChance,
   roadLuck,
@@ -128,7 +129,7 @@ import {
   weaveLevel,
   weaveValue
 } from "./formulas";
-import { generateItem } from "./loot";
+import { generateItem, rekindleTrait, rememberTrait } from "./loot";
 import { pick, randomInt, uid, type Rng } from "./rng";
 import { localFates, occasion, starved, type Fates, type Stream } from "./fates";
 import { applyCommand, type Command } from "./commands";
@@ -514,7 +515,7 @@ export class GameEngine {
     const s = this.state;
     const existing = s.buffs.find((buff) => buff.id === id);
     const start = existing && existing.until > now ? existing.until : now;
-    const until = isMarketBuff(id) ? start + seconds * 1000 : Math.min(start + seconds * 1000, now + BUFF_MAX_SECONDS * 1000);
+    const until = Math.min(start + seconds * 1000, now + (isMarketBuff(id) ? MARKET_BUFF_MAX_SECONDS : BUFF_MAX_SECONDS) * 1000);
     if (existing) existing.until = until;
     else s.buffs.push({ id, until });
   }
@@ -2267,7 +2268,7 @@ export class GameEngine {
 
   /**
    * The Descent (BIBLE 12.7): Eldra unweaves the Sanctum and weaves the Long Night again, one
-   * thread deeper. The run and the stones go, and nine essences in ten (`DESCENT_KEEP`); the
+   * thread deeper. The run and the stones go, and 99 essences in 100 (`DESCENT_KEEP`); the
    * thread grows by what the walker's deepest stage adds to it; relics, shards, deeds, the
    * Chronicle and Recognition stay. A few stones survive with the Remembered Stones.
    */
@@ -2418,6 +2419,27 @@ export class GameEngine {
     return true;
   }
 
+  /**
+   * Brom rekindles a relic: heated at the forge until it lets `trait` go, it remembers another
+   * of its slot it did not hold (from the fates). Priced by the relic's depth (`rekindlePrice`).
+   */
+  rekindle(itemUid: string, trait: string, now: number): boolean {
+    const s = this.state;
+    const worn = Object.values(s.equipment).find((item) => item?.uid === itemUid);
+    const item = worn ?? s.inventory.find((entry) => entry.uid === itemUid);
+    // A named relic is the one its legend tells: what it remembers never changes.
+    if (!item || item.named || TRAIT_COUNT[item.rarity] === 0 || !item.traits?.includes(trait)) return false;
+    const cost = rekindlePrice(s, item);
+    if (cost > s.shards) return false;
+    if (promiseAbstains(s, "shards") || (worn && item.slot === "weapon" && promiseOf(s, "anvil"))) return this.held();
+    const next = rekindleTrait(item, trait, this.fate("chest"));
+    if (next === null) return false;
+    s.shards -= cost;
+    this.emit({ type: "rekindled", item, trait: next });
+    this.refresh(now);
+    return true;
+  }
+
   /** A new item: in its slot when empty, else in the pack; a full pack salvages it (unless `force`). */
   private addItem(item: Item, force = false) {
     const s = this.state;
@@ -2521,38 +2543,49 @@ export class GameEngine {
     if (index < 12) this.fragment({ source: "saying", index });
   }
 
-  buyOffer(id: MarketOfferId, now: number): boolean {
+  /**
+   * Buys one of a place of the stall standing now (`stallAt`): the wares of the six hours, each
+   * in its stock, at the price of the walker's depth. The rare place waits for the first dusk.
+   */
+  buyStall(index: number, now: number): boolean {
     const s = this.state;
-    const offer = MARKET_BY_ID[id];
-    if (!offer) return false;
-    const cost = shardPrice(s, offer.cost);
+    const window = stallWindow(now);
+    const place = stallAt(window)[index];
+    if (!place) return false;
+    if (RARE_WARES.includes(place.ware) && s.lifetime.ascensions < RARE_PLACE_ASCENSIONS) return false;
+    const bought = stallBought(s, window, index);
+    if (bought >= place.stock) return false;
+    const cost = shardPrice(s, wareCost(place.ware, s.maxStageEver));
     if (cost > s.shards) return false;
     if (promiseAbstains(s, "shards")) return this.held();
     const level = Math.max(1, s.maxStageEver - 1);
-    switch (id) {
+    const bestHired = s.lifetime.bestHired;
+    switch (place.ware) {
       case "chest":
-      case "great-chest": {
+      case "great-chest":
+      case "crate":
+      case "set-piece":
+      case "trait-piece":
+      case "star-coffer": {
         if (s.inventory.length >= INVENTORY_LIMIT) return false;
-        s.shards -= cost;
         const rng = this.fate("chest");
-        const bestHired = s.lifetime.bestHired;
-        const item = id === "chest"
-          ? generateItem(rng, level, { bestHired })
-          : generateItem(rng, level, { minimum: "epic", luck: 3, bestHired });
+        let item: Item;
+        if (place.ware === "chest") item = generateItem(rng, level, { bestHired });
+        else if (place.ware === "great-chest") item = generateItem(rng, level, { minimum: "epic", luck: 3, bestHired });
+        else if (place.ware === "crate") item = generateItem(rng, level, { slot: place.slot, minimum: "rare", luck: 2, bestHired });
+        else if (place.ware === "set-piece") item = generateItem(rng, placeLevel(place.place!, s.maxStageEver), { slot: place.slot, minimum: "legendary", luck: 3, bestHired });
+        else if (place.ware === "trait-piece") item = rememberTrait(generateItem(rng, level, { slot: place.slot, minimum: "legendary", luck: 3, bestHired }), place.trait!);
+        else item = generateItem(rng, level, { rarity: "mythic", bestHired });
+        s.shards -= cost;
         this.addItem(item);
         break;
       }
       case "rage":
-        s.shards -= cost;
-        this.addBuff("rage", BUFF_DURATION_SECONDS, now);
-        break;
       case "fortune":
-        s.shards -= cost;
-        this.addBuff("fortune", BUFF_DURATION_SECONDS, now);
-        break;
       case "autoclick":
+        if (!boonFits(s, place.ware, now)) return false;
         s.shards -= cost;
-        this.addBuff("autoclick", BUFF_DURATION_SECONDS, now);
+        this.addBuff(place.ware, BUFF_DURATION_SECONDS, now);
         break;
       case "hourglass": {
         if (!this.pourHours(1, now)) return false;
@@ -2560,6 +2593,10 @@ export class GameEngine {
         break;
       }
     }
+    const counts = s.stall && s.stall.window === window ? [...s.stall.bought] : [];
+    while (counts.length <= index) counts.push(0);
+    counts[index] = bought + 1;
+    s.stall = { window, bought: counts };
     this.refresh(now);
     return true;
   }
@@ -2587,7 +2624,7 @@ export class GameEngine {
     const s = this.state;
     if (!this.caravanOpen(now)) return false;
     const ware = caravanWare(isoWeek(now));
-    const cost = shardPrice(s, ware.cost);
+    const cost = shardPrice(s, ware.cost * shardScale(s.maxStageEver));
     if (cost > s.shards) return false;
     if (promiseAbstains(s, "shards")) return this.held();
     const level = Math.max(1, s.maxStageEver - 1);
@@ -2622,6 +2659,7 @@ export class GameEngine {
         s.nextCrystalAt = Math.min(s.nextCrystalAt, now + 45_000);
         break;
       case "ember-draught":
+        if (!boonFits(s, "rage", now) || !boonFits(s, "fortune", now)) return false;
         s.shards -= cost;
         this.addBuff("rage", BUFF_DURATION_SECONDS, now);
         this.addBuff("fortune", BUFF_DURATION_SECONDS, now);

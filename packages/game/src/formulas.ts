@@ -8,7 +8,7 @@ import { EQUIPMENT_CAP, FORGE_STEP, depthScale, forgeCost, relicDensity } from "
 import { RECOGNITION_DPS, RECOGNITION_HEROES, bestiaryGoldBonus, recognitionTier } from "./data/lore";
 import { PROMISE_BY_HERO, promiseAtDusk, promiseDepth, promiseDoublings, promiseGrantable, promiseOf } from "./data/promises";
 import { COOLDOWN_FLOOR, GROVE_SEED_MAX, MIRELLE_BARON_DAMAGE, REGALIA_KING_DAMAGE, namedEffect, wearing, wearsRegalia, wornItems } from "./data/relics";
-import { MEMORY_MULT, PLACE_SPOILS, PLACE_TREASURE, awakenCost, placeBonus, placeCount, wornTrait } from "./data/traits";
+import { MEMORY_MULT, PLACE_SPOILS, PLACE_TREASURE, awakenCost, placeBonus, placeCount, rekindleCost, wornTrait } from "./data/traits";
 import { DEEP_FROM, lnStageHp } from "./curve";
 import { fromLog, runBits } from "./scale";
 import type { AffixStat, AltarId, BuffId, Derived, GameState, HeroDef, Item } from "./types";
@@ -701,6 +701,11 @@ export function skillCooldownMultiplier(state: GameState): number {
 /** Shards awakening a relic asks now (the Unfinished Hammer lowers it, as at the forge). */
 export function awakenPrice(state: GameState, item: Item): number {
   return Math.ceil(awakenCost(item, state.maxStageEver) * (1 - namedEffect(state, "forgeDiscount")));
+}
+
+/** Shards Brom asks to rekindle a relic now (the Unfinished Hammer lowers it, as at the forge). */
+export function rekindlePrice(state: GameState, item: Item): number {
+  return Math.ceil(rekindleCost(item) * (1 - namedEffect(state, "forgeDiscount")));
 }
 
 /** Gold, multiplied by the relics worn: a ring that remembers fortune, the relics of the Hearthfields. */

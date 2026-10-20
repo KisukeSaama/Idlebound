@@ -88,7 +88,7 @@ export const wikiArticles = defineMessages<Articles>({
               list: [
                 "Chaque nuit va plus loin que la précédente. Toutes les 50 étapes commence une nouvelle **strate**, aux monstres plus coriaces et à l'apparence transformée. Il y en a 60, regroupées en 12 Âges.",
                 "Vers la quatrième nuit, un compagnon qui commence à se souvenir de toi te demandera ta **parole** pour la nuit : c'est [la Promesse](promise). Tiens-la, et ses dégâts doublent pour toujours.",
-                "Avec les éclats gagnés sur les gardiens, [forge tes reliques](relics#forge) et passe à l'[étal du Comptoir](relics#market).",
+                "Avec les éclats gagnés sur les gardiens, [forge tes reliques](relics#forge) et passe à l'[marché du Comptoir](relics#market).",
                 "Laisse la page ouverte quand tu travailles : ta compagnie avance seule, et même jeu fermé, elle rattrape jusqu'à 8 heures. Voir [Jouer en arrière-plan](idle).",
                 `Très loin, à l'étape ${fr(f.descentStage)}, s'ouvre [la Descente](descent), la seconde renaissance.`
               ]
@@ -106,7 +106,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "when-ascend", title: "Quand faire mon ascension ?", blocks: ["Quand ta progression s'arrête. Faire ton ascension quelques minutes après ta dernière nouvelle étape mène bien plus loin qu'attendre une heure devant un mur. Les essences augmentent avec l'étape la plus lointaine franchie, mais moins vite que les PV des monstres : pousser un peu paie, camper des heures non."] },
         { id: "which-altar", title: "Quels autels acheter ?", blocks: ["Ceux qui suivent ton style. Si tu laisses surtout tourner le jeu, l'**Autel de la patience** est le meilleur. Si tes frappes font l'essentiel de tes dégâts, l'**Autel de la lame**. Entre les deux, **puissance** et **fortune**. Ensuite, les autels plafonnés (temps, trésor, marchandage…) s'ouvrent à la troisième puis à la cinquième nuit. Et garde toujours environ la moitié de tes essences en main. Détails dans [Ascension et autels](ascension#strategy)."] },
         { id: "relic-choice", title: "Quelle relique porter ?", blocks: ["Regarde le chiffre **Compagnie ×N** de chaque relique : c'est ce qu'elle multiplie dans les dégâts de ta compagnie, comparé à l'emplacement vide. Plus il est grand, mieux c'est. Les reliques trouvées dans les strates profondes ont de la **Densité** : chaque strate sous la nuit présente ajoute ×1,03 aux dégâts de la compagnie."] },
-        { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20) et à acheter au marché du Comptoir : coffres, potions, sabliers. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
+        { id: "shards", title: "À quoi servent les éclats ?", blocks: ["À forger tes reliques (jusqu'à +20), à les réveiller et à les raviver chez Brom, et à acheter au marché du Comptoir : coffres, potions, sabliers, et de temps en temps une pièce rare. Tu en gagnes sur les gardiens, les cristaux et en recyclant les reliques dont tu n'as plus besoin. Le **Sablier doré** (une heure d'or tout de suite) est l'achat le plus rentable au début d'une nuit."] },
         { id: "lost", title: "Vais-je perdre ma partie ?", blocks: ["Non. Elle est gardée sur le serveur, même sans compte : ton navigateur la retrouve pendant 30 jours après ta dernière visite. Crée un compte pour la garder pour toujours et sur tous tes appareils. Voir [Compte et partie gardée](account)."] },
         { id: "cheat", title: "Peut-on tricher ?", blocks: ["Le serveur rejoue chaque partie envoyée avec le même moteur que le jeu. Une partie qui n'a pas pu se jouer honnêtement est refusée, et le classement ne montre que des parties vérifiées."] },
         { id: "mistakes", title: "Les erreurs de débutant", blocks: [{ list: ["Dépenser toutes ses essences aux autels.", "Camper des heures devant un mur au lieu de faire son ascension.", "Laisser un compagnon juste sous un palier (niveau 24, 49, 99…).", "Oublier d'acheter les talents : ils doublent ou quadruplent les dégâts.", "Garder des reliques communes au lieu de les recycler en éclats.", "Ignorer les cristaux : une surcharge ×7 ou une frappe ×10 au bon moment fait tomber un boss."] }] }
@@ -402,6 +402,14 @@ export const wikiArticles = defineMessages<Articles>({
           ]
         },
         {
+          id: "rekindle",
+          title: "Raviver",
+          blocks: [
+            "À la forge, Brom **ravive** une relique qui se souvient (épique ou mieux) : tu choisis le trait qu'elle oublie, et elle se souvient d'un autre trait de son emplacement, tiré au hasard parmi ceux qu'elle n'a pas. Une mythique garde son autre trait.",
+            "Coût : 100 éclats pour une épique, 300 pour une légendaire, 1 000 pour une mythique, multipliés comme les prix du marché par la profondeur de la relique (le Marteau inachevé le réduit comme la forge)."
+          ]
+        },
+        {
           id: "satchel",
           title: "La besace de la compagnie",
           blocks: [
@@ -420,8 +428,8 @@ export const wikiArticles = defineMessages<Articles>({
         },
         {
           id: "market",
-          title: "L'étal du Comptoir",
-          blocks: ["Le Comptoir vend contre des éclats (et te dit l'un de ses douze dictons à chaque visite). Les potions durent 10 min et s'empilent sans limite. Un coffre acheté s'ouvre sous tes yeux. Le Jeton du Comptoir retire 10 % à tous les prix.", { slot: "market" }, { tip: "Le Sablier doré paie une heure d'or au rythme actuel : au début d'une nuit, quand ton or rattrape vite les prix, c'est le meilleur achat de l'étal." }]
+          title: "Le marché du Comptoir",
+          blocks: ["Le Comptoir vend contre des éclats ce que la route lui apporte (et te dit l'un de ses douze dictons à chaque visite). Toutes les 6 heures (à 0 h, 6 h, 12 h et 18 h UTC), de nouvelles marchandises remplacent les anciennes, les mêmes pour tout le monde : toujours des coffres de reliques, puis trois places tirées parmi les potions, le parchemin, le sablier, une caisse d'armurier et le grand coffre. Chaque marchandise a sa rareté et sa quantité : ce qui est vendu ne revient pas avant les suivantes.", "Dès ta première ascension, une marchandise sur quatre environ ouvre la **place rare** : une pièce d'ensemble (un lieu et un emplacement choisis, légendaire ou mieux), une relique qui se souvient d'un trait choisi (légendaire ou mieux), ou un coffre d'étoile (une mythique). Une seule, jusqu'aux marchandises suivantes.", "Les prix grandissent avec ta meilleure étape, comme les éclats que la route te donne : ×1 jusqu'à l'étape 446, puis le carré de ta meilleure étape divisé par 100 000 (×10 à l'étape 1000, ×40 à 2000, ×250 à 5000). Les potions, élixirs et parchemins durent 10 min chacun et s'empilent jusqu'à un jour. Un coffre acheté s'ouvre sous tes yeux. Le Jeton du Comptoir retire 10 % à tous les prix.", { slot: "market" }, { tip: "Le Sablier doré paie une heure d'or au rythme actuel : au début d'une nuit, quand ton or rattrape vite les prix, c'est le meilleur achat du marché." }]
         },
         {
           id: "caravan",
@@ -760,7 +768,7 @@ export const wikiArticles = defineMessages<Articles>({
         { id: "when-ascend", title: "When should I ascend?", blocks: ["When your progress stops. Ascending a few minutes after your last new stage goes much further than waiting an hour at a wall. Essences grow with the furthest stage cleared, but more slowly than monster HP: pushing a little pays, camping for hours does not."] },
         { id: "which-altar", title: "Which altars should I buy?", blocks: ["Those that match your style. If you mostly let the game run, the **Altar of Patience** is the best. If your strikes deal most of your damage, the **Altar of the Blade**. In between, **Might** and **Fortune**. Then the capped altars (time, treasure, bargains…) open on the third and fifth nights. And always keep about half of your essences in hand. Details in [Ascension and altars](ascension#strategy)."] },
         { id: "relic-choice", title: "Which relic should I wear?", blocks: ["Look at each relic's **Company ×N** figure: what it multiplies in your company's damage, against the slot left empty. The bigger, the better. Relics found in deep strata have **Density**: each stratum below the present night adds ×1.03 to the company's damage."] },
-        { id: "shards", title: "What are shards for?", blocks: ["Forging your relics (up to +20) and buying at the Stallkeeper's market: chests, potions, hourglasses. You earn them from guardians, crystals and by salvaging relics you no longer need. The **Golden Hourglass** (an hour of gold right now) is the best buy at the start of a night."] },
+        { id: "shards", title: "What are shards for?", blocks: ["Forging your relics (up to +20), awakening and rekindling them at Brom's, and buying at the Stallkeeper's market: chests, potions, hourglasses, and now and then a rare piece. You earn them from guardians, crystals and by salvaging relics you no longer need. The **Golden Hourglass** (an hour of gold right now) is the best buy at the start of a night."] },
         { id: "lost", title: "Will I lose my game?", blocks: ["No. It is kept on the server, even without an account: your browser finds it again for 30 days after your last visit. Create an account to keep it for good and on all your devices. See [Account and kept game](account)."] },
         { id: "cheat", title: "Can you cheat?", blocks: ["The server plays every game it receives again with the same engine as the game. A game that could not have been played honestly is refused, and the leaderboard only shows verified games."] },
         { id: "mistakes", title: "Beginner mistakes", blocks: [{ list: ["Spending every essence on altars.", "Camping for hours at a wall instead of ascending.", "Leaving a companion just below a breakpoint (level 24, 49, 99…).", "Forgetting to buy talents: they double or quadruple damage.", "Keeping common relics instead of salvaging them into shards.", "Ignoring crystals: an overcharge ×7 or a strike ×10 at the right moment brings a boss down."] }] }
@@ -1048,6 +1056,14 @@ export const wikiArticles = defineMessages<Articles>({
           ]
         },
         {
+          id: "rekindle",
+          title: "Rekindling",
+          blocks: [
+            "At the forge, Brom **rekindles** a relic that remembers (epic or better): you choose the trait it forgets, and it remembers another trait of its slot, drawn at random among those it does not hold. A mythic keeps its other trait.",
+            "Cost: 100 shards for an epic, 300 for a legendary, 1,000 for a mythic, multiplied like the market's prices by the relic's depth (the Unfinished Hammer lowers it as at the forge)."
+          ]
+        },
+        {
           id: "satchel",
           title: "The company's satchel",
           blocks: [
@@ -1064,7 +1080,7 @@ export const wikiArticles = defineMessages<Articles>({
             `**Salvaging** gives back the rarity's shards (1, 3, 8, 25, 80) plus 50% per forge level. Relics can be locked, salvaged in bulk up to a rarity, and the pack holds ${f.inventory} (full, it salvages new ones on its own).`
           ]
         },
-        { id: "market", title: "The Stallkeeper's market", blocks: ["The Stallkeeper sells for shards (and tells you one of their twelve sayings each visit). Potions last 10 min and stack without limit. A chest bought opens before your eyes. The Stallkeeper's Token takes 10% off every price.", { slot: "market" }, { tip: "The Golden Hourglass pays an hour of gold at your current rate: early in a night, when your gold quickly catches up with prices, it is the best buy at the stall." }] },
+        { id: "market", title: "The Stallkeeper's market", blocks: ["The Stallkeeper sells for shards what the road brings them (and tells you one of their twelve sayings each visit). Every 6 hours (at 0:00, 6:00, 12:00 and 18:00 UTC), new wares take the place of the old ones, the same for everyone: always relic chests, then three places drawn among the potions, the scroll, the hourglass, an armorer's crate and the great chest. Each ware has its rarity and its quantity: what is sold does not come back before the next ones.", "From your first ascension, about one set of wares in four opens the **rare place**: a piece of a set (a chosen place and slot, legendary or better), a relic that remembers a chosen trait (legendary or better), or a star coffer (a mythic). Only one, until the next wares.", "Prices grow with your best stage, as the shards the road gives you do: ×1 up to stage 446, then your best stage squared over 100,000 (×10 at stage 1000, ×40 at 2000, ×250 at 5000). Potions, elixirs and scrolls last 10 min each and stack up to a day. A chest bought opens before your eyes. The Stallkeeper's Token takes 10% off every price.", { slot: "market" }, { tip: "The Golden Hourglass pays an hour of gold at your current rate: early in a night, when your gold quickly catches up with prices, it is the best buy at the market." }] },
         { id: "caravan", title: "The Caravan", blocks: ["From your 3rd ascension, the Stallkeeper's Caravan brings one ware a week, the same for everyone (it changes every Monday). Each is bought once a week; the Token, once a game.", { slot: "caravan" }] },
         { id: "named", title: `The ${f.namedRelics} named relics`, blocks: ["Legendary or mythic, each has a fixed source, a legend and a unique effect. They drop only once per game, arrive locked and find room even in a full pack.", { slot: "named" }] },
         {

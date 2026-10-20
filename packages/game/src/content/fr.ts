@@ -151,10 +151,14 @@ export const fr: GameText = {
   market: {
     chest: { name: "Coffre de relique", description: "Une relique au hasard, au niveau de ta meilleure étape." },
     "great-chest": { name: "Grand coffre", description: "Une relique épique ou mieux, avec plus de chances de légendaire, au niveau de ta meilleure étape." },
-    rage: { name: "Potion de rage", description: "Tes compagnons infligent le double de dégâts pendant 10 min. Chaque potion ajoute 10 min." },
-    fortune: { name: "Élixir de fortune", description: "Tout l'or gagné est doublé pendant 10 min. Chaque élixir ajoute 10 min." },
-    autoclick: { name: "Parchemin de frappe", description: "Ta lame frappe seule 5 fois par seconde pendant 10 min." },
-    hourglass: { name: "Sablier doré", description: "Gagne instantanément 1 h d'or au rythme actuel." }
+    rage: { name: "Potion de rage", description: "Tes compagnons infligent le double de dégâts pendant 10 min. Chaque potion ajoute 10 min, jusqu'à un jour." },
+    fortune: { name: "Élixir de fortune", description: "Tout l'or gagné est doublé pendant 10 min. Chaque élixir ajoute 10 min, jusqu'à un jour." },
+    autoclick: { name: "Parchemin de frappe", description: "Ta lame frappe seule 5 fois par seconde pendant 10 min. Chaque parchemin ajoute 10 min, jusqu'à un jour." },
+    hourglass: { name: "Sablier doré", description: "Gagne instantanément 1 h d'or au rythme actuel." },
+    crate: { name: "Caisse d'armurier", description: "Une relique de l'emplacement indiqué, rare ou mieux, au niveau de ta meilleure étape." },
+    "set-piece": { name: "Pièce d'ensemble", description: "Une relique du lieu et de l'emplacement indiqués, légendaire ou mieux, prise au plus profond de ce lieu que tu aies atteint. De quoi compléter un ensemble." },
+    "trait-piece": { name: "Relique qui se souvient", description: "Une relique de l'emplacement indiqué, légendaire ou mieux, qui se souvient du trait indiqué, au niveau de ta meilleure étape." },
+    "star-coffer": { name: "Coffre d'étoile", description: "Une relique mythique, au niveau de ta meilleure étape." }
   },
   achievementNames: {
     clicks: ["L'acier en main", "Le poignet en compote", "Dix mille entailles", "Brom l'affûte encore", "Une lame que la nuit n'a pas forgée"],

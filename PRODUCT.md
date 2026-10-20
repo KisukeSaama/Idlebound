@@ -340,10 +340,22 @@ more than a day under the record it left, and only paid after almost a week.
   Descent weaves 8 threads, announced once by a toast. From save version 12 to 18 it opened
   at 2000 (32 threads); before version 12 at stage 1000 with Eldra's Recognition 5, and a
   walker she showed it to that way keeps it.
-- **A Descent** resets everything an ascension resets, plus the altars and nine essences in
-  ten: it leaves a tenth of the essences held (`DESCENT_KEEP`, rounded down). It keeps
-  relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime statistics and the
-  best stage ever. The server refuses a Descent that kept more than its tenth.
+- **A Descent** resets everything an ascension resets, plus the altars and 99 essences in
+  100: it leaves a hundredth of the essences held (`DESCENT_KEEP`, rounded down; a tenth in
+  save version 19, when a tenth bought back every altar but about five levels and the Descent
+  was no longer felt; a hundredth loses about ten). It keeps relics, shards, deeds, the
+  Chronicle, the Bestiary, Recognition, lifetime statistics and the best stage ever. The
+  server refuses a Descent that kept more than its hundredth.
+- **The hundredth, measured** (save version 20, `scripts/descent.ts play 1500 14 9`: the
+  active bot from each seed's state at stage 1500, the same walker never descending beside it,
+  median of 9 seeds):
+
+  | | A tenth (version 19) | A thirtieth | A hundredth (now) |
+  |---|---|---|---|
+  | Record regained, Descents 1 to 4 | 2.8 / 3.0 / 3.9 / 5.7 h | 4.4 / 4.9 / 5.5 / 7.8 h | 5.0 / 5.6 / 8.8 / 10.8 h |
+  | Record regained, Descents 5 to 8 | 4.9 to 13.2 h | 7.8 to 16.3 h | 10.4 to 21.6 h |
+  | Ahead of the walker who never descends | day 2 (×1.13) | day 2 (×1.04) | day 3 (×1.13) |
+  | Depth gained in 14 days, against never descending (+1750) | ×1.68 | ×1.68 | ×1.54 |
 - **What it does, measured** (`scripts/descent.ts`, the active bot from each seed's own
   state, the same walker never descending beside it, median of 5 seeds; the Warp of Plenty
   at its version 19 price):
@@ -529,16 +541,50 @@ beaten, it lets the walker through, and the night draws itself again from its fi
   slot, or by rarity (rarest first, then the strongest: density, then affixes against their
   nominal values, forge included). The equipment window shows the
   shard balance beside its title on both tabs, once shards are revealed.
-- **Shard market** (the Stallkeeper's stall; one of their twelve sayings at each visit):
-  relic chest (30), great chest (160, epic or better), rage potion (20, DPS ×2), fortune
-  elixir (20, gold ×2), striking scroll (25, 5 clicks/s), golden hourglass (60, 1 h of gold
-  now). Timed buffs last 10 min and stack without limit (anti-cheat: the time left on them
-  never exceeds what every shard ever earned could buy). Chests are refused when the inventory
-  is full, the hourglass when it would pay nothing. A chest bought there opens before the
-  walker's eyes: it knocks once per rarity climbed, bursts open, and a reel of relics (drawn at the chest's
-  own odds) turns and slows down onto the relic it held. The Stallkeeper's Token takes 10% off
-  every price. From the third ascension, the Caravan (see Events) brings one more ware a
-  week.
+- **Shard market** (the Stallkeeper's market, `data/market.ts`, save version 20; one of their
+  twelve sayings at each visit): the Stallkeeper sells what the road brings them, so the wares
+  change every 6 hours, at 0:00, 6:00, 12:00 and 18:00 UTC, the same for every walker
+  (`stallAt`, drawn with the engine's generator from the window's number alone, so the server
+  lays out the same). A countdown shows when. Each set of wares holds:
+  - the **relic chest** (common, 3 in stock, 30 shards: a random relic at the best stage);
+  - three places drawn without repeating a ware, by weight: the **rage potion** (common, 3,
+    20: companions ×2 damage), the **fortune elixir** (common, 3, 20: gold ×2), the **striking
+    scroll** (common, 3, 25: 5 strikes a second), the **golden hourglass** (rare, 2, 60: 1 h of
+    gold now), the **armorer's crate** (rare, 2, 50: a relic of the slot shown, rare or better),
+    the **great chest** (epic, 1, 160: epic or better, more legendaries). Weights 3, 3, 3, 2, 2,
+    1: a boon stands in about 62% of the sets, the hourglass 46%, a crate 44%, the great chest
+    25%;
+  - from the first ascension, in about one set in four, the **rare place** (one in stock, a
+    lantern light breathing behind it, a bell when the window opens on it): a **piece of a
+    set** (600: a relic of a place and slot shown, legendary or better, at the deepest stage of
+    that place within the best stage), a **remembering relic** (600: a relic of a slot shown,
+    legendary or better, that remembers the trait shown), or a **star coffer** (2400: a
+    mythic). Weights 2, 2, 1.
+  What is bought is gone until the next set (`state.stall`: the window bought from and, per
+  place, how many). Prices are the base above times `shardScale(best stage)`: ×1 up to stage
+  446, then the best stage squared over 100,000 (×10 at 1000, ×40 at 2000, ×250 at 5000),
+  because shards come about as the square of the depth (the active bot: 40 an hour at stage
+  50, 560 at 1000, 2000 at 1800, 5000 at 2900, 18,000 at 4400): a chest asks about the same
+  play at any depth. Timed boons last 10 min each and stack up to a day past the last tick
+  (`MARKET_BUFF_MAX_SECONDS`; a purchase that would pass it is refused). Before save version
+  20 they stacked without limit: the migration paid back in shards, at the price of the
+  draught (less the Token's 10% when the walker ever held it), every whole ten minutes held
+  past a day, and the walker is told once (`boonRefund`). Relic wares are refused when the
+  pack is full, the hourglass when it would pay nothing. A relic ware bought there opens
+  before the walker's eyes (a chest or a crate as a relic chest, the great chest and the
+  rare place as a great chest): it knocks once per rarity climbed, bursts open, and a reel of
+  relics (drawn at the chest's own odds) turns and slows down onto the relic it held. The
+  Stallkeeper's Token takes 10% off every price. The market's badge lights for new wares the
+  shards reach, the rare place, and the Caravan's first visit of its week. From the third
+  ascension, the Caravan (see Events) brings one more ware a week, with a countdown to its
+  leaving; its prices are multiplied by depth the same way (since save version 20).
+- **Rekindling** (`rekindle`, at the forge, on a worn relic, save version 20): a relic that
+  remembers (epic or better, never a named relic) lets the trait the walker chooses go and remembers another of
+  its slot, drawn from the fates among those it does not hold (a mythic keeps its other
+  trait). Shards: 100 epic, 300 legendary, 1000 mythic, times `shardScale` of the relic's
+  depth (the Unfinished Hammer lowers it as at the forge); refused under the words that keep
+  shards or the weapon. The relic counts its rekindlings (`rekindled`): the Ledger lets its
+  traits change only with that count, and bounds the shards they cost with the forge's.
 
 ### The Chronicle
 
@@ -751,7 +797,7 @@ opens again, within the same cap as a hidden tab.
   time a background tab or a closed game caught up), the player's first input brings a gold toast
   and companion damage ×3 for a sixth of the absence, counted from that moment and capped
   at an hour (a night gives the full hour). It never applies during the absence, catch-ups
-  ignore it, and like every boon but the stall's it cannot last more than an hour past the last tick
+  ignore it, and like every boon but the stall's (a day) it cannot last more than an hour past the last tick
   (anti-cheat, where the damage bound counts it).
 - **The company's account**: with the Reunion, the player sees what changed since their
   last input: time away, road from the furthest stage then to the furthest stage now, gold
@@ -1188,7 +1234,10 @@ write it (`pace`, see `verifyPace`), updated with every accepted save:
   between two saves is capped, so powers used as they come back over a long gap between
   saves all count); reopening the game to make them ready again is refused (`powers`), and so
   are Ritual stacks beyond twice per Ritual cooldown since the night began;
-- the Caravan's week: never one before the last save nor one to come (`caravan`).
+- the Caravan's week: never one before the last save nor one to come (`caravan`);
+- the stall bought from (save version 20): never six hours before the last save nor to come,
+  each place within its stock, the rare place only past the first dusk; between two saves
+  an older stall is never bought from again and what was bought stays bought (`stall`).
 A game saved before the ledger existed starts it from its own record.
 Every essence comes from an ascension or a crystal: the ledger of all ascensions holds at
 least the history's sum and at most what the deepest stage pays per ascension (the Altar of
@@ -1204,8 +1253,10 @@ cheapest): relics found never pass those sources (`item`). Legendaries and mythi
 within the relics found and within a generous share of their sources (a tenth of guardians
 and Seams plus one per 250 shards spent for legendaries, a fiftieth plus one per 2000 for
 mythics, plus the named ones and a lucky few). A relic the server saw never changes except
-its forge going up and its depth (awakened, a whole loop of 50 at a time, never past the best
-stage, its shards counted with the forge's), and a relic held that was never found is
+its forge going up, its depth (awakened, a whole loop of 50 at a time, never past the best
+stage, its shards counted with the forge's) and its traits when its count of rekindlings
+goes up (as many as before, each rekindling counted with the forge's at the price of the
+depth it dropped at), and a relic held that was never found is
 refused; relics in the satchel count with the others. A relic's traits must be of its slot,
 as many as its rarity holds; its memory a companion once hired, on a legendary or a mythic
 only; a satchel holds 9 at most. Guardians' shards are bounded under the strongest Skyglass

@@ -2,7 +2,6 @@ import { z } from "zod";
 import { CHRONICLE_SOURCES } from "./chronicle";
 import { ALTARS } from "./data/altars";
 import { WEAVES } from "./data/descent";
-import { MARKET_OFFERS } from "./data/market";
 import { SKILLS } from "./data/skills";
 import { LOCALES } from "./i18n";
 import { STEP_MS } from "./engine";
@@ -48,7 +47,8 @@ const COMMANDS: Record<string, z.ZodType> = {
   awaken: z.object({ type: z.literal("awaken"), uid: id }),
   openSatchel: z.object({ type: z.literal("openSatchel") }),
   market: z.object({ type: z.literal("market") }),
-  offer: z.object({ type: z.literal("offer"), id: z.enum(MARKET_OFFERS.map((offer) => offer.id) as [string, ...string[]]) }),
+  stall: z.object({ type: z.literal("stall"), place: z.number().int().min(0).max(7) }),
+  rekindle: z.object({ type: z.literal("rekindle"), uid: id, trait: z.string().min(1).max(20) }),
   caravan: z.object({ type: z.literal("caravan") }),
   remember: z.object({ type: z.literal("remember") }),
   tutorial: z.object({ type: z.literal("tutorial"), step: z.string().min(1).max(40) }),

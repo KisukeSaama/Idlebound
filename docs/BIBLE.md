@@ -371,12 +371,16 @@ road only as far as the heart has already been, and never the whole way.*
 | Salvage for shards | Unmaking an object gives back the sky-glass that held it together. |
 | Inventory 48, full salvages | The walker's pack. Brom's rule: "If you can't carry it, it was never yours." |
 | Shards | Pieces of the Sky-Glass. |
-| **Shard market** | **The Stallkeeper's stall** (section 10.4). Everything sold there is paid in sky. |
+| **Shard market** | **The Stallkeeper's market** (section 10.4). Everything sold there is paid in sky. |
+| The wares change every six hours, each in a limited quantity (shipped, save version 20) | The Stallkeeper sells what the road brings them: whatever the nights let fall along the way since the last cart. What is sold is gone until the road brings more. |
+| The rare place (shipped, save version 20) | Now and then the road brings something it should not have kept: a piece of a set, a relic that still remembers one deed clearly, a myth. The Stallkeeper puts it apart, under their lantern, and sells only one. |
+| Prices grow with the best stage (shipped, save version 20) | The deeper the night a walker has seen, the more sky they carry, and the Stallkeeper knows it: "Everything is for sale. The price is what you can carry." |
 | Relic chest / great chest | Crates the Stallkeeper found "along the road, somewhere, some night". |
 | Rage potion, fortune elixir | Mirelle's brews, sold on consignment. |
 | Striking scroll | A page from Lysandre's grimoires; the sword reads it and strikes on its own. |
 | Golden hourglass (1 h of gold now) | Bottled time from Eldra's loom: an hour lived elsewhere, poured into this one. |
 | Timed buffs stack to 1 h | No bottle holds more than an hour of night. |
+| The market's brews stack up to a day (shipped, save version 20; before, without end) | A day is as much of one night's brew as a walker can carry: past it, Mirelle's potions turn to water. |
 
 ### 6.6 Crystals
 
@@ -1020,6 +1024,8 @@ talent names are kept; the dossier reads them as history.
   wrapped in a patched cloak, face hidden, behind a stall that appears in every night.
   Uses they/them. Buys sky-shards to mend the Sky-Glass; sells chests, brews and bottled
   time. Dry, polite, never surprised. "Everything is for sale. Nothing is for keeps."
+  Sells only what the road brings them, so the wares change every six hours and run out
+  (shipped, save version 20); keeps a rare piece apart under their lantern now and then.
   Speaks through the market window (12 **Stallkeeper sayings**, rotated on each visit).
 - **Pip** (golden rat): never speaks. Appears in fragments as a presence: teeth marks, a
   gold hair, a debt. Pip is the joke of the game and its oldest mystery, both at once.
@@ -1051,6 +1057,7 @@ comes back. A blur (common) or a clear outline (rare) brings back only its weigh
 | **Memory** (legendary and mythic): a companion who once walked in the company; their damage ×1.5 (legendary) or ×2 (mythic) while worn | A story has a teller. The companion does not remember the walker yet (Recognition is theirs to give), but their hands remember the weight of the object. |
 | **Places** (sets): the biome of a relic's first stage; two and four of one place worn together | Relics of the Wychwood remember the same trees. Worn together, they remember each other: the Plains pay, the Wychwood breathes slower (Patience), the Deepvaults give up their shards and their relics, the Mire holds the guardians longer, the Crown weighs on the King. |
 | **Awakening** (Brom, at the forge): a relic remembered again at the walker's deepest night, in the same place, for shards per stratum | Brom does not reforge the object: he holds it in the fire until it remembers the night as it is now. It keeps everything it was and takes the weight of that depth. "A good blade is never too old. It is only asleep." |
+| **Rekindling** (Brom, at the forge, shipped, save version 20): a relic lets one trait go and remembers another of its slot, for shards by its depth | Brom heats the relic past what it can hold: the memory the walker names burns away, and the metal, cooling, remembers something else it once did. The deeper the relic, the hotter the fire must be. "It forgets one thing. It always remembers something." |
 | **The company's satchel**: relics the guardians left while the walker was away, kept to be opened at the Reunion | The inventory is the company's to tell (6.7): what fell on the road while the walker was gone, they picked up and kept. They hand it over by the fire, the humblest first, the best last, as one tells a good story. |
 | **The road's debt**: after 12 relics of the road without an epic or better, the next one is | The night does not let a walker go too long without a story. |
 | **The first fall of the King** leaves an epic relic or better | The first time Aldemar falls, something of his court falls with him. |
@@ -1221,11 +1228,14 @@ deepest act.
 - **In the world:** Eldra unweaves the whole Sanctum and weaves the Long Night again, one
   thread deeper. The walker loses the stones (altars) and most of the memories (essences) and
   keeps what cannot be unwoven: relics, shards, deeds, the Chronicle, Recognition.
-- **A tenth of the memories stays** (shipped, save version 19): Eldra unweaves the stones, not
-  every memory; a tenth of the essences held comes down with the walker. In the world: the
-  oldest rule of the Bound, "Never spend all of yourself", holds even at the Loom. In play: the
-  walker stands again on the record they left within hours, not a day and a half.
-- **Resets:** everything an ascension resets, plus the altar levels and nine essences in ten.
+- **A hundredth of the memories stays** (shipped, save version 20; a tenth in version 19):
+  Eldra unweaves the stones, not every memory; a hundredth of the essences held comes down
+  with the walker. In the world: the oldest rule of the Bound, "Never spend all of yourself",
+  holds even at the Loom, but the Loom takes nearly everything: a Descent is a sacrifice. In
+  play: the walker stands again on the record they left within hours, not a day and a half,
+  and loses about ten levels of every altar (a tenth bought back all but five, and the
+  Descent was no longer felt).
+- **Resets:** everything an ascension resets, plus the altar levels and 99 essences in 100.
 - **Keeps:** relics, shards, achievements, fragments, bestiary, Recognition, lifetime
   statistics, best stage ever.
 - **Gives:** **Threads** (FR: *Fils*). Shipped: the thread is as long as the night has gone

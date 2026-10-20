@@ -524,10 +524,10 @@ describe("the Promise: the night it shapes", () => {
     });
     // Garrick: not a shard spent, at the stall or the forge.
     const shards = (engine: GameEngine) => {
-      engine.state.shards = 500;
-      engine.state.lifetime.shardsEarned = 500;
+      engine.state.shards = 1_000_000;
+      engine.state.lifetime.shardsEarned = 1_000_000;
     };
-    refuses("garrick", (engine) => engine.buyOffer("rage", NOW), shards);
+    refuses("garrick", (engine) => engine.buyStall(0, NOW), shards);
     refuses("garrick", (engine) => engine.forge("weapon", NOW), shards);
     // The Nameless: nothing offered to the stones.
     refuses("nameless", (engine) => engine.buyAltar("might", NOW));
