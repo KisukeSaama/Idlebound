@@ -16,6 +16,8 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+## v2.2.0
+
 ### New
 
 - The market: the Stallkeeper now sells what the road brings. New wares come every 6 hours
