@@ -207,6 +207,35 @@ export function awakenCost(item: Item, maxStageEver: number): number {
   return AWAKEN_SHARDS_PER_STRATUM[item.rarity] * awakenStrata(item, maxStageEver);
 }
 
+/**
+ * What depth does to the prices of the stall and of Brom's rekindling: the best stage squared,
+ * over 100,000 (×1 to stage 446, ×10 at 1000, ×40 at 2000, ×250 at 5000). Shards come about
+ * as the square of the depth (the active bot, 2.2: 40 an hour at stage 50, 560 at 1000, 2000
+ * at 1800, 5000 at 2900, 18,000 at 4400): so priced, a chest asks about the same play at
+ * any depth. The same price everywhere meant nothing deep (675,000 shards bought every
+ * boon for good).
+ */
+export function shardScale(stage: number): number {
+  return Math.max(1, Math.floor((stage * stage) / 100_000));
+}
+
+/**
+ * Rekindling (Brom, at the forge, from save version 20): a relic that remembers lets one trait
+ * go and remembers another of its slot, drawn among those it does not hold. Shards before
+ * depth, by rarity: the price is this times `shardScale` of the relic's own depth.
+ */
+export const REKINDLE_SHARDS: Record<Rarity, number> = { common: 0, rare: 0, epic: 100, legendary: 300, mythic: 1000 };
+
+/** Shards rekindling a relic asks (before discounts). */
+export function rekindleCost(item: Item): number {
+  return REKINDLE_SHARDS[item.rarity] * shardScale(relicDepth(item));
+}
+
+/** Shards the rekindlings a relic carries cost at the very least (before discounts): each at the depth it dropped at. */
+export function rekindledSpend(item: Item): number {
+  return REKINDLE_SHARDS[item.rarity] * shardScale(item.level) * (item.rekindled ?? 0);
+}
+
 /** Shards every awakening a relic carries cost at the very least (before discounts). */
 export function awakenedSpend(item: Item): number {
   return AWAKEN_SHARDS_PER_STRATUM[item.rarity] * Math.max(0, eraForStage(relicDepth(item)) - eraForStage(item.level));

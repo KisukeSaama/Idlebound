@@ -13,16 +13,18 @@ export const night = defineMessages({
     reveal: {
       map: "La carte est ouverte : reviens sur une étape déjà franchie pour gagner de l'or sans risque.",
       gear: "Ta première relique : elle est déjà portée et renforce ta compagnie. Ouvre l'équipement pour voir ce qu'elle donne.",
-      market: "Tu as assez d'éclats pour le marché : coffres de reliques, potions et sablier s'y achètent en éclats.",
+      market: "Tu as assez d'éclats pour le marché : coffres de reliques, potions et sablier s'y achètent en éclats. Les marchandises changent toutes les 6 heures, chacune en quantité limitée.",
       ascension: "Le Sanctuaire du Crépuscule s'ouvre : l'ascension te fait recommencer la route en échange d'essences, que les autels changent en bonus permanents.",
       hall: "Le Grand Livre t'ouvre une page : hauts faits (ils augmentent tes dégâts), Bestiaire et Chronique.",
-      loom: "La Descente s'ouvre au Sanctuaire, au Métier d'Eldra : elle efface tes autels et neuf dixièmes de tes essences, et te donne des fils qui achètent des Tissages que rien n'efface.",
+      loom: "La Descente s'ouvre au Sanctuaire, au Métier d'Eldra : elle efface tes autels et 99 % de tes essences, et te donne des fils qui achètent des Tissages que rien n'efface.",
       caravan: "La Roulotte du Comptoir est au marché : une marchandise rare à payer en éclats, qui change chaque semaine.",
       promise: "Au Sanctuaire, un compagnon te demande ta parole : une règle à tenir toute la nuit. Tenue, elle double ses dégâts pour toujours.",
       altars2: "Trois nouveaux autels au Sanctuaire : le Temps, le Marchandage et le Trésor.",
       altars3: "Les six derniers autels du Sanctuaire s'éveillent : treize en tout, à présent.",
       traits: "Tes reliques se souviennent : une épique ou mieux garde un trait, un effet qui change ta route ; une légendaire ou une mythique, le compagnon qui la portait. Les reliques d'un même lieu portées ensemble éveillent une parure.",
-      awaken: "Brom peut réveiller une relique au plus profond de ta route, dans son lieu : elle garde ce dont elle se souvient, et sa Densité (le multiplicateur de dégâts de sa strate) et ses bonus grandissent. Contre des éclats, dans l'équipement."
+      awaken: "Brom peut réveiller une relique au plus profond de ta route, dans son lieu : elle garde ce dont elle se souvient, et sa Densité (le multiplicateur de dégâts de sa strate) et ses bonus grandissent. Contre des éclats, dans l'équipement.",
+      rarePlace: "Le Comptoir garde désormais une place rare au marché : de temps en temps, une pièce exceptionnelle, une seule, jusqu'aux prochaines marchandises.",
+      rekindle: "Brom peut raviver une relique qui se souvient : elle oublie le trait que tu choisis et se souvient d'un autre de son emplacement, au hasard. Contre des éclats, dans l'équipement."
     },
     /** How a timed event ends, won or not. */
     results: {
@@ -38,7 +40,7 @@ export const night = defineMessages({
     },
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds} s`,
     descendedTitle: "La Descente",
-    descendedText: (threads: string) => `+${threads} fils à dépenser au Sanctuaire, dans la Descente. Tes autels sont effacés, tu gardes un dixième de tes essences, la route reprend à l'étape 1.`,
+    descendedText: (threads: string) => `+${threads} fils à dépenser au Sanctuaire, dans la Descente. Tes autels sont effacés, tu gardes un centième de tes essences, la route reprend à l'étape 1.`,
     cutscene: {
       skip: "Passer",
       next: "Continuer",
@@ -88,16 +90,18 @@ export const night = defineMessages({
     reveal: {
       map: "The map is open: go back to a stage you already cleared to earn gold safely.",
       gear: "Your first relic: it is already worn and strengthens your company. Open the equipment to see what it gives.",
-      market: "You have enough shards for the market: relic chests, potions and the hourglass are bought there with shards.",
+      market: "You have enough shards for the market: relic chests, potions and the hourglass are bought there with shards. The wares change every 6 hours, each in a limited quantity.",
       ascension: "The Sanctum of Dusk opens: ascending starts the road over for essences, which the altars turn into permanent bonuses.",
       hall: "The Ledger opens a page for you: deeds (they raise your damage), Bestiary and Chronicle.",
-      loom: "The Descent opens in the Sanctum, at Eldra's Loom: it wipes your altars and nine tenths of your essences, and gives you threads that buy Weaves nothing can take away.",
+      loom: "The Descent opens in the Sanctum, at Eldra's Loom: it wipes your altars and 99% of your essences, and gives you threads that buy Weaves nothing can take away.",
       caravan: "The Stallkeeper's Caravan is at the market: one rare ware, paid in shards, that changes every week.",
       promise: "In the Sanctum, a companion asks for your word: one rule to keep all night. Kept, it doubles their damage for good.",
       altars2: "Three new altars in the Sanctum: Time, Bargain and Treasure.",
       altars3: "The last six altars of the Sanctum wake: thirteen in all, now.",
       traits: "Your relics remember: an epic or better keeps a trait, an effect that changes your road; a legendary or a mythic, the companion who carried it. Relics of one place worn together wake a set.",
-      awaken: "Brom can awaken a relic as deep as your road goes, in its own place: it keeps what it remembers, and its Density (its stratum's damage multiplier) and bonuses grow. For shards, in your equipment."
+      awaken: "Brom can awaken a relic as deep as your road goes, in its own place: it keeps what it remembers, and its Density (its stratum's damage multiplier) and bonuses grow. For shards, in your equipment.",
+      rarePlace: "The Stallkeeper now keeps a rare place at the market: now and then an exceptional piece, only one, until the next wares.",
+      rekindle: "Brom can rekindle a relic that remembers: it forgets the trait you choose and remembers another of its slot, at random. For shards, in your equipment."
     },
     results: {
       seam: { won: "Seam closed: its gold, a fragment, sometimes a shard or a relic.", escaped: "The Seam closes without you. You lose nothing." },
@@ -112,7 +116,7 @@ export const night = defineMessages({
     },
     eventTimer: (name: string, seconds: string) => `${name} · ${seconds}s`,
     descendedTitle: "The Descent",
-    descendedText: (threads: string) => `+${threads} threads to spend in the Sanctum, under Descent. Your altars are wiped, you keep a tenth of your essences, the road starts again at stage 1.`,
+    descendedText: (threads: string) => `+${threads} threads to spend in the Sanctum, under Descent. Your altars are wiped, you keep a hundredth of your essences, the road starts again at stage 1.`,
     cutscene: {
       skip: "Skip",
       next: "Continue",

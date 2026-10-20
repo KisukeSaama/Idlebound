@@ -7,6 +7,7 @@ import {
   PLACE_BONUS,
   awakenDepth,
   awakenPrice,
+  rekindlePrice,
   placeCount,
   relicDepth,
   relicPlace,
@@ -139,7 +140,14 @@ export function RelicIcon({ item }: { item: Item }) {
   );
 }
 
-export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?: Item; children?: React.ReactNode }) {
+/** Brom's rekindling, offered on a worn relic's traits: its price, and whether it can be paid now. */
+interface Rekindle {
+  price: number;
+  disabled: boolean;
+  act: (trait: string) => void;
+}
+
+export function ItemCard({ item, compareTo, rekindle, children }: { item: Item; compareTo?: Item; rekindle?: Rekindle; children?: React.ReactNode }) {
   const { t, g, locale } = useI18n();
   const { state } = useGame();
   const fmt = useFormat();
@@ -189,6 +197,11 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
             return trait ? (
               <li key={id} className="item-trait" title={t.windows.gear.traitTitle}>
                 <strong>{trait.name}</strong> {trait.effect(traitValue(id as TraitId, item.rarity))}
+                {rekindle ? (
+                  <button type="button" className="btn btn-violet btn-sm trait-rekindle" disabled={rekindle.disabled} title={t.windows.gear.rekindleTitle(trait.name)} onClick={() => rekindle.act(id)}>
+                    {t.windows.gear.rekindle} <ShardIcon size={12} /> {fmt(rekindle.price)}
+                  </button>
+                ) : null}
               </li>
             ) : null;
           })}
@@ -210,6 +223,7 @@ export function ItemCard({ item, compareTo, children }: { item: Item; compareTo?
 
 function Equipped() {
   const { state, store } = useGame();
+  const { shown } = useReveals();
   const { t, g, locale } = useI18n();
   const text = t.windows.gear;
   const fmt = useFormat();
@@ -239,8 +253,12 @@ function Equipped() {
           const cost = forgePrice(state, item);
           const depth = awakenDepth(item, state.maxStageEver);
           const awakenCost = awakenPrice(state, item);
+          const rekindleCost = rekindlePrice(state, item);
+          const rekindle = shown.rekindle && !item.named && (item.traits?.length ?? 0) > 0
+            ? { price: rekindleCost, disabled: state.shards < rekindleCost || frugal || (anvil && slot === "weapon"), act: (trait: string) => store.act({ type: "rekindle", uid: item.uid, trait }) }
+            : undefined;
           return (
-            <ItemCard key={slot} item={item}>
+            <ItemCard key={slot} item={item} rekindle={rekindle}>
               {depth > relicDepth(item) ? (
                 <button
                   type="button"

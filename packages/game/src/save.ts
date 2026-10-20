@@ -43,7 +43,8 @@ const itemSchema = z.object({
   named: z.string().max(40).optional(),
   traits: z.array(z.string().max(20)).max(2).optional(),
   memory: z.string().max(40).optional(),
-  depth: z.number().int().min(1).max(MAX_STAGE).optional()
+  depth: z.number().int().min(1).max(MAX_STAGE).optional(),
+  rekindled: z.number().int().min(0).max(1_000_000).optional()
 });
 
 const skillState = z.object({ activeUntil: finite, readyAt: finite });
@@ -189,6 +190,8 @@ export const gameStateSchema = z.object({
   legacyThreads: count.optional(),
   legacyHarvest: z.number().int().min(0).max(1_000).optional(),
   legacyPlenty: z.number().int().min(0).max(WEAVE_LEVEL_MAX).optional(),
+  boonRefund: large.optional(),
+  stall: z.object({ window: z.number().int().min(0).max(2 ** 32), bought: z.array(z.number().int().min(0).max(10)).max(8) }).optional(),
   caravanWeek: z.string().max(10),
   fates: z.object(Object.fromEntries(STREAMS.map((stream) => [stream, z.number().int().min(0).max(2 ** 40)])) as Record<Stream, z.ZodNumber>).strict(),
   zone: z.number().int().min(-14 * 60).max(14 * 60).optional()

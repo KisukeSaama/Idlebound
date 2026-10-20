@@ -46,6 +46,8 @@ export const hud = defineMessages({
       badgePackFull: "sac presque plein",
       badgeRelics: (count: number) => (count > 1 ? `${count} nouvelles reliques` : "une nouvelle relique"),
       badgeWare: "une nouvelle marchandise à ta portée",
+      badgeRare: "la place rare du marché est ouverte",
+      badgeCaravan: "la Roulotte est au marché cette semaine",
       badgeAddress: "adresse à confirmer"
     },
     install: {
@@ -160,7 +162,8 @@ export const hud = defineMessages({
       farm: "Tu restes sur l'étape précédente. Renforce-toi, puis reprends la route (bouton Rester → Auto).",
       ascend: "Le Roi déchu est tombé ! Ouvre « Ascension » dans le menu : tu peux recommencer la route en échange d'essences, qui renforcent toutes tes nuits suivantes.",
       altarRework: "Les pierres du Sanctuaire ont changé : chaque niveau d'un autel sans plafond multiplie désormais son effet, et l'Autel du voyageur te fait passer les premières étapes. Tout ce que tu leur avais offert t'est rendu en essences : choisis de nouveau tes autels, dans la fenêtre d'ascension.",
-      harvestCap: "L'Autel de la récolte s'est fait plus exigeant : il s'arrête au niveau 5 et demande plus d'essences. Tout ce que tu lui avais offert t'est rendu en essences."
+      harvestCap: "L'Autel de la récolte s'est fait plus exigeant : il s'arrête au niveau 5 et demande plus d'essences. Tout ce que tu lui avais offert t'est rendu en essences.",
+      boonRefund: (shards: string) => `Les potions, élixirs et parchemins du marché ne s'empilent plus au-delà d'un jour. Ce que tu avais acheté au-delà t'est rendu : ${shards} éclats.`
     },
     fx: {
       crit: "CRITIQUE",
@@ -184,6 +187,8 @@ export const hud = defineMessages({
       lootTraits: (base: string, traits: string) => `${base} · ${traits}`,
       awakened: (name: string, stage: string) => `${name} réveillée à l'étape ${stage}`,
       awakenedText: "Elle garde ce dont elle se souvient, et sa Densité et ses bonus grandissent à cette profondeur.",
+      rekindled: (name: string) => `${name} ravivée`,
+      rekindledText: (trait: string) => `Elle se souvient maintenant de ${trait}.`,
       skillUnlocked: (name: string) => `Nouveau pouvoir : ${name}`,
       skillUnlockedText: (key: string, description: string) => `Touche ${key} : ${description}`,
       crystalTitle: "Cristal errant !",
@@ -320,6 +325,8 @@ export const hud = defineMessages({
       badgePackFull: "pack almost full",
       badgeRelics: (count: number) => (count > 1 ? `${count} new relics` : "a new relic"),
       badgeWare: "a new ware within reach",
+      badgeRare: "the market's rare place is open",
+      badgeCaravan: "the Caravan is at the market this week",
       badgeAddress: "address to confirm"
     },
     install: {
@@ -434,7 +441,8 @@ export const hud = defineMessages({
       farm: "You're staying on the previous stage. Get stronger, then take the road again (Stay → Auto button).",
       ascend: "The Fallen King has fallen! Open “Ascension” in the menu: you can start the road over for essences, which strengthen every night after this one.",
       altarRework: "The stones of the Sanctum have changed: each level of an altar without a cap now multiplies its effect, and the Altar of the Wanderer carries you past the first stages. Everything you offered them came back to you as essences: choose your altars again, in the ascension window.",
-      harvestCap: "The Altar of Harvest has grown more demanding: it stops at level 5 and asks for more essences. Everything you offered it came back to you as essences."
+      harvestCap: "The Altar of Harvest has grown more demanding: it stops at level 5 and asks for more essences. Everything you offered it came back to you as essences.",
+      boonRefund: (shards: string) => `The market's potions, elixirs and scrolls no longer stack past a day. What you had bought beyond it came back to you: ${shards} shards.`
     },
     fx: {
       crit: "CRITICAL",
@@ -458,6 +466,8 @@ export const hud = defineMessages({
       lootTraits: (base: string, traits: string) => `${base} · ${traits}`,
       awakened: (name: string, stage: string) => `${name} awakened at stage ${stage}`,
       awakenedText: "It keeps what it remembers, and its Density and bonuses grow to that depth.",
+      rekindled: (name: string) => `${name} rekindled`,
+      rekindledText: (trait: string) => `It now remembers ${trait}.`,
       skillUnlocked: (name: string) => `New power: ${name}`,
       skillUnlockedText: (key: string, description: string) => `Key ${key}: ${description}`,
       crystalTitle: "Wandering crystal!",

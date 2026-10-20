@@ -1,5 +1,4 @@
 import { markRead, seenOf, sourceCount, CHRONICLE_SOURCES, type ChronicleSource } from "./chronicle";
-import type { MarketOfferId } from "./data/market";
 import type { GameEngine } from "./engine";
 import type { AltarId, BuyMode, ItemSlot, Rarity, Settings, SkillId } from "./types";
 import type { WeaveId } from "./data/descent";
@@ -34,7 +33,8 @@ export type Command =
   | { type: "awaken"; uid: string }
   | { type: "openSatchel" }
   | { type: "market" }
-  | { type: "offer"; id: MarketOfferId }
+  | { type: "stall"; place: number }
+  | { type: "rekindle"; uid: string; trait: string }
   | { type: "caravan" }
   | { type: "remember" }
   | { type: "tutorial"; step: string }
@@ -87,7 +87,8 @@ export function applyCommand(engine: GameEngine, command: Command, now: number):
     case "awaken": return engine.awaken(command.uid, now);
     case "openSatchel": return engine.openSatchel(now);
     case "market": return engine.visitMarket();
-    case "offer": return engine.buyOffer(command.id, now);
+    case "stall": return engine.buyStall(command.place, now);
+    case "rekindle": return engine.rekindle(command.uid, command.trait, now);
     case "caravan": return engine.buyCaravan(now);
     case "remember": return engine.remember(now);
     case "tutorial": return engine.completeTutorial(command.step);

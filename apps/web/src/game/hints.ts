@@ -1,4 +1,4 @@
-import { ALTAR_REWORK_NOTICE, CLICK_HERO_ID, HARVEST_NOTICE, HARVEST_NOTICE_TOLD, HERO_BY_ID, SKILLS, heroCost, isBossStage, isSkillUnlocked, runBits, type GameState, type SkillDef } from "@idlebound/game";
+import { ALTAR_REWORK_NOTICE, BOON_REFUND_NOTICE, BOON_REFUND_NOTICE_TOLD, CLICK_HERO_ID, HARVEST_NOTICE, HARVEST_NOTICE_TOLD, HERO_BY_ID, SKILLS, heroCost, isBossStage, isSkillUnlocked, runBits, type GameState, type SkillDef } from "@idlebound/game";
 import type { WindowId } from "./context";
 
 /**
@@ -8,7 +8,7 @@ import type { WindowId } from "./context";
  * on screen long enough to have read it (`HINT_READ_MS`). The notices tell of something given
  * back: they wait for the walker's "OK".
  */
-export type HintId = "strike" | "hire" | "companion" | "boss" | "skill" | "farm" | "ascend" | typeof ALTAR_REWORK_NOTICE | typeof HARVEST_NOTICE_TOLD;
+export type HintId = "strike" | "hire" | "companion" | "boss" | "skill" | "farm" | "ascend" | typeof ALTAR_REWORK_NOTICE | typeof HARVEST_NOTICE_TOLD | typeof BOON_REFUND_NOTICE_TOLD;
 
 export interface Hint {
   id: HintId;
@@ -89,6 +89,8 @@ export function currentHint(state: GameState): Hint | null {
   if (!done.includes(ALTAR_REWORK_NOTICE) && state.lifetime.ascensions > 0) return { id: ALTAR_REWORK_NOTICE, position: "center", notice: true };
   // The Harvest's cap (save version 11) gave levels back to this walker: said once.
   if (done.includes(HARVEST_NOTICE) && !done.includes(HARVEST_NOTICE_TOLD)) return { id: HARVEST_NOTICE_TOLD, position: "center", notice: true };
+  // The stall's boons, capped at a day (save version 20), paid this walker back in shards: said once.
+  if (done.includes(BOON_REFUND_NOTICE) && !done.includes(BOON_REFUND_NOTICE_TOLD)) return { id: BOON_REFUND_NOTICE_TOLD, position: "center", notice: true };
   if (taught(state)) return null;
   for (const id of LESSONS) {
     if (done.includes(id) || learned(state, id) || !applies(state, id)) continue;

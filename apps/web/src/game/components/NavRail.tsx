@@ -1,6 +1,7 @@
 "use client";
 
-import { ACHIEVEMENTS, altarPrice, ALTARS, INVENTORY_LIMIT, MARKET_OFFERS, unreadChronicle } from "@idlebound/game";
+import { ACHIEVEMENTS, altarPrice, ALTARS, INVENTORY_LIMIT, isoWeek, RARE_PLACE_ASCENSIONS, RARE_WARES, shardPrice, stallAt, stallBought, stallWindow, unreadChronicle, wareCost, type StallWareId } from "@idlebound/game";
+import { gameNow } from "@/lib/clock";
 import { useEffect } from "react";
 import { useI18n } from "@/i18n/client";
 import { perPublish, useCloud, useGame, useReveals, useUi, type WindowId } from "../context";
@@ -33,13 +34,16 @@ export function NavRail({ active }: { active: WindowId | null }) {
   const m = t.hud.nav;
   const open = active === "inventory" ? "gear" : active;
 
-  const now = (): SeenMarks => ({ relics: state.inventory.map((item) => item.uid), essences: state.essences, shards: state.shards });
+  const time = gameNow();
+  const stall = stallWindow(time);
+  const week = isoWeek(time);
+  const now = (): SeenMarks => ({ relics: state.inventory.map((item) => item.uid), essences: state.essences, shards: state.shards, stall, caravan: week });
   const seen = readSeen(state.createdAt, now);
   // Opening a window marks what it shows as seen: its badge goes out until something new comes.
   useEffect(() => {
     if (open === "gear") writeSeen(state.createdAt, { ...seen, relics: [...seen.relics, ...state.inventory.map((item) => item.uid).filter((uid) => !seen.relics.includes(uid))] });
     else if (open === "ascension") writeSeen(state.createdAt, { ...seen, essences: state.essences });
-    else if (open === "market") writeSeen(state.createdAt, { ...seen, shards: state.shards });
+    else if (open === "market") writeSeen(state.createdAt, { ...seen, shards: state.shards, stall, caravan: week });
   });
 
   // A badge says something new, once: only the full pack and the address to confirm stay lit.
@@ -51,7 +55,14 @@ export function NavRail({ active }: { active: WindowId | null }) {
   const fresh = state.inventory.filter((item) => !seen.relics.includes(item.uid)).length;
   if (state.inventory.length >= INVENTORY_LIMIT - 4) badges.gear = { text: "!", urgent: true, label: m.badgePackFull };
   else if (fresh > 0) badges.gear = { text: String(fresh), label: m.badgeRelics(fresh) };
-  if (MARKET_OFFERS.some((offer) => offer.cost > seen.shards && offer.cost <= state.shards)) badges.market = { text: "+", label: m.badgeWare };
+  // The stall: new wares since the last visit, or one the shards newly reach, among those left.
+  const wares = stallAt(stall).filter((place, index) => stallBought(state, stall, index) < place.stock && (!RARE_WARES.includes(place.ware) || state.lifetime.ascensions >= RARE_PLACE_ASCENSIONS));
+  const price = (ware: StallWareId) => shardPrice(state, wareCost(ware, state.maxStageEver));
+  if (wares.some((place) => price(place.ware) <= state.shards && (seen.stall !== stall || price(place.ware) > seen.shards))) {
+    badges.market = { text: "+", label: seen.stall !== stall && wares.some((place) => RARE_WARES.includes(place.ware)) ? m.badgeRare : m.badgeWare };
+  }
+  // The Caravan, the first visit of its week.
+  if (seen.caravan !== week && store.engine.caravanOpen(time)) badges.market = { text: "+", label: m.badgeCaravan };
   if (cloud.user && !cloud.user.emailVerified) badges.account = { text: "!", urgent: true, label: m.badgeAddress };
   const unread = perPublish(store, "unread", () => unreadChronicle(state));
   if (unread > 0) badges.hall = { text: String(unread), label: m.unread(unread) };

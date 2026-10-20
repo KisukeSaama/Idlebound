@@ -173,7 +173,7 @@ const SINGLE_FIELD: Partial<Record<Command["type"], string>> = {
   lock: "uid",
   forge: "slot",
   awaken: "uid",
-  offer: "id",
+  stall: "place",
   tutorial: "step",
   portrait: "hero",
   crown: "ms",

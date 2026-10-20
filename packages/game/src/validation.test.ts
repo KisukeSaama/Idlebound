@@ -11,6 +11,7 @@ import { parseState } from "./save";
 import { HARVEST_NOTICE, SAVE_VERSION, createInitialState } from "./state";
 import type { GameState } from "./types";
 import { isoWeek } from "./data/caravan";
+import { stallAt, stallWindow } from "./data/market";
 import { RECORD_GAP, verifyFirstSight, verifyNewLineage, verifyPace, verifySaveVersion, verifyState, verifyTransition, type Pace } from "./validation";
 
 const T0 = Date.UTC(2026, 2, 1);
@@ -182,7 +183,9 @@ describe("crystals, hourglasses and shards", () => {
     expect(engine.state.shards).toBeGreaterThanOrEqual(60);
     const previous = structuredClone(engine.state);
     const killsBefore = engine.state.lifetime.kills;
-    expect(engine.buyOffer("hourglass", now)).toBe(true);
+    const hourglass = stallAt(stallWindow(now)).findIndex((place) => place.ware === "hourglass");
+    expect(hourglass).toBeGreaterThan(0);
+    expect(engine.buyStall(hourglass, now)).toBe(true);
     // More kills than a second of play could hold: the hour poured must be counted.
     expect(engine.state.lifetime.kills - killsBefore).toBeGreaterThan(20);
     now += 1_000;
@@ -627,7 +630,7 @@ describe("relics, shards and luck", () => {
   it("accepts half a minute of chests, forge and salvage", () => {
     const { engine, now } = honestGame(21);
     const previous = structuredClone(engine.state);
-    engine.buyOffer("chest", now);
+    engine.buyStall(0, now);
     for (const slot of ["weapon", "armor", "amulet", "ring"] as const) engine.forge(slot, now);
     for (const item of [...engine.state.inventory]) engine.salvage(item.uid);
     const later = playBot(engine, now, 30, { clicksPerSecond: 5 });

@@ -46,6 +46,225 @@ export type NewsPost = { slug: string; date: string; kind: "patch" | "announceme
  */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    slug: "patch-notes-2-2",
+    date: "2026-10-20",
+    kind: "patch",
+    version: "v2.2",
+    cover: { biome: "forgotten-caves", creature: "crystal-mite" },
+    fr: {
+      title: "Notes de mise à jour 2.2",
+      summary: "Un marché qui change toutes les six heures, une place rare à guetter, des éclats qui comptent de nouveau, et un sacrifice qui coûte de nouveau, loin sur la route.",
+      body: [
+        { kind: "p", text: "Bonsoir, marcheuse, marcheur. On cherche encore le bon équilibre du jeu, et vous nous aidez à le trouver. Des marcheurs très loin sur la route nous ont dit deux choses justes : leurs éclats ne servaient plus à rien, et un sacrifice qu'on fait loin sur la route ne coûtait presque plus rien. Un jeu où l'on ne choisit plus n'est plus un jeu. La 2.2 redonne du poids aux deux, sans rien te reprendre de ce que tu as acheté." },
+        { kind: "h2", text: "Nouveau" },
+        {
+          kind: "entry",
+          name: "Le marché du Comptoir",
+          tag: "new",
+          context: "Les mêmes marchandises pour toujours, sans limite et toujours là, ne donnaient aucune raison de revenir. Le Comptoir vend désormais ce que la route lui apporte.",
+          changes: [
+            { label: "Nouvelles marchandises", text: "toutes les 6 heures (à 0 h, 6 h, 12 h et 18 h UTC), les mêmes pour tout le monde, avec le temps qui reste avant les suivantes" },
+            { label: "Toujours là", text: "3 coffres de reliques" },
+            { label: "Tirées au sort", text: "trois places parmi la potion de rage, l'élixir de fortune et le parchemin de frappe (3 de chaque), le sablier doré (2), la nouvelle caisse d'armurier (2) et le grand coffre (1)" },
+            { label: "Chaque marchandise", text: "a sa rareté (courante, rare, précieuse, exceptionnelle) et sa quantité : ce qui est vendu ne revient qu'avec les marchandises suivantes" },
+            { label: "Plusieurs d'un coup", text: "un second bouton achète d'un seul geste tout ce que le stock, tes éclats, ton sac et le jour des potions permettent" },
+            { label: "Caisse d'armurier", text: "une relique de l'emplacement indiqué, rare ou mieux, dès 50 éclats" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "market", id: "chest" }, label: "Coffre de relique" },
+            { spec: { kind: "market", id: "rage" }, label: "Potion de rage" },
+            { spec: { kind: "market", id: "great-chest" }, label: "Grand coffre" }
+          ],
+          caption: "Trois des marchandises du Comptoir."
+        },
+        {
+          kind: "entry",
+          name: "La place rare",
+          tag: "new",
+          context: "Il manquait au marché un moment où l'on se dit : celle-là, je la veux.",
+          changes: [
+            { label: "Quand", text: "dès ta première ascension, environ une fois sur quatre, une seule pièce mise à part sous la lanterne du Comptoir" },
+            { label: "Pièce d'ensemble", text: "une relique du lieu et de l'emplacement indiqués, légendaire ou mieux, pour compléter une parure (dès 600 éclats)" },
+            { label: "Relique qui se souvient", text: "une relique de l'emplacement indiqué, légendaire ou mieux, qui se souvient du trait indiqué (dès 600 éclats)" },
+            { label: "Coffre d'étoile", text: "une relique mythique (dès 2 400 éclats)" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Raviver, chez Brom",
+          tag: "new",
+          context: "Des éclats mis de côté doivent pouvoir servir à quelque chose qui compte, sans rendre personne éternel.",
+          changes: [
+            { label: "À la forge", text: "une relique portée qui se souvient (épique ou mieux, jamais une relique nommée) oublie le trait que tu choisis et se souvient d'un autre de son emplacement, au hasard" },
+            { label: "Prix", text: "100 éclats pour une épique, 300 pour une légendaire, 1 000 pour une mythique, davantage avec la profondeur de la relique" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "La Roulotte",
+          tag: "changed",
+          context: "Sa visite d'une semaine passait trop inaperçue.",
+          changes: [
+            { label: "Le marché", text: "s'allume à la première visite de la Roulotte dans la semaine" },
+            { label: "Son offre", text: "dit combien de temps elle reste" }
+          ]
+        },
+        { kind: "h2", text: "Équilibrage" },
+        {
+          kind: "entry",
+          name: "Les prix du marché",
+          tag: "changed",
+          context: "Plus tu descends, plus la route te donne d'éclats : un coffre à 30 éclats ne voulait plus rien dire passé le premier jour. Les prix suivent désormais ta route, pour qu'un achat compte à toute profondeur.",
+          changes: [
+            { label: "Jusqu'à l'étape 446", text: "rien ne change" },
+            { label: "Au-delà", before: "les mêmes partout", after: "×10 à l'étape 1000, ×40 à 2000, ×250 à 5000" },
+            { label: "La Roulotte", text: "ses prix grandissent de la même façon" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Potions, élixirs et parchemins",
+          tag: "down",
+          context: "Empilés sans fin, ils devenaient des bonus permanents : plus un choix, juste un réglage. Ce que tu avais acheté au-delà ne t'est pas repris, il t'est rendu.",
+          changes: [
+            { label: "Temps empilé", before: "sans limite", after: "un jour au plus" },
+            { label: "Déjà acheté au-delà d'un jour", text: "rendu en éclats, au prix payé, et le jeu te dit combien" }
+          ]
+        },
+        { kind: "h2", text: "Plus loin sur la route" },
+        {
+          kind: "spoiler",
+          label: "La Descente",
+          body: [
+            {
+              kind: "entry",
+              name: "La Descente",
+              tag: "down",
+              context: "Avec un dixième de tes essences, tu rachetais presque tous tes autels : la Descente n'était plus un sacrifice, donc plus un choix. Elle doit coûter, puis te porter plus loin.",
+              changes: [
+                { label: "Ce qu'elle te laisse", before: "un dixième de tes essences", after: "un centième" },
+                { label: "Ce que tu perds", text: "environ dix niveaux de chaque autel, au lieu de cinq" },
+                { label: "Ton record", text: "toujours retrouvé en quelques heures de jeu pour les premières Descentes, puis dépassé" },
+                { label: "Tes fils et Tissages", text: "gardent toute leur valeur, rien de ce que tu as déjà tissé ne bouge" }
+              ]
+            }
+          ]
+        },
+        { kind: "p", text: "Merci de marcher avec nous, et de nous dire ce qui sonne faux. Bonne route." }
+      ],
+      link: { route: "play", label: "Reprendre la route" }
+    },
+    en: {
+      title: "Patch notes 2.2",
+      summary: "A market that changes every six hours, a rare place to watch for, shards that matter again, and a sacrifice that costs again, far down the road.",
+      body: [
+        { kind: "p", text: "Good evening, walker. We are still finding the game's balance, and you help us find it. Walkers very far down the road told us two true things: their shards no longer bought anything, and a sacrifice made far down the road hardly cost anything anymore. A game where you no longer choose is no longer a game. 2.2 gives weight back to both, without taking back anything you bought." },
+        { kind: "h2", text: "New" },
+        {
+          kind: "entry",
+          name: "The Stallkeeper's market",
+          tag: "new",
+          context: "The same wares for good, without limit and always there, gave no reason to come back. The Stallkeeper now sells what the road brings them.",
+          changes: [
+            { label: "New wares", text: "every 6 hours (at 0:00, 6:00, 12:00 and 18:00 UTC), the same for everyone, with the time left before the next ones" },
+            { label: "Always there", text: "3 relic chests" },
+            { label: "Drawn by lot", text: "three places among the rage potion, the fortune elixir and the striking scroll (3 of each), the golden hourglass (2), the new armorer's crate (2) and the great chest (1)" },
+            { label: "Each ware", text: "has its rarity (common, rare, precious, exceptional) and its quantity: what is sold only comes back with the next wares" },
+            { label: "Several at once", text: "a second button buys in one go as many as the stock, your shards, your pack and the potions' day allow" },
+            { label: "Armorer's Crate", text: "a relic of the slot shown, rare or better, from 50 shards" }
+          ]
+        },
+        {
+          kind: "figure",
+          art: [
+            { spec: { kind: "market", id: "chest" }, label: "Relic Chest" },
+            { spec: { kind: "market", id: "rage" }, label: "Rage Potion" },
+            { spec: { kind: "market", id: "great-chest" }, label: "Great Chest" }
+          ],
+          caption: "Three of the Stallkeeper's wares."
+        },
+        {
+          kind: "entry",
+          name: "The rare place",
+          tag: "new",
+          context: "The market lacked a moment where you think: that one, I want it.",
+          changes: [
+            { label: "When", text: "from your first ascension, about one time in four, a single piece set apart under the Stallkeeper's lantern" },
+            { label: "Piece of a Set", text: "a relic of the place and slot shown, legendary or better, to finish a set (from 600 shards)" },
+            { label: "Remembering Relic", text: "a relic of the slot shown, legendary or better, that remembers the trait shown (from 600 shards)" },
+            { label: "Star Coffer", text: "a mythic relic (from 2,400 shards)" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Rekindling, at Brom's",
+          tag: "new",
+          context: "Shards put aside should be able to buy something that matters, without making anyone everlasting.",
+          changes: [
+            { label: "At the forge", text: "a worn relic that remembers (epic or better, never a named relic) forgets the trait you choose and remembers another of its slot, at random" },
+            { label: "Price", text: "100 shards for an epic, 300 for a legendary, 1,000 for a mythic, more with the relic's depth" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "The Caravan",
+          tag: "changed",
+          context: "Its week-long visit went by too quietly.",
+          changes: [
+            { label: "The market", text: "lights up on the Caravan's first visit of the week" },
+            { label: "Its offer", text: "says how long it stays" }
+          ]
+        },
+        { kind: "h2", text: "Balance" },
+        {
+          kind: "entry",
+          name: "The market's prices",
+          tag: "changed",
+          context: "The deeper you go, the more shards the road gives you: a chest at 30 shards meant nothing past the first day. Prices now follow your road, so a purchase matters at any depth.",
+          changes: [
+            { label: "Up to stage 446", text: "nothing changes" },
+            { label: "Beyond", before: "the same everywhere", after: "×10 at stage 1000, ×40 at 2000, ×250 at 5000" },
+            { label: "The Caravan", text: "its prices grow the same way" }
+          ]
+        },
+        {
+          kind: "entry",
+          name: "Potions, elixirs and scrolls",
+          tag: "down",
+          context: "Stacked without end, they became permanent bonuses: no longer a choice, just a setting. What you had bought beyond is not taken back, it is given back.",
+          changes: [
+            { label: "Time stacked", before: "without limit", after: "a day at most" },
+            { label: "Already bought past a day", text: "given back as shards, at the price paid, and the game tells you how many" }
+          ]
+        },
+        { kind: "h2", text: "Further down the road" },
+        {
+          kind: "spoiler",
+          label: "The Descent",
+          body: [
+            {
+              kind: "entry",
+              name: "The Descent",
+              tag: "down",
+              context: "With a tenth of your essences, you bought back almost all your altars: the Descent was no longer a sacrifice, so no longer a choice. It must cost, then carry you further.",
+              changes: [
+                { label: "What it leaves you", before: "a tenth of your essences", after: "a hundredth" },
+                { label: "What you lose", text: "about ten levels of every altar, instead of five" },
+                { label: "Your record", text: "still regained within a few hours of play for the first Descents, then passed" },
+                { label: "Your threads and Weaves", text: "keep all their value, nothing you already wove moves" }
+              ]
+            }
+          ]
+        },
+        { kind: "p", text: "Thank you for walking with us, and for telling us what rings false. Safe road." }
+      ],
+      link: { route: "play", label: "Back on the road" }
+    }
+  },
+  {
     slug: "patch-notes-2-1",
     date: "2026-10-20",
     kind: "patch",

@@ -2524,6 +2524,23 @@ button.resource:hover .resource-label {
   margin-top: auto;
 }
 
+/* One, or as many as can be bought at once beside it. */
+.market-offer .ware-buy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.market-offer .ware-buy .btn {
+  flex: 1 1 auto;
+  margin-top: 0;
+}
+
+.market-offer .ware-many {
+  font-variant-numeric: tabular-nums;
+}
+
 .market-preview {
   color: var(--gold-2) !important;
   font-weight: 700;
@@ -2531,6 +2548,120 @@ button.resource:hover .resource-label {
 
 .market-preview.warn {
   color: var(--danger-soft) !important;
+}
+
+/* The stall's wares: a thread of their rarity, as a relic's card; what is left of each. */
+.stall-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 4px 0 10px;
+}
+
+.stall-head h3 {
+  font-size: 1.02rem;
+}
+
+.stall-head .modal-hint {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.stall-renews {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--shard);
+  font-variant-numeric: tabular-nums;
+}
+
+.market-offer[class*="ware-"] {
+  border-color: #000;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rarity) 55%, #000), var(--bevel);
+}
+
+.market-offer.ware-legendary {
+  box-shadow: 0 0 0 1px var(--rarity), 0 0 0 3px #0b0a14, 0 0 0 4px color-mix(in srgb, var(--rarity) 60%, #000), var(--bevel);
+}
+
+.ware-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ware-rarity {
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rarity);
+}
+
+.market-offer .ware-made {
+  font-weight: 700;
+  color: var(--rarity);
+}
+
+.market-offer .ware-stock {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.market-offer.sold {
+  opacity: 0.55;
+}
+
+.market-offer.sold .ware-stock {
+  color: var(--faint);
+}
+
+/* The rare place: a lantern's light breathing behind its one piece. */
+.stall-rare {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid #000;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 70%), #1c170c;
+  box-shadow: 0 0 0 1px var(--gold-deep), var(--bevel);
+  animation: rare-glow 3.2s ease-in-out infinite;
+}
+
+.stall-rare > .stat-label {
+  color: var(--gold-2);
+}
+
+.stall-rare .modal-hint {
+  margin: 0;
+}
+
+@keyframes rare-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--gold-deep), 0 0 0 rgba(255, 179, 71, 0), var(--bevel);
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--gold-deep), 0 0 22px rgba(255, 179, 71, 0.28), var(--bevel);
+  }
+}
+
+.reduced-motion .stall-rare {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stall-rare {
+    animation: none;
+  }
 }
 
 /* ------------------------------------------------ ascension */
@@ -4659,6 +4790,14 @@ kbd {
   color: var(--muted);
 }
 
+.caravan .caravan-leaves {
+  margin-top: 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--gold-2);
+  font-variant-numeric: tabular-nums;
+}
+
 .caravan-left {
   margin: 0 0 14px;
   font-size: 0.82rem;
@@ -5337,6 +5476,18 @@ kbd {
 .item-affixes li.item-trait strong {
   color: var(--rarity);
   font-weight: 750;
+}
+
+/* Brom's rekindling, on a worn relic's trait: a small button after its effect. */
+.item-affixes .trait-rekindle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 0;
+  margin-left: 6px;
+  padding: 1px 7px;
+  font-size: 0.72rem;
+  vertical-align: middle;
 }
 
 /* The companion who carried it. */

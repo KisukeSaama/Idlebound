@@ -19,10 +19,10 @@ import { EVENTS, SEAM_ODDS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WAL
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT, forgeCost } from "./data/items";
 import { CARAVAN_WARES, isoWeek } from "./data/caravan";
-import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFFS, MARKET_BY_ID } from "./data/market";
+import { BUFF_DURATION_SECONDS, BUFF_MAX_SECONDS, isMarketBuff, MARKET_BUFF_MAX_SECONDS, MARKET_BUFFS, MARKET_BY_ID, RARE_PLACE_ASCENSIONS, RARE_WARES, stallAt, stallWindow } from "./data/market";
 import { CRYSTAL_SHARDS_MAX, salvageValue } from "./engine";
 import { LANTERN_CRYSTAL_WAIT, MAX_STAGE, affixValue, altarValue, MAX_TREASURE_CHANCE, MONSTERS_PER_STAGE, REUNION_DPS, ROUT_STEP_SECONDS, SATCHEL_SIZE, altarMaxLevel, bossHp, crystalEssenceReward, derive, equipmentBonus, equipmentBonusUncapped, essencesForStage, heroCost, memoryStartGold, relicGoldMultiplier, stageGold, woundCapWith, firstNight, upgradeCost, WAGER_MAX_GOLD, wandererSkip, weaveLevel } from "./formulas";
-import { PLACE_BONUS, TRAIT_BY_ID, TRAIT_COUNT, awakenedSpend, memoryReached, relicPlace, remembersBearer, traitMax, traitValue, type PlaceId, type TraitId } from "./data/traits";
+import { PLACE_BONUS, TRAIT_BY_ID, TRAIT_COUNT, awakenedSpend, rekindledSpend, memoryReached, relicPlace, remembersBearer, traitMax, traitValue, type PlaceId, type TraitId } from "./data/traits";
 import { maxAffixValue } from "./loot";
 import {
   BESTIARY_BY_ID,
@@ -321,6 +321,14 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   // Boons are measured from the last tick: it cannot lie far in the server's future.
   if (state.lastTickAt > serverNow + FUTURE_TICK_SLACK_MS) fail("time", "Last tick in the future.");
   if (state.caravanWeek > isoWeek(serverNow + FUTURE_TICK_SLACK_MS)) fail("caravan", "A Caravan from a week to come.");
+  // The stall bought from is one of the six hours past or present, each place within its
+  // stock, the rare place from the first dusk on.
+  if (state.stall) {
+    const places = stallAt(state.stall.window);
+    if (state.stall.window > stallWindow(serverNow + FUTURE_TICK_SLACK_MS)) fail("stall", "A stall of hours to come.");
+    if (state.stall.bought.length > places.length || state.stall.bought.some((count, index) => count > places[index].stock)) fail("stall", "More bought than the stall held.");
+    if (state.lifetime.ascensions < RARE_PLACE_ASCENSIONS && state.stall.bought.some((count, index) => count > 0 && RARE_WARES.includes(places[index].ware))) fail("stall", "The rare place before the first dusk.");
+  }
   // Crystals fall at a bounded pace, while the game has existed on the server's clock.
   if (state.lifetime.crystals > maxCrystals(Math.max(0, age), state.lore.dreams)) fail("crystals", "More crystals than time allows.");
   const bestGold = bestGoldPerKill(state);
@@ -391,7 +399,7 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   verifyFinds(state, state.lifetime.bosses, fail);
   // Bottled hours are bought with shards, and so are the forge levels the relics carry.
   if (state.lifetime.hourglasses * MIN_HOURGLASS_SHARDS > state.lifetime.shardsEarned) fail("hourglasses", "More hourglasses than shards could buy.");
-  const forged = heldRelics(state).reduce((total, item) => total + forgeSpend(item) + Math.ceil(awakenedSpend(item) * (1 - namedMax("forgeDiscount"))), 0);
+  const forged = heldRelics(state).reduce((total, item) => total + forgeSpend(item) + Math.ceil((awakenedSpend(item) + rekindledSpend(item)) * (1 - namedMax("forgeDiscount"))), 0);
   if (forged + state.lifetime.hourglasses * MIN_HOURGLASS_SHARDS + state.shards > state.lifetime.shardsEarned) fail("forge", "More forge levels than the shards earned could pay.");
   // Golden rats come with one kill in four at most, Seams with one in four hundred.
   if (state.lifetime.treasures > state.lifetime.kills * MAX_TREASURE_CHANCE * 1.2 + 50) fail("kills", "More golden rats than luck allows.");
@@ -516,10 +524,10 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   // The head of the night moved before the last tick, never after: Eldra's Hourglass reads it.
   if (trail.frontierAt !== undefined && trail.frontierAt > state.lastTickAt) fail("trail", "The head of the night moved in the future.");
   // Wounds stay only on a boss of the present night, at the head of the run, up to their cap.
-  // Boons (the Reunion included) last an hour at most from the last tick; the stall's pile up,
-  // but never past what every shard ever earned could have bought.
+  // Boons (the Reunion included) last an hour at most from the last tick; the stall's pile up
+  // to a day, and never past what every shard ever earned could have bought.
   const lasting = (buff: GameState["buffs"][number]) => Math.max(0, buff.until - state.lastTickAt) / 1000;
-  if (state.buffs.some((buff) => !isMarketBuff(buff.id) && lasting(buff) > BUFF_MAX_SECONDS + CLOCK_SLACK_SECONDS)) fail("buff", "A boon lasts too long.");
+  if (state.buffs.some((buff) => lasting(buff) > (isMarketBuff(buff.id) ? MARKET_BUFF_MAX_SECONDS : BUFF_MAX_SECONDS) + CLOCK_SLACK_SECONDS)) fail("buff", "A boon lasts too long.");
   const bottled = state.buffs.filter((buff) => isMarketBuff(buff.id)).reduce((sum, buff) => sum + lasting(buff), 0);
   if (bottled > (state.lifetime.shardsEarned / MIN_BOON_SHARDS) * BUFF_DURATION_SECONDS + CLOCK_SLACK_SECONDS) fail("buff", "More boon time than shards could buy.");
   // Deeper, only against armor that remembers scars (one the walker holds), and never the King.
@@ -837,11 +845,18 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   if (!le(b.essencesEarned - a.essencesEarned, Math.min(ascensions * perAscension, Math.max(0, fromAscensions)) + crystals * crystalEssenceReward(deepest) + 1 + rounding(b.essencesEarned))) {
     fail("essence-source", "Essences gathered too fast.");
   }
-  // A Descent leaves a tenth of the essences held: past one, the essences held never pass that
-  // tenth of those held before, with what was gathered since on top.
+  // A Descent leaves a share of the essences held (`DESCENT_KEEP`): past one, the essences held
+  // never pass that share of those held before, with what was gathered since on top.
   if (next.descents > previous.descents && !le(next.essences, previous.essences * DESCENT_KEEP + Math.max(0, b.essencesEarned - a.essencesEarned) + 1 + rounding(b.essencesEarned))) {
     fail("descent", "A Descent kept more essences than it leaves.");
   }
+
+  // The stall's stock only runs down: a stall is never bought from again once a later one was,
+  // and what was bought from the same one stays bought.
+  if (previous.stall && next.stall) {
+    if (next.stall.window < previous.stall.window) fail("stall", "An older stall bought from again.");
+    else if (next.stall.window === previous.stall.window && previous.stall.bought.some((count, index) => (next.stall!.bought[index] ?? 0) < count)) fail("stall", "Wares bought put back on the stall.");
+  } else if (previous.stall && !next.stall) fail("stall", "The stall forgotten.");
 
   // Relics and shards: only the boss blocking the road drops them, once a night per boss
   // stage (the last stage of all stays the frontier for good), and a Seam closed.
@@ -882,10 +897,11 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   return violations;
 }
 
-/** The same relic, at most forged further or awakened deeper: what dropped never changes. */
+/** The same relic, at most forged further, awakened deeper or rekindled: what dropped never changes. */
 function sameRelic(was: Item, now: Item): boolean {
   return was.slot === now.slot && was.rarity === now.rarity && was.level === now.level && was.base === now.base && was.named === now.named && now.forge >= was.forge
-    && (now.depth ?? now.level) >= (was.depth ?? was.level) && was.memory === now.memory && (was.traits ?? []).join() === (now.traits ?? []).join()
+    && (now.depth ?? now.level) >= (was.depth ?? was.level) && was.memory === now.memory
+    && ((was.traits ?? []).join() === (now.traits ?? []).join() ? (now.rekindled ?? 0) >= (was.rekindled ?? 0) : !now.named && (now.rekindled ?? 0) > (was.rekindled ?? 0) && (now.traits ?? []).length === (was.traits ?? []).length)
     && was.affixes.length === now.affixes.length && was.affixes.every((affix, index) => affix.stat === now.affixes[index].stat && affix.value === now.affixes[index].value);
 }
 
@@ -955,6 +971,9 @@ export function verifyPace(previous: GameState | undefined, next: GameState, pac
   // The Caravan comes once a week of the server's calendar: never a week before the last save, nor one to come.
   const caravanMoved = next.caravanWeek !== (previous?.caravanWeek ?? "") && next.caravanWeek !== "";
   if (caravanMoved && (next.caravanWeek < isoWeek(since - CLOCK_SLACK_SECONDS * 1000) || next.caravanWeek > isoWeek(serverNow + CLOCK_SLACK_SECONDS * 1000))) fail("caravan", "A Caravan from another week.");
+  // The stall too: a new one bought from is of the hours the server saw pass.
+  const stallMoved = next.stall !== undefined && next.stall.window !== previous?.stall?.window;
+  if (stallMoved && (next.stall!.window < stallWindow(since - CLOCK_SLACK_SECONDS * 1000) || next.stall!.window > stallWindow(serverNow + CLOCK_SLACK_SECONDS * 1000))) fail("stall", "A stall of other hours.");
 
   // Powers come back at their pace, all at once at each dusk and with Eldra's Thread. Only
   // the stock kept between two saves is capped: powers used as they come back, over a long

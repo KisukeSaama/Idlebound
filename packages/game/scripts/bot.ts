@@ -3,11 +3,12 @@ import { CLICKER_ALTARS as CLICKER_MILESTONES, IDLE_ALTARS as IDLE_MILESTONES, d
 import { WEAVES, weaveCost, type WeaveId } from "../src/data/descent";
 import { CLICK_HERO_ID, HERO_BY_ID, HEROES } from "../src/data/heroes";
 import { awakenDepth, relicDepth } from "../src/data/traits";
+import { RELIC_WARES, stallAt, stallBought, stallWindow, wareCost } from "../src/data/market";
 import { RECOGNITION_HEROES } from "../src/data/lore";
 import { PROMISE_BY_HERO, promiseHolds, promiseOf, standingPromise, type PromiseAbstains } from "../src/data/promises";
 import { SKILLS } from "../src/data/skills";
 import { GameEngine, canDescend, descentPreview, isSkillUnlocked, nextRecruit } from "../src/engine";
-import { awakenPrice, damageAt, relicCompanyGain, derive, deriveAt, deriveBase, heroCost, heroCostMultiplier, milestoneMultiplier, promiseWhen, type DeriveBase } from "../src/formulas";
+import { awakenPrice, shardPrice, damageAt, relicCompanyGain, derive, deriveAt, deriveBase, heroCost, heroCostMultiplier, milestoneMultiplier, promiseWhen, type DeriveBase } from "../src/formulas";
 import { runBits } from "../src/scale";
 import type { AltarId, GameState, Item } from "../src/types";
 
@@ -259,7 +260,18 @@ export function playBot(engine: GameEngine, start: number, seconds: number, opti
       for (const item of sleepers.sort((a, b) => awakenPrice(s, a) - awakenPrice(s, b))) {
         if (awakenPrice(s, item) <= s.shards / 2) engine.perform({ type: "awaken", uid: item.uid }, now);
       }
-      if (s.shards >= 30 && s.inventory.length < 40) engine.perform({ type: "offer", id: "chest" }, now);
+      // The stall's relics, as long as they last: the chests and crates whenever the shards
+      // allow, the dearer ones with half the shards held at most (Brom asks the rest).
+      if (s.inventory.length < 40) {
+        const window = stallWindow(now);
+        stallAt(window).forEach((place, index) => {
+          if (!RELIC_WARES.includes(place.ware)) return;
+          const cheap = place.ware === "chest" || place.ware === "crate";
+          while (stallBought(s, window, index) < place.stock && shardPrice(s, wareCost(place.ware, s.maxStageEver)) <= (cheap ? s.shards : s.shards / 2)) {
+            if (!engine.perform({ type: "stall", place: index }, now)) break;
+          }
+        });
+      }
       engine.perform({ type: "salvageUpTo", rarity: "rare" }, now);
       wornBefore = worn();
     }

@@ -196,9 +196,22 @@ Content colors live with the game data, not in CSS:
   rule. In the scene, their medallion stands first in the party (at the bottom, so a phone's
   three medallions keep it), with the same knot: the promise stays in sight with the panel
   folded.
-- **The stall** (market): the Stallkeeper's saying of the visit as a quote at the top;
-  prices through the Token's discount (old price struck out); the Caravan's ware of the week
-  as a gold-edged card.
+- **The market** (the Stallkeeper's): the saying of the visit as a quote at the top; prices
+  through the Token's discount (old price struck out); the Caravan's ware of the week as a
+  gold-edged card with the time left before it leaves (`--gold-2`, tabular figures). Then
+  "What the road brought", the time before the next wares in `--shard` with an hourglass,
+  and a line on the prices when depth multiplies them. Each ware is a card with the thread of
+  its rarity (`RARITY_INFO` colors, the colorblind ones when chosen; an exceptional one wears
+  the second thread like a legendary relic): its icon (a crate or a rare piece shows its
+  slot), its rarity in small capitals in that color, its name, what it is made of (slot,
+  place, trait) in the same color, its description, "2 of 3 left" in tabular figures, and
+  the price button, with a ghost "×N · price" button beside it when several can be bought at
+  once (under it at phone width); a ware sold out fades to 55% and says so. The rare place stands under
+  the grid in its own gold-edged panel lit from above, its light breathing every 3.2 s (still
+  with reduced motion), and a bell (a low hum, two notes) rings once when the window opens on
+  a piece still there. At 520 px and below the grid keeps two columns.
+- **Rekindling** (equipment, worn relics): after each trait of a relic that remembers, a small
+  violet button "Rekindle" with its shard price; its title says what it does.
 - **The Crown** (equipment, after the tenth Descent): a fifth, dim slot spanning both
   columns, which can never be filled; hovering, pressing or focusing it shows its line. Chronicle fragments are italic quotes with their voice under
   them, a violet edge and a "New" pill until read. Bestiary entries show the creature's
@@ -298,17 +311,21 @@ grow, so nothing the walker used disappears after an ascension or a Descent:
 | Stage bar | stage 2; the Auto/Farm switch after a failed boss or a rebirth |
 | Companions | Aldric, the companions hired, and only the next one, once affordable this night or hired on a past night; talents only reachable or owned; buy modes from 10 levels; "spend while away" with the first companion |
 | Powers | only the unlocked ones; Unweave on key 7 once woven |
-| Descent tab, Caravan | when a Descent is possible (best stage 2000) or has happened; from the third ascension |
+| Descent tab, Caravan | when a Descent is possible (best stage 1500) or has happened; from the third ascension |
 | Promise tab | once a companion half remembers the walker (Recognition 2) |
 | Altars | the four open-ended ones at once, three more from the third night, the last six from the fifth; one already raised always |
 | "Keep the Kingdom's sky" | from Age II |
+| The market's rare place | from the first ascension, once the market is open (a piece stands in about one set of wares in four) |
+| Rekindle (equipment) | once a worn relic remembers a trait and the shards held pay its rekindling |
 
 Each first appearance during play is announced once: a toast for the rail's windows, the
-Loom, the Caravan, the Promise and the two wakings of the Sanctum's altars (marked `ui:<id>` in `tutorial.done`, so it happens once
+Loom, the Caravan, the Promise, the two wakings of the Sanctum's altars, the market's rare
+place and Brom's rekindling (marked `ui:<id>` in `tutorial.done`, so it happens once
 on every device), a 4 s glow for the other elements (an outline with reduced motion). A game
 loaded past a threshold shows those elements at once, without a flood of announcements;
 only what arrived after walkers were already past its threshold is told once at load
-(`ANNOUNCED_AT_LOAD`: the Promise).
+(`ANNOUNCED_AT_LOAD`: the Promise, what relics remember, awakening, the rare place and
+rekindling).
 
 ## Large screens
 
@@ -947,7 +964,8 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   come up whole. Keys go to the scene first: Enter or Space moves on, Escape ends, Tab moves
   between the two buttons.
 - **A chest opened at the stall** (`components/ChestOpening.tsx`, `pixel/chest.ts`, art in
-  `CHESTS`): buying a relic chest or a great chest opens it over everything, on the night
+  `CHESTS`): buying a relic ware opens it over everything (a chest or a crate as a relic
+  chest, the great chest and the rare place's pieces as a great chest), on the night
   ink, on its own 80 x 100 grid at the largest whole scale its box holds (a fixed box, so the
   chest never changes size when the card comes in): on a wide display (1000 px and wider,
   landscape) the chest takes the whole height in the middle and the card comes in on its

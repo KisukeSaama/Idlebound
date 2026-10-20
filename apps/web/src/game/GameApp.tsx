@@ -118,7 +118,9 @@ const REVEAL_PICTO: Partial<Record<RevealId, PictoName>> = {
   altars2: "gem",
   altars3: "gem",
   traits: "sparkle",
-  awaken: "sparkle"
+  awaken: "sparkle",
+  rarePlace: "stall",
+  rekindle: "sparkle"
 };
 /** Creatures whose new Bestiary lines are worth a toast: the great ones and the wanderers. */
 const HERALDED = new Set([...BIOMES.flatMap((biome) => [biome.boss.id, biome.miniBoss.id]), ...Object.keys(WANDERER_BY_ID), "echo-bat"]);
@@ -394,7 +396,7 @@ export default function GameApp() {
       const m = currentMessages();
       const g = gameText(currentLocale());
       const place = id as keyof typeof m.night.reveal;
-      const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : place === "altars2" || place === "altars3" ? g.places.sanctum.name : place === "traits" || place === "awaken" ? m.hud.windowTitles.gear.label : m.hud.windowTitles[place].label;
+      const title = place === "loom" ? g.places.loom.name : place === "caravan" ? g.events.caravan.name : place === "promise" ? m.sanctum.promise.title : place === "altars2" || place === "altars3" ? g.places.sanctum.name : place === "traits" || place === "awaken" || place === "rekindle" ? m.hud.windowTitles.gear.label : place === "rarePlace" ? m.hud.windowTitles.market.label : m.hud.windowTitles[place].label;
       toast({ tone: "info", icon: REVEAL_PICTO[id], title, text: m.night.reveal[place] });
       store.apply({ type: "tutorial", step: revealMark(id) });
     };
@@ -605,6 +607,9 @@ export default function GameApp() {
         }
         case "awakened":
           toast({ tone: "gold", icon: "sparkle", title: m.awakened(itemName(event.item, locale), fmt(event.item.depth ?? event.item.level)), text: m.awakenedText, color: rarityColor(event.item.rarity, store.state.settings.colorblind) });
+          break;
+        case "rekindled":
+          toast({ tone: "gold", icon: "sparkle", title: m.rekindled(itemName(event.item, locale)), text: m.rekindledText(g.relicTraits[event.trait as TraitId]?.name ?? event.trait), color: rarityColor(event.item.rarity, store.state.settings.colorblind) });
           break;
         case "skillUnlocked": {
           const skill = SKILL_BY_ID[event.skillId];

@@ -139,10 +139,14 @@ export const en: GameText = {
   market: {
     chest: { name: "Relic Chest", description: "A random relic at the level of your best stage." },
     "great-chest": { name: "Great Chest", description: "An epic relic or better, with a higher chance of legendary, at the level of your best stage." },
-    rage: { name: "Rage Potion", description: "Your companions deal double damage for 10 min. Each potion adds 10 min." },
-    fortune: { name: "Fortune Elixir", description: "All the gold you earn is doubled for 10 min. Each elixir adds 10 min." },
-    autoclick: { name: "Striking Scroll", description: "Your blade strikes on its own 5 times per second for 10 min." },
-    hourglass: { name: "Golden Hourglass", description: "Instantly earn 1 h of gold at your current rate." }
+    rage: { name: "Rage Potion", description: "Your companions deal double damage for 10 min. Each potion adds 10 min, up to a day." },
+    fortune: { name: "Fortune Elixir", description: "All the gold you earn is doubled for 10 min. Each elixir adds 10 min, up to a day." },
+    autoclick: { name: "Striking Scroll", description: "Your blade strikes on its own 5 times per second for 10 min. Each scroll adds 10 min, up to a day." },
+    hourglass: { name: "Golden Hourglass", description: "Instantly earn 1 h of gold at your current rate." },
+    crate: { name: "Armorer's Crate", description: "A relic of the slot shown, rare or better, at the level of your best stage." },
+    "set-piece": { name: "Piece of a Set", description: "A relic of the place and slot shown, legendary or better, taken from the deepest stage of that place you reached. Something to finish a set." },
+    "trait-piece": { name: "Remembering Relic", description: "A relic of the slot shown, legendary or better, that remembers the trait shown, at the level of your best stage." },
+    "star-coffer": { name: "Star Coffer", description: "A mythic relic at the level of your best stage." }
   },
   achievementNames: {
     clicks: ["Steel in Hand", "Sore Wrist", "Ten Thousand Cuts", "Brom Sharpens It Again", "A Blade the Night Did Not Forge"],

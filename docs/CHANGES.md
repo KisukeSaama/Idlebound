@@ -18,6 +18,39 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ### New
 
+- The market: the Stallkeeper now sells what the road brings. New wares come every 6 hours
+  (0:00, 6:00, 12:00 and 18:00 UTC), the same for everyone, each with a rarity and a limited
+  quantity, with a countdown to the next ones: always 3 relic chests, then three places among
+  the rage potion, the fortune elixir and the striking scroll (3 each), the golden hourglass
+  (2), a new armorer's crate (2, a relic of the slot shown, rare or better, 50 shards) and the
+  great chest (1). What is sold is gone until the next wares. A second button buys at once
+  as many as the stock, your shards, your pack and the boon's day allow ("×3").
+- The market's rare place: from your first ascension, about one set of wares in four keeps a
+  single exceptional piece apart, under a lantern: a piece of a set (the place and slot
+  shown, legendary or better, 600 shards), a relic that remembers the trait shown (legendary
+  or better, 600) or a star coffer (a mythic, 2400).
+- Brom's forge: rekindle a worn relic that remembers. It forgets the trait you choose and
+  remembers another of its slot, at random (100 shards for an epic, 300 for a legendary, 1000
+  for a mythic, more with the relic's depth).
+- The market's badge lights for new wares within reach, for the rare place and for the
+  Caravan's first visit of the week; the Caravan says how long it stays.
+
+### Balance
+
+- The market's prices grow with your best stage, as the shards the road gives: ×1 up to
+  stage 446, then ×10 at stage 1000, ×40 at 2000, ×250 at 5000 (the best stage squared, over
+  100,000). They were the same at every depth. The Caravan's prices grow the same way.
+- The market's potions, elixirs and scrolls stack up to a day (was without limit). Time
+  already bought past a day came back as shards, at the price paid, and you are told once.
+- The Descent: it now leaves a hundredth of your essences (was a tenth), so it costs about ten
+  levels of every altar instead of five. Your record still stands again within a few hours of
+  play for the first Descents, and descending carries you ahead of the walker who never does
+  from the third day.
+
+## v2.1.0
+
+### New
+
 - First minutes: a hint says to strike the monster from the very first second, and the Long
   Night is now told as your first monster falls instead of before your first strike.
 - First minutes: once Aldric reaches level 2, a hint tells you to keep your gold for Maëlle

@@ -4,6 +4,8 @@ import {
   CHRONICLE_SOURCES,
   CLICK_HERO_ID,
   MARKET_OFFERS,
+  RARE_PLACE_ASCENSIONS,
+  rekindlePrice,
   awakenDepth,
   relicDepth,
   ageForEra,
@@ -47,16 +49,18 @@ export type RevealId =
   | "buyModes"
   | "autoSpend"
   | "traits"
-  | "awaken";
+  | "awaken"
+  | "rarePlace"
+  | "rekindle";
 
 /** Elements whose first appearance gets a toast; the others only glow as they arrive. */
-export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan", "promise", "altars2", "altars3", "traits", "awaken"];
+export const ANNOUNCED: readonly RevealId[] = ["map", "gear", "market", "ascension", "hall", "loom", "caravan", "promise", "altars2", "altars3", "traits", "awaken", "rarePlace", "rekindle"];
 
 /**
  * Elements that arrived after walkers were already past their threshold: a game loaded past
  * it is told once too, instead of finding them unannounced.
  */
-export const ANNOUNCED_AT_LOAD: readonly RevealId[] = ["promise", "traits", "awaken"];
+export const ANNOUNCED_AT_LOAD: readonly RevealId[] = ["promise", "traits", "awaken", "rarePlace", "rekindle"];
 
 /** Id kept in `state.tutorial.done` once an element was announced (short: the list holds 50). */
 export function revealMark(id: RevealId): string {
@@ -114,7 +118,11 @@ export function reveals(state: GameState): Reveals {
     // (the first already has its own toast; the two together drowned a walker of minute five).
     traits: (life.itemsFound >= TRAITS_FROM_RELIC && held.some((item) => (item.traits?.length ?? 0) > 0)) || announced("traits"),
     // Brom's awakening: from the first relic a deeper night can take.
-    awaken: held.some((item) => awakenDepth(item, state.maxStageEver) > relicDepth(item)) || announced("awaken")
+    awaken: held.some((item) => awakenDepth(item, state.maxStageEver) > relicDepth(item)) || announced("awaken"),
+    // The stall's rare place: from the first dusk, once the stall is open.
+    rarePlace: (life.ascensions >= RARE_PLACE_ASCENSIONS && (life.shardsEarned >= FIRST_WARE || announced("market"))) || announced("rarePlace"),
+    // Brom's rekindling: once a relic worn remembers a trait the shards held could make it forget.
+    rekindle: Object.values(state.equipment).some((item) => item !== undefined && !item.named && (item.traits?.length ?? 0) > 0 && rekindlePrice(state, item) <= state.shards) || announced("rekindle")
   };
 }
 

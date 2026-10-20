@@ -7,7 +7,7 @@ import { ALTARS, ALTAR_BY_ID, altarCost, altarTotalCost } from "./data/altars";
 import { BIOMES, TREASURE_MONSTER, isKingStage } from "./data/biomes";
 import { HEROES, HERO_BY_ID } from "./data/heroes";
 import { SLOTS, SLOT_BASE_COUNT, SLOT_MAIN_STAT } from "./data/items";
-import { MARKET_OFFERS } from "./data/market";
+import { MARKET_BUFF_MAX_SECONDS, STALL_WARES, stallAt, stallWindow, type StallWareId } from "./data/market";
 import { SKILLS } from "./data/skills";
 import { GameEngine } from "./engine";
 import {
@@ -790,18 +790,28 @@ describe("anti-cheat", () => {
     expect(verifyState(endless, now).map((violation) => violation.code)).toContain("buff");
   });
 
-  it("stacks stall potions past an hour, as long as shards were earned for them", () => {
+  it("stacks stall potions up to a day, as long as shards were earned for them", () => {
     const engine = newGame(4);
     const now = playBot(engine, T0, 30 * 60, { clicksPerSecond: 5 });
-    engine.state.shards += 200;
-    engine.state.lifetime.shardsEarned += 200;
-    for (let draught = 0; draught < 9; draught += 1) expect(engine.buyOffer("rage", now)).toBe(true);
-    const rage = engine.state.buffs.find((buff) => buff.id === "rage")!;
-    expect(rage.until).toBe(now + 90 * 60_000);
+    engine.state.shards += 2_000;
+    engine.state.lifetime.shardsEarned += 2_000;
+    const fortune = stallAt(stallWindow(now)).findIndex((place) => place.ware === "fortune");
+    expect(fortune).toBeGreaterThan(0);
+    for (let draught = 0; draught < 3; draught += 1) expect(engine.buyStall(fortune, now)).toBe(true);
+    // The stall held three: the fourth waits for the next one.
+    expect(engine.buyStall(fortune, now)).toBe(false);
+    const boon = engine.state.buffs.find((buff) => buff.id === "fortune")!;
+    expect(boon.until).toBe(now + 30 * 60_000);
     expect(verifyState(engine.state, now).map((violation) => violation.code)).not.toContain("buff");
+    // Near a day, a stall with fortune left sells no more of it, and takes no shard.
+    boon.until = now + (MARKET_BUFF_MAX_SECONDS - 300) * 1000;
+    delete engine.state.stall;
+    const shards = engine.state.shards;
+    expect(engine.buyStall(fortune, now)).toBe(false);
+    expect(engine.state.shards).toBe(shards);
     const forged = structuredClone(engine.state);
-    forged.buffs.find((buff) => buff.id === "rage")!.until += 24 * 3600_000;
-    expect(verifyState(forged, now).map((violation) => violation.code)).toContain("buff");
+    forged.buffs.find((buff) => buff.id === "fortune")!.until = forged.lastTickAt + (MARKET_BUFF_MAX_SECONDS + 3600) * 1000;
+    expect(verifyState(forged, forged.lastTickAt).map((violation) => violation.code)).toContain("buff");
   });
 
   it("pushes on while away even when auto-advance was paused by a failed boss", () => {
@@ -1074,7 +1084,7 @@ describe("i18n", () => {
       }
       for (const skill of SKILLS) expect(text.skills[skill.id]?.name).toBeTruthy();
       for (const altar of ALTARS) expect(text.altars[altar.id]?.name).toBeTruthy();
-      for (const offer of MARKET_OFFERS) expect(text.market[offer.id]?.name).toBeTruthy();
+      for (const ware of STALL_WARES) expect(text.market[ware.id]?.name).toBeTruthy();
       for (const achievement of ACHIEVEMENTS) {
         const { name, description } = achievementText(achievement.id, locale);
         expect(name, `${locale} achievement ${achievement.id}`).not.toBe(achievement.id);
