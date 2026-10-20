@@ -205,8 +205,8 @@ Content colors live with the game data, not in CSS:
   the second thread like a legendary relic): its icon (a crate or a rare piece shows its
   slot), its rarity in small capitals in that color, its name, what it is made of (slot,
   place, trait) in the same color, its description, "2 of 3 left" in tabular figures, and
-  the price button, with a ghost "×N · price" button beside it when several can be bought at
-  once (under it at phone width); a ware sold out fades to 55% and says so. The rare place stands under
+  a counter (- 1 +, in a bordered box, tabular figures) when two or more are left, then the
+  price button showing the whole price of the quantity chosen; a ware sold out fades to 55% and says so. The rare place stands under
   the grid in its own gold-edged panel lit from above, its light breathing every 3.2 s (still
   with reduced motion), and a bell (a low hum, two notes) rings once when the window opens on
   a piece still there. At 520 px and below the grid keeps two columns.

@@ -560,10 +560,10 @@ beaten, it lets the walker through, and the night draws itself again from its fi
     that place within the best stage), a **remembering relic** (600: a relic of a slot shown,
     legendary or better, that remembers the trait shown), or a **star coffer** (2400: a
     mythic). Weights 2, 2, 1.
-  Beside each price, when two or more can be bought, a "×N" button buys them at once: as many
-  as the stock, the shards, the pack's room and the boon's day allow, one purchase after the
-  other, each checked as a single one (relics come straight to the pack, without a chest
-  opening each). What is bought is gone until the next set (`state.stall`: the window bought from and, per
+  When two or more are left, a counter set at 1 (- and +) chooses how many to buy, up to what
+  the stock, the shards, the pack's room and the boon's day allow, and the one buy button
+  shows the whole price; several are bought one after the other, each checked as a single
+  purchase (relics come straight to the pack, without a chest opening each). What is bought is gone until the next set (`state.stall`: the window bought from and, per
   place, how many). Prices are the base above times `shardScale(best stage)`: ×1 up to stage
   446, then the best stage squared over 100,000 (×10 at 1000, ×40 at 2000, ×250 at 5000),
   because shards come about as the square of the depth (the active bot: 40 an hour at stage

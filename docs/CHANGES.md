@@ -16,6 +16,12 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+### Fixes
+
+- The market: buying several of a ware is now a counter set at 1, raised with + and lowered
+  with -, and the one buy button shows the whole price (was a second "×3" button beside the
+  price).
+
 ## v2.2.0
 
 ### New

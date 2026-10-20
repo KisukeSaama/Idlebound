@@ -2524,20 +2524,42 @@ button.resource:hover .resource-label {
   margin-top: auto;
 }
 
-/* One, or as many as can be bought at once beside it. */
+/* The quantity, 1 to begin with, then the one button that buys it at its whole price. */
 .market-offer .ware-buy {
   display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
   gap: 6px;
   margin-top: auto;
 }
 
-.market-offer .ware-buy .btn {
+.market-offer .ware-buy > .btn {
   flex: 1 1 auto;
   margin-top: 0;
 }
 
-.market-offer .ware-many {
+.market-offer .ware-count {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+
+.market-offer .ware-count .btn {
+  min-width: 30px;
+  margin: 0;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.market-offer .ware-count output {
+  min-width: 1.6em;
+  text-align: center;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
 }
 
