@@ -36,12 +36,30 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   line leads to the Chronicle.
 - Account: an address never confirmed gets two reminders before the account goes, and an
   account whose game is past stage 50 is never deleted for it.
+- Eldra's Loom: a new Weave, Eldra's Hourglass (8 threads). While you are away, once the
+  company has stood still for 15 min before an elite or a guardian too strong for it, it calls
+  the dusk itself and walks the next night; the essences wait for you, and the company's
+  account tells the dusks it called. A word not kept yet is lost with that dusk.
+- Eldra's Loom: a new Weave, Woven Habits (8 threads). Your powers are used again the moment
+  they are ready, unless your word forbids them; Time Echo and Unweave still wait for you.
 
 ### Balance
 
 - The first King: on your first night, the Keep's gate (stage 45) keeps up to 75% of its
   wounds and the King up to 50% of his, like the guardians before them. From your first dusk
   on they heal whole again.
+- The Descent: it now leaves you a tenth of your essences (the altars still go). You stand
+  again on the record you left within a few hours of play instead of more than a day, and
+  each Descent carries you ahead of the walker who never descends from the next day on.
+- The Descent: Eldra shows her Loom at stage 1500 (was 2000); the first Descent weaves 8
+  threads there. A walker past stage 1500 sees it at once. Threads and Weaves already woven
+  keep all their value.
+- Warp of Plenty: each level now costs 25% more than the last (was 20%), so the Descents keep
+  carrying you down without running away. The levels you already wove keep the price you paid.
+- Altars of Might and Patience: their cards say what tells them apart. Might raises your
+  companions and, through the share of their damage your strikes carry, your strikes too;
+  Patience raises only your companions, and grows faster. Kaelen's and Morgrath's talents
+  say they last the night.
 
 ### Fixes
 

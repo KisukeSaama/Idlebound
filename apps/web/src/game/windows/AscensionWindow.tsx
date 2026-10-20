@@ -239,7 +239,7 @@ function AltarNet({ id, now }: { id: AltarId; now: number }) {
   return <p className={`altar-net${loses ? " altar-net-loss" : ""}`}>{line}</p>;
 }
 
-/** Eldra's Loom (BIBLE 12.7): the Descent and the eight Weaves. */
+/** Eldra's Loom (BIBLE 12.7): the Descent and the Weaves. */
 function Loom({ onClose }: { onClose: () => void }) {
   const { state, store } = useGame();
   const { t, g } = useI18n();

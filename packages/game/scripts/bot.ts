@@ -94,6 +94,9 @@ export interface DescentPlan {
   growth: number;
 }
 
+/** How the bot descends in the long runs: once an Age, when the Descent weaves 8 threads at least. */
+export const DESCENT_PLAN: DescentPlan = { minThreads: 8, growth: 1 };
+
 export interface AltarPlan {
   /** Capped altars bought whenever cheap. */
   milestones: readonly AltarId[];

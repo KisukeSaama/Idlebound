@@ -1,7 +1,7 @@
 import { emptyFates } from "./fates";
 import type { GameState, LifetimeStats, LoreState, RunTrail, StatBlock } from "./types";
 
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 /** Tutorial id of the one-time notice shown to saves whose altars version 4 refunded. */
 export const ALTAR_REWORK_NOTICE = "altars-v4";
 /**

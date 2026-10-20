@@ -167,7 +167,7 @@ Content colors live with the game data, not in CSS:
   below ×1); a Distribute button (violet, small) sits under the altars' hint with one line
   saying what it does or that keeping the essences gives more for now.
   The Descent tab (Eldra's Loom) shows the threads, what a Descent takes and keeps, the threads it would weave,
-  the stage of the next thread, a danger-confirmed Descend button and the eight Weaves as cards.
+  the stage of the next thread, a danger-confirmed Descend button and the ten Weaves as cards.
 - **The Promise** (a folder tab of the ascension window, from the second night): one line on
   the rule, then "Tonight": the word of the night as a framed block (portrait in its frame,
   name, the knot and its state, the companion's request in italics, the rule in plain words,
@@ -1027,7 +1027,10 @@ production with `PIXEL_WORKSHOP=1`, and never indexed.
   to stage, gold earned, gold spent when there was at least one piece; values in Cinzel at 1.2rem,
   the gold earned in gold), then "On the road" (*Sur la route*):
   one row per moment on the panel-2 background, a picto or a pixel portrait medallion, the
-  name in gold Cinzel and a muted caption. Walls that gave way come first (swords, crown for
+  name in gold Cinzel and a muted caption. When Eldra's Hourglass called the dusk while the
+  walker was away, its row comes first (hourglass picto, the dusks counted, the essences that
+  wait in the Sanctum) and the road tile reads "Tonight" (*Cette nuit*), the stages of the
+  night walking now; the rest tells that night only. Walls that gave way come first (swords, crown for
   a King), then the last three guardians passed, the companions who joined (their portrait),
   the first four talents learned (scroll), and last the boss that still bars the road, its
   border tinted with the danger color. What is left out is counted in one muted line. Then

@@ -94,6 +94,12 @@ late game; mashing the mouse is never required.
   add up; the Briar Mantle, Quietus and Morgrath's Phylactery multiply the sum. The walker's
   strikes add on top of it, whatever their pace (until this rule, they stood in for the
   bonus blow for blow and only added past it). A chip shows the bonus.
+  Patience and Might stay two altars (audit of 2026-10-19, kept on purpose): Might multiplies
+  the company's damage before the strikes take their share of it, so it raises the strikes
+  too; Patience multiplies the company alone, never a strike, and grows faster (×1.14 a level
+  at ×1.7). A walker who lets the company walk feeds Patience, one who strikes feeds Might
+  and the Blade: a real choice, so merging them would take one away. Their cards say it
+  plainly since version 19 (they read as the same thing before).
 - **Active bonus**: powers, crystals, crit investments and the Blade reward being there,
   within bounds: Altar of Fate capped at 5 levels (+100% crit damage), relic totals capped
   at +50% crit damage and +16% crit chance.
@@ -284,6 +290,8 @@ whole night (BIBLE 12.11).
   per companion: one for the fourth memory, one for the fifth). Otherwise it counts 1: a
   word kept to a companion who stayed under level 100, or a third word to one who has had
   their two.
+- **Eldra's Hourglass** (a Weave) may call the dusk while the walker is away: a word not kept
+  yet is lost with that dusk, as if the walker had called it too early (its card says so).
 - **Broken**: no power is lost and nothing is forbidden any more; the word doubles nothing,
   the night counts like any other, the companion says one line and their medallion keeps an undone knot until dusk.
   Nothing goes to the Chronicle.
@@ -314,41 +322,83 @@ whole night (BIBLE 12.11).
 | Aurelion | No blow for 10 s at the start of every fight with the King |
 | The Awakened | The Awakened is not hired all night |
 
+Kept as it is at the audit of 2026-10-19 (three asks drawn a night, or a reward indexed on
+the real cost, were weighed and left out): the choice is already among every companion who
+can ask tonight, each with one ask in their own voice that a walker learns once; the reward
+is the same ×2 for everyone, so the cost of the ask is the whole choice (a striker gives
+Ysolde their word on a night they mean to let the company walk). A draw would hide asks a
+walker can keep, and an indexed reward would make the words already kept worth different
+amounts. Nothing changes for the words kept.
+
 ### The Descent
 
 The second layer of rebirth, for the long run (it keeps players apart after weeks of play).
+Reworked in save version 19 (the audit of 2026-10-19): it took every essence, left the walker
+more than a day under the record it left, and only paid after almost a week.
 
-- **Unlock**: a best stage of 2000 ever: Eldra shows her Loom, where the first Descent weaves
-  32 threads, announced once by a toast. Without a Descent the bot reaches it in about a
-  week, where the road flattens. Opened at stage 1500 (day 2), the Descents came every other
-  day and the bot stood at 2948 on day 14, the Dawn in sight. Before save version 12 the Loom opened at stage 1000
-  with Eldra's Recognition 5; a walker she showed it to that way keeps it.
-- **A Descent** resets everything an ascension resets, plus the essences and the altars;
-  it keeps relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime
-  statistics and the best stage ever.
+- **Unlock**: a best stage of 1500 ever (the Draft): Eldra shows her Loom, where the first
+  Descent weaves 8 threads, announced once by a toast. From save version 12 to 18 it opened
+  at 2000 (32 threads); before version 12 at stage 1000 with Eldra's Recognition 5, and a
+  walker she showed it to that way keeps it.
+- **A Descent** resets everything an ascension resets, plus the altars and nine essences in
+  ten: it leaves a tenth of the essences held (`DESCENT_KEEP`, rounded down). It keeps
+  relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime statistics and the
+  best stage ever. The server refuses a Descent that kept more than its tenth.
+- **What it does, measured** (`scripts/descent.ts`, the active bot from each seed's own
+  state, the same walker never descending beside it, median of 5 seeds; the Warp of Plenty
+  at its version 19 price):
+
+  | | Before (version 18) | Now |
+  |---|---|---|
+  | Record regained, Descents 1 to 4, from stage 2000 | 30 to 43 h of play | 5 to 6 h |
+  | Record regained, later Descents (5 to 9) | 41 h and more | 9 to 15 h |
+  | Ahead of the walker who never descends, from 2000 | from day 6 | from day 2 |
+  | Stages gained in 12 days from 2000 (never descending: +1223) | +1640 (×1.34) | +2400 (×1.96) |
+  | From stage 1500, the Loom open there: depth on day 3 / 5 / 10 against never descending | | +5% / +14% / +26% |
+  | The Dawn (stage 3000), the active bot from a new game (`deep.ts reach`) | day 13 to 14 | day 5 to 6 |
+
+  The bot descends once an Age, about once a day. From 1500, the stages it gains since the
+  Loom opened stand ×1.10 against never descending by day 3, ×1.28 by day 5, ×1.49 by day 10:
+  about +4% a cycle, compounding. From the third day on, each day gains 1.5 to 5 times the
+  stages of the same day never descending (the walker who never descends nearly stops past
+  the Dawn). Keeping a twentieth or a thirtieth walks almost the same road, an
+  hour or two slower to come back each time. Tried and dropped: a weight of the threads on
+  the company's damage (threads^2.5): the record still took 14 to 31 h to come back, then the
+  road ran away past the Dawn (400 stages a day); and the Warp of Plenty at its old price
+  (×1.2 a level) with the tenth kept: the long run reached stage 10,000 on day 29, its pace
+  rising from 200 to 467 a day past 7500. At ×1.22 it still sped up past 7000; at ×1.3 it
+  stalled near 5850. ×1.25 holds between the two.
 - **Threads**: the thread is as long as the night has gone deep. Woven in all,
   `floor(2^((best stage − 750) / 250))`: 2 at stage 1000, twice as many with every Age (250
-  stages), 32 at stage 2000, 64 at 2250, 512 at the Dawn. A Descent weaves what the best
+  stages), 8 at 1500, 32 at stage 2000, 512 at the Dawn. A Descent weaves what the best
   stage adds to the threads already woven, so a night that went no deeper than the last
   weaves nothing, and the Loom tells the stage of the next thread. (Until save version 10
   each Descent wove `floor(2 × (log10(E) − 5))` threads from its own essences: a shallow
   night paid as much as a deep one, and descending often and shallow was the best way
   down.)
-- **Weaves** at Eldra's Loom, permanent, bought with threads (price `ceil(base × growth^level)`):
+- **Weaves** at Eldra's Loom, permanent, bought with threads (price `ceil(base × growth^level)`).
+  Three change how the game plays rather than adding a percentage: the Hourglass and the
+  Habits (save version 19) and the Seventh Night. No weave was removed or repriced: the
+  threads and weaves of older saves keep their value.
 
-  | Weave | Effect per level | Cap |
-  |---|---|---|
-  | Warp of Plenty | Essences ×1.25 (multiplies); price `ceil(4 × 1.2^level)` | none |
-  | Knot of Dusk | Altar of the Wanderer +10 levels of cap | 5 |
-  | The Long Thread | Catch-up cap +1 h (background tab or closed game) | 4 |
-  | Humming Loom | Crystals come 10% sooner | 5 |
-  | Kinship | Recognition tiers ask one run less | 3 |
-  | Remembered Stones | 5% of each altar level survives a Descent | 5 |
-  | Frayed Edge | Fragment chance +20% | 5 |
-  | The Seventh Night | The seventh power, Unweave | 1 |
+  | Weave | Effect per level | Price | Cap |
+  |---|---|---|---|
+  | Warp of Plenty | Essences ×1.25 (multiplies); levels woven before version 19 keep the price they were paid, `ceil(4 × 1.2^level)` | `ceil(4 × 1.25^level)` | none |
+  | Eldra's Hourglass | While the walker is away (closed game, hidden tab or no input), once the head of the night has stood still for 15 min before an elite or a guardian the company cannot beat, the company calls the dusk itself and walks the next night; the Reunion tells the dusks and their essences | 8 | 1 |
+  | Woven Habits | The powers are used again the moment they are ready (an open game; never Time Echo nor Unweave, never against a word that forbids powers) | 8 | 1 |
+  | Knot of Dusk | Altar of the Wanderer +10 levels of cap | `3 × 2^level` | 5 |
+  | The Long Thread | Catch-up cap +1 h (background tab or closed game) | `4 × 2^level` | 4 |
+  | Humming Loom | Crystals come 10% sooner | `2 × 1.7^level` | 5 |
+  | Kinship | Recognition tiers ask one run less | `5 × 3^level` | 3 |
+  | Remembered Stones | 5% of each altar level survives a Descent | `3 × 2^level` | 5 |
+  | Frayed Edge | Fragment chance +20% | `1 × 1.5^level` | 5 |
+  | The Seventh Night | The seventh power, Unweave | 10 | 1 |
 
-- The Warp of Plenty is the one weave that compounds. Its price grows by a fifth a level
-  (it was `2 × 1.6^level`) while the thread doubles with every Age, so each Age buys fewer
+- The Hourglass watches when the head of the night last moved (`trail.frontierAt`, kept in
+  the save, never past the last tick). Its dusks are ascensions like any other, bounded by
+  the same checks.
+- The Warp of Plenty is the one weave that compounds. Its price grows by a quarter a level
+  (`2 × 1.6^level` until version 10, `4 × 1.2^level` until version 18) while the thread doubles with every Age, so each Age buys fewer
   levels than the last: the Descents carry the walker down without running away.
 - Each Descent reopens the strata's keystones in a second reading.
 
@@ -380,7 +430,13 @@ beaten, it lets the walker through, and the night draws itself again from its fi
   - final curve, 9 seeds, 30 days: the active bot 3000 to 4381 (about 46 a day), the idle
     company alike (4388 at ×1.155, the gap a twentieth), the realistic leader of `deep.ts`
     (four hours a day) about 15 a day (3455 at ×1.155);
-  - the long run of seed 1, every day's save checked: stage 10,000 on day 272 (742 nights,
+  - since save version 19 (the Descent leaving a tenth, the Warp of Plenty at ×1.25 a level),
+    the active bot reaches the Dawn on day 5 to 6; 9 seeds, 20 days from 3000: 5234 (from 296
+    stages on the first day to about 65 a day by days 15 to 20); the long runs of seeds 1 to 3:
+    about 38 a day at 5500, 15 to 27 at 6500 to 7500, then 19 to 31 a day near 9000 to 10,000,
+    seed 3 at 10,000 on day 176: past 7500 the pace rises a little, as before, the one target
+    not held;
+  - before it, the long run of seed 1, every day's save checked: stage 10,000 on day 272 (742 nights,
     30 Descents), about 44 stages a day at 3000, 37 at 4000, 27 at 5000, 16 at 7500, then up
     again, about 40 a day near 9500: past 7500 the deep road speeds up a little (it did at
     ×1.15 too), the one target not held.
@@ -405,6 +461,12 @@ beaten, it lets the walker through, and the night draws itself again from its fi
   what one of the First Mark weighs (since 1.3; before, density kept growing past the Dawn,
   and with the relics that remember it carried the deep road off). The Ledger bounds it with
   the depth (never deeper than the best stage).
+- **Layers, kept as they are** (audit of 2026-10-19): main stat, affixes, density, traits,
+  memory and place stay apart. Traits and places were weighed for a merge and kept: a trait
+  is the relic's own (it travels with it to any depth), a place is the land it came from and
+  only pays with others of that land, two choices a walker makes differently. The pack sums
+  every layer into one number, what the relic is worth to the company, so the walker never
+  has to add them up. They shipped in save version 17; no conversion was needed.
 - **What a relic remembers** (`data/traits.ts`, BIBLE 11.0, save version 17):
   - **Traits**, from epic up (one; two for a mythic): one effect of the slot's role, its
     value by rarity (epic, legendary, mythic). Weapon: Vanguard (company damage ×1.1 / 1.3 /
