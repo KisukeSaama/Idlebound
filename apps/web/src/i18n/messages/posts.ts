@@ -95,7 +95,7 @@ export const NEWS_POSTS: NewsPost[] = [
         },
         {
           kind: "entry",
-          name: "Les écrans tactiles",
+          name: "Au toucher",
           tag: "new",
           context: "Sur un téléphone, rien ne se survole : tu dois pouvoir lire avant de choisir.",
           changes: [{ label: "Talents et pouvoirs", text: "un premier toucher montre ce qu'ils font, un second les apprend ou les lance" }]
@@ -148,6 +148,58 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "La porte du donjon (étape 45), première nuit", before: "guérit entièrement", after: "garde jusqu'à 75 % de ses blessures" },
             { label: "Le Roi déchu, première nuit", before: "guérit entièrement", after: "garde jusqu'à 50 % de ses blessures" },
             { label: "Dès ton premier crépuscule", text: "ils guérissent de nouveau entièrement" }
+          ]
+        },
+        { kind: "h2", text: "Plus loin sur la route" },
+        {
+          kind: "spoiler",
+          label: "La Descente et le Métier d'Eldra",
+          body: [
+            {
+              kind: "entry",
+              name: "La Descente",
+              tag: "up",
+              context: "Descendre te coûtait plus d'un jour de marche pour un gain que tu ne voyais presque pas. Elle doit te ramener vite sur ton record, puis te porter plus loin.",
+              changes: [
+                { label: "Le Métier d'Eldra s'ouvre", before: "à l'étape 2000", after: "à l'étape 1500, où la première Descente tisse 8 fils" },
+                { label: "Ce qu'elle te laisse", before: "aucune essence", after: "un dixième de tes essences (les autels partent toujours)" },
+                { label: "Ton record", text: "retrouvé en quelques heures de jeu au lieu de plus d'un jour, puis dépassé dès le lendemain" },
+                { label: "Déjà au-delà de l'étape 1500", text: "le Métier t'attend tout de suite, et tes fils et Tissages gardent toute leur valeur" }
+              ]
+            },
+            {
+              kind: "entry",
+              name: "Sablier d'Eldra",
+              tag: "new",
+              context: "Un nouveau Tissage, pour la compagnie qui marche sans toi.",
+              changes: [
+                { label: "Prix", text: "8 fils" },
+                { label: "Pendant ton absence", text: "quand la compagnie piétine 15 min devant une élite ou un gardien trop fort pour elle, elle appelle elle-même le crépuscule et marche la nuit suivante" },
+                { label: "À ton retour", text: "les essences t'attendent, et le récit de la compagnie dit les crépuscules appelés" },
+                { label: "Une parole pas encore tenue", text: "se perd avec ce crépuscule" }
+              ]
+            },
+            {
+              kind: "entry",
+              name: "Gestes tissés",
+              tag: "new",
+              context: "Un nouveau Tissage, pour la main qui a d'autres choses à faire.",
+              changes: [
+                { label: "Prix", text: "8 fils" },
+                { label: "Tes pouvoirs", text: "se relancent seuls dès qu'ils sont prêts, sauf si ta parole te les interdit" },
+                { label: "L'Écho temporel et Détisser", text: "t'attendent toujours" }
+              ]
+            },
+            {
+              kind: "entry",
+              name: "Chaîne d'abondance",
+              tag: "changed",
+              context: "Avec des Descentes plus douces, l'abondance devait monter un peu plus lentement pour que la route garde son poids.",
+              changes: [
+                { label: "Prix de chaque niveau", before: "+20 % sur le précédent", after: "+25 % sur le précédent" },
+                { label: "Les niveaux déjà tissés", text: "gardent le prix que tu as payé" }
+              ]
+            }
           ]
         },
         { kind: "h2", text: "Corrections" },
@@ -243,6 +295,7 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "Les reliques", text: "l'éveil et la Densité disent ce qu'ils font, les traits Déroute et Retrouvailles disent quand ils jouent" },
             { label: "Les événements", text: "la Brèche et l'Éclipse du Roi disent ce qu'elles donnent, et de combien le Roi est plus dur" },
             { label: "En français", text: "les lignes qui te parlent se lisent pareil pour toutes et tous, et la ponctuation ne laisse plus un deux-points seul en début de ligne" },
+            { label: "Autels de puissance et de la patience", text: "leurs cartes disent ce qui les distingue : la puissance renforce aussi tes frappes, la patience seulement tes compagnons, mais grandit plus vite" },
             { label: "La Chronique", text: "ses fragments ne prêtent plus à une créature un geste qu'elle ne sait pas faire" },
             { label: "Une partie refusée par le Registre", text: "dit simplement quoi faire" }
           ]
@@ -308,7 +361,7 @@ export const NEWS_POSTS: NewsPost[] = [
         },
         {
           kind: "entry",
-          name: "Touch screens",
+          name: "By touch",
           tag: "new",
           context: "On a phone nothing can be hovered: you should be able to read before you choose.",
           changes: [{ label: "Talents and powers", text: "a first tap shows what they do, a second learns or uses them" }]
@@ -361,6 +414,58 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "The Keep's gate (stage 45), first night", before: "heals whole", after: "keeps up to 75% of its wounds" },
             { label: "The Fallen King, first night", before: "heals whole", after: "keeps up to 50% of his wounds" },
             { label: "From your first dusk on", text: "they heal whole again" }
+          ]
+        },
+        { kind: "h2", text: "Further down the road" },
+        {
+          kind: "spoiler",
+          label: "The Descent and Eldra's Loom",
+          body: [
+            {
+              kind: "entry",
+              name: "The Descent",
+              tag: "up",
+              context: "Descending cost you more than a day of walking for a gain you could hardly see. It should bring you back to your record quickly, then carry you further.",
+              changes: [
+                { label: "Eldra's Loom opens", before: "at stage 2000", after: "at stage 1500, where the first Descent weaves 8 threads" },
+                { label: "What it leaves you", before: "no essences", after: "a tenth of your essences (the altars still go)" },
+                { label: "Your record", text: "regained within a few hours of play instead of more than a day, then passed from the next day on" },
+                { label: "Already past stage 1500", text: "the Loom waits for you at once, and your threads and Weaves keep all their value" }
+              ]
+            },
+            {
+              kind: "entry",
+              name: "Eldra's Hourglass",
+              tag: "new",
+              context: "A new Weave, for the company that walks without you.",
+              changes: [
+                { label: "Price", text: "8 threads" },
+                { label: "While you are away", text: "once the company has stood still for 15 min before an elite or a guardian too strong for it, it calls the dusk itself and walks the next night" },
+                { label: "When you come back", text: "the essences wait for you, and the company's account tells the dusks it called" },
+                { label: "A word not kept yet", text: "is lost with that dusk" }
+              ]
+            },
+            {
+              kind: "entry",
+              name: "Woven Habits",
+              tag: "new",
+              context: "A new Weave, for a hand that has other things to do.",
+              changes: [
+                { label: "Price", text: "8 threads" },
+                { label: "Your powers", text: "are used again the moment they are ready, unless your word forbids them" },
+                { label: "Time Echo and Unweave", text: "still wait for you" }
+              ]
+            },
+            {
+              kind: "entry",
+              name: "Warp of Plenty",
+              tag: "changed",
+              context: "With gentler Descents, plenty had to climb a little more slowly so the road keeps its weight.",
+              changes: [
+                { label: "Price of each level", before: "+20% over the last", after: "+25% over the last" },
+                { label: "Levels already woven", text: "keep the price you paid" }
+              ]
+            }
           ]
         },
         { kind: "h2", text: "Fixes" },
@@ -456,6 +561,7 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "Relics", text: "awakening and Density say what they do, the Rout and Homecoming traits say when they apply" },
             { label: "Events", text: "the Seam and the King's Eclipse say what they give, and how much tougher the King is" },
             { label: "In French", text: "the lines spoken to you read the same for every walker, and punctuation no longer leaves a colon alone at the start of a line" },
+            { label: "Altars of Might and Patience", text: "their cards say what tells them apart: Might raises your strikes too, Patience only your companions, but grows faster" },
             { label: "The Chronicle", text: "its fragments no longer give a creature a deed it cannot do" },
             { label: "A game refused by the Ledger", text: "says plainly what to do" }
           ]
