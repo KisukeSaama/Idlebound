@@ -8,7 +8,9 @@ import {
   BASE_TREASURE_CHANCE,
   BESTIARY,
   CLICK_HERO_ID,
+  DESCENT_KEEP,
   DESCENT_OPEN_STAGE,
+  HOURGLASS_STALL_SECONDS,
   ERA_COUNT,
   ESSENCE_DPS_BONUS,
   FORGE_MAX,
@@ -30,7 +32,8 @@ import {
   WOUND_CAP,
   WOUND_LAST_STAGE,
   FIRST_NIGHT_KING_WOUND,
-  HERO_BY_ID
+  HERO_BY_ID,
+  threadsFor
 } from "@idlebound/game";
 
 /**
@@ -64,6 +67,9 @@ export const FACTS = {
   secrets: SECRETS.length,
   achievements: ACHIEVEMENTS.length,
   descentStage: DESCENT_OPEN_STAGE,
+  descentThreads: threadsFor(DESCENT_OPEN_STAGE),
+  descentKeepPct: Math.round(DESCENT_KEEP * 100),
+  hourglassMinutes: HOURGLASS_STALL_SECONDS / 60,
   inventory: INVENTORY_LIMIT,
   forgeMax: FORGE_MAX,
   satchel: SATCHEL_SIZE,

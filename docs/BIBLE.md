@@ -1212,14 +1212,20 @@ PRODUCT.md notes the known limit: progress flattens after two weeks, and keeping
 apart needs a second prestige layer. The Descent is that layer, told as the story's
 deepest act.
 
-- **Unlock** (shipped, save version 12): best stage ever 2000. Eldra shows her loom once the
-  night has gone past the Edge of Sleep, where the road slows for good without her. Before, it
-  asked for stage 1000 and her Recognition 5, a gate nobody could see coming; a walker she
-  showed it to that way keeps it.
+- **Unlock** (shipped, save version 19): best stage ever 1500. Eldra shows her loom once the
+  night reaches the Draft, where the world starts to come undone and the late Ages are paced
+  by Descents (section 16). From save version 12 to 18 it waited for stage 2000, past the Edge
+  of Sleep: a Descent then cost more than a day under the record, and sooner it set the walker
+  back for longer. Before version 12 it asked for stage 1000 and her Recognition 5, a gate
+  nobody could see coming; a walker she showed it to that way keeps it.
 - **In the world:** Eldra unweaves the whole Sanctum and weaves the Long Night again, one
-  thread deeper. The walker loses the stones (altars) and the memories (essences) and
+  thread deeper. The walker loses the stones (altars) and most of the memories (essences) and
   keeps what cannot be unwoven: relics, shards, deeds, the Chronicle, Recognition.
-- **Resets:** everything an ascension resets, plus essences and altar levels.
+- **A tenth of the memories stays** (shipped, save version 19): Eldra unweaves the stones, not
+  every memory; a tenth of the essences held comes down with the walker. In the world: the
+  oldest rule of the Bound, "Never spend all of yourself", holds even at the Loom. In play: the
+  walker stands again on the record they left within hours, not a day and a half.
+- **Resets:** everything an ascension resets, plus the altar levels and nine essences in ten.
 - **Keeps:** relics, shards, achievements, fragments, bestiary, Recognition, lifetime
   statistics, best stage ever.
 - **Gives:** **Threads** (FR: *Fils*). Shipped: the thread is as long as the night has gone
@@ -1229,11 +1235,15 @@ deepest act.
   no new thread for a night that went no deeper than the last. (The first shape, threads
   from the essences of each Descent, paid the same for a shallow night as for a deep one:
   descending often and shallow was the best way down.)
-- **Spends at Eldra's Loom** on eight **Weaves** (FR: *Tissages*), permanent:
+- **Spends at Eldra's Loom** on ten **Weaves** (FR: *Tissages*), permanent. In the world:
+  the Hourglass is the one she keeps by the loom, turned for a walker who is not there; the
+  Habits are the gestures of every night walked, woven into the hands so they come alone.
 
   | Weave EN / FR | Effect per level | Cap |
   |---|---|---|
-  | Warp of Plenty / Chaîne d'abondance | Essences ×1.25 (multiplies) | none |
+  | Warp of Plenty / Chaîne d'abondance | Essences ×1.25 (multiplies); price ×1.25 a level since version 19 (×1.2 before, the levels woven then keep it) | none |
+  | Eldra's Hourglass / Sablier d'Eldra (shipped, version 19) | While the walker is away, a night stood still for 15 min before a boss the company cannot beat ends on its own: the company calls the dusk and walks the next night | 1 |
+  | Woven Habits / Gestes tissés (shipped, version 19) | The powers are used again the moment they are ready (never Time Echo nor Unweave, never against a word) | 1 |
   | Knot of Dusk / Nœud du crépuscule | Altar of the Wanderer +10 levels of cap | 5 |
   | The Long Thread / Le Long Fil | Catch-up cap +1 h (background tab or closed game) | 4 |
   | Humming Loom / Métier bourdonnant | Crystals come 10% sooner | 5 |
@@ -1514,10 +1524,10 @@ is what carries players, so the late Ages are paced by Descents.
 | Kaelen R4 | ~week 1 | Recognition | The night he ran. The Binding had a price. | 3 |
 | Ascension 25 | ~week 1 | King's Words: warning (the Nameless asks "How many?" at R3, ~ascension 7; "Keep some." at R4) | "Never spend all of yourself." | 4 |
 | Stage 750 | ~week 1 | Eclipse keystone | Priests prayed for a night that would never end. Someone answered. | 3 |
-| Stage 1,000 | ~day 3 (engaged) to week 2 | Aurora keystone; Descent possible | "Not the Dawn. Its rehearsal." The word Dawn appears. | 5 |
+| Stage 1,000 | ~day 3 (engaged) to week 2 | Aurora keystone | "Not the Dawn. Its rehearsal." The word Dawn appears. | 5 |
 | Eldra R4, then R5 / Descent 1 | week 2 | Recognition, then the Loom | She wove the Long Night. "I am sorry. I am not sorry." (R4) | 3 |
 | Stage 1,250 | week 2 | Frayed keystone | The weave is thin enough to see light through. | 5 |
-| Stage 1,300 to 1,500 | weeks 2 to 3 | Age VI, the Draft | The world as a drawing; art turns to charcoal. | 5 |
+| Stage 1,300 to 1,500 | weeks 2 to 3 | Age VI, the Draft; at 1,500 Eldra's Loom, the Descent possible (save version 19) | The world as a drawing; art turns to charcoal. | 5 |
 | The Nameless R5 | weeks 2 to 4 | Recognition | His helmet bears your name. | 4 |
 | Stage 1,500 to 1,750 | Descents 1 to 3 | Age VII, the Words | The world is being told to itself so it will not stop. | 5 |
 | Ascension 50 | month 1 | King's Word 50 | "Don't stop. I did." / « Ne t'arrête pas. Moi, je l'ai fait. » | 4 |
@@ -2161,6 +2171,12 @@ about 40 near 9500. The pace never falls to nothing, but past 7500 it rises agai
 walker gains every Age outgrows the Remnants a little more each Age. The next step, if the
 Roll shows it, is a growth that rises again slowly below 7500 rather than a constant one. Nothing new was added to grow stronger: the
 open altars and the Warp of Plenty already have no last level, and carry the walker down.
+
+Save version 19 reworked the Descent (section 12.7): it leaves a tenth of the essences and
+pays within hours, so the bot descends once an Age far below the Dawn too. With the Warp of
+Plenty at its old price (×1.2 a level) the road ran away (stage 10,000 on day 29); at ×1.3 it
+stalled near 5850; at ×1.25 it holds 15 to 30 stages a day from 6000 to 10,000, seed 3 at
+10,000 on day 176, the pace rising a little past 7500 as it did before.
 
 The target: the active bot, whose pace just below the Dawn matches the leaders of the Roll
 (2820 to 3000 in a few days), still gains at least 5 stages a day at stage 10,000. The

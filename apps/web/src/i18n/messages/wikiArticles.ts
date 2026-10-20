@@ -123,7 +123,7 @@ export const wikiArticles = defineMessages<Articles>({
             "Les **PV** suivent une courbe en trois segments : très raide au début, puis ×1,15 par étape, puis ×1,18 par étape. L'élite (toutes les 5 étapes) a 6 fois les PV d'un Vestige, le gardien (toutes les 10 étapes) 10 fois.",
             "L'**or** d'un monstre vaut 1/30 de ses PV (le double à l'étape 1, l'écart se résorbant jusqu'à l'étape 10). Tes bonus d'or (Autel de fortune, talents, reliques, Bestiaire) s'y ajoutent.",
             "Les **essences** d'une ascension dépendent de l'étape la plus lointaine franchie pendant la nuit : 20 × 1,075 par étape au-delà de 50, jusqu'à l'étape 140, puis +2 % par étape, plus 3 par étape au-delà de 50. L'Autel de la récolte, la Chaîne d'abondance et certaines reliques les multiplient.",
-            `Les **fils** de la Descente : 2 à l'étape 1 000, deux fois plus à chaque Âge (250 étapes), 32 à l'étape ${fr(f.descentStage)}.`
+            `Les **fils** de la Descente : 2 à l'étape 1 000, deux fois plus à chaque Âge (250 étapes), ${fr(f.descentThreads)} à l'étape ${fr(f.descentStage)}, où s'ouvre le Métier.`
           ]
         }
       ]
@@ -606,12 +606,12 @@ export const wikiArticles = defineMessages<Articles>({
         {
           id: "unlock",
           title: "Quand elle s'ouvre",
-          blocks: [`Le Métier s'ouvre quand ton record atteint l'étape ${fr(f.descentStage)}, annoncé une fois. Sans Descente, on y arrive en environ une semaine de jeu, là où la route ralentit pour de bon.`]
+          blocks: [`Le Métier s'ouvre quand ton record atteint l'étape ${fr(f.descentStage)}, annoncé une fois, à l'Âge de l'Ébauche. La première Descente y tisse ${fr(f.descentThreads)} fils.`]
         },
         {
           id: "what",
           title: "Ce qu'elle remet à zéro",
-          blocks: [{ list: ["**Remis à zéro** : tout ce qu'efface une ascension, plus les essences et les autels.", "**Gardé** : reliques, éclats, hauts faits, la Chronique, le Bestiaire, la Reconnaissance, les statistiques à vie et ton record."] }]
+          blocks: [{ list: ["**Remis à zéro** : tout ce qu'efface une ascension, plus les autels et l'essentiel des essences.", "**Une part des essences** : la Descente t'en laisse ${f.descentKeepPct} %, arrondi en dessous.", "**Gardé** : reliques, éclats, hauts faits, la Chronique, le Bestiaire, la Reconnaissance, les statistiques à vie et ton record."] }]
         },
         {
           id: "threads",
@@ -621,12 +621,12 @@ export const wikiArticles = defineMessages<Articles>({
             { slot: "threads" }
           ]
         },
-        { id: "weaves", title: "Les Tissages", blocks: ["Au Métier, les fils achètent des Tissages permanents (prix : `base × croissance^niveau`, arrondi au-dessus), que rien ne défait.", { slot: "weaves" }, "La Chaîne d'abondance est le seul Tissage qui se multiplie. Son prix grandit d'un cinquième par niveau pendant que le fil double à chaque Âge : chaque Âge en achète moins que le précédent, sans emballement. Chaque Descente rouvre aussi les pierres de voûte des strates pour une seconde lecture."] },
+        { id: "weaves", title: "Les Tissages", blocks: ["Au Métier, les fils achètent des Tissages permanents (prix : `base × croissance^niveau`, arrondi au-dessus), que rien ne défait. Deux changent ta façon de jouer : le Sablier d'Eldra appelle le crépuscule pendant ton absence quand la compagnie piétine ${f.hourglassMinutes} min devant une élite ou un gardien, et les Gestes tissés relancent tes pouvoirs dès qu'ils sont prêts.", { slot: "weaves" }, "La Chaîne d'abondance est le seul Tissage qui se multiplie. Son prix grandit d'un quart par niveau (les niveaux tissés avant gardent le prix payé) pendant que le fil double à chaque Âge : chaque Âge en achète moins que le précédent, sans emballement. Chaque Descente rouvre aussi les pierres de voûte des strates pour une seconde lecture."] },
         {
           id: "strategy",
           title: "Quand descendre",
           blocks: [
-            "La première Descente te ramène en arrière pendant un jour ou deux, puis te fait passer devant celui qui ne descend jamais. Descendre une fois par Âge (8 fils au moins) va plus loin que descendre trop souvent, qui paie la remontée trop de fois.",
+            "Une Descente te ramène en arrière quelques heures de jeu, puis te fait passer devant celui qui ne descend jamais, dès le lendemain. Descendre une fois par Âge (8 fils au moins) va plus loin que descendre trop souvent, qui paie la remontée trop de fois.",
             "Le classement **Nuits retissées** compte les Descentes qui ont tissé au moins un fil : une Descente qui ne tisse rien n'y compte pas. Il récompense ton rythme au Métier, pas ta profondeur.",
             { slot: "crown" }
           ]
@@ -777,7 +777,7 @@ export const wikiArticles = defineMessages<Articles>({
             "**HP** follow a curve in three segments: very steep early, then ×1.15 per stage, then ×1.18 per stage. The elite (every 5 stages) has 6 times a Remnant's HP, the guardian (every 10 stages) 10 times.",
             "A monster's **gold** is worth 1/30 of its HP (twice that at stage 1, the gap closing by stage 10). Your gold bonuses (Altar of Fortune, talents, relics, Bestiary) come on top.",
             "An ascension's **essences** depend on the furthest stage cleared in the night: 20 × 1.075 per stage past 50, up to stage 140, then +2% per stage, plus 3 per stage past 50. The Altar of Harvest, the Warp of Plenty and some relics multiply them.",
-            `The Descent's **threads**: 2 at stage 1,000, twice as many with every Age (250 stages), 32 at stage ${en(f.descentStage)}.`
+            `The Descent's **threads**: 2 at stage 1,000, twice as many with every Age (250 stages), ${en(f.descentThreads)} at stage ${en(f.descentStage)}, where the Loom opens.`
           ]
         }
       ]
@@ -1210,8 +1210,8 @@ export const wikiArticles = defineMessages<Articles>({
     descent: (f) => ({
       lead: `The second rebirth, for the long run. At stage ${en(f.descentStage)}, Eldra shows you her Loom: you unweave essences and altars into threads, and take the night up again further down.`,
       sections: [
-        { id: "unlock", title: "When it opens", blocks: [`The Loom opens once your record reaches stage ${en(f.descentStage)}, announced once. Without a Descent, you get there in about a week of play, where the road slows down for good.`] },
-        { id: "what", title: "What it resets", blocks: [{ list: ["**Reset**: everything an ascension clears, plus essences and altars.", "**Kept**: relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime statistics and your record."] }] },
+        { id: "unlock", title: "When it opens", blocks: [`The Loom opens once your record reaches stage ${en(f.descentStage)}, announced once, in the Age of the Draft. The first Descent weaves ${en(f.descentThreads)} threads there.`] },
+        { id: "what", title: "What it resets", blocks: [{ list: ["**Reset**: everything an ascension clears, plus the altars and most of the essences.", "**A share of the essences**: the Descent leaves you ${f.descentKeepPct}% of them, rounded down.", "**Kept**: relics, shards, deeds, the Chronicle, the Bestiary, Recognition, lifetime statistics and your record."] }] },
         {
           id: "threads",
           title: "Threads",
@@ -1220,11 +1220,11 @@ export const wikiArticles = defineMessages<Articles>({
             { slot: "threads" }
           ]
         },
-        { id: "weaves", title: "Weaves", blocks: ["At the Loom, threads buy permanent Weaves (price: `base × growth^level`, rounded up) that nothing unweaves.", { slot: "weaves" }, "The Warp of Plenty is the one Weave that compounds. Its price grows by a fifth a level while the thread doubles with every Age: each Age buys fewer levels than the last, with no runaway. Each Descent also reopens the strata's keystones for a second reading."] },
+        { id: "weaves", title: "Weaves", blocks: ["At the Loom, threads buy permanent Weaves (price: `base × growth^level`, rounded up) that nothing unweaves. Two change how you play: Eldra's Hourglass calls the dusk while you are away once the company has stood still for ${f.hourglassMinutes} min before an elite or a guardian, and Woven Habits use your powers again the moment they are ready.", { slot: "weaves" }, "The Warp of Plenty is the one Weave that compounds. Its price grows by a quarter a level (levels woven before keep the price paid) while the thread doubles with every Age: each Age buys fewer levels than the last, with no runaway. Each Descent also reopens the strata's keystones for a second reading."] },
         {
           id: "strategy",
           title: "When to descend",
-          blocks: ["The first Descent sets you back for a day or two, then pulls you ahead of the walker who never descends. Descending once an Age (8 threads at least) goes further than descending too often, which pays the climb back too many times.", "The **Rewoven Nights** board counts the Descents that wove at least one thread: a Descent that weaves nothing does not count. It rewards your pace at the Loom, not your depth.", { slot: "crown" }]
+          blocks: ["A Descent sets you back a few hours of play, then pulls you ahead of the walker who never descends from the next day on. Descending once an Age (8 threads at least) goes further than descending too often, which pays the climb back too many times.", "The **Rewoven Nights** board counts the Descents that wove at least one thread: a Descent that weaves nothing does not count. It rewards your pace at the Loom, not your depth.", { slot: "crown" }]
         }
       ]
     }),
