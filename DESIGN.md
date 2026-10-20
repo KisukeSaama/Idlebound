@@ -601,7 +601,9 @@ dependency). Same recipe, era and seed give the same pixels everywhere; snapshot
   outline, lighter along the top and deepest underneath, around a body of opaque paper
   white, its shadows turned to diagonal hatching: three pale tones at the Pale, two at the
   Faint, then paper and strokes, pencil-light at the Blank and fresh ink at the Ink); fewer and fewer pixels at the same size (thin parts fall away era by
-  era, the masses merge into two or three flat tones in a fresh outline, the eyes stay; a
+  era, the masses merge into two or three flat tones in a fresh outline, broad areas that
+  widen with every era, never a mottle; the silhouette keeps what makes the creature, a bat
+  its wings and ears, a wolf its legs; the eyes stay, the thin lines of light fall away; a
   drawing already down to lines, like the Dawn, keeps them). Every treatment is solid
   pixels: stars sit on a hand-laid tile of sky, smudges and threads on regular grids, never
   scattered noise or a translucent pixel. Pip never changes.
