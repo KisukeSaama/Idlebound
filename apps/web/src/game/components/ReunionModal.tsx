@@ -74,6 +74,11 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
   const boss = (stage: number) => monsterName({ id: bossForStage(stage).id, kind: "boss" }, stage, locale);
 
   const moments: { key: string; icon: ReactNode; title: string; caption: string; tone?: "blocked" }[] = [];
+  // Eldra's Hourglass called the dusk while the walker was away: told first, the rest is tonight's.
+  const dusks = account.dusks ?? 0;
+  if (dusks > 0) {
+    moments.push({ key: "dusks", icon: <Picto name="hourglass" size={24} />, title: m.dusks(dusks), caption: m.dusksCaption(fmt(account.essences ?? 0)) });
+  }
   for (const stage of account.walls) {
     moments.push({ key: `wall-${stage}`, icon: <Picto name={isKingStage(stage) ? "crown" : "swords"} size={24} />, title: boss(stage), caption: m.wall(stage) });
   }
@@ -111,7 +116,7 @@ export function ReunionModal({ account, seconds, onClose }: ReunionModalProps) {
       <p className="ledger-voice">{n.reunionText(formatDuration(seconds, locale))}</p>
       <dl className="account-facts">
         <div><dt>{m.away}</dt><dd>{formatDuration(account.seconds, locale)}</dd></div>
-        <div><dt>{m.road}</dt><dd>{m.roadValue(account.fromStage, account.toStage)}</dd></div>
+        <div><dt>{dusks > 0 ? m.tonight : m.road}</dt><dd>{m.roadValue(account.fromStage, account.toStage)}</dd></div>
         <div><dt>{m.earned}</dt><dd className="is-gold">{gold(account.gold)}</dd></div>
         {/* Under one gold piece spent would read "0": nothing worth telling. */}
         {account.spent >= 1 ? <div><dt>{m.spent}</dt><dd>{gold(account.spent)}</dd></div> : null}

@@ -6,7 +6,7 @@ import { DASH, EMOJI, FORBIDDEN_WORDS } from "./content/writing";
 import { ALTAR_BY_ID } from "./data/altars";
 import { KING_FORMS, guardianForStage } from "./data/biomes";
 import { CARAVAN_WARES, caravanWare, isoWeek } from "./data/caravan";
-import { WEAVES, legacyThreadsFor, stageForThreads, threadsFor, weaveCost, weaveTotalCost } from "./data/descent";
+import { DESCENT_KEEP, WEAVES, legacyThreadsFor, stageForThreads, threadsFor, weaveCost, weaveTotalCost } from "./data/descent";
 import { ECLIPSE_EVERY, ECLIPSE_HP, EVENTS, SEAM_SECONDS, WAGER_CLICKS, WAGER_MIN_GOLD, WAGER_PAY_SECONDS, WAGER_REST_SECONDS } from "./data/events";
 import {
   AGE_ECHOES,
@@ -556,7 +556,8 @@ describe("the Descent", () => {
     const s = engine.state;
     expect(s.descents).toBe(1);
     expect(s.threads).toBe(3);
-    expect(s.essences).toBe(0);
+    // A tenth of the essences held stays (DESCENT_KEEP), the stones go.
+    expect(s.essences).toBe(Math.floor(5e8 * DESCENT_KEEP));
     expect(s.altars).toEqual({});
     expect(s.maxStage).toBe(1);
     expect(s.maxStageEver).toBe(1_200);
@@ -625,6 +626,76 @@ describe("the Descent", () => {
     expect(s.maxStage).toBe(4);
     expect(weaveCost("kinship", 3)).toBe(Number.POSITIVE_INFINITY);
     expect(verifyState(s, LATER)).toEqual([]);
+  });
+
+  it("turns Eldra's Hourglass while the walker is away: a stalled night ends on its own, and the account tells it", () => {
+    const walk = (woven: boolean) => {
+      const state = atTheLoom();
+      const engine = engineWith(state);
+      engine.descend(T0);
+      const s = engine.state;
+      if (woven) {
+        s.weaves.hourglass = 1;
+        s.threads -= weaveCost("hourglass", 0);
+      }
+      // A night that stopped before stage 60's guardian, a weak company training before it.
+      s.heroLevels = { maelle: 30 };
+      s.maxStage = 60;
+      s.stage = 59;
+      s.autoAdvance = false;
+      s.lastTickAt = T0;
+      engine.tick(T0 + 3 * 3600_000);
+      return engine;
+    };
+    const still = walk(false);
+    expect(still.state.lifetime.ascensions).toBe(veteran().lifetime.ascensions);
+    const turned = walk(true);
+    const s = turned.state;
+    expect(s.lifetime.ascensions).toBeGreaterThan(veteran().lifetime.ascensions);
+    expect(s.essences).toBeGreaterThan(0);
+    // The dusks it called are told at the walker's return, never as they happen.
+    expect(turned.drainEvents().some((event) => event.type === "ascended")).toBe(false);
+    turned.markInput(T0 + 3 * 3600_000 + 1_000);
+    const reunion = turned.drainEvents().find((event) => event.type === "reunion");
+    expect(reunion && reunion.type === "reunion" ? reunion.account?.dusks : 0).toBe(s.lifetime.ascensions - veteran().lifetime.ascensions);
+    expect(verifyState(s, LATER)).toEqual([]);
+    // The head of the night never moved after the last tick.
+    const forged = structuredClone(s);
+    forged.trail.frontierAt = forged.lastTickAt + 3600_000;
+    expect(codes(forged)).toContain("trail");
+  });
+
+  it("uses every power again the moment it is ready with Woven Habits, unless the word forbids powers", () => {
+    const habits = (woven: boolean, pledge?: string) => {
+      const engine = engineWith(atTheLoom());
+      engine.descend(T0);
+      const s = engine.state;
+      if (woven) s.weaves.habits = 1;
+      s.heroLevels = { aldric: 10, maelle: 25 };
+      if (pledge) s.trail.promise = { hero: pledge, kings: 0 };
+      s.lastTickAt = T0;
+      engine.tick(T0 + 2_000);
+      return s;
+    };
+    expect(habits(false).skills.frenzy).toBeUndefined();
+    const s = habits(true);
+    expect(s.skills.frenzy?.activeUntil).toBeGreaterThan(T0);
+    expect(s.skills.rally?.activeUntil).toBeGreaterThan(T0);
+    // Time Echo waits for the walker; Nyx's word (no power all night) holds.
+    expect(s.skills.echo).toBeUndefined();
+    expect(habits(true, "nyx").skills.frenzy).toBeUndefined();
+  });
+
+  it("leaves a tenth of the essences held at a Descent, and refuses a Descent that kept more", () => {
+    const before = atTheLoom();
+    const engine = engineWith(structuredClone(before));
+    engine.descend(T0);
+    const after = engine.state;
+    expect(after.essences).toBe(Math.floor(before.essences * DESCENT_KEEP));
+    expect(verifyTransition(before, after, 60_000)).toEqual([]);
+    const greedy = structuredClone(after);
+    greedy.essences = before.essences;
+    expect(verifyTransition(before, greedy, 60_000).map((violation) => violation.code)).toContain("descent");
   });
 
   it("accepts several Descents played honestly and saved regularly", () => {
@@ -833,9 +904,9 @@ describe("save version 11", () => {
     // Twenty threads at stage 1200, where depth alone weaves three: they stay woven.
     expect(migrated.legacyThreads).toBe(20);
     expect(migrated.lifetime.threads).toBe(20);
-    // The Warp keeps its three levels, paid again at today's price out of the threads held.
+    // The Warp keeps its three levels, paid again at the price of versions 11 to 18 out of the threads held.
     expect(migrated.weaves).toEqual({ plenty: 3, "dusk-knot": 1 });
-    expect(migrated.threads).toBe((legacy.threads as number) + legacyPlentySpend(3) - weaveTotalCost("plenty", 3));
+    expect(migrated.threads).toBe((legacy.threads as number) + legacyPlentySpend(3) - weaveTotalCost("plenty", 3, 3));
     expect(migrated.threads).toBeGreaterThanOrEqual(0);
     // With no thread left to pay the difference, a level goes back to threads instead.
     const bare = descended();
@@ -844,7 +915,7 @@ describe("save version 11", () => {
     (bare.lifetime as Record<string, number>).threads = legacyPlentySpend(3) + weaveTotalCost("dusk-knot", 1) + weaveTotalCost("humming-loom", 1);
     const short = parseState(bare);
     expect(short.weaves.plenty).toBe(2);
-    expect(short.threads).toBe(legacyPlentySpend(3) - weaveTotalCost("plenty", 2));
+    expect(short.threads).toBe(legacyPlentySpend(3) - weaveTotalCost("plenty", 2, 2));
     expect(verifyState(short, LATER)).toEqual([]);
     // A deep Warp cost more then than now: it keeps its levels and threads come back.
     const deep = descended();
@@ -855,7 +926,7 @@ describe("save version 11", () => {
     (deep.lore as { readings: number[] }).readings = [0, 0, 0, 0, 0];
     const rich = parseState(deep);
     expect(rich.weaves.plenty).toBe(7);
-    expect(rich.threads).toBe(legacyPlentySpend(7) - weaveTotalCost("plenty", 7));
+    expect(rich.threads).toBe(legacyPlentySpend(7) - weaveTotalCost("plenty", 7, 7));
     expect(rich.threads).toBeGreaterThan(0);
     expect(verifyState(rich, LATER)).toEqual([]);
     expect(verifyState(migrated, LATER)).toEqual([]);
@@ -922,7 +993,7 @@ describe("save version 12: the Rout, the Loom at stage 2000", () => {
     expect(verifyTransition(parseState(shown()), engine.state, later - LATER)).toEqual([]);
   }, 60_000);
 
-  it("opens the Loom at stage 2000 for everyone, and no sooner without Eldra's old rule", () => {
+  it("opens the Loom at stage 1500 for everyone, and no sooner without Eldra's old rule", () => {
     const state = veteran();
     expect(canDescend(state)).toBe(false);
     // Eldra remembering the walker no longer opens it on its own.
@@ -930,18 +1001,18 @@ describe("save version 12: the Rout, the Loom at stage 2000", () => {
     state.promises = { eldra: 2 };
     expect(canDescend({ ...state, maxStageEver: 999 })).toBe(false);
     const stranger = veteran();
-    stranger.maxStageEver = 1999;
+    stranger.maxStageEver = 1499;
     expect(canDescend(stranger)).toBe(false);
-    stranger.maxStageEver = 2000;
+    stranger.maxStageEver = 1500;
     expect(canDescend(stranger)).toBe(true);
     stranger.lastTickAt = LATER;
     stranger.lifetime.ascensionEssences = 1e9;
     stranger.lifetime.essencesEarned = 1e9;
     const engine = engineWith(stranger, seededRng(14), LATER);
-    expect(engine.descend(LATER)).toBe(threadsFor(2000));
-    expect(threadsFor(2000)).toBe(32);
+    expect(engine.descend(LATER)).toBe(threadsFor(1500));
+    expect(threadsFor(1500)).toBe(8);
     expect(verifyState(engine.state, LATER)).toEqual([]);
-    // A Descent before stage 2000 without Eldra's old rule is refused.
+    // A Descent before stage 1500 without Eldra's old rule is refused.
     const forged = veteran();
     forged.descents = 1;
     forged.lore.readings = [0];

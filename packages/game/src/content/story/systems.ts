@@ -281,6 +281,8 @@ const en: SystemsText = {
   },
   weaves: {
     plenty: { name: "Warp of Plenty", description: "Each level multiplies the essences you gain at every ascension by 1.25 (level 2: ×1.56)." },
+    hourglass: { name: "Eldra's Hourglass", description: "While you are away, once the company has stood still for 15 min before an elite or a guardian too strong for it, it calls the dusk itself and walks the next night. The essences wait for you; a word not kept yet is lost with that dusk." },
+    habits: { name: "Woven Habits", description: "Your powers are used again the moment they are ready, unless your word forbids them. Time Echo and Unweave still wait for you." },
     "dusk-knot": { name: "Knot of Dusk", description: "The Altar of the Wanderer can rise 10 levels higher per level, so your companions walk more stages for you." },
     "long-thread": { name: "The Long Thread", description: "While you are away, the company keeps walking 1 h longer per level (8 h at the start)." },
     "humming-loom": { name: "Humming Loom", description: "Wandering crystals come 10% sooner per level." },
@@ -561,6 +563,8 @@ const fr: SystemsText = {
   },
   weaves: {
     plenty: { name: "Chaîne d'abondance", description: "Chaque niveau multiplie par 1,25 les essences gagnées à chaque ascension (niveau 2 : ×1,56)." },
+    hourglass: { name: "Sablier d'Eldra", description: "Pendant ton absence, quand la compagnie piétine 15 min devant une élite ou un gardien trop fort pour elle, elle appelle elle-même le crépuscule et marche la nuit suivante. Les essences t'attendent, et une parole pas encore tenue se perd à ce crépuscule." },
+    habits: { name: "Gestes tissés", description: "Tes pouvoirs se relancent seuls dès qu'ils sont prêts, sauf si ta parole te les interdit. L'Écho temporel et Détisser t'attendent toujours." },
     "dusk-knot": { name: "Nœud du crépuscule", description: "L'Autel du voyageur peut monter de 10 niveaux de plus par niveau : tes compagnons parcourent plus d'étapes pour toi." },
     "long-thread": { name: "Le Long Fil", description: "Pendant ton absence, la compagnie marche 1 h de plus par niveau (8 h au départ)." },
     "humming-loom": { name: "Métier bourdonnant", description: "Les cristaux errants viennent 10 % plus tôt par niveau." },

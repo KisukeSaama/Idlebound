@@ -180,13 +180,15 @@ export const gameStateSchema = z.object({
       released: z.boolean().optional(),
       goal: stageNumber.optional()
     }).optional(),
-    eclipse: z.boolean().optional()
+    eclipse: z.boolean().optional(),
+    frontierAt: positive.optional()
   }),
   descents: count,
   threads: large,
   weaves: idRecord(z.number().int().min(0).max(WEAVE_LEVEL_MAX), 20),
   legacyThreads: count.optional(),
   legacyHarvest: z.number().int().min(0).max(1_000).optional(),
+  legacyPlenty: z.number().int().min(0).max(WEAVE_LEVEL_MAX).optional(),
   caravanWeek: z.string().max(10),
   fates: z.object(Object.fromEntries(STREAMS.map((stream) => [stream, z.number().int().min(0).max(2 ** 40)])) as Record<Stream, z.ZodNumber>).strict(),
   zone: z.number().int().min(-14 * 60).max(14 * 60).optional()

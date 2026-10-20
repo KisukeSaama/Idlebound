@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { playBot } from "../scripts/bot";
 import { DAWN_STAGE, guardianForStage } from "./data/biomes";
+import { DESCENT_KEEP, stageForThreads } from "./data/descent";
 import { ageName, stratumTag } from "./content";
 import { GameEngine } from "./engine";
 import { derive } from "./formulas";
@@ -146,6 +147,38 @@ describe("the night has no bottom (BIBLE 24)", () => {
     expect(engine.state.altars.fortune ?? 0).toBeLessThan(fortune);
     expect(verifyState(structuredClone(engine.state), now + 2000)).toEqual([]);
   });
+
+  it("loads a version 18 walker who descended, weaves the new Weaves, descends keeping a tenth and plays on (save version 19)", () => {
+    const { state: raw, now } = fixture("walker-descent");
+    const legacy = structuredClone(raw) as unknown as Record<string, unknown>;
+    legacy.version = 18;
+    const text = JSON.stringify(legacy);
+    const state = parseState(JSON.parse(text));
+    expect(state.version).toBe(SAVE_VERSION);
+    expect(verifyState(state, now)).toEqual([]);
+    // The Warp of Plenty's levels woven before keep the price they were paid, and only those.
+    expect(state.legacyPlenty).toBe(state.weaves.plenty);
+    const repriced = structuredClone(state);
+    delete repriced.legacyPlenty;
+    expect(verifyState(repriced, now).map((violation) => violation.code)).toContain("descent");
+    expect(verifyTransition(state, repriced, 60_000).map((violation) => violation.code)).toContain("descent");
+    const more = structuredClone(state);
+    more.legacyPlenty = (state.weaves.plenty ?? 0) + 1;
+    expect(verifyState(more, now).map((violation) => violation.code)).toContain("descent");
+    const engine = new GameEngine(state, seededRng(19), now);
+    const s = engine.state;
+    s.threads += 16;
+    s.lifetime.threads += 16;
+    s.maxStageEver = Math.max(s.maxStageEver, stageForThreads(s.lifetime.threads));
+    expect(engine.buyWeave("hourglass", now)).toBe(true);
+    expect(engine.buyWeave("habits", now)).toBe(true);
+    engine.ascend(now);
+    const held = s.essences;
+    engine.descend(now + 1000);
+    expect(s.essences).toBe(Math.floor(held * DESCENT_KEEP));
+    const later = playBot(engine, now + 2000, 10 * 60, { clicksPerSecond: 5 });
+    expect(verifyState(structuredClone(s), later)).toEqual([]);
+  }, 60_000);
 
   it("rejects gold and blows the deep road never gave", () => {
     const { state, now } = fixture("walker-2990");

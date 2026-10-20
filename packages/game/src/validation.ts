@@ -14,7 +14,7 @@
 import { ACHIEVEMENT_BY_ID } from "./data/achievements";
 import { ALTARS, ALTAR_BY_ID, altarTotalCost, legacyHarvestCost } from "./data/altars";
 import { BIOMES, KING_FORMS, GUARDIAN_IDS, eraForStage, isBossStage, isKingStage } from "./data/biomes";
-import { DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, LEGACY_LOOM_HERO, WEAVE_BY_ID, legacyThreadsFor, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
+import { DESCENT_KEEP, DESCENT_MIN_STAGE, DESCENT_OPEN_STAGE, LEGACY_LOOM_HERO, WEAVE_BY_ID, legacyThreadsFor, threadsFor, weaveTotalCost, type WeaveId } from "./data/descent";
 import { EVENTS, SEAM_ODDS, STORM_CRYSTALS, UNFINISHED_ODDS, WAGER_MIN_GOLD, WALKER_DPS } from "./data/events";
 import { HERO_BY_ID, UPGRADE_BY_ID } from "./data/heroes";
 import { AFFIX_CAP, FORGE_MAX, INVENTORY_LIMIT, RARITY_INFO, SLOT_BASE_COUNT, SLOT_MAIN_STAT, forgeCost } from "./data/items";
@@ -397,9 +397,10 @@ export function verifyState(state: GameState, serverNow: number): Violation[] {
   if (state.lifetime.treasures > state.lifetime.kills * MAX_TREASURE_CHANCE * 1.2 + 50) fail("kills", "More golden rats than luck allows.");
   if (state.lifetime.seams > (state.lifetime.kills * 4) / SEAM_ODDS + 25) fail("lore", "More Seams than luck allows.");
 
-  // Items. Named relics always find room, even in a full pack.
+  // Items. Named relics always find room, even in a full pack: each one held may have pushed
+  // the pack one past its limit, and still does once worn (the relic it replaced took its place).
   const items = heldRelics(state);
-  if (state.inventory.length > INVENTORY_LIMIT + state.inventory.filter((item) => item.named).length) fail("inventory", "Inventory too large.");
+  if (state.inventory.length > INVENTORY_LIMIT + items.filter((item) => item.named).length) fail("inventory", "Inventory too large.");
   if (state.satchel.length > SATCHEL_SIZE + traitMax("satchel")) fail("inventory", "Satchel too large.");
   const uids = new Set<string>();
   for (const item of items) {
@@ -512,6 +513,8 @@ function verifyChronicle(state: GameState, serverNow: number, fail: (code: strin
   if (trail.rest > lifetime.bossFails || trail.evenRats > state.run.treasures || trail.listen > state.run.playTime + CLOCK_SLACK_SECONDS) fail("trail", "Inconsistent trail.");
   if (trail.offered > lifetime.essencesEarned + 1) fail("trail", "More essences offered than gathered.");
   if (trail.migration && !BIOMES.some((biome) => biome.id === trail.migration!.biome)) fail("trail", "Unknown migration.");
+  // The head of the night moved before the last tick, never after: Eldra's Hourglass reads it.
+  if (trail.frontierAt !== undefined && trail.frontierAt > state.lastTickAt) fail("trail", "The head of the night moved in the future.");
   // Wounds stay only on a boss of the present night, at the head of the run, up to their cap.
   // Boons (the Reunion included) last an hour at most from the last tick; the stall's pile up,
   // but never past what every shard ever earned could have bought.
@@ -663,9 +666,11 @@ function verifyDescent(state: GameState, fail: (code: string, message: string) =
       continue;
     }
     if (weave.maxLevel > 0 && (level ?? 0) > weave.maxLevel) fail("descent", "Weave above its cap.");
-    spent += weaveTotalCost(id as WeaveId, level ?? 0);
+    spent += weaveTotalCost(id as WeaveId, level ?? 0, state.legacyPlenty ?? 0);
   }
   if (spent + state.threads > lifetime.threads) fail("descent", "More threads spent than woven.");
+  // The Warp of Plenty's levels of an older save, paid at the price of then, never more than it holds.
+  if ((state.legacyPlenty ?? 0) > weaveLevel(state, "plenty")) fail("descent", "More old levels of Plenty than woven.");
   if (state.descents === 0 && lifetime.threads > 0) fail("descent", "Threads woven without a Descent.");
   // A night rewoven is a Descent that wove one thread at least.
   if (lifetime.weavings > state.descents || lifetime.weavings > lifetime.threads) fail("descent", "More nights rewoven than threads woven.");
@@ -826,10 +831,16 @@ export function verifyTransition(previous: GameState, next: GameState, elapsedMs
   // The nights since the last save were walked under today's cap on the Harvest.
   const perAscension = maxAscensionEssences(next, false);
   if ((next.legacyHarvest ?? 0) !== (previous.legacyHarvest ?? 0)) fail("altar", "The Harvest of an older save cannot change.");
+  if ((next.legacyPlenty ?? 0) !== (previous.legacyPlenty ?? 0)) fail("descent", "The old levels of Plenty cannot change.");
   const fromAscensions = b.ascensionEssences - a.ascensionEssences;
   if (!le(fromAscensions, ascensions * perAscension + rounding(b.ascensionEssences))) fail("essence-source", "Ascensions too generous.");
   if (!le(b.essencesEarned - a.essencesEarned, Math.min(ascensions * perAscension, Math.max(0, fromAscensions)) + crystals * crystalEssenceReward(deepest) + 1 + rounding(b.essencesEarned))) {
     fail("essence-source", "Essences gathered too fast.");
+  }
+  // A Descent leaves a tenth of the essences held: past one, the essences held never pass that
+  // tenth of those held before, with what was gathered since on top.
+  if (next.descents > previous.descents && !le(next.essences, previous.essences * DESCENT_KEEP + Math.max(0, b.essencesEarned - a.essencesEarned) + 1 + rounding(b.essencesEarned))) {
+    fail("descent", "A Descent kept more essences than it leaves.");
   }
 
   // Relics and shards: only the boss blocking the road drops them, once a night per boss
