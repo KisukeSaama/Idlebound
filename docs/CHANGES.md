@@ -16,6 +16,8 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+## v2.1.0
+
 ### New
 
 - First minutes: a hint says to strike the monster from the very first second, and the Long
