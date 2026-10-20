@@ -23,7 +23,8 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
   quantity, with a countdown to the next ones: always 3 relic chests, then three places among
   the rage potion, the fortune elixir and the striking scroll (3 each), the golden hourglass
   (2), a new armorer's crate (2, a relic of the slot shown, rare or better, 50 shards) and the
-  great chest (1). What is sold is gone until the next wares.
+  great chest (1). What is sold is gone until the next wares. A second button buys at once
+  as many as the stock, your shards, your pack and the boon's day allow ("×3").
 - The market's rare place: from your first ascension, about one set of wares in four keeps a
   single exceptional piece apart, under a lantern: a piece of a set (the place and slot
   shown, legendary or better, 600 shards), a relic that remembers the trait shown (legendary

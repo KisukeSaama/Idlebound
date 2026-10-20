@@ -67,6 +67,7 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "Toujours là", text: "3 coffres de reliques" },
             { label: "Tirées au sort", text: "trois places parmi la potion de rage, l'élixir de fortune et le parchemin de frappe (3 de chaque), le sablier doré (2), la nouvelle caisse d'armurier (2) et le grand coffre (1)" },
             { label: "Chaque marchandise", text: "a sa rareté (courante, rare, précieuse, exceptionnelle) et sa quantité : ce qui est vendu ne revient qu'avec les marchandises suivantes" },
+            { label: "Plusieurs d'un coup", text: "un second bouton achète d'un seul geste tout ce que le stock, tes éclats, ton sac et le jour des potions permettent" },
             { label: "Caisse d'armurier", text: "une relique de l'emplacement indiqué, rare ou mieux, dès 50 éclats" }
           ]
         },
@@ -172,6 +173,7 @@ export const NEWS_POSTS: NewsPost[] = [
             { label: "Always there", text: "3 relic chests" },
             { label: "Drawn by lot", text: "three places among the rage potion, the fortune elixir and the striking scroll (3 of each), the golden hourglass (2), the new armorer's crate (2) and the great chest (1)" },
             { label: "Each ware", text: "has its rarity (common, rare, precious, exceptional) and its quantity: what is sold only comes back with the next wares" },
+            { label: "Several at once", text: "a second button buys in one go as many as the stock, your shards, your pack and the potions' day allow" },
             { label: "Armorer's Crate", text: "a relic of the slot shown, rare or better, from 50 shards" }
           ]
         },

@@ -21,6 +21,8 @@ import {
   stallEnds,
   stallWindow,
   wareCost,
+  BUFF_DURATION_SECONDS,
+  MARKET_BUFF_MAX_SECONDS,
   type BuffId,
   type CaravanWareId,
   type StallPlace,
@@ -155,6 +157,7 @@ function Ware({ place, index, stall, hourglass, now }: { place: StallPlace; inde
   const text = t.windows.market;
   const ui = useUi();
   const magnitude = useMagnitude();
+  const fmt = useFormat();
   const ware = STALL_WARE_BY_ID[place.ware];
   const copy = g.market[place.ware];
   const left = place.stock - stallBought(state, stall, index);
@@ -166,6 +169,15 @@ function Ware({ place, index, stall, hourglass, now }: { place: StallPlace; inde
   const boonFull = boon && !boonFits(state, place.ware as BuffId, now);
   const noGold = place.ware === "hourglass" && hourglass <= 0;
   const blocked = left <= 0 || packFull || boonFull || noGold || promiseAbstains(state, "shards");
+  // How many can be bought at once: what is left, what the shards pay, the room in the pack,
+  // what still fits under the boon's day.
+  const boonLeft = boon ? Math.max(0, (state.buffs.find((buff) => buff.id === place.ware)?.until ?? now) - now) / 1000 : 0;
+  const most = blocked ? 0 : Math.min(
+    left,
+    Math.floor(state.shards / price),
+    RELIC_WARES.includes(place.ware) ? INVENTORY_LIMIT - state.inventory.length : left,
+    boon ? Math.floor((MARKET_BUFF_MAX_SECONDS - boonLeft) / BUFF_DURATION_SECONDS) : left
+  );
   // What the ware is made of: a slot, a place, a trait.
   const made = [
     place.slot ? g.slots[place.slot] : null,
@@ -189,20 +201,41 @@ function Ware({ place, index, stall, hourglass, now }: { place: StallPlace; inde
       {packFull && left > 0 ? <p className="market-preview warn"><Picto name="warning" size={14} /> {text.inventoryFull}</p> : null}
       {boonFull && left > 0 ? <p className="market-preview warn"><Picto name="warning" size={14} /> {text.boonFull}</p> : null}
       <p className="ware-stock">{left > 0 ? text.stock(left, place.stock) : text.soldOut}</p>
-      <button
-        type="button"
-        className="btn btn-gold btn-sm"
-        disabled={state.shards < price || blocked}
-        aria-label={`${copy.name}: ${left > 0 ? text.stock(left, place.stock) : text.soldOut}`}
-        onClick={() => {
-          const buy = () => store.act<boolean>({ type: "stall", place: index });
-          const ok = chest ? ui.openChest(chest, buy) : buy();
-          if (!ok) audio.play("error");
-          else if (boon) ui.toast({ tone: "success", icon: OFFER_PICTO[place.ware as "rage"], title: copy.name, text: text.effectActive, stack: `market:${place.ware}` });
-        }}
-      >
-        <Price cost={cost} price={price} />
-      </button>
+      <div className="ware-buy">
+        <button
+          type="button"
+          className="btn btn-gold btn-sm"
+          disabled={state.shards < price || blocked}
+          aria-label={`${copy.name}: ${left > 0 ? text.stock(left, place.stock) : text.soldOut}`}
+          onClick={() => {
+            const buy = () => store.act<boolean>({ type: "stall", place: index });
+            const ok = chest ? ui.openChest(chest, buy) : buy();
+            if (!ok) audio.play("error");
+            else if (boon) ui.toast({ tone: "success", icon: OFFER_PICTO[place.ware as "rage"], title: copy.name, text: text.effectActive, stack: `market:${place.ware}` });
+          }}
+        >
+          <Price cost={cost} price={price} />
+        </button>
+        {most >= 2 ? (
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm ware-many"
+            aria-label={text.buyMany(most, copy.name)}
+            title={text.buyMany(most, copy.name)}
+            onClick={() => {
+              // One purchase after the other, each checked as a single one: the relics come
+              // straight to the pack (no chest opening for each), the boons add up.
+              let bought = 0;
+              while (bought < most && store.act<boolean>({ type: "stall", place: index })) bought += 1;
+              if (bought === 0) audio.play("error");
+              else if (boon) ui.toast({ tone: "success", icon: OFFER_PICTO[place.ware as "rage"], title: copy.name, text: text.boughtMany(bought), stack: `market:${place.ware}` });
+              else if (!RELIC_WARES.includes(place.ware)) ui.toast({ tone: "success", icon: OFFER_PICTO[place.ware as "hourglass"], title: copy.name, text: text.boughtMany(bought) });
+            }}
+          >
+            ×{most} · <ShardIcon size={14} /> {fmt(price * most)}
+          </button>
+        ) : null}
+      </div>
     </article>
   );
 }

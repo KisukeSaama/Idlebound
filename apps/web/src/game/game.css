@@ -2524,6 +2524,23 @@ button.resource:hover .resource-label {
   margin-top: auto;
 }
 
+/* One, or as many as can be bought at once beside it. */
+.market-offer .ware-buy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.market-offer .ware-buy .btn {
+  flex: 1 1 auto;
+  margin-top: 0;
+}
+
+.market-offer .ware-many {
+  font-variant-numeric: tabular-nums;
+}
+
 .market-preview {
   color: var(--gold-2) !important;
   font-weight: 700;
