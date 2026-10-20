@@ -77,6 +77,15 @@ what they own is not.
   and phone, reduced motion; the rare place should feel like an event (light, sound) without
   breaking the Armurerie direction (DESIGN.md).
 
+### Still open after 2.2 (2026-10-20)
+
+Everything above shipped on develop, except the long run below: with the 2.2 rules (the
+Descent leaving a hundredth), seeds 1 to 3 were played from stage 3000 to day 16-17 (4938,
+5199, 4892) before the run was stopped for lack of memory; near stage 5000 one simulated day
+takes about 14 minutes a seed, so stage 10,000 (day 180 or so) asks about two days of
+machine time. Run it on its own: `BALANCE_WORKERS=3 DEEP_FAST=1 npx tsx
+packages/game/scripts/deep.ts deep active 3000 3 400 10000`, then delete this file.
+
 ### 4. Left from 2.1
 
 - See Eldra's Hourglass and Woven Habits working in the running app (a game past a Descent is

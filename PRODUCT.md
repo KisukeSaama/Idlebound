@@ -845,7 +845,9 @@ once the road stops paying) reaches stage 10 in 4 min 11 and stage 41 after its 
 the company walks on to the King in the open tab (the autopilot only goes back to a boss it
 can beat, so the wounds of one fight help it, 54 min at the King as before); it ascends on
 its first return, after 1 h 00 of play, and stands at stage 280, 960 and 1450 at the end of
-days 1, 2 and 3 (24 ascensions; 230, 890 and 1380 before 2.1). The pace of a run is set by the gold a
+days 1, 2 and 3 (24 ascensions; 230, 890 and 1380 before 2.1). Past stage 1500 (2.2,
+`realistic.ts 9 7`; it never descends) it slows down day after day: 1705, 1845, 1930 and
+2010 at the end of days 4 to 7 (+255, +140, +85, +80 a day, 72 ascensions). The pace of a run is set by the gold a
 monster carries: 1/30 of its HP (`GOLD_PER_HP`), ×2 at stage 1 tapering off to stage 10.
 `npm run balance -- 24 compare 9` plays the same game as an occasional player, idle, in
 bursts and at 2, 5 and 10 clicks/s to check the idle/active gap, the stages 8 h in a
