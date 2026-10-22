@@ -15,7 +15,7 @@ import type { NightGrade } from "./night";
 import { bayer, createPixels, fadeStep, FADE_STEPS, hash2, setPixel, veil } from "./pixels";
 import { sceneRecipe, type SceneOptions } from "./scene";
 import { creatureSheet, css, flashPixels, relicPixels, sceneSheet, type CreatureSheet, type SceneSheet, type Tone } from "./sprites";
-import { dropCache, effectCache, pixelRatio, toSurface, whenIdle, type Surface } from "./surface";
+import { dropCache, effectCache, pixelRatio, surfacesRestored, toSurface, whenIdle, type Surface } from "./surface";
 
 export interface CssRect {
   x: number;
@@ -745,16 +745,39 @@ export class ArenaRenderer {
   }
 
   start() {
+    this.canvas.addEventListener("contextrestored", this.restored);
     this.kick();
     this.syncAir();
   }
 
   stop() {
+    this.canvas.removeEventListener("contextrestored", this.restored);
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.cancelIdle?.();
     this.air?.stop();
   }
+
+  /**
+   * The GPU was lost and is back: the canvas came back blank with its settings reset, and every
+   * sprite it drew from came back empty. The scene and the creatures on it are made again.
+   */
+  private restored = () => {
+    surfacesRestored();
+    this.ctx.imageSmoothingEnabled = false;
+    const args = this.sceneArgs;
+    if (args) this.scene = sceneSheet(args.id, args.era, args.options, this.quiet);
+    const monster = this.monster;
+    if (monster) {
+      monster.sheet = creatureSheet(monster.id, monster.sheet.era, this.night(), monster.eclipse ? "eclipse" : this.tone());
+      monster.drawn = undefined;
+    }
+    if (this.queen) this.queen.sheet = creatureSheet("lantern-queen", this.queen.sheet.era);
+    this.leaving = null;
+    this.dying = null;
+    this.draw(true);
+    this.kick();
+  };
 
   private loop = () => {
     this.frame = 0;

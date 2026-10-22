@@ -23,8 +23,12 @@ export interface Lru {
   readonly size: number;
 }
 
+/** Every cache `lru` made, so a lost GPU can empty them all at once. */
+const caches: Map<string, unknown>[] = [];
+
 export function lru(limit: number): Lru {
   const entries = new Map<string, unknown>();
+  caches.push(entries);
   return {
     get<T>(key: string, make: () => T): T {
       if (entries.has(key)) {
@@ -63,6 +67,21 @@ export const uiCache = lru(112);
 export const stillCache = lru(64);
 /** Whole scenes are larger: a handful is enough (the current biome and its neighbors). */
 export const sceneCache = lru(6);
+
+let restoredAt = -Infinity;
+
+/**
+ * The GPU came back after it was lost (a driver reset, a computer waking from sleep): every
+ * canvas came back empty, the cached ones too, which would draw nothing ever after. Call it
+ * from a canvas's `contextrestored`, before drawing again; the caches are emptied once for all
+ * the canvases restored together, and everything is generated again as it is asked for.
+ */
+export function surfacesRestored(): void {
+  const now = performance.now();
+  if (now - restoredAt < 1000) return;
+  restoredAt = now;
+  for (const entries of caches) entries.clear();
+}
 
 /** Runs `task` when the browser is idle (or soon, where idle callbacks do not exist). */
 export function whenIdle(task: () => void): () => void {

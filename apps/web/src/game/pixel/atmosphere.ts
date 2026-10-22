@@ -143,6 +143,11 @@ export class Atmosphere {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("2D canvas unavailable");
     this.ctx = ctx;
+    // The GPU was lost and is back: the canvas and the water's mask came back blank.
+    canvas.addEventListener("contextrestored", () => {
+      this.maskKey = "";
+      this.draw(performance.now() / 1000);
+    });
   }
 
   setScene(air: AirScene | null) {
