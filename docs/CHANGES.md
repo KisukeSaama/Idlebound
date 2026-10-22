@@ -18,6 +18,14 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ### Fixes
 
+- The arena: after the computer woke from sleep or the graphics driver restarted, the scene and
+  the monster could vanish for good, leaving a black arena with only its lights; they now come
+  back at once (the portraits and the other drawings of the interface too).
+
+## v2.2.1
+
+### Fixes
+
 - The market: buying several of a ware is now a counter set at 1, raised with + and lowered
   with -, and the one buy button shows the whole price (was a second "×3" button beside the
   price).

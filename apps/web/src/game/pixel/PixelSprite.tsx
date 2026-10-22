@@ -7,7 +7,7 @@
  */
 import { useEffect, useRef, type CSSProperties } from "react";
 import type { Pixels } from "./pixels";
-import { pageRect, pixelRatio, prefersReducedMotion, toSurface, whenIdle, type Surface } from "./surface";
+import { pageRect, pixelRatio, prefersReducedMotion, surfacesRestored, toSurface, whenIdle, type Surface } from "./surface";
 
 export interface PixelSource {
   /** Identity of the art: the canvas redraws only when it changes. */
@@ -81,6 +81,7 @@ export function PixelSprite({
     if (!element || !ctx) return;
     let cleanup: (() => void) | null = null;
     const draw = () => {
+      cleanup?.();
       const frames: Surface[] = sourceRef.current.frames().map(toSurface);
       const first = frames[0];
       element.width = first.width;
@@ -127,9 +128,16 @@ export function PixelSprite({
     let cancel = () => {};
     if (eager) draw();
     else cancel = whenIdle(draw);
+    // The GPU was lost and is back: the canvas came back blank, and its frames with it.
+    const restored = () => {
+      surfacesRestored();
+      draw();
+    };
+    element.addEventListener("contextrestored", restored);
     return () => {
       cancel();
       cleanup?.();
+      element.removeEventListener("contextrestored", restored);
     };
   }, [key, size, fixedScale, cover, nearest, eager]);
 
