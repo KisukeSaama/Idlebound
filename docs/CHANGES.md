@@ -16,6 +16,8 @@ patch note of the next major version (1.0 is the launch) writes itself. Rules in
 
 ## Next version
 
+## v2.2.2
+
 ### Fixes
 
 - The arena: after the computer woke from sleep or the graphics driver restarted, the scene and
